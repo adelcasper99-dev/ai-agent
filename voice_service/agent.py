@@ -401,10 +401,28 @@ async def load_settings():
 def create_agent_session(provider: str, settings: dict) -> AgentSession:
     groq_key = settings.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
     openai_key = settings.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+    gemini_key = settings.get("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
 
     voice_tone = settings.get("VOICE_TONE", "shakir")
     selected_voice = "ar-EG-ShakirNeural" if voice_tone == "shakir" else "ar-EG-SalmaNeural"
     fish_voice_id = settings.get("FISH_VOICE_ID")
+
+    # Tuned Silero VAD parameters for natural Arabic speech without early cutoffs
+    arabic_vad = silero.VAD.load(
+        min_speech_duration=0.1,
+        min_silence_duration=0.9,
+        prefix_padding_duration=0.3,
+    )
+
+    # Safe fallback if chosen provider has missing API key
+    if provider == "openai" and not openai_key:
+        print("[Voice Provider Fallback] OpenAI API Key missing! Checking alternatives...")
+        if groq_key:
+            provider = "groq_pipeline"
+            print("[Voice Provider Fallback] Switched to Groq Pipeline.")
+        elif gemini_key:
+            provider = "gemini"
+            print("[Voice Provider Fallback] Switched to Gemini Native Audio.")
 
     if provider == "groq_pipeline":
         if not groq_key:
@@ -423,11 +441,7 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
             ),
             llm=groq.LLM(api_key=groq_key, model="llama-3.3-70b-versatile"),
             tts=tts_engine,
-            vad=silero.VAD.load(
-                min_speech_duration=0.15,
-                min_silence_duration=0.5,
-                prefix_padding_duration=0.2,
-            ),
+            vad=arabic_vad,
         )
     elif provider == "deepgram_pipeline":
         deepgram_key = settings.get("DEEPGRAM_API_KEY") or os.getenv("DEEPGRAM_API_KEY")
@@ -445,11 +459,7 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
             stt=deepgram.STT(api_key=deepgram_key, model="nova-2", language="ar"),
             llm=groq.LLM(api_key=groq_key, model="llama-3.3-70b-versatile"),
             tts=tts_engine,
-            vad=silero.VAD.load(
-                min_speech_duration=0.15,
-                min_silence_duration=0.5,
-                prefix_padding_duration=0.2,
-            ),
+            vad=arabic_vad,
         )
     elif provider == "fish_audio":
         fish_key = settings.get("FISH_API_KEY") or os.getenv("FISH_API_KEY")
@@ -470,19 +480,13 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
             stt=groq.STT(api_key=groq_key, language="ar"),
             llm=groq.LLM(api_key=groq_key, model="llama-3.3-70b-versatile"),
             tts=tts_engine,
-            vad=silero.VAD.load(
-                min_speech_duration=0.15,
-                min_silence_duration=0.5,
-                prefix_padding_duration=0.2,
-            ),
+            vad=arabic_vad,
         )
     elif provider == "gemini":
-        gemini_key = settings.get("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
         if not gemini_key:
             raise ValueError("مفتاح Gemini API Key مفقود. يرجى إدخاله من صفحة الإعدادات أولاً.")
         os.environ["GOOGLE_API_KEY"] = gemini_key
 
-        from edge_tts_wrapper import EdgeTTS
         print("Using Google Gemini Native Audio Realtime Architecture (Gemini Live 🌟)")
         return AgentSession(
             llm=google.beta.realtime.RealtimeModel(
@@ -493,6 +497,8 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
             ),
         )
     else:
+        if not openai_key:
+            raise ValueError("مفتاح OpenAI API Key مفقود. يرجى إدخاله وحفظه في صفحة الإعدادات أولاً.")
         from edge_tts_wrapper import EdgeTTS
         return AgentSession(
             llm=openai.realtime.RealtimeModel(
@@ -501,6 +507,9 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
             ),
             tts=EdgeTTS(voice=selected_voice)
         )
+
+
+
 
 
 async def log_conversation(transcript: str, summary: str = ""):
@@ -622,9 +631,16 @@ async def entrypoint(ctx: JobContext):
     async def on_close():
         transcript = ""
         try:
-            if hasattr(session, "history"):
-                for m in getattr(session.history, "messages", []):
-                    transcript += f"{m.role}: {m.content}\n"
+            history_obj = getattr(session, "history", None)
+            if history_obj is not None:
+                messages = getattr(history_obj, "messages", [])
+                if callable(messages):
+                    messages = messages()
+                if isinstance(messages, (list, tuple)):
+                    for m in messages:
+                        role = getattr(m, "role", "unknown")
+                        content = getattr(m, "content", str(m))
+                        transcript += f"{role}: {content}\n"
         except Exception as e:
             print("Error parsing transcript:", e)
         diag.set_transcript(raw=transcript)

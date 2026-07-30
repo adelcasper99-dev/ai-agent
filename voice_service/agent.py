@@ -19,6 +19,7 @@ for handler in logging.root.handlers:
             pass
 
 import httpx
+from diagnostics import DiagnosticsSession, get_tenant_id_from_room
 
 from livekit.agents import (
     Agent,
@@ -33,6 +34,17 @@ from livekit.plugins import openai, google, groq, silero
 load_dotenv()
 
 API_BASE = os.getenv("DASHBOARD_API_URL", "http://localhost:3000/api")
+INTERNAL_SECRET = os.getenv("INTERNAL_SERVICE_SECRET", "casper-voice-internal-secret-9988776655")
+
+def get_internal_headers(extra_headers: dict = None) -> dict:
+    headers = {"x-internal-secret": INTERNAL_SECRET}
+    if extra_headers:
+        headers.update(extra_headers)
+    return headers
+
+def get_api_client(extra_headers: dict = None):
+    return httpx.AsyncClient(headers=get_internal_headers(extra_headers))
+
 
 EGYPTIAN_TELEPHONY_PROMPT = """
 أنت "المساعد الشخصي الذكي" (Personal ERP Assistant) الخاص بمدير أو صاحب العمل بنظام Casper ERP & POS.
@@ -89,7 +101,7 @@ class CasperAgent(Agent):
         if not description or description.strip() == "":
             return "المبلغ ده اتدفع في إيه أستاذنا؟"
 
-        async with httpx.AsyncClient() as client:
+        async with get_api_client() as client:
             r = await client.post(
                 f"{API_BASE}/expenses",
                 json={"amount": amount, "description": description, "category": category},
@@ -118,7 +130,7 @@ class CasperAgent(Agent):
         if paid_amount is not None and paid_amount >= 0:
             payload["paid_amount"] = paid_amount
 
-        async with httpx.AsyncClient() as client:
+        async with get_api_client() as client:
             r = await client.post(
                 f"{API_BASE}/sales",
                 json=payload,
@@ -146,7 +158,7 @@ class CasperAgent(Agent):
         if not time or time.strip() == "":
             return "الساعة كام مسترنا؟"
 
-        async with httpx.AsyncClient() as client:
+        async with get_api_client() as client:
             r = await client.post(
                 f"{API_BASE}/appointments",
                 json={"customer_name": customer_name, "date": date, "time": time, "notes": service},
@@ -164,7 +176,7 @@ class CasperAgent(Agent):
     @function_tool
     async def get_financial_summary(self, period: str = "today"):
         """يجيب تقرير إجمالي المبيعات والمصاريف والأرباح للفترة (today/week/month)"""
-        async with httpx.AsyncClient() as client:
+        async with get_api_client() as client:
             r = await client.get(f"{API_BASE}/reports/summary?period={period}", timeout=5)
         if r.status_code == 200:
             data = r.json().get("summary", {})
@@ -179,7 +191,7 @@ class CasperAgent(Agent):
     @function_tool
     async def get_appointments_list(self, date: str = "", customer_name: str = ""):
         """يجيب قائمة المواعيد المحجوزة القادمة"""
-        async with httpx.AsyncClient() as client:
+        async with get_api_client() as client:
             params = {}
             if date: params["date"] = date
             if customer_name: params["name"] = customer_name
@@ -204,7 +216,7 @@ class CasperAgent(Agent):
         if not total_amount or total_amount <= 0:
             return "المبلغ الإجمالي كام مسترنا؟"
 
-        async with httpx.AsyncClient() as client:
+        async with get_api_client() as client:
             r = await client.post(
                 f"{API_BASE}/purchases",
                 json={
@@ -255,7 +267,7 @@ class CasperAgent(Agent):
         api_key = os.getenv("INTERNAL_API_KEY")
         if api_key: headers["Authorization"] = f"Bearer {api_key}"
 
-        async with httpx.AsyncClient() as client:
+        async with get_api_client(headers) as client:
             r = await client.put(
                 f"{API_BASE}/appointments",
                 json={
@@ -292,7 +304,7 @@ class CasperAgent(Agent):
         api_key = os.getenv("INTERNAL_API_KEY")
         if api_key: headers["Authorization"] = f"Bearer {api_key}"
 
-        async with httpx.AsyncClient() as client:
+        async with get_api_client(headers) as client:
             r = await client.request(
                 "DELETE",
                 f"{API_BASE}/appointments",
@@ -321,7 +333,7 @@ class CasperAgent(Agent):
         api_key = os.getenv("INTERNAL_API_KEY")
         if api_key: headers["Authorization"] = f"Bearer {api_key}"
 
-        async with httpx.AsyncClient() as client:
+        async with get_api_client(headers) as client:
             r = await client.put(
                 f"{API_BASE}/expenses",
                 json={"description": description, "new_amount": new_amount},
@@ -351,7 +363,7 @@ class CasperAgent(Agent):
         api_key = os.getenv("INTERNAL_API_KEY")
         if api_key: headers["Authorization"] = f"Bearer {api_key}"
 
-        async with httpx.AsyncClient() as client:
+        async with get_api_client(headers) as client:
             r = await client.put(
                 f"{API_BASE}/purchases",
                 json={"supplier_name": supplier_name, "payment_amount": payment_amount},
@@ -475,6 +487,7 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
         return AgentSession(
             llm=google.beta.realtime.RealtimeModel(
                 voice="Puck",
+                model="gemini-2.5-flash-native-audio-latest",
                 modalities=["AUDIO"],
                 instructions=EGYPTIAN_TELEPHONY_PROMPT,
             ),
@@ -491,7 +504,7 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
 
 
 async def log_conversation(transcript: str, summary: str = ""):
-    async with httpx.AsyncClient() as client:
+    async with get_api_client() as client:
         await client.post(
             f"{API_BASE}/conversations",
             json={"channel": "voice", "transcript": transcript, "summary": summary},
@@ -500,7 +513,7 @@ async def log_conversation(transcript: str, summary: str = ""):
 
 
 async def entrypoint(ctx: JobContext):
-    async with httpx.AsyncClient() as client:
+    async with get_api_client() as client:
         r = await client.get(f"{API_BASE}/settings", timeout=5)
         settings = r.json().get("settings", {})
 
@@ -513,6 +526,9 @@ async def entrypoint(ctx: JobContext):
 
     provider = settings.get("VOICE_PROVIDER", "openai")
     await ctx.connect()
+
+    tenant_id = get_tenant_id_from_room(ctx)
+    diag = DiagnosticsSession(session_id=ctx.room.name, tenant_id=tenant_id, channel="voice_call")
 
     try:
         session = create_agent_session(provider, settings)
@@ -611,6 +627,9 @@ async def entrypoint(ctx: JobContext):
                     transcript += f"{m.role}: {m.content}\n"
         except Exception as e:
             print("Error parsing transcript:", e)
+        diag.set_transcript(raw=transcript)
+        import asyncio
+        asyncio.ensure_future(diag.flush())
         await log_conversation(transcript, summary=f"provider: {provider}")
 
     ctx.add_shutdown_callback(on_close)

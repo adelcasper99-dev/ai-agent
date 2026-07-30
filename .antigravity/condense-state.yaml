@@ -6,6 +6,9 @@ decisions:
   - "Initialize single root Git repository at casper-voice-project"
   - "Link Telegram bot @Casperaibot (ID: 8704982134) with webhook secret"
   - "Enforce Admin Auth Middleware using cookie admin_session and process.env.ADMIN_PASSWORD"
+  - "Implement internal auth secret header (x-internal-secret) in middleware.ts and agent.py with timing-safe comparison"
+  - "Enforce Permanent Verification Standard Protocol (verification-standard.md) across all tasks & pipelines"
+
 files_modified:
   - path: casper-voice-web/lib/prisma.ts
     why: "created Prisma client singleton"

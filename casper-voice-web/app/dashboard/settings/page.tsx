@@ -9,6 +9,9 @@ const FIELDS = [
   { key: "GROQ_API_KEY", label: "Groq API Key (Whisper + Llama)", group: "GROQ" },
   { key: "DEEPGRAM_API_KEY", label: "Deepgram API Key (Nova-2 AI Noise-Free STT)", group: "DEEPGRAM" },
   { key: "FISH_API_KEY", label: "Fish Audio API Key (Zero-Shot Voice Clone 🐟)", group: "FISH" },
+  { key: "TELEGRAM_BOT_TOKEN", label: "Telegram Bot Token 🤖 (لبوت التليجرام والموافقات)", group: "TELEGRAM" },
+  { key: "ADMIN_TELEGRAM_CHAT_ID", label: "Admin Telegram Chat ID 📲 (رقم التليجرام الخاص بك لاستقبال الإشعارات والطلب)", group: "TELEGRAM" },
+  { key: "TELEGRAM_ALLOWED_CHAT_IDS", label: "Telegram Allowed Chat IDs (المسموح لهم بالتفاعل)", group: "TELEGRAM" },
   { key: "LIVEKIT_URL", label: "LiveKit URL", group: "LIVEKIT" },
   { key: "LIVEKIT_API_KEY", label: "LiveKit API Key", group: "LIVEKIT" },
   { key: "LIVEKIT_API_SECRET", label: "LiveKit API Secret", group: "LIVEKIT" },
@@ -99,6 +102,7 @@ export default function SettingsPage() {
       if (provider === "GROQ") key = values["GROQ_API_KEY"];
       if (provider === "DEEPGRAM") key = values["DEEPGRAM_API_KEY"];
       if (provider === "FISH") key = values["FISH_API_KEY"];
+      if (provider === "TELEGRAM") key = values["TELEGRAM_BOT_TOKEN"];
 
       const body = {
         provider,

@@ -424,6 +424,15 @@
   "422": "Generate Report",
   "423": "checkElementGptBorderShadowDOM",
   "424": "audit-logger.ts",
-  "425": "rag-search.ts",
-  "426": "cron-session-cleanup.ts"
+  "425": "DiagnosticsSession",
+  "426": "cron-session-cleanup.ts",
+  "427": "source-lock.mjs",
+  "428": "normalizeGitHubEvent",
+  "429": "resolveObjectImageRect",
+  "430": "route.ts",
+  "431": ".get_appointments_list",
+  "432": "browser-script-parts.mjs",
+  "433": "route.ts",
+  "434": "selectAvailablePendingEvent",
+  "435": "page.tsx"
 }

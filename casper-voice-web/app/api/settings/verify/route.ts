@@ -70,6 +70,20 @@ export async function POST(req: Request) {
       }
     }
 
+    if (provider === 'TELEGRAM') {
+      if (!key) return NextResponse.json({ valid: false, message: 'توكن بوت التليجرام فارغ' });
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${key}/getMe`);
+        const data = await res.json();
+        if (data.ok) {
+          return NextResponse.json({ valid: true, message: `البوت متصل بنجاح: @${data.result.username} ✅` });
+        }
+        return NextResponse.json({ valid: false, message: 'توكن التليجرام غير صحيح ❌' });
+      } catch (e) {
+        return NextResponse.json({ valid: false, message: 'فشل الاتصال بسيرفر التليجرام ❌' });
+      }
+    }
+
     if (provider === 'LIVEKIT') {
       if (!key || !secret || !url) return NextResponse.json({ valid: false, message: 'أكمل جميع حقول LiveKit أولاً' });
       try {

@@ -100,3 +100,13 @@ At the start of EVERY new session in this workspace:
 5. **Auto-Trigger Condense**: Run `/context-condense` automatically, without waiting to be asked, once the session exceeds 25 turns OR ~150k tokens (~75% of a 200k window) — whichever comes first.
 6. **Measure Every Condense**: Every condense pass must record `tokens_before`, `tokens_after`, and `reduction_pct` into `last_condense` inside the state file. If `reduction_pct` < 60%, the pass didn't cut deep enough — repeat it before accepting the result.
 </RULE>
+
+<RULE>
+# Permanent Verification Standard & Empirical Grounding Protocol
+Always strictly enforce `verification-standard.md` rules for all tasks, pipelines, and test reporting:
+1. **No Claim Without Quoted Source**: Never report "PASSED", "100%", or "GREEN" without pasting the literal raw terminal output/stdout directly beneath the claim.
+2. **No Invented Metrics**: Every score or metric must be traceable to `<command> -> <literal output> -> <number extracted>`.
+3. **Banned Words Without Proof**: Banned un-grounded buzzwords ("100%", "zero risk", "fully verified") unless backed by attached raw evidence.
+4. **Distinguish Server-to-Server from User-Facing**: A backend API `200 OK` does not equal a user-facing fix. Re-test actual user UI/voice flows.
+5. **Adversarial Re-Check**: Before signoff, verify tests fail when fix is reverted.
+</RULE>

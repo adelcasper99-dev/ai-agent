@@ -3,11 +3,44 @@ import { NextRequest, NextResponse } from 'next/server';
 // المسارات اللي لازم تفضل مفتوحة من غير login (تليجرام لازم يوصلها من برا)
 const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/telegram/webhook'];
 
+function isInternalSecretValid(headerSecret: string | null): boolean {
+  if (!headerSecret) return false;
+  const expectedSecret = process.env.INTERNAL_SERVICE_SECRET || 'casper-voice-internal-secret-9988776655';
+  
+  if (headerSecret.length !== expectedSecret.length) {
+    return false;
+  }
+  
+  const a = Buffer.from(headerSecret);
+  const b = Buffer.from(expectedSecret);
+  
+  if (a.length !== b.length) {
+    return false;
+  }
+  
+  try {
+    const crypto = require('crypto');
+    return crypto.timingSafeEqual(a, b);
+  } catch {
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+      result |= a[i] ^ b[i];
+    }
+    return result === 0;
+  }
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // سيب المسارات العامة تعدي من غير فحص
+  // 1. سيب المسارات العامة تعدي من غير فحص
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
+  }
+
+  // 2. اسمح للطلبات الداخلية من السيرفر الأصلي أو python voice_service بالمرور بواسطة الهيدر الخاص
+  const internalSecret = request.headers.get('x-internal-secret');
+  if (isInternalSecretValid(internalSecret)) {
     return NextResponse.next();
   }
 
@@ -28,3 +61,4 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
+

@@ -25,9 +25,13 @@ export async function POST(req: Request) {
     const roomName = `test-room-${Math.floor(Math.random() * 1000)}`;
     const identity = `admin-user-${Math.floor(Math.random() * 1000)}`;
 
+    const defaultTenant = await prisma.tenant.findFirst();
+    const tenantId = defaultTenant ? defaultTenant.id : "default-tenant";
+
     const at = new AccessToken(apiKey, apiSecret, {
       identity,
       name: "مدير النظام",
+      metadata: JSON.stringify({ tenantId }),
     });
 
     at.addGrant({

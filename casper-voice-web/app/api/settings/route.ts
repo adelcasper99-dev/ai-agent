@@ -20,13 +20,36 @@ export async function GET() {
   try {
     const rows = await prisma.setting.findMany();
     const map: Record<string, string> = {};
-    for (const k of KNOWN_KEYS) map[k] = ""; // نضمن كل المفاتيح موجودة في الرد حتى لو فاضية
-    for (const row of rows) map[row.key] = row.value;
+
+    // 1. افتراضيات من ملف البيئة .env
+    for (const k of KNOWN_KEYS) {
+      let envVal = process.env[k] || "";
+      if (k === "GROQ_API_KEY" && !envVal) {
+        envVal = process.env.OPENROUTER_API_KEY || "";
+      }
+      if (k === "VOICE_PROVIDER" && !envVal) {
+        envVal = "groq_pipeline";
+      }
+      if (k === "VOICE_TONE" && !envVal) {
+        envVal = "shakir";
+      }
+      map[k] = envVal;
+    }
+
+    // 2. تحديث بالقيم الموجودة في قاعدة البيانات (تأخذ الأولوية إذا كانت غير فارغة)
+    for (const row of rows) {
+      if (row.value && row.value.trim() !== "") {
+        map[row.key] = row.value;
+      }
+    }
+
     return NextResponse.json({ settings: map });
   } catch (err) {
     console.error("[Settings GET Error]", err);
     const fallbackMap: Record<string, string> = {};
-    for (const k of KNOWN_KEYS) fallbackMap[k] = "";
+    for (const k of KNOWN_KEYS) {
+      fallbackMap[k] = process.env[k] || "";
+    }
     return NextResponse.json({ settings: fallbackMap });
   }
 }

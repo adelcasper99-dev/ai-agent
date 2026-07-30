@@ -491,8 +491,7 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
         return AgentSession(
             llm=google.beta.realtime.RealtimeModel(
                 voice="Puck",
-                model="gemini-2.5-flash-native-audio-latest",
-                modalities=["AUDIO"],
+                model="gemini-2.0-flash-exp",
                 instructions=EGYPTIAN_TELEPHONY_PROMPT,
             ),
         )
@@ -609,6 +608,20 @@ async def entrypoint(ctx: JobContext):
                 await session.say("أهلاً بحضرتك! معاك المساعد الذكي لسيستم كاسبر، أقدر أساعدك إزاي النهاردة؟", allow_interruptions=True)
             except Exception as say_err:
                 print(f"[session.say warning] {say_err}")
+        else:
+            # Trigger for Multimodal models (like Gemini) that don't have separate TTS
+            try:
+                from livekit.agents.llm import ChatMessage
+                session.chat_ctx.messages.append(
+                    ChatMessage(
+                        role="user",
+                        content="قول 'أهلاً بحضرتك! معاك المساعد الذكي لسيستم كاسبر، أقدر أساعدك إزاي النهاردة؟'"
+                    )
+                )
+                if hasattr(session, "generate_reply"):
+                    session.generate_reply()
+            except Exception as e:
+                print(f"[Multimodal Trigger Error] {e}")
     except Exception as e:
         err_str = str(e)
         print("CRITICAL AGENT ERROR:", err_str)

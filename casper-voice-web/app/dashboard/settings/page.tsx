@@ -24,6 +24,19 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [checkStatus, setCheckStatus] = useState<Record<string, { valid: boolean; message: string }>>({});
   const [checking, setChecking] = useState<Record<string, boolean>>({});
+  const [showKey, setShowKey] = useState<Record<string, boolean>>({});
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const copyToClipboard = (keyName: string, textValue: string) => {
+    if (!textValue) return;
+    navigator.clipboard.writeText(textValue);
+    setCopiedKey(keyName);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const toggleShowKey = (keyName: string) => {
+    setShowKey((p) => ({ ...p, [keyName]: !p[keyName] }));
+  };
 
   const [demoText, setDemoText] = useState("خلاص يا باشا، سجلتلك 50 جنيه بنزين في المصاريف وزي الفل!");
   const [demoVoice, setDemoVoice] = useState("salma");
@@ -178,21 +191,40 @@ export default function SettingsPage() {
         
         {FIELDS.filter(f => f.group !== "LIVEKIT").map((f) => (
           <div key={f.key} className="space-y-1 bg-slate-50 p-3 rounded-xl border">
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <label className="block text-sm font-medium">{f.label}</label>
-              <button 
-                onClick={() => verifyKey(f.group)} 
-                disabled={checking[f.group]}
-                className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
-              >
-                {checking[f.group] ? "جاري الفحص..." : "فحص المفتاح"}
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => toggleShowKey(f.key)}
+                  className="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded font-bold transition"
+                  title="إظهار / إخفاء المفتاح"
+                >
+                  {showKey[f.key] ? "🙈 إخفاء" : "👁️ إظهار"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(f.key, safeValues[f.key] || "")}
+                  className="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-2 py-1 rounded font-bold transition"
+                  title="نسخ المفتاح للحافظة"
+                >
+                  {copiedKey === f.key ? "تم النسخ ✓" : "📋 نسخ"}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => verifyKey(f.group)} 
+                  disabled={checking[f.group]}
+                  className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 font-bold transition"
+                >
+                  {checking[f.group] ? "جاري الفحص..." : "فحص المفتاح"}
+                </button>
+              </div>
             </div>
             <input
-              type="password"
-              value={values[f.key] || ""}
-              onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 font-mono"
+              type={showKey[f.key] ? "text" : "password"}
+              value={safeValues[f.key] || ""}
+              onChange={(e) => setValues({ ...safeValues, [f.key]: e.target.value })}
+              className="w-full border rounded-lg px-3 py-2 font-mono text-sm"
             />
             {checkStatus[f.group] && (
               <div className={`mt-2 p-2 rounded-lg text-xs font-bold border flex items-center justify-between ${
@@ -212,9 +244,10 @@ export default function SettingsPage() {
         <div className="flex justify-between items-center">
           <h3 className="font-bold text-lg">مفاتيح خادم LiveKit</h3>
           <button 
+            type="button"
             onClick={() => verifyKey("LIVEKIT")} 
             disabled={checking["LIVEKIT"]}
-            className="text-xs bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg font-bold hover:bg-purple-200"
+            className="text-xs bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg font-bold hover:bg-purple-200 transition"
           >
             {checking["LIVEKIT"] ? "جاري فحص اتصال LiveKit..." : "فحص جودة الاتصال بـ LiveKit"}
           </button>
@@ -227,13 +260,33 @@ export default function SettingsPage() {
         )}
 
         {FIELDS.filter(f => f.group === "LIVEKIT").map((f) => (
-          <div key={f.key}>
-            <label className="block text-sm font-medium mb-1">{f.label}</label>
+          <div key={f.key} className="space-y-1 bg-slate-50 p-3 rounded-xl border">
+            <div className="flex justify-between items-center">
+              <label className="block text-sm font-medium">{f.label}</label>
+              <div className="flex items-center gap-1.5">
+                {f.key.includes("SECRET") && (
+                  <button
+                    type="button"
+                    onClick={() => toggleShowKey(f.key)}
+                    className="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded font-bold transition"
+                  >
+                    {showKey[f.key] ? "🙈 إخفاء" : "👁️ إظهار"}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(f.key, safeValues[f.key] || "")}
+                  className="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-2 py-1 rounded font-bold transition"
+                >
+                  {copiedKey === f.key ? "تم النسخ ✓" : "📋 نسخ"}
+                </button>
+              </div>
+            </div>
             <input
-              type={f.key.includes('SECRET') ? 'password' : 'text'}
-              value={values[f.key] || ""}
-              onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2"
+              type={f.key.includes('SECRET') && !showKey[f.key] ? 'password' : 'text'}
+              value={safeValues[f.key] || ""}
+              onChange={(e) => setValues({ ...safeValues, [f.key]: e.target.value })}
+              className="w-full border rounded-lg px-3 py-2 font-mono text-sm"
             />
           </div>
         ))}

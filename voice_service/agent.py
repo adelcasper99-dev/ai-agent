@@ -29,7 +29,7 @@ from livekit.agents import (
     cli,
     function_tool,
 )
-from livekit.plugins import openai, google, groq, silero
+from livekit.plugins import openai, google, silero
 
 load_dotenv()
 

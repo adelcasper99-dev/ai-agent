@@ -140,13 +140,12 @@ export default function SettingsPage() {
       <div>
         <label className="block text-sm font-medium mb-1">مزود الصوت المستخدم دلوقتي</label>
         <select
-          value={safeValues["VOICE_PROVIDER"] || "openai"}
+          value={safeValues["VOICE_PROVIDER"] || "gemini"}
           onChange={(e) => setValues({ ...safeValues, VOICE_PROVIDER: e.target.value })}
           className="w-full border rounded-lg px-3 py-2 bg-white font-bold text-blue-900"
         >
-          <option value="openai">OpenAI Realtime (صوت مباشر)</option>
-          <option value="gemini">Gemini Realtime (صوت مباشر)</option>
-          <option value="groq_pipeline">Groq Pipeline (Whisper STT + Llama 3.3 + EdgeTTS المصرية 🚀)</option>
+          <option value="gemini">Google Gemini Realtime (صوت مباشر 🌟)</option>
+          <option value="groq_pipeline">Groq Pipeline (Whisper + Llama3 + EdgeTTS)</option>
           <option value="deepgram_pipeline">Deepgram STT (Nova-2 AI Noise-Free ⚡) + Llama 3.3 + EdgeTTS</option>
           <option value="fish_audio">Fish Audio (Zero-Shot Voice Clone 🐟) + Llama 3.3 + Groq STT</option>
         </select>

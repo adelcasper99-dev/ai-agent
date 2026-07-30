@@ -395,7 +395,7 @@ async def load_settings():
     if settings.get("GROQ_API_KEY"):
         os.environ["GROQ_API_KEY"] = settings["GROQ_API_KEY"]
 
-    return settings.get("VOICE_PROVIDER", "openai")
+    return settings.get("VOICE_PROVIDER", "gemini")
 
 
 def create_agent_session(provider: str, settings: dict) -> AgentSession:
@@ -414,15 +414,15 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
         prefix_padding_duration=0.3,
     )
 
-    # Safe fallback if chosen provider has missing API key
-    if provider == "openai" and not openai_key:
-        print("[Voice Provider Fallback] OpenAI API Key missing! Checking alternatives...")
-        if groq_key:
-            provider = "groq_pipeline"
-            print("[Voice Provider Fallback] Switched to Groq Pipeline.")
-        elif gemini_key:
+    # If no provider is explicitly set, default to gemini
+    if not provider or provider.strip() == "":
+        provider = "gemini"
+
+    # If the chosen provider is missing its key, aggressively fallback to Gemini if available
+    if provider != "gemini" and gemini_key:
+        if (provider == "openai" and not openai_key) or (provider == "groq_pipeline" and not groq_key):
+            print(f"[Voice Provider Fallback] {provider} API Key missing! Switched to Gemini Native Audio.")
             provider = "gemini"
-            print("[Voice Provider Fallback] Switched to Gemini Native Audio.")
 
     if provider == "groq_pipeline":
         if not groq_key:
@@ -537,7 +537,7 @@ async def entrypoint(ctx: JobContext):
     if settings.get("GROQ_API_KEY"):
         os.environ["GROQ_API_KEY"] = settings["GROQ_API_KEY"]
 
-    provider = settings.get("VOICE_PROVIDER", "openai")
+    provider = settings.get("VOICE_PROVIDER", "gemini")
     await ctx.connect()
 
     tenant_id = get_tenant_id_from_room(ctx)

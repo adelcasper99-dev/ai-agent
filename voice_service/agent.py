@@ -504,6 +504,10 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
             llm=openai.realtime.RealtimeModel(
                 voice="alloy",
                 instructions=EGYPTIAN_TELEPHONY_PROMPT,
+                turn_detection=openai.realtime.ServerVadOptions(
+                    silence_duration_ms=1200,
+                    prefix_padding_ms=300
+                )
             ),
             tts=EdgeTTS(voice=selected_voice)
         )

@@ -33,7 +33,7 @@ from livekit.plugins import openai, google, groq, silero
 
 load_dotenv()
 
-API_BASE = os.getenv("DASHBOARD_API_URL", "http://localhost:3000/api")
+API_BASE = os.getenv("DASHBOARD_API_URL", "http://localhost:3006/api")
 INTERNAL_SECRET = os.getenv("INTERNAL_SERVICE_SECRET", "casper-voice-internal-secret-9988776655")
 
 def get_internal_headers(extra_headers: dict = None) -> dict:

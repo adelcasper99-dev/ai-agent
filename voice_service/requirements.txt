@@ -1,5 +1,8 @@
 livekit-agents>=0.9
 livekit-plugins-openai>=0.9
 livekit-plugins-google>=0.9
+livekit-plugins-groq>=0.9
+livekit-plugins-silero>=0.9
+livekit-plugins-deepgram>=0.9
 httpx
 python-dotenv

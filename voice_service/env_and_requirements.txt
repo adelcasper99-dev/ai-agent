@@ -1,0 +1,16 @@
+# voice_service/.env.example
+LIVEKIT_URL=wss://your-livekit-instance
+LIVEKIT_API_KEY=...
+LIVEKIT_API_SECRET=...
+OPENAI_API_KEY=...
+GEMINI_API_KEY=...
+DASHBOARD_API_URL=http://localhost:3001/api
+
+# ---
+
+# voice_service/requirements.txt
+livekit-agents>=0.9
+livekit-plugins-openai>=0.9
+livekit-plugins-google>=0.9
+httpx
+python-dotenv

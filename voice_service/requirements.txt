@@ -1,0 +1,5 @@
+livekit-agents>=0.9
+livekit-plugins-openai>=0.9
+livekit-plugins-google>=0.9
+httpx
+python-dotenv

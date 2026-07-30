@@ -1,0 +1,29 @@
+// أضف الموديلات دي في schema.prisma بتاعك، وبعدين شغل:
+// npx prisma migrate dev --name add_expense_sale_appointment
+
+model Expense {
+  id          String   @id @default(cuid())
+  amount      Float
+  description String
+  category    String   @default("عام")
+  createdAt   DateTime @default(now())
+}
+
+model Sale {
+  id        String   @id @default(cuid())
+  itemName  String
+  price     Float
+  quantity  Int      @default(1)
+  total     Float
+  createdAt DateTime @default(now())
+}
+
+model Appointment {
+  id           String   @id @default(cuid())
+  customerName String
+  date         String   // "2026-08-01"
+  time         String   // "14:00"
+  notes        String?  @default("")
+  status       String   @default("scheduled") // scheduled | done | cancelled
+  createdAt    DateTime @default(now())
+}

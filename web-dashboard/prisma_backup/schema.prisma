@@ -1,0 +1,66 @@
+// schema.prisma — SQLite للتطوير المحلي
+// لو هتنقل لـ PostgreSQL: غيّر provider لـ "postgresql" وأضف @db.Text حيث لزم
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── الإعدادات ─────────────────────────────────────────────
+model Setting {
+  key   String @id
+  value String
+}
+
+// ── المحادثات الصوتية ─────────────────────────────────────
+model Conversation {
+  id         String   @id @default(cuid())
+  channel    String   // "voice" | "whatsapp"
+  transcript String
+  summary    String?
+  createdAt  DateTime @default(now())
+}
+
+// ── قاعدة المعرفة (RAG) ──────────────────────────────────
+// keywords مخزنة كـ JSON string بدل String[] لأن SQLite لا يدعم arrays
+model KnowledgeItem {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  keywords  String   @default("[]")
+  createdAt DateTime @default(now())
+}
+
+// ── المصروفات ────────────────────────────────────────────
+model Expense {
+  id          String   @id @default(cuid())
+  amount      Float
+  description String
+  category    String   @default("عام")
+  createdAt   DateTime @default(now())
+}
+
+// ── المبيعات ─────────────────────────────────────────────
+model Sale {
+  id        String   @id @default(cuid())
+  itemName  String
+  price     Float
+  quantity  Int      @default(1)
+  total     Float
+  createdAt DateTime @default(now())
+}
+
+// ── المواعيد ─────────────────────────────────────────────
+model Appointment {
+  id           String   @id @default(cuid())
+  customerName String
+  date         String
+  time         String
+  notes        String   @default("")
+  status       String   @default("scheduled")
+  createdAt    DateTime @default(now())
+}

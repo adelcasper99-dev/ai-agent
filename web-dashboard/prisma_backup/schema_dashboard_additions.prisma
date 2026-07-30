@@ -1,0 +1,23 @@
+// أضف الموديلات دي كمان في schema.prisma
+// npx prisma migrate dev --name add_dashboard_tables
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  channel   String   // "voice" | "whatsapp"
+  transcript String  @db.Text
+  summary   String?  @db.Text
+  createdAt DateTime @default(now())
+}
+
+model KnowledgeItem {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String   @db.Text
+  keywords  String[] @default([])
+  createdAt DateTime @default(now())
+}

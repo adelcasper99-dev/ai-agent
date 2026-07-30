@@ -1,0 +1,146 @@
+// schema.prisma — SQLite للتطوير المحلي
+// لو هتنقل لـ PostgreSQL: غيّر provider لـ "postgresql" وأضف @db.Text حيث لزم
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── الإعدادات ─────────────────────────────────────────────
+model Setting {
+  key   String @id
+  value String
+}
+
+// ── الشركة / Tenant ───────────────────────────────────────
+model Tenant {
+  id             String   @id @default(cuid())
+  name           String
+  state          String   @default("trial") // trial | active | past_due_silent | suspended | cancelled | pending_deletion | deleted
+  telegramChatId String?  @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
+}
+
+// ── طلبات التسجيل الذاتي للشركة ──────────────────────────────
+model PendingTenantRequest {
+  id             String    @id @default(cuid())
+  telegramChatId String    @unique
+  customerName   String
+  phoneNumber    String?
+  status         String    @default("pending") // pending | approved | rejected
+  requestedAt    DateTime  @default(now())
+  decidedAt      DateTime?
+  decidedBy      String?   // "telegram:<adminId>" | "dashboard:<userId>"
+}
+
+// ── المحادثات الصوتية ─────────────────────────────────────
+model Conversation {
+  id         String   @id @default(cuid())
+  channel    String   // "voice" | "whatsapp"
+  transcript String
+  summary    String?
+  createdAt  DateTime @default(now())
+}
+
+// ── قاعدة المعرفة (RAG) ──────────────────────────────────
+model KnowledgeItem {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  keywords  String   @default("[]")
+  createdAt DateTime @default(now())
+}
+
+// ── المصروفات ────────────────────────────────────────────
+model Expense {
+  id          String   @id @default(cuid())
+  amount      Float
+  description String
+  category    String   @default("عام")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+}
+
+// ── المبيعات ─────────────────────────────────────────────
+model Sale {
+  id             String   @id @default(cuid())
+  itemName       String
+  price          Float
+  quantity       Int      @default(1)
+  total          Float
+  customerName   String   @default("")
+  paidAmount     Float    @default(0)
+  deferredAmount Float    @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
+}
+
+// ── الموردين والمشتريات ─────────────────────────────────────
+model Supplier {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  phone     String     @default("")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now()) @updatedAt
+  purchases Purchase[]
+}
+
+model Purchase {
+  id             String   @id @default(cuid())
+  supplierId     String
+  supplier       Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  itemName       String
+  totalAmount    Float
+  paidAmount     Float    @default(0)
+  deferredAmount Float    @default(0)
+  notes          String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
+}
+
+// ── المواعيد ─────────────────────────────────────────────
+model Appointment {
+  id           String   @id @default(cuid())
+  customerName String
+  date         String
+  time         String
+  notes        String   @default("")
+  status       String   @default("scheduled")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+}
+
+// ── تتبع استهلاك التوكنز والحدود ─────────────────────────────
+model TokenUsage {
+  id           String   @id @default(cuid())
+  provider     String   // "gemini" | "groq" | "openai"
+  modelName    String   @default("default")
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  totalTokens  Int      @default(0)
+  requestCount Int      @default(1)
+  dateStr      String   // "YYYY-MM-DD"
+  createdAt    DateTime @default(now())
+
+  @@index([provider, dateStr])
+}
+
+// ── سجل التدقيق والأنشطة ──────────────────────────────────
+model AuditLog {
+  id             String   @id @default(cuid())
+  tenantId       String?
+  userId         String?
+  impersonatorId String?
+  action         String
+  entity         String
+  details        String?
+  createdAt      DateTime @default(now())
+
+  @@index([tenantId])
+}
+

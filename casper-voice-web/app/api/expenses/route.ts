@@ -1,0 +1,103 @@
+// app/api/expenses/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export async function POST(req: NextRequest) {
+  try {
+    const { amount, description, category } = await req.json();
+
+    if (typeof amount !== "number" || !description) {
+      return NextResponse.json({ error: "amount و description مطلوبين" }, { status: 400 });
+    }
+
+    const expense = await prisma.expense.create({
+      data: { amount, description, category: category || "عام" },
+    });
+
+    return NextResponse.json({ success: true, expense });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "حصل خطأ في السيرفر" }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  const expenses = await prisma.expense.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+  return NextResponse.json({ expenses });
+}
+
+export async function PUT(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get("authorization");
+    const token = authHeader?.replace("Bearer ", "");
+    const apiKey = process.env.INTERNAL_API_KEY;
+    if (apiKey && token !== apiKey) {
+      return NextResponse.json({ error: "غير مصرح (Unauthorized)" }, { status: 401 });
+    }
+
+    const { id, description, new_amount, new_description, category } = await req.json();
+
+    if (id) {
+      const existing = await prisma.expense.findUnique({ where: { id } });
+      if (!existing) {
+        return NextResponse.json({ error: "المصروف غير موجود" }, { status: 404 });
+      }
+      const updated = await prisma.expense.update({
+        where: { id },
+        data: {
+          ...(typeof new_amount === "number" && { amount: new_amount }),
+          ...(new_description && { description: new_description.trim() }),
+          ...(category && { category: category.trim() }),
+        },
+      });
+      return NextResponse.json({
+        success: true,
+        oldAmount: existing.amount,
+        newAmount: updated.amount,
+        updated,
+      });
+    }
+
+    if (!description) {
+      return NextResponse.json({ error: "يلزم الوصف (description) لتحديد المصروف المراد تعديله" }, { status: 400 });
+    }
+
+    // Find latest matching expense by description
+    const latestExpense = await prisma.expense.findFirst({
+      where: { description: { contains: description.trim() } },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!latestExpense) {
+      return NextResponse.json(
+        { error: `عفواً، مفيش أي مصروف مسجل بوصف (${description}) للتعديل.` },
+        { status: 404 }
+      );
+    }
+
+    const updated = await prisma.expense.update({
+      where: { id: latestExpense.id },
+      data: {
+        ...(typeof new_amount === "number" && { amount: new_amount }),
+        ...(new_description && { description: new_description.trim() }),
+        ...(category && { category: category.trim() }),
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      oldAmount: latestExpense.amount,
+      newAmount: updated.amount,
+      updated,
+    });
+  } catch (err) {
+    console.error("[Expenses PUT Error]", err);
+    return NextResponse.json({ error: "حصل خطأ في تعديل المصروف" }, { status: 500 });
+  }
+}
+

@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+voice_service/venv/
+voice_service/__pycache__/
+*.pyc
+
+# Environment & Secrets
+.env
+.env*.local
+*.pem
+
+# Next.js & Builds
+.next/
+out/
+build/
+dist/
+
+# SQLite & Logs
+*.db
+*.db-journal
+*.log
+
+# System & OS
+.DS_Store
+Thumbs.db

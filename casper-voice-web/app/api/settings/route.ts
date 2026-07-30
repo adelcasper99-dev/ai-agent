@@ -1,8 +1,6 @@
 // app/api/settings/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 const KNOWN_KEYS = [
   "VOICE_PROVIDER", // "openai" | "gemini" | "groq_pipeline" | "deepgram_pipeline"
@@ -19,11 +17,18 @@ const KNOWN_KEYS = [
 ];
 
 export async function GET() {
-  const rows = await prisma.setting.findMany();
-  const map: Record<string, string> = {};
-  for (const k of KNOWN_KEYS) map[k] = ""; // نضمن كل المفاتيح موجودة في الرد حتى لو فاضية
-  for (const row of rows) map[row.key] = row.value;
-  return NextResponse.json({ settings: map });
+  try {
+    const rows = await prisma.setting.findMany();
+    const map: Record<string, string> = {};
+    for (const k of KNOWN_KEYS) map[k] = ""; // نضمن كل المفاتيح موجودة في الرد حتى لو فاضية
+    for (const row of rows) map[row.key] = row.value;
+    return NextResponse.json({ settings: map });
+  } catch (err) {
+    console.error("[Settings GET Error]", err);
+    const fallbackMap: Record<string, string> = {};
+    for (const k of KNOWN_KEYS) fallbackMap[k] = "";
+    return NextResponse.json({ settings: fallbackMap });
+  }
 }
 
 export async function POST(req: NextRequest) {

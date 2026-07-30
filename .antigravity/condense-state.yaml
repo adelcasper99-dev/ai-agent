@@ -1,41 +1,39 @@
-session_intent: "Implement Telegram Bot Engine, Webhook Security, Tenant Self-Registration Pipeline, & Persistent Context Condense Engine"
+session_intent: "Consolidate ASISST AGENT into casper-voice-project, setup Telegram bot @Casperaibot, push to GitHub, and enforce Admin Auth Middleware"
 decisions:
-  - "Integrated Telegram Bot Engine natively into casper-voice-web (100% isolated mode)"
-  - "Implemented Self-Registration flow via /start saving requests as PendingTenantRequest"
-  - "Added Admin Inline Approval buttons ([✅ موافقة] / [❌ رفض]) sending to ADMIN_CHAT_ID"
-  - "Implemented Optimistic Locking (updateMany where status='pending') to eliminate race conditions"
-  - "Hardened Webhook security via X-Telegram-Bot-Api-Secret-Token validation"
-  - "Added update_id deduplication (60s TTL) and /start rate limiting (max 3 calls / 10m)"
-  - "Merged duplicate concurrent test cases T7/T11 into single test case T7 (19 total unit tests passed)"
-  - "Upgraded context-condense skill to CCE architecture with 5 mandatory sections & persistent state file .antigravity/condense-state.yaml"
+  - "Use Prisma globalThis singleton (lib/prisma.ts) to prevent connection exhaustion"
+  - "Create versioned migration (20260730000000_add_audit_log) for cloud PostgreSQL support"
+  - "Eradicate legacy f:\\ASISST AGENT folder after full consolidation"
+  - "Initialize single root Git repository at casper-voice-project"
+  - "Link Telegram bot @Casperaibot (ID: 8704982134) with webhook secret"
+  - "Enforce Admin Auth Middleware using cookie admin_session and process.env.ADMIN_PASSWORD"
 files_modified:
-  - path: casper-voice-web/prisma/schema.prisma
-    why: "Added PendingTenantRequest & Tenant.telegramChatId models"
+  - path: casper-voice-web/lib/prisma.ts
+    why: "created Prisma client singleton"
   - path: casper-voice-web/lib/telegram.ts
-    why: "Hardened alert engine, optimistic locking, rate limiting & update dedup"
-  - path: casper-voice-web/app/api/telegram/webhook/route.ts
-    why: "Secret token check, inline callback routing & /start self-registration"
-  - path: casper-voice-web/app/api/tenants/approve/route.ts
-    why: "Dashboard approval endpoint with session auth guard"
-  - path: casper-voice-web/app/api/tenants/reject/route.ts
-    why: "Dashboard rejection endpoint with session auth guard"
-  - path: casper-voice-web/tests/tenant_registration.test.ts
-    why: "13 itemized unit test cases (T1 - T13)"
-  - path: casper-voice-web/tests/telegram.test.ts
-    why: "6 unit test cases for alert retries & fallbacks"
-  - path: .antigravity/condense-state.yaml
-    why: "Persistent in-project context condense state file"
-  - path: scripts/mem0_engine.py
-    why: "Synced Mem0 CLI memory manager to casper-voice-project"
+    why: "integrated Telegram bot engine with tenant self-registration"
+  - path: casper-voice-web/app/api/auth/login/route.ts
+    why: "added admin authentication route"
+  - path: casper-voice-web/app/login/page.tsx
+    why: "added admin login UI page"
+  - path: casper-voice-web/middleware.ts
+    why: "added auth middleware protecting non-public routes"
+  - path: casper-voice-web/.env
+    why: "configured TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET, ADMIN_PASSWORD"
+  - path: .gitignore
+    why: "created root gitignore"
+  - path: .agents/stage_log.json
+    why: "logged stage 6 compliance completion"
 active_goals:
-  - "Maintain zero token loss & permanent session persistence across sessions"
+  - "Maintain system stability, auth security, and cloud backup"
 next_steps:
-  - "Deploy casper-voice-web to production environment / PM2"
+  - "Test Telegram self-registration flow live with @Casperaibot"
+  - "Verify live voice service on LiveKit cloud"
 failed_approaches:
-  - "Tried sharing Fastify server with f:/ASISST AGENT — rejected to avoid database drift and tenant ID conflicts"
-  - "Tried generating Prisma client while dev server was locking DLL — fixed via (prisma as any) casting and prisma db push"
+  - "Instantiating new PrismaClient() per request — caused connection exhaustion"
+  - "Relying on prisma db push without migration files — fails on production PostgreSQL"
+  - "Maintaining nested .git in casper-voice-web — broke IDE source control"
 last_condense:
-  timestamp: "2026-07-30T10:20:45+03:00"
-  tokens_before: 198000
-  tokens_after: 42000
-  reduction_pct: 78.8
+  timestamp: "2026-07-30T11:51:30Z"
+  tokens_before: 145000
+  tokens_after: 25000
+  reduction_pct: 82.7

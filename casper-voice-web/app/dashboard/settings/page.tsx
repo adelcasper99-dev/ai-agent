@@ -34,7 +34,8 @@ export default function SettingsPage() {
   useEffect(() => {
     fetch("/api/settings")
       .then((r) => r.json())
-      .then((d) => setValues(d.settings))
+      .then((d) => setValues(d?.settings || {}))
+      .catch(() => setValues({}))
       .finally(() => setLoading(false));
   }, []);
 
@@ -113,6 +114,8 @@ export default function SettingsPage() {
 
   if (loading) return <p>جاري التحميل...</p>;
 
+  const safeValues = values || {};
+
   return (
     <div className="space-y-6 max-w-4xl pb-10">
       <UsageIndicator />
@@ -120,8 +123,8 @@ export default function SettingsPage() {
       <div>
         <label className="block text-sm font-medium mb-1">مزود الصوت المستخدم دلوقتي</label>
         <select
-          value={values["VOICE_PROVIDER"] || "openai"}
-          onChange={(e) => setValues({ ...values, VOICE_PROVIDER: e.target.value })}
+          value={safeValues["VOICE_PROVIDER"] || "openai"}
+          onChange={(e) => setValues({ ...safeValues, VOICE_PROVIDER: e.target.value })}
           className="w-full border rounded-lg px-3 py-2 bg-white font-bold text-blue-900"
         >
           <option value="openai">OpenAI Realtime (صوت مباشر)</option>
@@ -137,9 +140,9 @@ export default function SettingsPage() {
           <span>🎙️</span> اختيار نبرة وتنغيم الصوت المفضلة (Voice Tone)
         </label>
         <select
-          value={values["VOICE_TONE"] || "shakir"}
+          value={safeValues["VOICE_TONE"] || "shakir"}
           onChange={(e) => {
-            setValues({ ...values, VOICE_TONE: e.target.value });
+            setValues({ ...safeValues, VOICE_TONE: e.target.value });
             setDemoVoice(e.target.value === "salma" ? "salma" : "shakir");
           }}
           className="w-full border rounded-lg px-3 py-2 bg-white font-bold text-slate-800 text-sm"
@@ -149,7 +152,7 @@ export default function SettingsPage() {
           <option value="custom_clone">👑 صوتك الشخصي المستنسخ (Fish Audio / Voice Clone ID)</option>
         </select>
 
-        {(values["VOICE_TONE"] === "custom_clone" || values["VOICE_PROVIDER"] === "fish_audio") && (
+        {(safeValues["VOICE_TONE"] === "custom_clone" || safeValues["VOICE_PROVIDER"] === "fish_audio") && (
           <div className="pt-2 space-y-1">
             <label className="block text-xs font-bold text-slate-700">
               معرف بصمة صوتك الشخصي المستنسخ (Reference Voice ID)
@@ -157,8 +160,8 @@ export default function SettingsPage() {
             <input
               type="text"
               placeholder="ضع معرف الصوت هنا (مثال: 7f8a9b0c1d...)"
-              value={values["FISH_VOICE_ID"] || ""}
-              onChange={(e) => setValues({ ...values, FISH_VOICE_ID: e.target.value })}
+              value={safeValues["FISH_VOICE_ID"] || ""}
+              onChange={(e) => setValues({ ...safeValues, FISH_VOICE_ID: e.target.value })}
               className="w-full border bg-white rounded-lg px-3 py-2 font-mono text-xs text-slate-800"
             />
             <p className="text-[11px] text-slate-500">

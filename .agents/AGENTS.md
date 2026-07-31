@@ -110,3 +110,12 @@ Always strictly enforce `verification-standard.md` rules for all tasks, pipeline
 4. **Distinguish Server-to-Server from User-Facing**: A backend API `200 OK` does not equal a user-facing fix. Re-test actual user UI/voice flows.
 5. **Adversarial Re-Check**: Before signoff, verify tests fail when fix is reverted.
 </RULE>
+
+<RULE>
+# Mandatory Markdown File Output Rule (>2 Lines - Caveman Intensity)
+Whenever the response, analysis, or report output exceeds 2 lines of text:
+1. **Save to Markdown Artifact**: You MUST automatically write the full detailed content to a `.md` artifact file using `write_to_file`.
+2. **Provide Ultra-Short Summary & Link**: In the direct chat response, provide strictly 1-2 lines with the direct clickable file link `[filename.md](file:///path/to/filename.md)`.
+</RULE>
+
+

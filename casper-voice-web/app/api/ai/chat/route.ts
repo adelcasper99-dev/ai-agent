@@ -38,11 +38,19 @@ export async function POST(req: NextRequest) {
   });
 
 
-  const context = kbEntries
-    .map((e) => `س: ${e.question}\nج: ${e.answer}`)
-    .join("\n---\n");
+  let tenantName = "";
+  if (resolvedTenantId) {
+    const tenant = await prisma.tenant.findUnique({ where: { id: resolvedTenantId } });
+    if (tenant) tenantName = tenant.name;
+  }
 
-  const systemPrompt = `أنت مساعد دعم فني وبيعي. رد باللهجة المصرية العامية، بسيط ومباشر.
+  const companyStr = tenantName ? `بشركة ${tenantName}` : "";
+
+  const context = kbEntries
+    .map((item) => `س: ${item.question}\nج: ${item.answer}`)
+    .join("\n\n");
+
+  const systemPrompt = `أنت مساعد دعم فني وبيعي ${companyStr}. رد باللهجة المصرية العامية، بسيط ومباشر.
 استخدم المعلومات دي لو مرتبطة بسؤال العميل:
 ${context || "(لا يوجد سياق مطابق - رد بمعلوماتك العامة عن الخدمة)"}`;
 

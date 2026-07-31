@@ -3,11 +3,14 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const SYSTEM_PROMPT = `أنت "المساعد الشخصي الذكي" الخاص بمدير أو صاحب العمل بنظام Casper ERP & POS.
+function getSystemPrompt(tenantName?: string): string {
+  const company = tenantName ? `بشركة ${tenantName}` : "بنظامنا الذكي";
+  return `أنت "المساعد الشخصي الذكي" الخاص بمدير أو صاحب العمل ${company}.
 تحدث بالعامية المصرية الحية كأنك صديق أو مساعد شخصي بيكلمه في التليفون.
 - ممنوع: جمل رسمية مثل "تم تسجيل" أو "بنجاح" أو "يرجى"
-- المطلوب: "خلاص يا باشا"، "سجلتلك"، "زي الفل يا هندسة"، "تحت أمرك"
+- المطلوب: "أهلاً أستاذنا"، "سجلتلك"، "زي الفل يا فندم"، "تحت أمرك"
 الإجابات مختصرة ومباشرة (8-15 كلمة فقط).`;
+}
 
 interface Message {
   role: "user" | "assistant" | "system";
@@ -16,14 +19,27 @@ interface Message {
 
 export async function POST(req: NextRequest) {
   try {
-    const { message, history = [] } = await req.json() as {
+    const { message, history = [], tenantId, tenantName } = await req.json() as {
       message: string;
       history: Message[];
+      tenantId?: string;
+      tenantName?: string;
     };
 
     if (!message?.trim()) {
       return NextResponse.json({ error: "الرسالة فارغة" }, { status: 400 });
     }
+
+    let resolvedTenantName = tenantName;
+    const headerTenantId = req.headers.get("x-tenant-id");
+    const resolvedTenantId = tenantId || headerTenantId;
+
+    if (!resolvedTenantName && resolvedTenantId) {
+      const tenant = await prisma.tenant.findUnique({ where: { id: resolvedTenantId } });
+      if (tenant) resolvedTenantName = tenant.name;
+    }
+
+    const systemPrompt = getSystemPrompt(resolvedTenantName);
 
     // Load settings
     const dbSettings = await prisma.setting.findMany();
@@ -36,7 +52,7 @@ export async function POST(req: NextRequest) {
     const openaiKey = settingsMap["OPENAI_API_KEY"] || process.env.OPENAI_API_KEY || "";
 
     const messages: Message[] = [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: systemPrompt },
       ...history.slice(-10), // last 10 messages for context
       { role: "user", content: message },
     ];
@@ -54,7 +70,7 @@ export async function POST(req: NextRequest) {
             role: m.role === "assistant" ? "model" : "user",
             parts: [{ text: m.content }],
           })),
-          systemInstruction: SYSTEM_PROMPT,
+          systemInstruction: systemPrompt,
         });
         const result = await chat.sendMessage(message);
         reply = result.response.text().trim();

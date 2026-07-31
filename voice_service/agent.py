@@ -48,8 +48,10 @@ def get_api_client(extra_headers: dict = None, tenant_id: str = None):
     return httpx.AsyncClient(headers=get_internal_headers(extra_headers, tenant_id))
 
 
-EGYPTIAN_TELEPHONY_PROMPT = """
-أنت "المساعد الشخصي الذكي" (Personal ERP Assistant) الخاص بمدير أو صاحب العمل بنظام Casper ERP & POS.
+def get_system_prompt(tenant_name: str = None) -> str:
+    company_str = f"بشركة {tenant_name}" if tenant_name else "بنظامنا الذكي"
+    return f"""
+أنت "المساعد الشخصي الذكي" (Personal ERP Assistant) الخاص بمدير أو صاحب العمل {company_str}.
 تحدث بالعامية المصرية الراقية، المهنية، والسريعة جداً كأنك مساعد تنفيذي حقيقي بيكلمه في التليفون.
 
 قواعد الألقاب والتعامل المحترف:
@@ -75,12 +77,12 @@ EGYPTIAN_TELEPHONY_PROMPT = """
 - عند تعديل أي قيمة مالية، التزم بنطق القيمة القديمة والجديدة معاً في الرد الشفهي.
 """
 
-
 class CasperAgent(Agent):
-    def __init__(self, room=None, tenant_id=None):
-        super().__init__(instructions=EGYPTIAN_TELEPHONY_PROMPT)
+    def __init__(self, room=None, tenant_id=None, tenant_name=None):
+        super().__init__(instructions=get_system_prompt(tenant_name))
         self.room = room
         self.tenant_id = tenant_id
+        self.tenant_name = tenant_name
 
     def _get_client(self, extra_headers: dict = None):
         return get_api_client(extra_headers, tenant_id=self.tenant_id)

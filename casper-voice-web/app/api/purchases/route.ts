@@ -1,6 +1,7 @@
 // app/api/purchases/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { isInternalAuthValid } from "@/lib/auth";
 import Decimal from "decimal.js";
 
 const prisma = new PrismaClient();
@@ -70,10 +71,7 @@ export async function GET() {
 
 export async function PUT(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
-    const token = authHeader?.replace("Bearer ", "");
-    const apiKey = process.env.INTERNAL_API_KEY;
-    if (apiKey && token !== apiKey) {
+    if (!isInternalAuthValid(req)) {
       return NextResponse.json({ error: "غير مصرح (Unauthorized)" }, { status: 401 });
     }
 

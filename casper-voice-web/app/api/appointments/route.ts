@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { fireAndForgetTelegramAlert } from "@/lib/telegram";
+import { isInternalAuthValid } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
@@ -84,10 +85,7 @@ const appointmentIdempotencyMap = new Map<string, { timestamp: number; response:
 
 export async function PUT(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
-    const token = authHeader?.replace("Bearer ", "");
-    const apiKey = process.env.INTERNAL_API_KEY;
-    if (apiKey && token !== apiKey) {
+    if (!isInternalAuthValid(req)) {
       return NextResponse.json({ error: "غير مصرح (Unauthorized)" }, { status: 401 });
     }
 
@@ -219,10 +217,7 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
-    const token = authHeader?.replace("Bearer ", "");
-    const apiKey = process.env.INTERNAL_API_KEY;
-    if (apiKey && token !== apiKey) {
+    if (!isInternalAuthValid(req)) {
       return NextResponse.json({ error: "غير مصرح (Unauthorized)" }, { status: 401 });
     }
 

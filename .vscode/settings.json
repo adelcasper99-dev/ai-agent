@@ -13,5 +13,14 @@
     "**/__pyrefly_virtual__/**",
     "C:/Users/TheExpert/Downloads/files/**",
     "C:/Users/TheExpert/Downloads/*.ts"
-  ]
+  ],
+  "typescript.tsserver.exclude": [
+    "C:/Users/TheExpert/Downloads/files/**",
+    "C:/Users/TheExpert/Downloads/*.ts",
+    "C:/Users/TheExpert/Downloads/*.tsx",
+    "**/__pyrefly_virtual__/**"
+  ],
+  "files.exclude": {
+    "**/__pyrefly_virtual__": true
+  }
 }

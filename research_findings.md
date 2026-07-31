@@ -1,22 +1,25 @@
-# Best-Practice Research: Telegram Tenant Self-Registration & Approval Engine
+# 🔬 External Best-Practice Research: LiveKit Agent SDK & PM2 Deployment
 
-Best practices for self-registration, admin authorization, and atomic tenant provisioning via Telegram Bot API & Next.js 16.
+## 1. Executive Summary
+This document establishes industry best practices for running Python LiveKit Agents (`livekit-agents` SDK) in production using PM2 process management, specifically resolving WebRTC Audio Track drops during application reloads or code modifications.
 
-## Architectural Guidelines & Security Best Practices
+## 2. Key Findings & Architecture Standards
 
-1. **Telegram Webhook Secret Token Header Verification**:
-   - Header: `X-Telegram-Bot-Api-Secret-Token`
-   - Config: Enforce verification against `process.env.TELEGRAM_WEBHOOK_SECRET`.
-   - Action: Return `401 Unauthorized` if header is missing or mismatched to stop unauthorized webhook spam.
+### A. LiveKit CLI Mode (`start` vs `dev`)
+- **`dev` mode (`python agent.py dev`)**: Designed strictly for local interactive development without process supervisors. Spawns `watchfiles` / `watchgod` file watchers. Upon ANY file change, it abruptly terminates the asyncio event loop and worker process.
+- **WebRTC Impact**: In `dev` mode, terminating the process mid-session abruptly disconnects the WebRTC peer connection without signaling track unpublish to LiveKit Cloud. The web client remains in the room, but audio publishing fails silently.
+- **`start` mode (`python agent.py start`)**: Production mode. Operates as a stateless worker waiting for LiveKit Cloud job assignments. Must be managed exclusively by an external process supervisor (PM2 or Systemd).
 
-2. **Inline Keyboards & Callback Queries**:
-   - Format: `inline_keyboard: [[{ text: '✅ موافقة', callback_data: 'approve:<reqId>' }, { text: '❌ رفض', callback_data: 'reject:<reqId>' }]]`
-   - Authorization: Verify `callback_query.from.id` matches `ADMIN_CHAT_ID`.
-   - Response: Call `https://api.telegram.org/bot<TOKEN>/answerCallbackQuery` immediately to clear Telegram UI spinner.
+### B. PM2 Integration Standards
+- Set `args: 'start'` in `ecosystem.config.js`.
+- Set `autorestart: true`, `max_restarts: 50`, `restart_delay: 2000`.
+- Disable `watch` inside PM2 (`watch: false`) to prevent double-watching collisions.
 
-3. **Optimistic Locking & Atomic Transactions**:
-   - Prevent race conditions (double click by admin or simultaneous dashboard approval) using `prisma.pendingTenantRequest.updateMany({ where: { id: requestId, status: 'pending' }, data: { status: 'approved' } })`.
-   - Ensure tenant provisioning and request status updates run inside a single Prisma `$transaction`.
+### C. Graceful WebRTC Track Cleanup
+- Implement `ctx.add_shutdown_callback()` in `agent.py` to unpublish audio tracks and close WebSocket connections cleanly before process exit.
+- Purge `__pycache__` artifacts prior to PM2 restarts to eliminate stale Python bytecode loading.
 
-4. **Update Deduplication**:
-   - Maintain a short-term in-memory cache of `update_id` (60s TTL) to discard redelivered webhook updates.
+## 3. Best Practice Checklist
+- [x] Use `python agent.py start` under PM2 supervision.
+- [x] Implement graceful `add_shutdown_callback` for WebRTC peer connection cleanup.
+- [x] Standardize environment variable loading (`PYTHONUNBUFFERED=1`).

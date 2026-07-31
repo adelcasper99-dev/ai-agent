@@ -206,10 +206,28 @@ export default function VoiceCallModal({ isOpen, mode, onClose }: VoiceCallModal
 
     startCall();
 
+    const handleUnload = () => {
+      if (roomRef.current) {
+        try {
+          roomRef.current.disconnect();
+        } catch (e) {
+          console.warn('[Ungraceful Disconnect Best-Effort Warning]:', e);
+        }
+        roomRef.current = null;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('pagehide', handleUnload);
+
     return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      window.removeEventListener('pagehide', handleUnload);
       isSubscribed = false;
       if (roomRef.current) {
-        roomRef.current.disconnect();
+        try {
+          roomRef.current.disconnect();
+        } catch (e) {}
         roomRef.current = null;
       }
     };
@@ -219,7 +237,11 @@ export default function VoiceCallModal({ isOpen, mode, onClose }: VoiceCallModal
 
   const handleHangUp = () => {
     if (roomRef.current) {
-      roomRef.current.disconnect();
+      try {
+        roomRef.current.disconnect();
+      } catch (e) {
+        console.warn('[Graceful HangUp Disconnect Warning]:', e);
+      }
       roomRef.current = null;
     }
     setStatus('DISCONNECTED');

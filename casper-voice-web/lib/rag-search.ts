@@ -10,14 +10,21 @@ export interface RAGSearchResult {
 
 export async function searchKnowledgeBase(
   queryText: string,
-  limit: number = 3
+  limit: number = 3,
+  tenantId?: string
 ): Promise<RAGSearchResult[]> {
   if (!queryText || !queryText.trim()) return [];
 
   const cleanQuery = queryText.trim().toLowerCase();
   const queryWords = cleanQuery.split(/\s+/).filter((w) => w.length > 1);
 
-  const items = await prisma.knowledgeItem.findMany();
+  const items = await prisma.knowledgeItem.findMany({
+    where: tenantId
+      ? {
+          OR: [{ tenantId }, { tenantId: null }],
+        }
+      : {},
+  });
   const scoredResults: RAGSearchResult[] = [];
 
   for (const item of items) {

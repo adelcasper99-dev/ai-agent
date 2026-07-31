@@ -37,7 +37,7 @@ module.exports = {
     {
       name: 'casper-livekit-worker',
       script: 'voice_service/agent.py',
-      args: 'dev',
+      args: 'start',
       interpreter: pythonInterpreter,
       cwd: './',
       env: {

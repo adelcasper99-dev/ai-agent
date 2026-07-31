@@ -184,7 +184,7 @@ class CasperAgent(Agent):
     @function_tool
     async def get_financial_summary(self, period: str = "today"):
         """يجيب تقرير إجمالي المبيعات والمصاريف والأرباح للفترة (today/week/month)"""
-        async with get_api_client() as client:
+        async with self._get_client() as client:
             r = await client.get(f"{API_BASE}/reports/summary?period={period}", timeout=5)
         if r.status_code == 200:
             data = r.json().get("summary", {})
@@ -199,7 +199,7 @@ class CasperAgent(Agent):
     @function_tool
     async def get_appointments_list(self, date: str = "", customer_name: str = ""):
         """يجيب قائمة المواعيد المحجوزة القادمة"""
-        async with get_api_client() as client:
+        async with self._get_client() as client:
             params = {}
             if date: params["date"] = date
             if customer_name: params["name"] = customer_name
@@ -252,7 +252,7 @@ class CasperAgent(Agent):
     @function_tool
     async def get_supplier_balances(self, supplier_name: str = ""):
         """يجيب مستحقات وديون الموردين والآجل"""
-        async with httpx.AsyncClient() as client:
+        async with self._get_client() as client:
             params = {}
             if supplier_name: params["name"] = supplier_name
             r = await client.get(f"{API_BASE}/reports/suppliers", params=params, timeout=5)
@@ -759,6 +759,22 @@ async def entrypoint(ctx: JobContext):
 
 
     async def on_close():
+        try:
+            if hasattr(ctx.room, "local_participant") and ctx.room.local_participant:
+                pubs = list(getattr(ctx.room.local_participant, "track_publications", {}).values())
+                for publication in pubs:
+                    try:
+                        if hasattr(publication, "track") and publication.track:
+                            import asyncio
+                            await asyncio.wait_for(
+                                ctx.room.local_participant.unpublish_track(publication.track.sid),
+                                timeout=1.0
+                            )
+                    except Exception as t_err:
+                        print(f"[Shutdown Track Unpublish Skip/Warning]: {t_err}")
+        except Exception as unpub_err:
+            print(f"[Shutdown Clean Unpublish Error] {unpub_err}")
+
         transcript = ""
         try:
             history_obj = getattr(session, "history", None)

@@ -20,12 +20,27 @@ def get_internal_secret() -> str:
 def get_tenant_id_from_room(ctx) -> str | None:
     try:
         metadata_raw = getattr(ctx.room, "metadata", None)
-        if not metadata_raw:
-            return None
-        metadata = json.loads(metadata_raw)
-        return metadata.get("tenantId")
+        if metadata_raw:
+            try:
+                metadata = json.loads(metadata_raw)
+                if metadata.get("tenantId"):
+                    return metadata.get("tenantId")
+            except Exception:
+                pass
+
+        if hasattr(ctx.room, "remote_participants") and ctx.room.remote_participants:
+            for participant in ctx.room.remote_participants.values():
+                p_meta_raw = getattr(participant, "metadata", None)
+                if p_meta_raw:
+                    try:
+                        p_meta = json.loads(p_meta_raw)
+                        if p_meta.get("tenantId"):
+                            return p_meta.get("tenantId")
+                    except Exception:
+                        pass
+        return None
     except Exception as e:
-        print(f"[diagnostics] failed to read tenantId from room metadata: {e}")
+        print(f"[diagnostics] failed to read tenantId from room or remote participant metadata: {e}")
         return None
 
 

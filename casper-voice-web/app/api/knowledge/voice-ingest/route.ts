@@ -116,6 +116,10 @@ ${rawText}
       ];
     }
 
+    const headerTenantId = req.headers.get("x-tenant-id");
+    const formDataTenantId = formData.get("tenantId") as string;
+    const resolvedTenantId = formDataTenantId || headerTenantId || undefined;
+
     // 5. Bulk insert into KnowledgeItem DB table
     const createdItems = [];
     for (const item of itemsToInsert) {
@@ -125,6 +129,7 @@ ${rawText}
             question: item.question.trim(),
             answer: item.answer.trim(),
             keywords: JSON.stringify(item.keywords || []),
+            ...(resolvedTenantId && { tenantId: resolvedTenantId }),
           },
         });
         createdItems.push(created);

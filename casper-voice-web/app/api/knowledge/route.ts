@@ -6,7 +6,10 @@ const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
-    const { question, answer, keywords } = await req.json();
+    const body = await req.json();
+    const { question, answer, keywords, tenantId } = body;
+    const headerTenantId = req.headers.get("x-tenant-id");
+    const resolvedTenantId = tenantId || headerTenantId || undefined;
 
     if (!question || !answer) {
       return NextResponse.json({ error: "question و answer مطلوبين" }, { status: 400 });
@@ -17,6 +20,7 @@ export async function POST(req: NextRequest) {
         question,
         answer,
         keywords: JSON.stringify(Array.isArray(keywords) ? keywords : []),
+        ...(resolvedTenantId && { tenantId: resolvedTenantId }),
       },
     });
 
@@ -27,8 +31,16 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const tenantId = searchParams.get("tenantId") || req.headers.get("x-tenant-id");
+
   const rawItems = await prisma.knowledgeItem.findMany({
+    where: tenantId
+      ? {
+          OR: [{ tenantId }, { tenantId: null }],
+        }
+      : {},
     orderBy: { createdAt: "desc" },
     take: 200,
   });

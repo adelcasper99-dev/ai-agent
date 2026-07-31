@@ -15,12 +15,22 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  const headerTenantId = req.headers.get("x-tenant-id");
+  const resolvedTenantId = tenantId || headerTenantId || undefined;
+
   // 1) RAG: هات أقرب معلومات من الـ KB (Prisma) - محدودة بـ take عشان التوكنز
   const kbEntries = await prisma.knowledgeItem.findMany({
     where: {
-      OR: [
-        { question: { contains: message } },
-        { keywords: { contains: message } },
+      AND: [
+        resolvedTenantId
+          ? { OR: [{ tenantId: resolvedTenantId }, { tenantId: null }] }
+          : {},
+        {
+          OR: [
+            { question: { contains: message } },
+            { keywords: { contains: message } },
+          ],
+        },
       ],
     },
     take: 5,

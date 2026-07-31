@@ -437,6 +437,7 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
         if not groq_key:
             raise ValueError("مفتاح Groq API Key مفقود. يرجى إدخاله من صفحة الإعدادات أولاً.")
 
+        from livekit.plugins import groq
         from edge_tts_wrapper import EdgeTTS
         print(f"Using Groq Pipeline Architecture with Voice Tone: {voice_tone} ({selected_voice})")
         tts_engine = EdgeTTS(voice=selected_voice)
@@ -459,7 +460,7 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
         if not groq_key:
             raise ValueError("مفتاح Groq API Key مفقود (مطلوب للـ LLM). يرجى إدخاله من صفحة الإعدادات أولاً.")
 
-        from livekit.plugins import deepgram
+        from livekit.plugins import deepgram, groq
         from edge_tts_wrapper import EdgeTTS
         print(f"Using Deepgram Pipeline Architecture with Voice Tone: {voice_tone} ({selected_voice})")
         tts_engine = EdgeTTS(voice=selected_voice)
@@ -475,7 +476,7 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
         if not groq_key:
             raise ValueError("مفتاح Groq API Key مفقود (مطلوب للـ STT و LLM). يرجى إدخاله من صفحة الإعدادات أولاً.")
 
-        from livekit.plugins import fishaudio
+        from livekit.plugins import fishaudio, groq
         print(f"Using Fish Audio Architecture (Reference Voice ID: {fish_voice_id or 'Default'})")
         tts_kwargs = {}
         if fish_key:

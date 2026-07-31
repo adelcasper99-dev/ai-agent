@@ -1,10 +1,17 @@
 {
-  "python.extraPaths": [
-    "C:\\Users\\TheExpert\\AppData\\Roaming\\Python\\Python313\\site-packages",
-    "C:\\Program Files\\Python313\\Lib\\site-packages"
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}/voice_service",
+    "C:/Users/TheExpert/AppData/Roaming/Python/Python313/site-packages",
+    "C:/Program Files/Python313/Lib/site-packages"
   ],
   "python.analysis.extraPaths": [
-    "C:\\Users\\TheExpert\\AppData\\Roaming\\Python\\Python313\\site-packages",
-    "C:\\Program Files\\Python313\\Lib\\site-packages"
+    "${workspaceFolder}/voice_service",
+    "C:/Users/TheExpert/AppData/Roaming/Python/Python313/site-packages",
+    "C:/Program Files/Python313/Lib/site-packages"
+  ],
+  "python.analysis.ignore": [
+    "**/__pyrefly_virtual__/**",
+    "C:/Users/TheExpert/Downloads/files/**",
+    "C:/Users/TheExpert/Downloads/*.ts"
   ]
 }

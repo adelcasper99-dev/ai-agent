@@ -57,7 +57,7 @@ model Conversation {
 // ── قاعدة المعرفة (RAG) ──────────────────────────────────
 model KnowledgeItem {
   id        String   @id @default(cuid())
-  tenantId  String?  @default("default")
+  tenantId  String?
   tenant    Tenant?  @relation(fields: [tenantId], references: [id])
   question  String
   answer    String

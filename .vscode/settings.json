@@ -1,23 +1,19 @@
 {
+  "python.defaultInterpreterPath": "${workspaceFolder}/voice_service/venv/Scripts/python.exe",
   "python.autoComplete.extraPaths": [
     "${workspaceFolder}/voice_service",
-    "C:/Users/TheExpert/AppData/Roaming/Python/Python313/site-packages",
-    "C:/Program Files/Python313/Lib/site-packages"
+    "${workspaceFolder}/voice_service/venv/Lib/site-packages"
   ],
   "python.analysis.extraPaths": [
     "${workspaceFolder}/voice_service",
-    "C:/Users/TheExpert/AppData/Roaming/Python/Python313/site-packages",
-    "C:/Program Files/Python313/Lib/site-packages"
+    "${workspaceFolder}/voice_service/venv/Lib/site-packages"
   ],
   "python.analysis.ignore": [
     "**/__pyrefly_virtual__/**",
-    "C:/Users/TheExpert/Downloads/files/**",
-    "C:/Users/TheExpert/Downloads/*.ts"
+    "C:/Users/TheExpert/Downloads/files/**"
   ],
   "typescript.tsserver.exclude": [
     "C:/Users/TheExpert/Downloads/files/**",
-    "C:/Users/TheExpert/Downloads/*.ts",
-    "C:/Users/TheExpert/Downloads/*.tsx",
     "**/__pyrefly_virtual__/**"
   ],
   "files.exclude": {

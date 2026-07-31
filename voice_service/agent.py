@@ -792,7 +792,6 @@ async def entrypoint(ctx: JobContext):
         diag.set_transcript(raw=transcript)
         import asyncio
         asyncio.ensure_future(diag.flush())
-        asyncio.ensure_future(log_conversation(transcript, summary=f"provider: {provider}"))
 
     ctx.add_shutdown_callback(on_close)
 

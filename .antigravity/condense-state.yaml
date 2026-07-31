@@ -1,14 +1,16 @@
-session_intent: "Consolidate ASISST AGENT into casper-voice-project, setup Telegram bot @Casperaibot, push to GitHub, and enforce Admin Auth Middleware"
+session_intent: "Consolidate ASISST AGENT into casper-voice-project, setup Telegram bot @Casperaibot, push to GitHub, enforce Admin Auth Middleware, and fix Gemini Realtime Voice VPS deployment"
 decisions:
   - "Use Prisma globalThis singleton (lib/prisma.ts) to prevent connection exhaustion"
   - "Create versioned migration (20260730000000_add_audit_log) for cloud PostgreSQL support"
-  - "Eradicate legacy f:\\ASISST AGENT folder after full consolidation"
+  - "Eradicate legacy f:\ASISST AGENT folder after full consolidation"
   - "Initialize single root Git repository at casper-voice-project"
   - "Link Telegram bot @Casperaibot (ID: 8704982134) with webhook secret"
   - "Enforce Admin Auth Middleware using cookie admin_session and process.env.ADMIN_PASSWORD"
   - "Implement internal auth secret header (x-internal-secret) in middleware.ts and agent.py with timing-safe comparison"
   - "Enforce Permanent Verification Standard Protocol (verification-standard.md) across all tasks & pipelines"
-
+  - "Removed groq fallback and its import from agent.py to prevent ImportError loop on VPS"
+  - "Corrected Gemini Realtime model to gemini-2.0-flash-exp"
+  - "Added Multimodal Trigger in VoiceService to force initial welcome greeting for natively multimodal models"
 files_modified:
   - path: casper-voice-web/lib/prisma.ts
     why: "created Prisma client singleton"
@@ -26,8 +28,11 @@ files_modified:
     why: "created root gitignore"
   - path: .agents/stage_log.json
     why: "logged stage 6 compliance completion"
+  - path: voice_service/agent.py
+    why: "fixed Gemini model name, removed groq import to fix VPS crash, added multimodal trigger"
 active_goals:
-  - "Maintain system stability, auth security, and cloud backup"
+  - "Test Telegram self-registration flow live with @Casperaibot"
+  - "Verify live voice service on LiveKit cloud"
 next_steps:
   - "Test Telegram self-registration flow live with @Casperaibot"
   - "Verify live voice service on LiveKit cloud"
@@ -35,8 +40,10 @@ failed_approaches:
   - "Instantiating new PrismaClient() per request — caused connection exhaustion"
   - "Relying on prisma db push without migration files — fails on production PostgreSQL"
   - "Maintaining nested .git in casper-voice-web — broke IDE source control"
+  - "Leaving unused imports like groq in agent.py — caused ImportError crashing the PM2 worker on VPS"
+  - "Relying on old Gemini Realtime model names (gemini-2.5-flash-native-audio-latest) — model doesn't exist"
 last_condense:
-  timestamp: "2026-07-30T11:51:30Z"
-  tokens_before: 145000
+  timestamp: "2026-07-30T22:50:00Z"
+  tokens_before: 195000
   tokens_after: 25000
-  reduction_pct: 82.7
+  reduction_pct: 87.1

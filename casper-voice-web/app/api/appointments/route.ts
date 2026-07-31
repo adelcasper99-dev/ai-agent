@@ -7,7 +7,10 @@ const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
-    const { customer_name, date, time, notes } = await req.json();
+    const body = await req.json();
+    const { customer_name, date, time, notes, tenantId } = body;
+    const headerTenantId = req.headers.get("x-tenant-id");
+    const resolvedTenantId = tenantId || headerTenantId || undefined;
 
     if (!customer_name || !date || !time) {
       return NextResponse.json(
@@ -16,11 +19,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Appointment Conflict Guard: Check for existing appointment at same date & time
+    // Appointment Conflict Guard: Check for existing appointment at same date & time for this tenant
     const existing = await prisma.appointment.findFirst({
       where: {
         date: { contains: date.trim() },
         time: { contains: time.trim() },
+        ...(resolvedTenantId && { tenantId: resolvedTenantId }),
       },
     });
 
@@ -36,7 +40,13 @@ export async function POST(req: NextRequest) {
     }
 
     const appointment = await prisma.appointment.create({
-      data: { customerName: customer_name.trim(), date: date.trim(), time: time.trim(), notes: notes || "" },
+      data: {
+        customerName: customer_name.trim(),
+        date: date.trim(),
+        time: time.trim(),
+        notes: notes || "",
+        ...(resolvedTenantId && { tenantId: resolvedTenantId }),
+      },
     });
 
     const targetChatId = process.env.TELEGRAM_CHAT_ID || "";
@@ -56,8 +66,14 @@ export async function POST(req: NextRequest) {
 
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const tenantId = searchParams.get("tenantId") || req.headers.get("x-tenant-id");
+
   const appointments = await prisma.appointment.findMany({
+    where: {
+      ...(tenantId && { tenantId }),
+    },
     orderBy: { createdAt: "desc" },
     take: 50,
   });

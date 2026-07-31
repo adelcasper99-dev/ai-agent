@@ -25,8 +25,22 @@ export async function POST(req: Request) {
     const roomName = `test-room-${Math.floor(Math.random() * 1000)}`;
     const identity = `admin-user-${Math.floor(Math.random() * 1000)}`;
 
-    const defaultTenant = await prisma.tenant.findFirst();
-    const tenantId = defaultTenant ? defaultTenant.id : "default-tenant";
+    const body = await req.json().catch(() => ({}));
+    const requestedTenantId = body.tenantId;
+
+    let tenantId = requestedTenantId;
+    if (!tenantId) {
+      let defaultTenant = await prisma.tenant.findFirst();
+      if (!defaultTenant) {
+        defaultTenant = await prisma.tenant.create({
+          data: {
+            name: "شركة كاسبر الرئيسية",
+            state: "active",
+          },
+        });
+      }
+      tenantId = defaultTenant.id;
+    }
 
     const at = new AccessToken(apiKey, apiSecret, {
       identity,

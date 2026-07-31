@@ -20,11 +20,17 @@ model Setting {
 model Tenant {
   id             String   @id @default(cuid())
   name           String
+  phoneNumber    String?  @unique
   state          String   @default("trial") // trial | active | past_due_silent | suspended | cancelled | pending_deletion | deleted
   telegramChatId String?  @unique
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
   diagnostics    InteractionDiagnostics[]
+  knowledgeItems KnowledgeItem[]
+  expenses       Expense[]
+  sales          Sale[]
+  purchases      Purchase[]
+  appointments   Appointment[]
 }
 
 // ── طلبات التسجيل الذاتي للشركة ──────────────────────────────
@@ -51,25 +57,35 @@ model Conversation {
 // ── قاعدة المعرفة (RAG) ──────────────────────────────────
 model KnowledgeItem {
   id        String   @id @default(cuid())
+  tenantId  String?  @default("default")
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
   question  String
   answer    String
   keywords  String   @default("[]")
   createdAt DateTime @default(now())
+
+  @@index([tenantId])
 }
 
 // ── المصروفات ────────────────────────────────────────────
 model Expense {
   id          String   @id @default(cuid())
+  tenantId    String?
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
   amount      Float
   description String
   category    String   @default("عام")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
+
+  @@index([tenantId])
 }
 
 // ── المبيعات ─────────────────────────────────────────────
 model Sale {
   id             String   @id @default(cuid())
+  tenantId       String?
+  tenant         Tenant?  @relation(fields: [tenantId], references: [id])
   itemName       String
   price          Float
   quantity       Int      @default(1)
@@ -79,6 +95,8 @@ model Sale {
   deferredAmount Float    @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
+
+  @@index([tenantId])
 }
 
 // ── الموردين والمشتريات ─────────────────────────────────────
@@ -93,6 +111,8 @@ model Supplier {
 
 model Purchase {
   id             String   @id @default(cuid())
+  tenantId       String?
+  tenant         Tenant?  @relation(fields: [tenantId], references: [id])
   supplierId     String
   supplier       Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   itemName       String
@@ -102,11 +122,15 @@ model Purchase {
   notes          String   @default("")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
+
+  @@index([tenantId])
 }
 
 // ── المواعيد ─────────────────────────────────────────────
 model Appointment {
   id           String   @id @default(cuid())
+  tenantId     String?
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
   customerName String
   date         String
   time         String
@@ -114,6 +138,8 @@ model Appointment {
   status       String   @default("scheduled")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now()) @updatedAt
+
+  @@index([tenantId])
 }
 
 // ── تتبع استهلاك التوكنز والحدود ─────────────────────────────

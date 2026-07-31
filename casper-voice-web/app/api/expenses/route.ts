@@ -6,14 +6,22 @@ const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
-    const { amount, description, category } = await req.json();
+    const body = await req.json();
+    const { amount, description, category, tenantId } = body;
+    const headerTenantId = req.headers.get("x-tenant-id");
+    const resolvedTenantId = tenantId || headerTenantId || undefined;
 
     if (typeof amount !== "number" || !description) {
       return NextResponse.json({ error: "amount و description مطلوبين" }, { status: 400 });
     }
 
     const expense = await prisma.expense.create({
-      data: { amount, description, category: category || "عام" },
+      data: {
+        amount,
+        description,
+        category: category || "عام",
+        ...(resolvedTenantId && { tenantId: resolvedTenantId }),
+      },
     });
 
     return NextResponse.json({ success: true, expense });
@@ -23,8 +31,14 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const tenantId = searchParams.get("tenantId") || req.headers.get("x-tenant-id");
+
   const expenses = await prisma.expense.findMany({
+    where: {
+      ...(tenantId && { tenantId }),
+    },
     orderBy: { createdAt: "desc" },
     take: 50,
   });

@@ -7,7 +7,10 @@ const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
-    const { item_name, price, quantity = 1, customer_name = "", paid_amount } = await req.json();
+    const body = await req.json();
+    const { item_name, price, quantity = 1, customer_name = "", paid_amount, tenantId } = body;
+    const headerTenantId = req.headers.get("x-tenant-id");
+    const resolvedTenantId = tenantId || headerTenantId || undefined;
 
     if (!item_name || typeof price !== "number" || price <= 0) {
       return NextResponse.json({ error: "item_name و price مطلوبين (السعر يجب أن يكون أكبر من صفر)" }, { status: 400 });
@@ -31,6 +34,7 @@ export async function POST(req: NextRequest) {
         customerName: customer_name ? customer_name.trim() : "عميل نقدي",
         paidAmount: paid,
         deferredAmount: deferred,
+        ...(resolvedTenantId && { tenantId: resolvedTenantId }),
       },
     });
 
@@ -41,8 +45,14 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const tenantId = searchParams.get("tenantId") || req.headers.get("x-tenant-id");
+
   const sales = await prisma.sale.findMany({
+    where: {
+      ...(tenantId && { tenantId }),
+    },
     orderBy: { createdAt: "desc" },
     take: 50,
   });

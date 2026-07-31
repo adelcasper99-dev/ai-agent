@@ -36,14 +36,16 @@ load_dotenv()
 API_BASE = os.getenv("DASHBOARD_API_URL", "http://localhost:3006/api")
 INTERNAL_SECRET = os.getenv("INTERNAL_SERVICE_SECRET", "casper-voice-internal-secret-9988776655")
 
-def get_internal_headers(extra_headers: dict = None) -> dict:
+def get_internal_headers(extra_headers: dict = None, tenant_id: str = None) -> dict:
     headers = {"x-internal-secret": INTERNAL_SECRET}
+    if tenant_id:
+        headers["x-tenant-id"] = tenant_id
     if extra_headers:
         headers.update(extra_headers)
     return headers
 
-def get_api_client(extra_headers: dict = None):
-    return httpx.AsyncClient(headers=get_internal_headers(extra_headers))
+def get_api_client(extra_headers: dict = None, tenant_id: str = None):
+    return httpx.AsyncClient(headers=get_internal_headers(extra_headers, tenant_id))
 
 
 EGYPTIAN_TELEPHONY_PROMPT = """
@@ -75,9 +77,13 @@ EGYPTIAN_TELEPHONY_PROMPT = """
 
 
 class CasperAgent(Agent):
-    def __init__(self, room=None):
+    def __init__(self, room=None, tenant_id=None):
         super().__init__(instructions=EGYPTIAN_TELEPHONY_PROMPT)
         self.room = room
+        self.tenant_id = tenant_id
+
+    def _get_client(self, extra_headers: dict = None):
+        return get_api_client(extra_headers, tenant_id=self.tenant_id)
 
     async def _emit_success(self, title: str, text: str):
         if self.room:
@@ -101,10 +107,10 @@ class CasperAgent(Agent):
         if not description or description.strip() == "":
             return "المبلغ ده اتدفع في إيه أستاذنا؟"
 
-        async with get_api_client() as client:
+        async with self._get_client() as client:
             r = await client.post(
                 f"{API_BASE}/expenses",
-                json={"amount": amount, "description": description, "category": category},
+                json={"amount": amount, "description": description, "category": category, "tenantId": self.tenant_id},
                 timeout=5,
             )
         if r.status_code == 200:
@@ -127,10 +133,12 @@ class CasperAgent(Agent):
             "quantity": quantity,
             "customer_name": customer_name,
         }
+        if self.tenant_id:
+            payload["tenantId"] = self.tenant_id
         if paid_amount is not None and paid_amount >= 0:
             payload["paid_amount"] = paid_amount
 
-        async with get_api_client() as client:
+        async with self._get_client() as client:
             r = await client.post(
                 f"{API_BASE}/sales",
                 json=payload,
@@ -158,10 +166,10 @@ class CasperAgent(Agent):
         if not time or time.strip() == "":
             return "الساعة كام مسترنا؟"
 
-        async with get_api_client() as client:
+        async with self._get_client() as client:
             r = await client.post(
                 f"{API_BASE}/appointments",
-                json={"customer_name": customer_name, "date": date, "time": time, "notes": service},
+                json={"customer_name": customer_name, "date": date, "time": time, "notes": service, "tenantId": self.tenant_id},
                 timeout=5,
             )
         if r.status_code == 409:
@@ -216,7 +224,7 @@ class CasperAgent(Agent):
         if not total_amount or total_amount <= 0:
             return "المبلغ الإجمالي كام مسترنا؟"
 
-        async with get_api_client() as client:
+        async with self._get_client() as client:
             r = await client.post(
                 f"{API_BASE}/purchases",
                 json={
@@ -225,6 +233,7 @@ class CasperAgent(Agent):
                     "total_amount": total_amount,
                     "paid_amount": paid_amount,
                     "notes": notes,
+                    "tenantId": self.tenant_id,
                 },
                 timeout=5,
             )
@@ -487,11 +496,15 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
             raise ValueError("مفتاح Gemini API Key مفقود. يرجى إدخاله من صفحة الإعدادات أولاً.")
         os.environ["GOOGLE_API_KEY"] = gemini_key
 
+        try:
+            from livekit.plugins.google.realtime import RealtimeModel
+        except ImportError:
+            from livekit.plugins.google.beta.realtime import RealtimeModel
+
         print("Using Google Gemini Native Audio Realtime Architecture (Gemini Live 🌟)")
         return AgentSession(
-            llm=google.beta.realtime.RealtimeModel(
+            llm=RealtimeModel(
                 voice="Puck",
-                model="gemini-2.0-flash-exp",
                 instructions=EGYPTIAN_TELEPHONY_PROMPT,
             ),
         )
@@ -515,13 +528,74 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
 
 
 
-async def log_conversation(transcript: str, summary: str = ""):
-    async with get_api_client() as client:
-        await client.post(
-            f"{API_BASE}/conversations",
-            json={"channel": "voice", "transcript": transcript, "summary": summary},
-            timeout=5,
-        )
+async def play_in_call_fallback_audio(ctx: JobContext, text: str):
+    """
+    In-call Telephony Audio Fallback Strategy using EdgeTTS.
+    Synthesizes and streams spoken Arabic error messages directly into the WebRTC Audio Track
+    without requiring any API Key (100% Key-Independent EdgeTTS Fallback).
+    """
+    print(f"[IN-CALL AUDIO FALLBACK] Synthesizing Key-Independent speech for telephony caller: '{text}'")
+    try:
+        from livekit import rtc
+        import edge_tts, tempfile
+        from livekit.agents.utils.audio import audio_frames_from_file
+
+        source = rtc.AudioSource(24000, 1)
+        track = rtc.LocalAudioTrack.create_audio_track("telephony_fallback_audio", source)
+        options = rtc.TrackPublishOptions(source=rtc.TrackSource.SOURCE_MICROPHONE)
+        await ctx.room.local_participant.publish_track(track, options)
+
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
+            tmp_path = f.name
+
+        try:
+            comm = edge_tts.Communicate(text, "ar-EG-SalmaNeural")
+            await comm.save(tmp_path)
+            async for frame in audio_frames_from_file(tmp_path, sample_rate=24000):
+                await source.capture_frame(frame)
+            print("[IN-CALL AUDIO FALLBACK] Telephony speech playback complete via EdgeTTS.")
+        finally:
+            if os.path.exists(tmp_path):
+                try:
+                    os.remove(tmp_path)
+                except Exception:
+                    pass
+    except Exception as fallback_err:
+        print(f"[IN-CALL AUDIO FALLBACK ERROR] Could not stream fallback audio: {fallback_err}")
+
+
+async def resolve_tenant_from_sip_participant(ctx: JobContext, client: httpx.AsyncClient) -> str | None:
+    """
+    SIP Telephony Tenant Resolution.
+    Reads LiveKit SIP participant attributes (e.g. sip.phoneNumber / sip.trunkPhoneNumber)
+    and queries /api/tenants/by-phone to map the inbound phone call to its real tenantId.
+    """
+    phone_number = None
+    try:
+        if hasattr(ctx.room, "remote_participants"):
+            for participant in ctx.room.remote_participants.values():
+                attributes = getattr(participant, "attributes", {}) or {}
+                phone_number = attributes.get("sip.phoneNumber") or attributes.get("sip.trunkPhoneNumber") or attributes.get("phoneNumber")
+                if phone_number:
+                    break
+    except Exception as e:
+        print(f"[SIP Tenant Resolution] Error reading participant attributes: {e}")
+
+    if not phone_number:
+        return None
+
+    try:
+        r = await client.get(f"{API_BASE}/tenants/by-phone", params={"number": phone_number}, timeout=4)
+        if r.status_code == 200:
+            data = r.json()
+            if data.get("success") and data.get("tenantId"):
+                print(f"[SIP Tenant Resolution] Mapped phone {phone_number} -> tenantId {data['tenantId']} ({data.get('name')})")
+                return data["tenantId"]
+        print(f"[SIP Tenant Resolution] Unmapped phone number: {phone_number}")
+    except Exception as err:
+        print(f"[SIP Tenant Resolution] API query failed for {phone_number}: {err}")
+
+    return None
 
 
 async def entrypoint(ctx: JobContext):
@@ -529,18 +603,21 @@ async def entrypoint(ctx: JobContext):
         r = await client.get(f"{API_BASE}/settings", timeout=5)
         settings = r.json().get("settings", {})
 
-    if settings.get("OPENAI_API_KEY"):
-        os.environ["OPENAI_API_KEY"] = settings["OPENAI_API_KEY"]
-    if settings.get("GEMINI_API_KEY"):
-        os.environ["GOOGLE_API_KEY"] = settings["GEMINI_API_KEY"]
-    if settings.get("GROQ_API_KEY"):
-        os.environ["GROQ_API_KEY"] = settings["GROQ_API_KEY"]
+        if settings.get("OPENAI_API_KEY"):
+            os.environ["OPENAI_API_KEY"] = settings["OPENAI_API_KEY"]
+        if settings.get("GEMINI_API_KEY"):
+            os.environ["GOOGLE_API_KEY"] = settings["GEMINI_API_KEY"]
+        if settings.get("GROQ_API_KEY"):
+            os.environ["GROQ_API_KEY"] = settings["GROQ_API_KEY"]
 
-    provider = settings.get("VOICE_PROVIDER", "gemini")
-    await ctx.connect()
+        provider = settings.get("VOICE_PROVIDER", "gemini")
+        await ctx.connect()
 
-    tenant_id = get_tenant_id_from_room(ctx)
-    diag = DiagnosticsSession(session_id=ctx.room.name, tenant_id=tenant_id, channel="voice_call")
+        tenant_id = get_tenant_id_from_room(ctx)
+        if not tenant_id:
+            tenant_id = await resolve_tenant_from_sip_participant(ctx, client)
+
+        diag = DiagnosticsSession(session_id=ctx.room.name, tenant_id=tenant_id, channel="voice_call")
 
     try:
         session = create_agent_session(provider, settings)
@@ -553,16 +630,41 @@ async def entrypoint(ctx: JobContext):
             except Exception as err:
                 print(f"[DataChannel Emitter Warning] {err}")
 
+        import time as _time
+        last_user_speech_time = [_time.monotonic()]
+
         @session.on("user_input_transcribed")
         def on_user_input_transcribed(ev):
             try:
                 text = getattr(ev, "transcript", None) or str(ev)
                 is_final = getattr(ev, "is_final", True)
+                conf = getattr(ev, "confidence", None) or getattr(ev, "score", None)
+                if conf is not None:
+                    try:
+                        diag.set_stt_confidence(float(conf))
+                    except (TypeError, ValueError):
+                        pass
+
                 if text and is_final:
+                    last_user_speech_time[0] = _time.monotonic()
                     import asyncio
                     asyncio.ensure_future(emit_datachannel_event({"type": "TRANSCRIPT", "role": "user", "text": text}))
             except Exception as e:
                 print(f"[user_input_transcribed] {e}")
+
+        @session.on("user_speech_interrupted")
+        def on_user_speech_interrupted(ev):
+            try:
+                diag.record_vad_cutoff()
+            except Exception as e:
+                print(f"[user_speech_interrupted] {e}")
+
+        @session.on("agent_speech_interrupted")
+        def on_agent_speech_interrupted(ev):
+            try:
+                diag.record_vad_cutoff()
+            except Exception as e:
+                print(f"[agent_speech_interrupted] {e}")
 
         @session.on("agent_state_changed")
         def on_agent_state_changed(ev):
@@ -580,6 +682,8 @@ async def entrypoint(ctx: JobContext):
                 asyncio.ensure_future(emit_datachannel_event({"type": "EVENT_TICKER", "state": state_name, "detail": detail}))
 
                 if state_name == "SPEAKING":
+                    elapsed = int((_time.monotonic() - last_user_speech_time[0]) * 1000)
+                    diag.record_latency("llm", elapsed)
                     try:
                         cs = getattr(session, "current_speech", None)
                         if cs:
@@ -602,7 +706,7 @@ async def entrypoint(ctx: JobContext):
                     "message": "انتهت باقة نطق الصوت (OpenAI TTS Quota Exceeded). يرجى شحن الحساب أو اختار Gemini Realtime من الإعدادات."
                 }))
 
-        await session.start(agent=CasperAgent(room=ctx.room), room=ctx.room)
+        await session.start(agent=CasperAgent(room=ctx.room, tenant_id=tenant_id), room=ctx.room)
         if getattr(session, "tts", None) is not None:
             try:
                 await session.say("أهلاً بحضرتك! معاك المساعد الذكي لسيستم كاسبر، أقدر أساعدك إزاي النهاردة؟", allow_interruptions=True)
@@ -611,23 +715,18 @@ async def entrypoint(ctx: JobContext):
         else:
             # Trigger for Multimodal models (like Gemini) that don't have separate TTS
             try:
-                from livekit.agents.llm import ChatMessage
-                session.chat_ctx.messages.append(
-                    ChatMessage(
-                        role="user",
-                        content="قول 'أهلاً بحضرتك! معاك المساعد الذكي لسيستم كاسبر، أقدر أساعدك إزاي النهاردة؟'"
-                    )
-                )
                 if hasattr(session, "generate_reply"):
-                    session.generate_reply()
+                    await session.generate_reply(
+                        instructions="قول 'أهلاً بحضرتك! معاك المساعد الذكي لسيستم كاسبر، أقدر أساعدك إزاي النهاردة؟'"
+                    )
             except Exception as e:
                 print(f"[Multimodal Trigger Error] {e}")
     except Exception as e:
         err_str = str(e)
         print("CRITICAL AGENT ERROR:", err_str)
         user_msg = f"حدث خطأ في خادم الصوت: {err_str}"
-        if "GROQ_API_KEY is required" in err_str or "مفقود" in err_str:
-            user_msg = "يرجى إدخال مفتاح Groq API Key وحفظه في صفحة الإعدادات أولاً."
+        if "GROQ_API_KEY is required" in err_str or "مفقود" in err_str or "GEMINI_API_KEY" in err_str:
+            user_msg = "يرجى إدخال مفتاح الذكاء الاصطناعي (Gemini / Groq) وحفظه في صفحة الإعدادات أولاً."
         elif "insufficient_quota" in err_str:
             user_msg = f"انتهت باقة أو رصيد الذكاء الاصطناعي الخاص بـ ({provider.upper()})"
         elif "1008" in err_str or "not found" in err_str:
@@ -635,15 +734,28 @@ async def entrypoint(ctx: JobContext):
         elif "invalid" in err_str.lower():
             user_msg = f"مفتاح الـ API غير صحيح لـ ({provider.upper()})"
 
+        print(f"[AUDIO FALLBACK NOTIFICATION EMITTED] Broadcasted to user: '{user_msg}'")
         try:
             import json
             await ctx.room.local_participant.publish_data(
-                json.dumps({"type": "error", "message": user_msg}).encode("utf-8"),
+                json.dumps({
+                    "type": "error",
+                    "message": user_msg,
+                    "speak_error": True,
+                    "action": "TRANSFER_TO_HUMAN_OR_NOTIFY"
+                }).encode("utf-8"),
                 reliable=True
             )
-        except Exception:
-            pass
+        except Exception as pub_err:
+            print(f"[DataChannel Error Output Failed] {pub_err}")
+
+        # Stream spoken audio directly into telephony WebRTC audio track for phone callers
+        try:
+            await play_in_call_fallback_audio(ctx, user_msg)
+        except Exception as audio_err:
+            print(f"[In-Call Audio Stream Failed] {audio_err}")
         raise e
+
 
     async def on_close():
         transcript = ""
@@ -663,11 +775,17 @@ async def entrypoint(ctx: JobContext):
         diag.set_transcript(raw=transcript)
         import asyncio
         asyncio.ensure_future(diag.flush())
-        await log_conversation(transcript, summary=f"provider: {provider}")
+        asyncio.ensure_future(log_conversation(transcript, summary=f"provider: {provider}"))
 
     ctx.add_shutdown_callback(on_close)
 
 
 
 if __name__ == "__main__":
+    try:
+        from preflight_check import run_preflight
+        run_preflight()
+    except Exception as pf_err:
+        print(f"[Preflight Warning] {pf_err}")
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
+

@@ -10,6 +10,13 @@ const THRESHOLDS = {
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Verify internal service secret for security
+    const internalSecret = process.env.INTERNAL_SERVICE_SECRET || "casper-voice-internal-secret-9988776655";
+    const reqSecret = req.headers.get("x-internal-secret");
+    if (reqSecret !== internalSecret) {
+      return NextResponse.json({ error: "Unauthorized: Invalid internal secret" }, { status: 401 });
+    }
+
     const body = await req.json();
     const {
       channel,
@@ -34,18 +41,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Resolve tenantId if missing or fallback to default tenant
-    let resolvedTenantId = tenantId;
-    if (!resolvedTenantId || resolvedTenantId === "default-tenant") {
-      const tenants: any[] = await prisma.$queryRaw`SELECT id FROM Tenant LIMIT 1`;
-      if (!tenants || tenants.length === 0) {
-        const id = `cuid_${Date.now()}`;
-        await prisma.$executeRaw`INSERT INTO Tenant (id, name, state, createdAt, updatedAt) VALUES (${id}, 'شركة التجربة الرئيسية', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
-        resolvedTenantId = id;
-      } else {
-        resolvedTenantId = tenants[0].id;
-      }
+    // 2. Enforce Strict Tenant Isolation: Require valid tenantId
+    if (!tenantId || tenantId === "default-tenant") {
+      return NextResponse.json(
+        { error: "tenantId مطلوب ومستقل لكل شركة (Strict Multi-tenant Isolation active)" },
+        { status: 400 }
+      );
     }
+    const resolvedTenantId = tenantId;
 
     const hasIssue =
       (llmLatencyMs ?? 0) > THRESHOLDS.llmLatencyMs ||
@@ -76,13 +79,13 @@ export async function POST(req: NextRequest) {
         },
       });
     } else {
-      // Fallback to raw SQL insertion for SQLite compatibility
+      // Fallback to raw SQL insertion for PostgreSQL/SQLite compatibility
       await prisma.$executeRaw`
-        INSERT INTO InteractionDiagnostics (
-          id, channel, sessionId, tenantId, audioSnrDb, audioClipping,
-          vadCutoffs, silenceDurationMs, sttConfidence, rawTranscript,
-          correctedTranscript, correctionApplied, llmLatencyMs, ttsLatencyMs,
-          hasIssue, createdAt
+        INSERT INTO "InteractionDiagnostics" (
+          "id", "channel", "sessionId", "tenantId", "audioSnrDb", "audioClipping",
+          "vadCutoffs", "silenceDurationMs", "sttConfidence", "rawTranscript",
+          "correctedTranscript", "correctionApplied", "llmLatencyMs", "ttsLatencyMs",
+          "hasIssue", "createdAt"
         ) VALUES (
           ${recordId}, ${channel}, ${sessionId}, ${resolvedTenantId}, ${audioSnrDb ?? null}, ${audioClipping ? 1 : 0},
           ${vadCutoffs ?? 0}, ${silenceDurationMs ?? null}, ${sttConfidence ?? null}, ${rawTranscript ?? null},

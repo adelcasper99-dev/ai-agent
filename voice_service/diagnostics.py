@@ -4,14 +4,17 @@ diagnostics.py
 Unified Diagnostic Module for Voice Calls & Interactions
 """
 
+import os
 import time
 import contextlib
 import json
 import numpy as np
 import httpx
 
-DIAGNOSTICS_ENDPOINT = "http://localhost:3000/api/diagnostics"
-INTERNAL_SECRET = "casper-voice-internal-secret-9988776655"
+DIAGNOSTICS_ENDPOINT = os.getenv("DIAGNOSTICS_ENDPOINT", "http://localhost:3000/api/diagnostics")
+
+def get_internal_secret() -> str:
+    return os.getenv("INTERNAL_SERVICE_SECRET", "casper-voice-internal-secret-9988776655")
 
 
 def get_tenant_id_from_room(ctx) -> str | None:
@@ -29,9 +32,10 @@ def get_tenant_id_from_room(ctx) -> str | None:
 class DiagnosticsSession:
     def __init__(self, session_id: str, tenant_id: str | None = None, channel: str = "voice_call"):
         self.session_id = session_id
-        self.tenant_id = tenant_id or "default-tenant"
+        self.tenant_id = tenant_id  # Strict: NO dummy "default-tenant" fallback!
         self.channel = channel
         self.latencies_ms: dict[str, int] = {}
+        self.all_latencies: dict[str, list[int]] = {}
         self.vad_cutoffs = 0
         self.silence_duration_ms: int | None = None
         self.audio_snr_db: float | None = None
@@ -41,6 +45,13 @@ class DiagnosticsSession:
         self.correction_applied = False
         self.stt_confidence: float | None = None
 
+    def record_latency(self, stage: str, elapsed_ms: int):
+        """Records latency for a turn, preserving peak/max latency across multi-turn interactions."""
+        if stage not in self.all_latencies:
+            self.all_latencies[stage] = []
+        self.all_latencies[stage].append(elapsed_ms)
+        self.latencies_ms[stage] = max(self.all_latencies[stage])
+
     @contextlib.contextmanager
     def timer(self, stage: str):
         """stage: 'vad' | 'stt' | 'llm' | 'tts'"""
@@ -49,7 +60,7 @@ class DiagnosticsSession:
             yield
         finally:
             elapsed_ms = int((time.monotonic() - start) * 1000)
-            self.latencies_ms[stage] = elapsed_ms
+            self.record_latency(stage, elapsed_ms)
 
     def record_vad_cutoff(self):
         self.vad_cutoffs += 1
@@ -81,6 +92,10 @@ class DiagnosticsSession:
             self.correction_applied = True
 
     async def flush(self):
+        if not self.tenant_id:
+            print("[diagnostics] Skipped flush: No valid tenantId found in room metadata (Strict Isolation active).")
+            return
+
         payload = {
             "channel": self.channel,
             "sessionId": self.session_id,
@@ -101,7 +116,7 @@ class DiagnosticsSession:
                 await client.post(
                     DIAGNOSTICS_ENDPOINT,
                     json=payload,
-                    headers={"x-internal-secret": INTERNAL_SECRET}
+                    headers={"x-internal-secret": get_internal_secret()}
                 )
         except Exception as e:
             print(f"[diagnostics] failed to flush: {e}")

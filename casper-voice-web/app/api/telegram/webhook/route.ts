@@ -497,11 +497,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // Inbound Authorization Gate for other commands (/appointments, /status)
-    if (!isChatAllowed(chatId)) {
-      return NextResponse.json({ ok: true });
-    }
-
     if (text === "/appointments") {
       const appointments = await prisma.appointment.findMany({
         orderBy: { createdAt: "desc" },

@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 const logSaleTool: FunctionDeclaration = {
   name: "log_sale",
-  description: "تسجيل عملية بيع لعميل (منتج، سعر، كمية، اسم العميل)",
+  description: "تسجيل عملية بيع لعميل (منتج، سعر، كمية، اسم العميل، وتليفونه)",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
@@ -15,10 +15,12 @@ const logSaleTool: FunctionDeclaration = {
       price: { type: SchemaType.NUMBER, description: "سعر الوحدة أو إجمالي السعر المتفق عليه بالجنيه" },
       quantity: { type: SchemaType.NUMBER, description: "الكمية المباعة (الافتراضي 1)" },
       customer_name: { type: SchemaType.STRING, description: "اسم العميل (اختياري)" },
+      customer_phone: { type: SchemaType.STRING, description: "تليفون العميل (اختياري، يفضل استخدامه إن وجد)" },
       paid_amount: { type: SchemaType.NUMBER, description: "المبلغ المدفوع (عربون أو دفعة مقدمة)" },
-      deferred_amount: { type: SchemaType.NUMBER, description: "المبلغ المتبقي الآجل" }
+      deferred_amount: { type: SchemaType.NUMBER, description: "المبلغ المتبقي الآجل" },
+      idempotency_key: { type: SchemaType.STRING, description: "رقم فريد عشوائي لمنع تكرار العملية بالخطأ" }
     },
-    required: ["item_name", "price"]
+    required: ["item_name", "price", "idempotency_key"]
   }
 };
 
@@ -43,6 +45,7 @@ const bookAppointmentTool: FunctionDeclaration = {
     type: SchemaType.OBJECT,
     properties: {
       customer_name: { type: SchemaType.STRING, description: "اسم العميل" },
+      customer_phone: { type: SchemaType.STRING, description: "تليفون العميل (إن وجد)" },
       date: { type: SchemaType.STRING, description: "تاريخ الموعد (مثال: 2026-08-01 أو الغد)" },
       time: { type: SchemaType.STRING, description: "وقت الموعد (مثال: 05:00 مساءً)" },
       notes: { type: SchemaType.STRING, description: "ملاحظات إضافية (اختياري)" }
@@ -119,30 +122,139 @@ const reportMissingFeatureTool: FunctionDeclaration = {
   }
 };
 
+const logCustomerPaymentTool: FunctionDeclaration = {
+  name: "log_customer_payment",
+  description: "تسجيل دفعة سداد ديون أو آجل من عميل (سداد من حسابه).",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل" },
+      customer_phone: { type: SchemaType.STRING, description: "تليفون العميل (إن وجد)" },
+      amount: { type: SchemaType.NUMBER, description: "المبلغ المسدد بالجنيه" },
+      idempotency_key: { type: SchemaType.STRING, description: "رقم فريد عشوائي لمنع التكرار" }
+    },
+    required: ["customer_name", "amount", "idempotency_key"]
+  }
+};
+
+const getCustomerBalanceTool: FunctionDeclaration = {
+  name: "get_customer_balance",
+  description: "استعلام عن رصيد عميل وكشف حسابه لمعرفة إجمالي الديون عليه.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل" },
+      customer_phone: { type: SchemaType.STRING, description: "تليفون العميل (إن وجد)" }
+    },
+    required: ["customer_name"]
+  }
+};
+
+const executedKeys = new Set<string>();
+
 async function executeTool(name: string, args: any, tenantId?: string): Promise<{ success: boolean; resultText: string }> {
   try {
+    const { idempotency_key } = args;
+    if (idempotency_key) {
+      if (executedKeys.has(idempotency_key)) {
+        return { success: true, resultText: `تمت العملية بنجاح.` };
+      }
+      executedKeys.add(idempotency_key);
+      if (executedKeys.size > 5000) executedKeys.clear();
+    }
+
     if (name === "log_sale") {
-      const { item_name, price, quantity = 1, customer_name = "", paid_amount, deferred_amount } = args;
+      const { item_name, price, quantity = 1, customer_name = "", customer_phone = "", paid_amount, deferred_amount } = args;
       if (!item_name || typeof price !== "number" || price <= 0) {
         return { success: false, resultText: "خطأ: اسم المنتج وسعر الوحدة مطلوبين بشكل صحيح." };
       }
       const totalAmount = new Decimal(price).mul(quantity);
-      const paid = paid_amount !== undefined ? Number(paid_amount) : totalAmount.toNumber();
-      const deferred = deferred_amount !== undefined ? Number(deferred_amount) : totalAmount.minus(paid).toNumber();
+      const paid = paid_amount !== undefined ? new Decimal(paid_amount) : totalAmount;
+      const deferred = deferred_amount !== undefined ? new Decimal(deferred_amount) : totalAmount.minus(paid);
       
-      const sale = await prisma.sale.create({
-        data: {
-          itemName: String(item_name).trim(),
-          price: price,
-          quantity: Number(quantity) || 1,
-          total: totalAmount.toNumber(),
-          paidAmount: paid,
-          deferredAmount: deferred,
-          customerName: customer_name ? String(customer_name).trim() : "",
-          ...(tenantId && { tenantId })
+      const saleResult = await prisma.$transaction(async (tx) => {
+        let customerId = null;
+        const custName = customer_name ? String(customer_name).trim() : "";
+        const custPhone = customer_phone ? String(customer_phone).trim() : null;
+
+        if (custName || custPhone) {
+          let customer = null;
+          if (custPhone) {
+             customer = await tx.customer.findUnique({ where: { tenantId_phone: { tenantId: tenantId || "", phone: custPhone } } });
+          }
+          if (!customer && custName) {
+             customer = await tx.customer.findUnique({ where: { tenantId_name: { tenantId: tenantId || "", name: custName } } });
+          }
+          if (!customer) {
+             customer = await tx.customer.create({
+                data: {
+                  name: custName || "عميل غير معروف",
+                  phone: custPhone,
+                  ...(tenantId && { tenantId })
+                }
+             });
+          }
+          customerId = customer.id;
         }
+
+        const sale = await tx.sale.create({
+          data: {
+            itemName: String(item_name).trim(),
+            price: price,
+            quantity: Number(quantity) || 1,
+            total: totalAmount.toNumber(),
+            paidAmount: paid.toNumber(),
+            deferredAmount: deferred.toNumber(),
+            customerName: custName,
+            ...(customerId && { customerId }),
+            ...(tenantId && { tenantId })
+          }
+        });
+
+        if (customerId && deferred.gt(0)) {
+           await tx.customerLedgerEntry.create({
+             data: {
+               customerId,
+               saleId: sale.id,
+               entryType: "SALE_DEBIT",
+               amount: deferred.toNumber(),
+               description: `بيع آجل: ${sale.quantity} ${sale.itemName}`,
+               ...(tenantId && { tenantId })
+             }
+           });
+           await tx.journalEntry.create({
+             data: {
+               accountCode: "ACCOUNTS_RECEIVABLE",
+               debit: deferred.toNumber(),
+               referenceId: sale.id,
+               description: `مديونية عميل: ${custName} (${sale.itemName})`,
+               ...(tenantId && { tenantId })
+             }
+           });
+        }
+        if (paid.gt(0)) {
+           await tx.journalEntry.create({
+             data: {
+               accountCode: "CASH",
+               debit: paid.toNumber(),
+               referenceId: sale.id,
+               description: `مقبوضات مبيعات: ${sale.itemName}`,
+               ...(tenantId && { tenantId })
+             }
+           });
+        }
+        await tx.journalEntry.create({
+             data: {
+               accountCode: "SALES_REVENUE",
+               credit: totalAmount.toNumber(),
+               referenceId: sale.id,
+               description: `إيرادات مبيعات: ${sale.itemName}`,
+               ...(tenantId && { tenantId })
+             }
+        });
+        return sale;
       });
-      return { success: true, resultText: `تم تسجيل بيع ${sale.quantity} ${sale.itemName} إجمالي ${sale.total} جنيه (مدفوع: ${sale.paidAmount}، متبقي: ${sale.deferredAmount}) بنجاح!` };
+      return { success: true, resultText: `تم تسجيل بيع ${saleResult.quantity} ${saleResult.itemName} إجمالي ${saleResult.total} جنيه (مدفوع: ${saleResult.paidAmount}، متبقي: ${saleResult.deferredAmount}) بنجاح!` };
     }
 
     if (name === "log_expense") {
@@ -162,7 +274,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
     }
 
     if (name === "book_appointment") {
-      const { customer_name, date, time, notes = "" } = args;
+      const { customer_name, customer_phone, date, time, notes = "" } = args;
       if (!customer_name || !date || !time) {
         return { success: false, resultText: "خطأ: اسم العميل والتاريخ والوقت مطلوبين." };
       }
@@ -176,9 +288,16 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
       if (existing) {
         return { success: false, resultText: `تعارض: يوجد موعد محجوز بالفعل في نفس الوقت لـ (${existing.customerName}).` };
       }
+      const custName = String(customer_name).trim();
+      const custPhone = customer_phone ? String(customer_phone).trim() : null;
+      let customer = null;
+      if (custPhone) customer = await prisma.customer.findUnique({ where: { tenantId_phone: { tenantId: tenantId || "", phone: custPhone } } });
+      if (!customer) customer = await prisma.customer.findUnique({ where: { tenantId_name: { tenantId: tenantId || "", name: custName } } });
+
       const app = await prisma.appointment.create({
         data: {
-          customerName: String(customer_name).trim(),
+          customerName: custName,
+          ...(customer && { customerId: customer.id }),
           date: String(date).trim(),
           time: String(time).trim(),
           notes: String(notes).trim(),
@@ -186,6 +305,75 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
         }
       });
       return { success: true, resultText: `تم حجز موعد لـ ${app.customerName} يوم ${app.date} الساعة ${app.time} بنجاح!` };
+    }
+
+    if (name === "log_customer_payment") {
+       const { customer_name, customer_phone, amount } = args;
+       if (!customer_name || typeof amount !== "number" || amount <= 0) {
+         return { success: false, resultText: "خطأ: اسم العميل والمبلغ مطلوبين." };
+       }
+       const payAmount = new Decimal(amount);
+       const custName = String(customer_name).trim();
+       const custPhone = customer_phone ? String(customer_phone).trim() : null;
+
+       try {
+         const paymentResult = await prisma.$transaction(async (tx) => {
+            let customer = null;
+            if (custPhone) {
+               customer = await tx.customer.findUnique({ where: { tenantId_phone: { tenantId: tenantId || "", phone: custPhone } } });
+            }
+            if (!customer) {
+               customer = await tx.customer.findUnique({ where: { tenantId_name: { tenantId: tenantId || "", name: custName } } });
+            }
+            if (!customer) {
+               throw new Error(`لم يتم العثور على العميل: ${custName}`);
+            }
+            const ledgerEntry = await tx.customerLedgerEntry.create({
+               data: {
+                 customerId: customer.id,
+                 entryType: "PAYMENT_CREDIT",
+                 amount: payAmount.toNumber(),
+                 description: `سداد دفعة نقدية`,
+                 ...(tenantId && { tenantId })
+               }
+            });
+            await tx.journalEntry.create({
+               data: { accountCode: "CASH", debit: payAmount.toNumber(), referenceId: ledgerEntry.id, description: `استلام دفعة من ${customer.name}`, ...(tenantId && { tenantId }) }
+            });
+            await tx.journalEntry.create({
+               data: { accountCode: "ACCOUNTS_RECEIVABLE", credit: payAmount.toNumber(), referenceId: ledgerEntry.id, description: `تخفيض مديونية ${customer.name}`, ...(tenantId && { tenantId }) }
+            });
+            return customer;
+         });
+         return { success: true, resultText: `تم تسجيل سداد مبلغ ${amount} جنيه من العميل ${paymentResult.name} بنجاح!` };
+       } catch (err: any) {
+         return { success: false, resultText: err.message || "حدث خطأ أثناء السداد." };
+       }
+    }
+
+    if (name === "get_customer_balance") {
+       const { customer_name, customer_phone } = args;
+       const custName = String(customer_name).trim();
+       const custPhone = customer_phone ? String(customer_phone).trim() : null;
+       let customer = null;
+       if (custPhone) {
+          customer = await prisma.customer.findUnique({ where: { tenantId_phone: { tenantId: tenantId || "", phone: custPhone } }, include: { ledgers: true } });
+       }
+       if (!customer) {
+          customer = await prisma.customer.findUnique({ where: { tenantId_name: { tenantId: tenantId || "", name: custName } }, include: { ledgers: true } });
+       }
+       if (!customer) {
+          return { success: false, resultText: `لم يتم العثور على العميل: ${custName}` };
+       }
+       
+       let totalDebit = new Decimal(0);
+       let totalCredit = new Decimal(0);
+       customer.ledgers.forEach(l => {
+          if (l.entryType === "SALE_DEBIT") totalDebit = totalDebit.plus(l.amount);
+          if (l.entryType === "PAYMENT_CREDIT") totalCredit = totalCredit.plus(l.amount);
+       });
+       const balance = totalDebit.minus(totalCredit);
+       return { success: true, resultText: `العميل ${customer.name}: المسحوبات الآجلة ${totalDebit.toNumber()}ج، والسداد ${totalCredit.toNumber()}ج. الرصيد عليه: ${balance.toNumber()}ج.` };
     }
 
     if (name === "log_purchase") {
@@ -332,7 +520,7 @@ export async function processTelegramMessageWithLLM(
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemini-3.5-flash",
-      tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool] }],
+      tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool] }],
       systemInstruction
     });
 

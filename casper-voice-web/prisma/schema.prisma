@@ -33,6 +33,9 @@ model Tenant {
   sales          Sale[]
   purchases      Purchase[]
   appointments   Appointment[]
+  customers      Customer[]
+  customerLedgers CustomerLedgerEntry[]
+  journalEntries JournalEntry[]
 }
 
 // ── طلبات التسجيل الذاتي للشركة ──────────────────────────────
@@ -88,6 +91,8 @@ model Sale {
   id             String   @id @default(cuid())
   tenantId       String?
   tenant         Tenant?  @relation(fields: [tenantId], references: [id])
+  customerId     String?
+  customer       Customer? @relation(fields: [customerId], references: [id])
   itemName       String
   price          Float
   quantity       Int      @default(1)
@@ -97,6 +102,8 @@ model Sale {
   deferredAmount Float    @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
+
+  customerLedgers CustomerLedgerEntry[]
 
   @@index([tenantId])
 }
@@ -133,6 +140,8 @@ model Appointment {
   id           String   @id @default(cuid())
   tenantId     String?
   tenant       Tenant?  @relation(fields: [tenantId], references: [id])
+  customerId   String?
+  customer     Customer? @relation(fields: [customerId], references: [id])
   customerName String
   date         String
   time         String
@@ -142,6 +151,62 @@ model Appointment {
   updatedAt    DateTime @default(now()) @updatedAt
 
   @@index([tenantId])
+}
+
+// ── العملاء وحسابات الآجل (Customer Ledger) ──────────────
+model Customer {
+  id        String   @id @default(cuid())
+  tenantId  String?
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+  name      String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  sales     Sale[]
+  appointments Appointment[]
+  ledgers   CustomerLedgerEntry[]
+
+  @@unique([tenantId, phone]) // Use phone as the primary unique identifier per tenant if available
+  @@unique([tenantId, name])  // Fallback to name uniqueness
+}
+
+model CustomerLedgerEntry {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  saleId      String?
+  sale        Sale?    @relation(fields: [saleId], references: [id])
+  
+  entryType   String   // "SALE_DEBIT" | "PAYMENT_CREDIT" | "ADJUSTMENT"
+  amount      Float
+  description String   @default("")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  @@index([tenantId])
+  @@index([customerId])
+}
+
+// ── قيود اليومية (General Ledger) ─────────────────────────
+model JournalEntry {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+  
+  accountCode String   // e.g. "CASH", "ACCOUNTS_RECEIVABLE", "SALES_REVENUE"
+  debit       Float    @default(0)
+  credit      Float    @default(0)
+  referenceId String?  // ID of the related Sale or LedgerEntry
+  description String   @default("")
+  
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([accountCode])
 }
 
 // ── تتبع استهلاك التوكنز والحدود ─────────────────────────────

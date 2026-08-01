@@ -86,6 +86,21 @@ const getFinancialSummaryTool: FunctionDeclaration = {
   }
 };
 
+const getAppointmentsListTool: FunctionDeclaration = {
+  name: "get_appointments_list",
+  description: "استرجاع قائمة المواعيد المحجوزة للعملاء (لمعرفة من لديه موعد ومتى).",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      limit: { 
+        type: SchemaType.NUMBER, 
+        description: "عدد المواعيد المراد استرجاعها، افتراضيا 10" 
+      }
+    },
+    required: []
+  }
+};
+
 async function executeTool(name: string, args: any, tenantId?: string): Promise<{ success: boolean; resultText: string }> {
   try {
     if (name === "log_sale") {
@@ -226,6 +241,23 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
       };
     }
 
+    if (name === "get_appointments_list") {
+      const limit = args.limit || 10;
+      const apps = await prisma.appointment.findMany({
+        where: { ...(tenantId && { tenantId }) },
+        orderBy: { createdAt: 'desc' },
+        take: Number(limit)
+      });
+      if (apps.length === 0) {
+        return { success: true, resultText: "لا توجد أي مواعيد مسجلة حالياً." };
+      }
+      const appsList = apps.map(a => `- ${a.customerName} (يوم ${a.date} الساعة ${a.time})`).join('\n');
+      return { 
+        success: true, 
+        resultText: `📅 **قائمة المواعيد:**\n\n${appsList}`
+      };
+    }
+
     return { success: false, resultText: `أداة غير معروفة: ${name}` };
   } catch (err: any) {
     console.error(`[Telegram LLM Tool Error] ${name}:`, err);
@@ -258,7 +290,7 @@ export async function processTelegramMessageWithLLM(
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemini-3.5-flash",
-      tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool] }],
+      tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool] }],
       systemInstruction
     });
 

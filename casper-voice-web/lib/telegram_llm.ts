@@ -198,17 +198,7 @@ export async function processTelegramMessageWithLLM(
     if (functionCalls && functionCalls.length > 0) {
       const call = functionCalls[0];
       const toolRes = await executeTool(call.name, call.args, tenantId);
-      
-      // Pass tool execution output back to LLM for final confirmation text
-      const followUp = await chat.sendMessage([
-        {
-          functionResponse: {
-            name: call.name,
-            response: { result: toolRes.resultText }
-          }
-        }
-      ]);
-      return followUp.response.text().trim() || toolRes.resultText;
+      return toolRes.resultText;
     }
 
     return response.text().trim() || "تمام يا فندم، أنا معاك.";

@@ -314,15 +314,15 @@ export async function POST(req: NextRequest) {
     // Voice Note Handling (Transcription via Groq Whisper)
     if (message.voice) {
       try {
-        await sendTelegramAlert({
-          chatId,
-          text: "جاري الاستماع للرسالة الصوتية... ⏳",
-          idempotencyKey: `voice_ack:${chatId}:${message.message_id}`,
-        });
-
-        const fileId = message.voice.file_id;
         const botToken = process.env.TELEGRAM_BOT_TOKEN;
-        const fileRes = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${fileId}`);
+        const [alertRes, fileRes] = await Promise.all([
+          sendTelegramAlert({
+            chatId,
+            text: "جاري الاستماع للرسالة الصوتية... ⏳",
+            idempotencyKey: `voice_ack:${chatId}:${message.message_id}`,
+          }),
+          fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${message.voice.file_id}`)
+        ]);
         const fileData = await fileRes.json();
         
         if (fileData.ok && fileData.result.file_path) {

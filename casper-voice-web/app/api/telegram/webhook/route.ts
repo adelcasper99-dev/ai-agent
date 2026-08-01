@@ -311,6 +311,16 @@ export async function POST(req: NextRequest) {
     const chatId = String(message.chat.id);
     const text = typeof message.text === "string" ? message.text.trim() : "";
 
+    // Voice Note Interceptor (MVP)
+    if (message.voice) {
+      await sendTelegramAlert({
+        chatId,
+        text: "جاري الاستماع للرسالة الصوتية... ⏳\n(قريباً سيتم تفريغ المقطع وتحليله عبر الذكاء الاصطناعي)",
+        idempotencyKey: `voice_ack:${chatId}:${message.message_id}`,
+      });
+      return NextResponse.json({ ok: true });
+    }
+
     // Onboarding Input Interceptor
     let tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: chatId } });
 
@@ -466,6 +476,7 @@ export async function POST(req: NextRequest) {
           idempotencyKey: `start:tenant:${chatId}:${message.message_id}`,
           replyMarkup: {
             inline_keyboard: [
+              [{ text: "🎤 اتصال صوتي مباشر", web_app: { url: `https://ai.casper-erp.com/dashboard/chat?tenantId=${tenant.id}` } }],
               [{ text: "⚙️ تعديل الإعدادات والنشاط", callback_data: "type:custom" }],
               [
                 { text: "📅 المواعيد المسجلة", callback_data: "cmd_appointments" },

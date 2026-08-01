@@ -51,7 +51,7 @@ def main():
         run_local("git add .")
         run_local(f'git commit -m "{commit_msg}"')
 
-    push_res = run_local("git push origin main")
+    push_res = run_local("git push support-agent main")
     if push_res.returncode != 0:
         print("Warning: git push had non-zero exit code. Attempting remote pull anyway...")
 

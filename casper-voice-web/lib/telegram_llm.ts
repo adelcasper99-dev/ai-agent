@@ -12,9 +12,11 @@ const logSaleTool: FunctionDeclaration = {
     type: SchemaType.OBJECT,
     properties: {
       item_name: { type: SchemaType.STRING, description: "اسم المنتج المباع" },
-      price: { type: SchemaType.NUMBER, description: "سعر الوحدة بالجنيه" },
+      price: { type: SchemaType.NUMBER, description: "سعر الوحدة أو إجمالي السعر المتفق عليه بالجنيه" },
       quantity: { type: SchemaType.NUMBER, description: "الكمية المباعة (الافتراضي 1)" },
-      customer_name: { type: SchemaType.STRING, description: "اسم العميل (اختياري)" }
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل (اختياري)" },
+      paid_amount: { type: SchemaType.NUMBER, description: "المبلغ المدفوع (عربون أو دفعة مقدمة)" },
+      deferred_amount: { type: SchemaType.NUMBER, description: "المبلغ المتبقي الآجل" }
     },
     required: ["item_name", "price"]
   }
@@ -120,22 +122,27 @@ const reportMissingFeatureTool: FunctionDeclaration = {
 async function executeTool(name: string, args: any, tenantId?: string): Promise<{ success: boolean; resultText: string }> {
   try {
     if (name === "log_sale") {
-      const { item_name, price, quantity = 1, customer_name = "" } = args;
+      const { item_name, price, quantity = 1, customer_name = "", paid_amount, deferred_amount } = args;
       if (!item_name || typeof price !== "number" || price <= 0) {
         return { success: false, resultText: "خطأ: اسم المنتج وسعر الوحدة مطلوبين بشكل صحيح." };
       }
       const totalAmount = new Decimal(price).mul(quantity);
+      const paid = paid_amount !== undefined ? Number(paid_amount) : totalAmount.toNumber();
+      const deferred = deferred_amount !== undefined ? Number(deferred_amount) : totalAmount.minus(paid).toNumber();
+      
       const sale = await prisma.sale.create({
         data: {
           itemName: String(item_name).trim(),
           price: price,
           quantity: Number(quantity) || 1,
           total: totalAmount.toNumber(),
+          paidAmount: paid,
+          deferredAmount: deferred,
           customerName: customer_name ? String(customer_name).trim() : "",
           ...(tenantId && { tenantId })
         }
       });
-      return { success: true, resultText: `تم تسجيل بيع ${sale.quantity} ${sale.itemName} إجمالي ${sale.total} جنيه بنجاح!` };
+      return { success: true, resultText: `تم تسجيل بيع ${sale.quantity} ${sale.itemName} إجمالي ${sale.total} جنيه (مدفوع: ${sale.paidAmount}، متبقي: ${sale.deferredAmount}) بنجاح!` };
     }
 
     if (name === "log_expense") {
@@ -335,9 +342,12 @@ export async function processTelegramMessageWithLLM(
     const functionCalls = response.functionCalls();
 
     if (functionCalls && functionCalls.length > 0) {
-      const call = functionCalls[0];
-      const toolRes = await executeTool(call.name, call.args, tenantId);
-      return toolRes.resultText;
+      let combinedResults = [];
+      for (const call of functionCalls) {
+        const toolRes = await executeTool(call.name, call.args, tenantId);
+        combinedResults.push(toolRes.resultText);
+      }
+      return combinedResults.join('\n\n');
     }
 
     return response.text().trim() || "تمام يا فندم، أنا معاك.";

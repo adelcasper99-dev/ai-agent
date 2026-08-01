@@ -185,7 +185,7 @@ export async function processTelegramMessageWithLLM(
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: "gemini-3.6-flash",
+      model: "gemini-1.5-flash",
       tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool] }],
       systemInstruction
     });

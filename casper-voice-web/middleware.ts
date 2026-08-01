@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // المسارات اللي لازم تفضل مفتوحة من غير login (تليجرام لازم يوصلها من برا)
-const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/telegram/webhook'];
+const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/telegram/webhook', '/telegram-voice', '/api/livekit/token'];
 
 function isInternalSecretValid(headerSecret: string | null): boolean {
   if (!headerSecret) return false;

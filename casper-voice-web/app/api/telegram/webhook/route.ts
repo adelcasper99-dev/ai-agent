@@ -476,7 +476,7 @@ export async function POST(req: NextRequest) {
           idempotencyKey: `start:tenant:${chatId}:${message.message_id}`,
           replyMarkup: {
             inline_keyboard: [
-              [{ text: "🎤 اتصال صوتي مباشر", web_app: { url: `https://ai.casper-erp.com/dashboard/chat?tenantId=${tenant.id}` } }],
+              [{ text: "🎤 اتصال صوتي مباشر", web_app: { url: `https://ai.casper-erp.com/telegram-voice?tenantId=${tenant.id}` } }],
               [{ text: "⚙️ تعديل الإعدادات والنشاط", callback_data: "type:custom" }],
               [
                 { text: "📅 المواعيد المسجلة", callback_data: "cmd_appointments" },

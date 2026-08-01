@@ -17,9 +17,10 @@ interface VoiceCallModalProps {
   isOpen: boolean;
   mode: 'customer_service' | 'personal_assistant';
   onClose: () => void;
+  tenantId?: string;
 }
 
-export default function VoiceCallModal({ isOpen, mode, onClose }: VoiceCallModalProps) {
+export default function VoiceCallModal({ isOpen, mode, onClose, tenantId }: VoiceCallModalProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [status, setStatus] = useState<'INITIALIZING' | 'CONNECTING' | 'CONNECTED' | 'ERROR' | 'DISCONNECTED'>('INITIALIZING');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -62,7 +63,7 @@ export default function VoiceCallModal({ isOpen, mode, onClose }: VoiceCallModal
         const res = await fetch('/api/livekit/token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mode }),
+          body: JSON.stringify({ mode, tenantId }),
         });
 
         const data = await res.json();

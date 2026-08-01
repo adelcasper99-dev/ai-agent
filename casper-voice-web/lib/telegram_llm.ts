@@ -152,6 +152,48 @@ const getCustomerBalanceTool: FunctionDeclaration = {
 
 const executedKeys = new Set<string>();
 
+async function syncCustomerLedgers(tx: any, customerId: string, tenantId: string) {
+  try {
+    const sales = await tx.sale.findMany({ where: { customerId } });
+    for (const sale of sales) {
+      const existingLedgers = await tx.customerLedgerEntry.findMany({ where: { saleId: sale.id } });
+      const hasCorrectDebit = existingLedgers.some((l: any) => l.entryType === "SALE_DEBIT" && l.amount === sale.total);
+      
+      if (!hasCorrectDebit) {
+        await tx.customerLedgerEntry.deleteMany({ where: { saleId: sale.id } });
+        
+        await tx.customerLedgerEntry.create({
+          data: {
+            customerId,
+            saleId: sale.id,
+            entryType: "SALE_DEBIT",
+            amount: sale.total,
+            description: `فاتورة مبيعات: ${sale.quantity} ${sale.itemName}`,
+            ...(tenantId && { tenantId }),
+            createdAt: sale.createdAt
+          }
+        });
+
+        if (sale.paidAmount > 0) {
+          await tx.customerLedgerEntry.create({
+            data: {
+              customerId,
+              saleId: sale.id,
+              entryType: "PAYMENT_CREDIT",
+              amount: sale.paidAmount,
+              description: `دفعة مسددة عند البيع: ${sale.itemName}`,
+              ...(tenantId && { tenantId }),
+              createdAt: sale.createdAt
+            }
+          });
+        }
+      }
+    }
+  } catch (e) {
+    console.error("[syncCustomerLedgers Error]:", e);
+  }
+}
+
 async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone: string | null, includeLedgers: boolean = false) {
   let customer = null;
   const include = includeLedgers ? { ledgers: true } : undefined;
@@ -199,29 +241,20 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
             where: { id: sale.id },
             data: { customerId: customer.id }
           });
-          if (sale.deferredAmount > 0) {
-            await tx.customerLedgerEntry.create({
-              data: {
-                customerId: customer.id,
-                saleId: sale.id,
-                entryType: "SALE_DEBIT",
-                amount: sale.deferredAmount,
-                description: `بيع آجل سابق: ${sale.quantity} ${sale.itemName}`,
-                ...(tId && { tenantId: tId }),
-                createdAt: sale.createdAt
-              }
-            });
-          }
-        }
-        if (includeLedgers) {
-          customer = await tx.customer.findUnique({
-            where: { id: customer.id },
-            include: { ledgers: true }
-          });
         }
       }
     } catch (e) {
       console.error("[findCustomerFuzzy Backfill Error]:", e);
+    }
+  }
+
+  if (customer) {
+    await syncCustomerLedgers(tx, customer.id, tId);
+    if (includeLedgers) {
+      customer = await tx.customer.findUnique({
+        where: { id: customer.id },
+        include: { ledgers: true }
+      });
     }
   }
 
@@ -281,17 +314,31 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
           }
         });
 
-        if (customerId && deferred.gt(0)) {
+        if (customerId) {
            await tx.customerLedgerEntry.create({
              data: {
                customerId,
                saleId: sale.id,
                entryType: "SALE_DEBIT",
-               amount: deferred.toNumber(),
-               description: `بيع آجل: ${sale.quantity} ${sale.itemName}`,
+               amount: totalAmount.toNumber(),
+               description: `فاتورة مبيعات: ${sale.quantity} ${sale.itemName}`,
                ...(tenantId && { tenantId })
              }
            });
+           if (paid.gt(0)) {
+             await tx.customerLedgerEntry.create({
+               data: {
+                 customerId,
+                 saleId: sale.id,
+                 entryType: "PAYMENT_CREDIT",
+                 amount: paid.toNumber(),
+                 description: `دفعة مسددة عند البيع: ${sale.itemName}`,
+                 ...(tenantId && { tenantId })
+               }
+             });
+           }
+        }
+        if (deferred.gt(0)) {
            await tx.journalEntry.create({
              data: {
                accountCode: "ACCOUNTS_RECEIVABLE",
@@ -429,7 +476,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
           if (l.entryType === "PAYMENT_CREDIT") totalCredit = totalCredit.plus(l.amount);
        });
        const balance = totalDebit.minus(totalCredit);
-       return { success: true, resultText: `العميل ${customer.name}: المسحوبات الآجلة ${totalDebit.toNumber()}ج، والسداد ${totalCredit.toNumber()}ج. الرصيد عليه: ${balance.toNumber()}ج.` };
+       return { success: true, resultText: `العميل ${customer.name}: إجمالي المشتريات ${totalDebit.toNumber()}ج، المسدد منها ${totalCredit.toNumber()}ج. الرصيد المتبقي عليه: ${balance.toNumber()}ج.` };
     }
 
     if (name === "log_purchase") {

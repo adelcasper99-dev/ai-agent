@@ -152,6 +152,29 @@ const getCustomerBalanceTool: FunctionDeclaration = {
 
 const executedKeys = new Set<string>();
 
+async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone: string | null, includeLedgers: boolean = false) {
+  let customer = null;
+  const include = includeLedgers ? { ledgers: true } : undefined;
+  const tId = tenantId || "";
+  
+  if (phone) {
+    customer = await tx.customer.findUnique({ where: { tenantId_phone: { tenantId: tId, phone } }, include });
+  }
+  if (!customer && name) {
+    customer = await tx.customer.findUnique({ where: { tenantId_name: { tenantId: tId, name } }, include });
+    if (!customer) {
+      const normalize = (s: string) => s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+      const normalizedInput = normalize(name);
+      const allCustomers = await tx.customer.findMany({ where: { tenantId: tId }, select: { id: true, name: true } });
+      const match = allCustomers.find((c: any) => normalize(c.name) === normalizedInput);
+      if (match) {
+         customer = await tx.customer.findUnique({ where: { id: match.id }, include });
+      }
+    }
+  }
+  return customer;
+}
+
 async function executeTool(name: string, args: any, tenantId?: string): Promise<{ success: boolean; resultText: string }> {
   try {
     const { idempotency_key } = args;
@@ -178,13 +201,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
         const custPhone = customer_phone ? String(customer_phone).trim() : null;
 
         if (custName || custPhone) {
-          let customer = null;
-          if (custPhone) {
-             customer = await tx.customer.findUnique({ where: { tenantId_phone: { tenantId: tenantId || "", phone: custPhone } } });
-          }
-          if (!customer && custName) {
-             customer = await tx.customer.findUnique({ where: { tenantId_name: { tenantId: tenantId || "", name: custName } } });
-          }
+          let customer = await findCustomerFuzzy(tx, tenantId || "", custName, custPhone);
           if (!customer) {
              customer = await tx.customer.create({
                 data: {
@@ -290,9 +307,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
       }
       const custName = String(customer_name).trim();
       const custPhone = customer_phone ? String(customer_phone).trim() : null;
-      let customer = null;
-      if (custPhone) customer = await prisma.customer.findUnique({ where: { tenantId_phone: { tenantId: tenantId || "", phone: custPhone } } });
-      if (!customer) customer = await prisma.customer.findUnique({ where: { tenantId_name: { tenantId: tenantId || "", name: custName } } });
+      let customer = await findCustomerFuzzy(prisma, tenantId || "", custName, custPhone);
 
       const app = await prisma.appointment.create({
         data: {
@@ -318,13 +333,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
 
        try {
          const paymentResult = await prisma.$transaction(async (tx) => {
-            let customer = null;
-            if (custPhone) {
-               customer = await tx.customer.findUnique({ where: { tenantId_phone: { tenantId: tenantId || "", phone: custPhone } } });
-            }
-            if (!customer) {
-               customer = await tx.customer.findUnique({ where: { tenantId_name: { tenantId: tenantId || "", name: custName } } });
-            }
+            let customer = await findCustomerFuzzy(tx, tenantId || "", custName, custPhone);
             if (!customer) {
                throw new Error(`لم يتم العثور على العميل: ${custName}`);
             }
@@ -355,20 +364,14 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
        const { customer_name, customer_phone } = args;
        const custName = String(customer_name).trim();
        const custPhone = customer_phone ? String(customer_phone).trim() : null;
-       let customer = null;
-       if (custPhone) {
-          customer = await prisma.customer.findUnique({ where: { tenantId_phone: { tenantId: tenantId || "", phone: custPhone } }, include: { ledgers: true } });
-       }
-       if (!customer) {
-          customer = await prisma.customer.findUnique({ where: { tenantId_name: { tenantId: tenantId || "", name: custName } }, include: { ledgers: true } });
-       }
+       let customer = await findCustomerFuzzy(prisma, tenantId || "", custName, custPhone, true);
        if (!customer) {
           return { success: false, resultText: `لم يتم العثور على العميل: ${custName}` };
        }
        
        let totalDebit = new Decimal(0);
        let totalCredit = new Decimal(0);
-       customer.ledgers.forEach(l => {
+       customer.ledgers.forEach((l: any) => {
           if (l.entryType === "SALE_DEBIT") totalDebit = totalDebit.plus(l.amount);
           if (l.entryType === "PAYMENT_CREDIT") totalCredit = totalCredit.plus(l.amount);
        });

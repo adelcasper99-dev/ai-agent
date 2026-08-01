@@ -172,6 +172,59 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
       }
     }
   }
+
+  // Fallback: Check for existing Sale records created prior to Customer model creation
+  if (!customer && name) {
+    try {
+      const normalize = (s: string) => s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+      const normalizedInput = normalize(name);
+      const sales = await tx.sale.findMany({
+        where: {
+          ...(tId && { tenantId: tId }),
+          customerName: { not: "" }
+        }
+      });
+      const matchingSales = sales.filter((s: any) => s.customerName && normalize(s.customerName) === normalizedInput);
+      if (matchingSales.length > 0) {
+        const canonicalName = matchingSales[0].customerName;
+        customer = await tx.customer.create({
+          data: {
+            name: canonicalName,
+            phone: phone || null,
+            ...(tId && { tenantId: tId })
+          }
+        });
+        for (const sale of matchingSales) {
+          await tx.sale.update({
+            where: { id: sale.id },
+            data: { customerId: customer.id }
+          });
+          if (sale.deferredAmount > 0) {
+            await tx.customerLedgerEntry.create({
+              data: {
+                customerId: customer.id,
+                saleId: sale.id,
+                entryType: "SALE_DEBIT",
+                amount: sale.deferredAmount,
+                description: `بيع آجل سابق: ${sale.quantity} ${sale.itemName}`,
+                ...(tId && { tenantId: tId }),
+                createdAt: sale.createdAt
+              }
+            });
+          }
+        }
+        if (includeLedgers) {
+          customer = await tx.customer.findUnique({
+            where: { id: customer.id },
+            include: { ledgers: true }
+          });
+        }
+      }
+    } catch (e) {
+      console.error("[findCustomerFuzzy Backfill Error]:", e);
+    }
+  }
+
   return customer;
 }
 

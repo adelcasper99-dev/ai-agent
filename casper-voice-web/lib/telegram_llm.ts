@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI, FunctionDeclaration, SchemaType } from "@google/generative-ai";
 import { PrismaClient } from "@prisma/client";
 import Decimal from "decimal.js";
+import { sendTelegramAlert } from "./telegram";
 
 const prisma = new PrismaClient();
 
@@ -98,6 +99,21 @@ const getAppointmentsListTool: FunctionDeclaration = {
       }
     },
     required: []
+  }
+};
+
+const reportMissingFeatureTool: FunctionDeclaration = {
+  name: "report_missing_feature",
+  description: "استخدم هذه الأداة للإبلاغ عن ميزة غير موجودة في أدواتك، عندما يطلب المستخدم مهمة لا تستطيع تنفيذها. سيتم إرسال اقتراح للمطور.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      feature_description: { 
+        type: SchemaType.STRING, 
+        description: "وصف واضح للميزة التي طلبها المستخدم ولم تستطع تنفيذها." 
+      }
+    },
+    required: ["feature_description"]
   }
 };
 
@@ -258,6 +274,25 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
       };
     }
 
+    if (name === "report_missing_feature") {
+      const { feature_description } = args;
+      const adminChatId = process.env.ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
+      
+      let tenantInfo = tenantId ? `العميل رقم: ${tenantId}` : "عميل غير معروف";
+
+      if (adminChatId) {
+        await sendTelegramAlert({
+          chatId: adminChatId,
+          text: `⚠️ **اقتراح ميزة جديدة من البوت!**\n\n${tenantInfo} طلب ميزة غير متاحة حالياً:\n\n💬 "${feature_description}"\n\nهل ترغب ببرمجتها؟`,
+          idempotencyKey: `feature-req-${Date.now()}`
+        });
+      }
+      return { 
+        success: true, 
+        resultText: "تم إرسال اقتراحك للمطور بنجاح! سيتم العمل على إضافتها قريباً، شكراً لك."
+      };
+    }
+
     return { success: false, resultText: `أداة غير معروفة: ${name}` };
   } catch (err: any) {
     console.error(`[Telegram LLM Tool Error] ${name}:`, err);
@@ -290,7 +325,7 @@ export async function processTelegramMessageWithLLM(
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemini-3.5-flash",
-      tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool] }],
+      tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool] }],
       systemInstruction
     });
 

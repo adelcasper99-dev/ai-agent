@@ -309,16 +309,64 @@ export async function POST(req: NextRequest) {
     }
 
     const chatId = String(message.chat.id);
-    const text = typeof message.text === "string" ? message.text.trim() : "";
+    let text = typeof message.text === "string" ? message.text.trim() : "";
 
-    // Voice Note Interceptor (MVP)
+    // Voice Note Handling (Transcription via Groq Whisper)
     if (message.voice) {
-      await sendTelegramAlert({
-        chatId,
-        text: "جاري الاستماع للرسالة الصوتية... ⏳\n(قريباً سيتم تفريغ المقطع وتحليله عبر الذكاء الاصطناعي)",
-        idempotencyKey: `voice_ack:${chatId}:${message.message_id}`,
-      });
-      return NextResponse.json({ ok: true });
+      try {
+        await sendTelegramAlert({
+          chatId,
+          text: "جاري الاستماع للرسالة الصوتية... ⏳",
+          idempotencyKey: `voice_ack:${chatId}:${message.message_id}`,
+        });
+
+        const fileId = message.voice.file_id;
+        const botToken = process.env.TELEGRAM_BOT_TOKEN;
+        const fileRes = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${fileId}`);
+        const fileData = await fileRes.json();
+        
+        if (fileData.ok && fileData.result.file_path) {
+          const filePath = fileData.result.file_path;
+          const audioRes = await fetch(`https://api.telegram.org/file/bot${botToken}/${filePath}`);
+          const audioBuffer = await audioRes.arrayBuffer();
+          
+          const blob = new Blob([audioBuffer], { type: 'audio/ogg' });
+          const formData = new FormData();
+          formData.append('file', blob, 'voice.ogg');
+          formData.append('model', 'whisper-large-v3-turbo');
+          formData.append('language', 'ar');
+
+          let groqKey = process.env.GROQ_API_KEY;
+          if (!groqKey) {
+             const setting = await (prisma as any).setting.findUnique({ where: { key: "GROQ_API_KEY" } });
+             if (setting) groqKey = setting.value;
+          }
+
+          if (groqKey) {
+            const groqRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${groqKey}` },
+              body: formData
+            });
+            const groqData = await groqRes.json();
+            if (groqData.text) {
+              text = groqData.text; // Override the text and continue!
+            } else {
+              throw new Error("No text returned from Groq API");
+            }
+          } else {
+            throw new Error("GROQ_API_KEY is missing");
+          }
+        }
+      } catch (err: any) {
+        console.error("Voice Note Error:", err);
+        await sendTelegramAlert({
+          chatId,
+          text: "❌ عذراً، حدث خطأ أثناء تفريغ الرسالة الصوتية.",
+          idempotencyKey: `voice_err:${chatId}:${message.message_id}`,
+        });
+        return NextResponse.json({ ok: true });
+      }
     }
 
     // Onboarding Input Interceptor

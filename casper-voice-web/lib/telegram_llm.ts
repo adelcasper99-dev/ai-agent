@@ -50,16 +50,26 @@ const bookAppointmentTool: FunctionDeclaration = {
 
 const logPurchaseTool: FunctionDeclaration = {
   name: "log_purchase",
-  description: "تسجيل فاتورة مشتريات من مورد (اسم المورد، الصنف، المبلغ الإجمالي، المدفوع)",
+  description: "تسجيل فاتورة مشتريات جديدة من مورد معين.",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
       supplier_name: { type: SchemaType.STRING, description: "اسم المورد" },
-      item_name: { type: SchemaType.STRING, description: "اسم الصنف أو البضاعة" },
-      total_amount: { type: SchemaType.NUMBER, description: "المبلغ الإجمالي بالجنيه" },
-      paid_amount: { type: SchemaType.NUMBER, description: "المبلغ المدفوع كاش" }
+      item_name: { type: SchemaType.STRING, description: "اسم أو تفاصيل الصنف المشترى" },
+      total_amount: { type: SchemaType.NUMBER, description: "إجمالي قيمة الفاتورة" },
+      paid_amount: { type: SchemaType.NUMBER, description: "المبلغ المدفوع (اختياري، إذا لم يذكر يعتبر الفاتورة مدفوعة بالكامل)" }
     },
     required: ["supplier_name", "item_name", "total_amount"]
+  }
+};
+
+const getDailySummaryTool: FunctionDeclaration = {
+  name: "get_daily_summary",
+  description: "عرض إجمالي المبيعات والمصروفات الخاصة باليوم. استخدم هذه الأداة عندما يسأل المستخدم عن الإجمالي أو الدفاتر.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {},
+    required: []
   }
 };
 
@@ -154,6 +164,34 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
       return { success: true, resultText: `تم تسجيل فاتورة مشتريات من ${supplier.name} بقيمة ${purchase.totalAmount} جنيه بنجاح!` };
     }
 
+    if (name === "get_daily_summary") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const sales = await prisma.sale.findMany({
+        where: {
+          createdAt: { gte: today, lt: tomorrow },
+          ...(tenantId && { tenantId })
+        }
+      });
+      const totalSales = sales.reduce((acc, s) => acc + s.total, 0);
+
+      const expenses = await prisma.expense.findMany({
+        where: {
+          createdAt: { gte: today, lt: tomorrow },
+          ...(tenantId && { tenantId })
+        }
+      });
+      const totalExpenses = expenses.reduce((acc, e) => acc + e.amount, 0);
+
+      return { 
+        success: true, 
+        resultText: `📊 **ملخص اليوم:**\n\n🟢 المبيعات: ${totalSales} جنيه\n🔴 المصروفات: ${totalExpenses} جنيه\n\nصافي اليوم: ${totalSales - totalExpenses} جنيه`
+      };
+    }
+
     return { success: false, resultText: `أداة غير معروفة: ${name}` };
   } catch (err: any) {
     console.error(`[Telegram LLM Tool Error] ${name}:`, err);
@@ -186,7 +224,7 @@ export async function processTelegramMessageWithLLM(
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemini-3.5-flash",
-      tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool] }],
+      tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getDailySummaryTool] }],
       systemInstruction
     });
 

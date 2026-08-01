@@ -795,8 +795,8 @@
     "semantic_hash": ""
   },
   ".agents/stage_log.json": {
-    "mtime": 1785581910.8785787,
-    "ast_hash": "5f3090feae8c8c9eaae72a203d9cefc1",
+    "mtime": 1785606004.3790557,
+    "ast_hash": "2aaa78354180028b0e9e5cf8db3383ce",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -845,13 +845,13 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/logs/route.ts": {
-    "mtime": 1785242793.452072,
-    "ast_hash": "953bc65b931b3b0f220eb1a97d588ffb",
+    "mtime": 1785605927.587086,
+    "ast_hash": "cf61c0c238ef9721b5a97b4c4afab794",
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/purchases/route.ts": {
-    "mtime": 1785484596.0738723,
-    "ast_hash": "494c13604ef0344407219e5d2a9b5995",
+    "mtime": 1785605970.8537376,
+    "ast_hash": "2590d800c495a4c8597a219e6f9d4fdd",
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/reports/appointments/route.ts": {
@@ -985,8 +985,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/next-env.d.ts": {
-    "mtime": 1785516184.4450846,
-    "ast_hash": "2a74d3909800ca5467fa83b0ab4a4890",
+    "mtime": 1785605984.4346793,
+    "ast_hash": "d0f8375ae1199dc7acd3977fc33b78b8",
     "semantic_hash": ""
   },
   "casper-voice-web/next.config.ts": {
@@ -2515,8 +2515,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/telegram/webhook/route.ts": {
-    "mtime": 1785583310.6893277,
-    "ast_hash": "a5a5f06c847ca2edc46a6e47728caa5a",
+    "mtime": 1785588662.4645374,
+    "ast_hash": "4092e52f9e3f74f3d768f143c4970a61",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram.ts": {
@@ -2720,8 +2720,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram_llm.ts": {
-    "mtime": 1785517294.8021228,
-    "ast_hash": "53664e05e837392b6db2841564d54bdc",
+    "mtime": 1785605878.5555475,
+    "ast_hash": "4c7bd7a348dfcd9969724345ab9053d5",
     "semantic_hash": ""
   },
   "casper-voice-web/app/telegram-voice/page.tsx": {
@@ -2737,6 +2737,21 @@
   "fix_env.py": {
     "mtime": 1785580922.1636298,
     "ast_hash": "528f96000e6b9f3326d0f80438908550",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/test.js": {
+    "mtime": 1785585797.3780339,
+    "ast_hash": "2e3bc537ce73702e4ac8b79a873e5662",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/test_gemini.js": {
+    "mtime": 1785588258.2649293,
+    "ast_hash": "417e42523540d25acb64eede16ca20a2",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/test_gemini.py": {
+    "mtime": 1785588240.792252,
+    "ast_hash": "06db16d6b282f8ed7cf00d69e67b8284",
     "semantic_hash": ""
   }
 }

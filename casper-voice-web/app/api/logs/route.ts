@@ -1,10 +1,22 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import fs from 'fs';
 import path from 'path';
+
+async function requireAdmin() {
+  const cookieStore = await cookies();
+  if (cookieStore.get('admin_session')?.value !== 'valid') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return null;
+}
 
 let lastClearedTime = 0;
 
 export async function GET() {
+  const authError = await requireAdmin();
+  if (authError) return authError;
+
   try {
     const logPath = path.join(process.cwd(), '..', 'voice_service', 'agent_log.txt');
     if (!fs.existsSync(logPath)) {
@@ -34,6 +46,9 @@ export async function GET() {
 }
 
 export async function DELETE() {
+  const authError = await requireAdmin();
+  if (authError) return authError;
+
   try {
     const logPath = path.join(process.cwd(), '..', 'voice_service', 'agent_log.txt');
     lastClearedTime = Date.now();

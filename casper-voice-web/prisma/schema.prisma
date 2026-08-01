@@ -32,6 +32,7 @@ model Tenant {
   expenses       Expense[]
   sales          Sale[]
   purchases      Purchase[]
+  suppliers      Supplier[]
   appointments   Appointment[]
   customers      Customer[]
   customerLedgers CustomerLedgerEntry[]
@@ -111,11 +112,16 @@ model Sale {
 // ── الموردين والمشتريات ─────────────────────────────────────
 model Supplier {
   id        String     @id @default(cuid())
-  name      String     @unique
+  tenantId  String?
+  tenant    Tenant?    @relation(fields: [tenantId], references: [id])
+  name      String
   phone     String     @default("")
   createdAt DateTime   @default(now())
   updatedAt DateTime   @default(now()) @updatedAt
   purchases Purchase[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
 }
 
 model Purchase {
@@ -183,6 +189,7 @@ model CustomerLedgerEntry {
   entryType   String   // "SALE_DEBIT" | "PAYMENT_CREDIT" | "ADJUSTMENT"
   amount      Float
   description String   @default("")
+  idempotencyKey String? @unique
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt

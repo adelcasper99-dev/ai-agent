@@ -484,14 +484,17 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
       if (!supplier_name || !item_name || typeof total_amount !== "number") {
         return { success: false, resultText: "خطأ: اسم المورد والصنف والمبلغ الإجمالي مطلوبين." };
       }
+      if (!tenantId) {
+        return { success: false, resultText: "عذراً، لم أتمكن من تسجيل المشتريات لوجود مشكلة في التعرف على حساب الشركة (tenantId مفقود)." };
+      }
       const total = new Decimal(total_amount);
       const paid = new Decimal(paid_amount ?? total_amount);
       const remaining = total.sub(paid);
       const supplierNameStr = String(supplier_name).trim();
       const supplier = await prisma.supplier.upsert({
-        where: { name: supplierNameStr },
+        where: { tenantId_name: { tenantId, name: supplierNameStr } },
         update: {},
-        create: { name: supplierNameStr }
+        create: { name: supplierNameStr, tenantId }
       });
       const purchase = await prisma.purchase.create({
         data: {

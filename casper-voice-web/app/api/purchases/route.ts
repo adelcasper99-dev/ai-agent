@@ -12,7 +12,7 @@ const idempotencyMap = new Map<string, { timestamp: number; response: any }>();
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { supplier_name, item_name, total_amount, paid_amount = 0, notes = "" } = body;
+    const { supplier_name, item_name, total_amount, paid_amount = 0, notes = "", tenantId } = body;
 
     if (!supplier_name || !item_name || typeof total_amount !== "number" || total_amount <= 0) {
       return NextResponse.json(
@@ -24,12 +24,17 @@ export async function POST(req: NextRequest) {
     const paid = typeof paid_amount === "number" ? paid_amount : 0;
     const deferred = Math.max(0, total_amount - paid);
 
-    // 1. Upsert Supplier by name
-    const supplier = await prisma.supplier.upsert({
-      where: { name: supplier_name.trim() },
-      update: {},
-      create: { name: supplier_name.trim() },
+    // 1. Find or create Supplier by tenantId & name
+    const supplierNameStr = supplier_name.trim();
+    const effectiveTenantId = tenantId || null;
+    let supplier = await prisma.supplier.findFirst({
+      where: { name: supplierNameStr, tenantId: effectiveTenantId },
     });
+    if (!supplier) {
+      supplier = await prisma.supplier.create({
+        data: { name: supplierNameStr, tenantId: effectiveTenantId },
+      });
+    }
 
     // 2. Create Purchase record
     const purchase = await prisma.purchase.create({

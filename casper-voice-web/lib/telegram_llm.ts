@@ -214,6 +214,6 @@ export async function processTelegramMessageWithLLM(
     return response.text().trim() || "تمام يا فندم، أنا معاك.";
   } catch (err: any) {
     console.error("[Telegram LLM Process Error]:", err);
-    return "💡 حصلت مشكلة بسيطة في معالجة الرسالة، جرب تاني يا فندم.";
+    return `💡 حصلت مشكلة بسيطة في معالجة الرسالة، جرب تاني يا فندم.\n\n\`تفاصيل الخطأ: ${err?.message || String(err)}\``;
   }
 }

@@ -2515,8 +2515,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/telegram/webhook/route.ts": {
-    "mtime": 1785548576.4249215,
-    "ast_hash": "4bc5c2ec043a8eb9e9c9239e685fedc1",
+    "mtime": 1785552326.8652854,
+    "ast_hash": "00851c2d1b76c51942b410c12f603f81",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram.ts": {

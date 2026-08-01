@@ -2290,8 +2290,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/AGENTS.md": {
-    "mtime": 1785237191.6535213,
-    "ast_hash": "9e09241799026ac05be315a2f0b50055",
+    "mtime": 1785548673.642469,
+    "ast_hash": "4747557045e4b94ac105b5d6dc127047",
     "semantic_hash": ""
   },
   "casper-voice-web/CLAUDE.md": {
@@ -2515,13 +2515,13 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/telegram/webhook/route.ts": {
-    "mtime": 1785521499.5009832,
-    "ast_hash": "1cf0fafd443fb6e0a15c45d9aa0598d9",
+    "mtime": 1785548576.4249215,
+    "ast_hash": "4bc5c2ec043a8eb9e9c9239e685fedc1",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram.ts": {
-    "mtime": 1785399156.3961973,
-    "ast_hash": "d2c864ac5dfb075f756867d33dbd3350",
+    "mtime": 1785548549.1737275,
+    "ast_hash": "a5e15e56fe8dde5e155166d60b20a331",
     "semantic_hash": ""
   },
   "casper-voice-web/tests/telegram.test.ts": {

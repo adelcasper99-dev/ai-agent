@@ -8,6 +8,7 @@ import {
   isChatAllowed,
   approveTenantRequest,
   rejectTenantRequest,
+  setTelegramBotCommands,
 } from "@/lib/telegram";
 import { processTelegramMessageWithLLM } from "@/lib/telegram_llm";
 
@@ -236,6 +237,53 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
+      if (data === "cmd_appointments") {
+        const appointments = await prisma.appointment.findMany({
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        });
+        let responseText = "📅 *قائمة المواعيد المسجلة حديثاً:*\n\n";
+        if (appointments.length === 0) {
+          responseText += "لا توجد مواعيد مسجلة حالياً.";
+        } else {
+          appointments.forEach((app, idx) => {
+            responseText += `${idx + 1}. *${app.customerName}* — ${app.date} الساعة ${app.time}\n`;
+          });
+        }
+        await sendTelegramAlert({
+          chatId: callbackChatId,
+          text: responseText,
+          idempotencyKey: `appointments_btn:${callbackChatId}:${Date.now()}`,
+        });
+        await answerCallback("تم جلب المواعيد!");
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data === "cmd_human") {
+        const currentTenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        await sendTelegramAlert({
+          chatId: callbackChatId,
+          text: "⏳ *تم توجيه طلبك لأحد ممثلي الدعم الفني*، وسيقوم بالرد عليك في أقرب وقت ممكن.",
+          idempotencyKey: `escalate:customer_btn:${callbackChatId}:${Date.now()}`,
+        });
+
+        const adminChatId = process.env.ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
+        if (adminChatId) {
+          await sendTelegramAlert({
+            chatId: adminChatId,
+            text: `🚨 *طلب تصعيد دعم فني جديد!*\n\n👤 *العميل:* ${callback.from?.first_name || "عميل"}\n🆔 *Chat ID:* \`${callbackChatId}\`\n💬 *الشركة:* ${currentTenant?.name || "غير مسجل"}`,
+            idempotencyKey: `escalate:admin_notify_btn:${callbackChatId}:${Date.now()}`,
+            replyMarkup: {
+              inline_keyboard: [
+                [{ text: "✅ إغلاق وسؤال رأي العميل", callback_data: `resolve:${callbackChatId}` }],
+              ],
+            },
+          });
+        }
+        await answerCallback("تم طلب موظف الدعم!");
+        return NextResponse.json({ ok: true });
+      }
+
       const expectedAdminId = process.env.ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
       // Auth Check: Admin Callback sender MUST equal ADMIN_CHAT_ID
       if (expectedAdminId && callbackChatId !== expectedAdminId) {
@@ -395,6 +443,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Trigger native Telegram menu commands setup
+    void setTelegramBotCommands();
+
     if (text === "/start") {
       if (tenant) {
         if (tenant.state === "pending_agreement") {
@@ -411,8 +462,17 @@ export async function POST(req: NextRequest) {
 
         await sendTelegramAlert({
           chatId,
-          text: `👋 أهلاً بك مجدداً! حساب شركتك *${tenant.name}* مفعل بحالة (*${tenant.state}*).`,
+          text: `👋 *أهلاً بك مجدداً أستاذ/ة ${tenant.name}!*\n\nحساب شركتك مفعل وجاهز لخدمتك.\n🏢 *نوع النشاط:* ${tenant.businessType || "غير محدد"}\n⏰ *مواعيد العمل:* ${tenant.workingHours || "غير محددة"}\n\nيمكنك استخدام الأوامر السريعة بالأسفل أو إرسال أي سؤال مباشرة:`,
           idempotencyKey: `start:tenant:${chatId}:${message.message_id}`,
+          replyMarkup: {
+            inline_keyboard: [
+              [{ text: "⚙️ تعديل الإعدادات والنشاط", callback_data: "type:custom" }],
+              [
+                { text: "📅 المواعيد المسجلة", callback_data: "cmd_appointments" },
+                { text: "💬 التحدث مع موظف دعم", callback_data: "cmd_human" },
+              ],
+            ],
+          },
         });
         return NextResponse.json({ ok: true });
       }

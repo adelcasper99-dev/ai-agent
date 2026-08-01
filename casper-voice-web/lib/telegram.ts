@@ -57,6 +57,25 @@ function validateEnv() {
   }
 }
 
+export async function setTelegramBotCommands() {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return;
+
+  const commands = [
+    { command: "start", description: "بدء التفاعل مع المساعد" },
+    { command: "settings", description: "تعديل إعدادات ونشاط الشركة والمواعيد" },
+    { command: "appointments", description: "عرض المواعيد المسجلة" },
+    { command: "human", description: "التحدث مع موظف الدعم الفني" },
+    { command: "status", description: "حالة النظام" },
+  ];
+
+  await fetch(`https://api.telegram.org/bot${token}/setMyCommands`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ commands }),
+  }).catch((e) => console.error("[telegram] failed to set commands", e));
+}
+
 export function isChatAllowed(chatId: string): boolean {
   const allowed = (process.env.TELEGRAM_ALLOWED_CHAT_IDS ?? '')
     .split(',')

@@ -63,13 +63,26 @@ const logPurchaseTool: FunctionDeclaration = {
   }
 };
 
-const getDailySummaryTool: FunctionDeclaration = {
-  name: "get_daily_summary",
-  description: "عرض إجمالي المبيعات والمصروفات الخاصة باليوم. استخدم هذه الأداة عندما يسأل المستخدم عن الإجمالي أو الدفاتر.",
+const getFinancialSummaryTool: FunctionDeclaration = {
+  name: "get_financial_summary",
+  description: "عرض إجمالي المبيعات والمصروفات لفترة معينة (يومي، أسبوعي، شهري، أو فترة محددة).",
   parameters: {
     type: SchemaType.OBJECT,
-    properties: {},
-    required: []
+    properties: {
+      period: { 
+        type: SchemaType.STRING, 
+        description: "الفترة المطلوبة: 'today', 'week', 'month', أو 'custom'" 
+      },
+      start_date: { 
+        type: SchemaType.STRING, 
+        description: "إذا كانت الفترة custom، أدخل تاريخ البداية بصيغة YYYY-MM-DD" 
+      },
+      end_date: { 
+        type: SchemaType.STRING, 
+        description: "إذا كانت الفترة custom، أدخل تاريخ النهاية بصيغة YYYY-MM-DD" 
+      }
+    },
+    required: ["period"]
   }
 };
 
@@ -164,15 +177,36 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
       return { success: true, resultText: `تم تسجيل فاتورة مشتريات من ${supplier.name} بقيمة ${purchase.totalAmount} جنيه بنجاح!` };
     }
 
-    if (name === "get_daily_summary") {
+    if (name === "get_financial_summary") {
+      const { period, start_date, end_date } = args;
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      let startDate = new Date(today);
+      let endDate = new Date(today);
+      endDate.setDate(endDate.getDate() + 1);
+      
+      let periodName = "اليوم";
+
+      if (period === "week") {
+        startDate.setDate(startDate.getDate() - 7);
+        periodName = "الأسبوع الأخير";
+      } else if (period === "month") {
+        startDate.setMonth(startDate.getMonth() - 1);
+        periodName = "الشهر الأخير";
+      } else if (period === "custom" && start_date) {
+        startDate = new Date(start_date);
+        periodName = `الفترة من ${start_date}`;
+        if (end_date) {
+          endDate = new Date(end_date);
+          endDate.setDate(endDate.getDate() + 1);
+          periodName += ` إلى ${end_date}`;
+        }
+      }
 
       const sales = await prisma.sale.findMany({
         where: {
-          createdAt: { gte: today, lt: tomorrow },
+          createdAt: { gte: startDate, lt: endDate },
           ...(tenantId && { tenantId })
         }
       });
@@ -180,7 +214,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
 
       const expenses = await prisma.expense.findMany({
         where: {
-          createdAt: { gte: today, lt: tomorrow },
+          createdAt: { gte: startDate, lt: endDate },
           ...(tenantId && { tenantId })
         }
       });
@@ -188,7 +222,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
 
       return { 
         success: true, 
-        resultText: `📊 **ملخص اليوم:**\n\n🟢 المبيعات: ${totalSales} جنيه\n🔴 المصروفات: ${totalExpenses} جنيه\n\nصافي اليوم: ${totalSales - totalExpenses} جنيه`
+        resultText: `📊 **ملخص ${periodName}:**\n\n🟢 المبيعات: ${totalSales} جنيه\n🔴 المصروفات: ${totalExpenses} جنيه\n\nالصافي: ${totalSales - totalExpenses} جنيه`
       };
     }
 
@@ -224,7 +258,7 @@ export async function processTelegramMessageWithLLM(
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemini-3.5-flash",
-      tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getDailySummaryTool] }],
+      tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool] }],
       systemInstruction
     });
 

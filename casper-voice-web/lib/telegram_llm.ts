@@ -275,8 +275,15 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
 
     if (name === "log_sale") {
       const { item_name, price, quantity = 1, customer_name = "", customer_phone = "", paid_amount, deferred_amount } = args;
-      if (!item_name || typeof price !== "number" || price <= 0) {
-        return { success: false, resultText: "خطأ: اسم المنتج وسعر الوحدة مطلوبين بشكل صحيح." };
+      
+      const isPlaceholderItem = (v: any) => {
+        if (!v || String(v).trim() === "") return true;
+        const s = String(v).trim().toLowerCase();
+        return s === "المنتج" || s === "منتج" || s === "صنف" || s === "بيع" || s.includes("يحدد") || s.includes("محدد") || s.includes("unspecified");
+      };
+
+      if (isPlaceholderItem(item_name) || typeof price !== "number" || price <= 0) {
+        return { success: false, resultText: "عشان أسجلك عملية البيع محتاج تقولي: اسم الصنف المباع، السعر الإجمالي، اسم العميل (اختياري) 💰" };
       }
       const totalAmount = new Decimal(price).mul(quantity);
       const paid = paid_amount !== undefined ? new Decimal(paid_amount) : totalAmount;
@@ -638,6 +645,7 @@ export async function processTelegramMessageWithLLM(
   const hoursStr = workingHours ? `(مواعيد العمل: ${workingHours})` : "";
   const systemInstruction = `أنت المساعد الشخصي الذكي الخاص بمدير أو صاحب العمل ${companyStr} ${typeStr} ${hoursStr}.
 تحدث بالعامية المصرية الحية والراقية مباشرة وسريعة.
+إذا طلب العميل تسجيل بيع، تأكد من معرفتك لاسم الصنف والسعر بوضوح. إذا كتب العميل مجرد كلمة "بيع" أو لم يحدد الصنف والسعر، اسأله عن التفاصيل فوراً ولا تستخدم أداة log_sale بأصناف افتراضية (مثل "المنتج") أو أسعار وهمية.
 إذا طلب العميل حجز موعد، تأكد من معرفتك لاسم العميل والتاريخ والوقت قبل استخدام أداة الحجز. إذا كانت أي من هذه البيانات مفقودة، اسأله عنها أولاً ولا تستخدم أداة الحجز أبداً بقيم افتراضية أو وهمية (مثل "لم يحدد").
 إذا نفذت أداة بنجاح، أكد العملية للعميل بجملة ودية مختصرة.
 إذا سألك العميل عن مواعيد العمل أو نوع النشاط، استخدم البيانات المتاحة أعلاه للرد بدقة.`;

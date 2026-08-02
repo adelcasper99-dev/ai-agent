@@ -326,8 +326,16 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
   return customer;
 }
 
-async function executeTool(name: string, args: any, tenantId?: string): Promise<{ success: boolean; resultText: string }> {
+async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string): Promise<{ success: boolean; resultText: string }> {
   try {
+    const isPureInquiry = userMessageText && /^(حساب|كشف\s*حساب|رصيد|ديون|كام\s*(على|له))\s+/i.test(userMessageText.trim());
+    const isMutationTool = ["log_customer_payment", "log_supplier_payment", "log_sale", "log_purchase", "log_sales_return", "log_purchase_return"].includes(name);
+
+    if (isPureInquiry && isMutationTool) {
+      console.warn(`[LLM Guardrail] Blocked illegal mutation tool '${name}' invoked during pure inquiry message: "${userMessageText}"`);
+      return { success: true, resultText: "" };
+    }
+
     const { idempotency_key } = args;
     const isMutation = name.startsWith("log_") || name.startsWith("book_");
     
@@ -1055,10 +1063,10 @@ export async function processTelegramMessageWithLLM(
         if (functionCalls && functionCalls.length > 0) {
           const combinedResults = [];
           for (const call of functionCalls) {
-            const toolRes = await executeTool(call.name, call.args, tenantId);
+            const toolRes = await executeTool(call.name, call.args, tenantId, text);
             combinedResults.push(toolRes.resultText);
           }
-          finalReply = combinedResults.join('\n\n');
+          finalReply = combinedResults.join('\n\n').trim();
         } else {
           finalReply = response.text().trim() || "تمام يا فندم، أنا معاك.";
         }
@@ -1131,10 +1139,10 @@ export async function processTelegramMessageWithLLM(
         for (const call of toolCalls) {
           let args: Record<string, any> = {};
           try { args = JSON.parse(call.function.arguments); } catch {}
-          const toolRes = await executeTool(call.function.name, args, tenantId);
+          const toolRes = await executeTool(call.function.name, args, tenantId, text);
           results.push(toolRes.resultText);
         }
-        finalReply = results.join('\n\n');
+        finalReply = results.join('\n\n').trim();
       } else {
         finalReply = choice?.message?.content?.trim() || "تمام يا فندم، أنا معاك.";
       }

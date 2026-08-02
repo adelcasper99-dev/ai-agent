@@ -695,7 +695,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
       }
 
       // 1. Record SupplierPayment
-      await prisma.supplierPayment.create({
+      await (prisma as any).supplierPayment.create({
         data: {
           supplierId: supplier.id,
           amount: payAmount.toNumber(),
@@ -750,18 +750,18 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
       const { supplier_name } = args;
       const supName = String(supplier_name).trim();
 
-      const supplier = await prisma.supplier.findFirst({
+      const supplier = await (prisma as any).supplier.findFirst({
         where: { name: { contains: supName }, ...(tenantId && { tenantId }) },
-        include: { purchases: true, payments: true }
+        include: { purchases: true, supplierPayments: true }
       });
 
       if (!supplier) {
         return { success: false, resultText: `لم يتم العثور على المورد: ${supName}` };
       }
 
-      const totalPurchases = supplier.purchases.reduce((acc, p) => acc + p.totalAmount, 0);
-      const totalPaidOnPurchases = supplier.purchases.reduce((acc, p) => acc + p.paidAmount, 0);
-      const totalDebt = supplier.purchases.reduce((acc, p) => acc + p.deferredAmount, 0);
+      const totalPurchases = (supplier.purchases || []).reduce((acc: number, p: any) => acc + p.totalAmount, 0);
+      const totalPaidOnPurchases = (supplier.purchases || []).reduce((acc: number, p: any) => acc + p.paidAmount, 0);
+      const totalDebt = (supplier.purchases || []).reduce((acc: number, p: any) => acc + p.deferredAmount, 0);
 
       return {
         success: true,

@@ -265,11 +265,14 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
 async function executeTool(name: string, args: any, tenantId?: string): Promise<{ success: boolean; resultText: string }> {
   try {
     const { idempotency_key } = args;
-    if (idempotency_key) {
-      if (executedKeys.has(idempotency_key)) {
+    const isMutation = name.startsWith("log_") || name.startsWith("book_");
+    
+    if (isMutation && idempotency_key && String(idempotency_key).length > 5) {
+      const fullKey = `${name}:${idempotency_key}`;
+      if (executedKeys.has(fullKey)) {
         return { success: true, resultText: `تمت العملية بنجاح.` };
       }
-      executedKeys.add(idempotency_key);
+      executedKeys.add(fullKey);
       if (executedKeys.size > 5000) executedKeys.clear();
     }
 
@@ -497,7 +500,10 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
           if (l.entryType === "PAYMENT_CREDIT") totalCredit = totalCredit.plus(l.amount);
        });
        const balance = totalDebit.minus(totalCredit);
-       return { success: true, resultText: `العميل ${customer.name}: إجمالي المشتريات ${totalDebit.toNumber()}ج، المسدد منها ${totalCredit.toNumber()}ج. الرصيد المتبقي عليه: ${balance.toNumber()}ج.` };
+       return { 
+         success: true, 
+         resultText: `📊 *كشف حساب العميل (${customer.name}):*\n\n🛍️ *إجمالي المشتريات:* ${totalDebit.toNumber()} جنيه\n💵 *المسدد:* ${totalCredit.toNumber()} جنيه\n📝 *الرصيد المتبقي عليه (الآجل):* ${balance.toNumber()} جنيه` 
+       };
     }
 
     if (name === "log_purchase") {

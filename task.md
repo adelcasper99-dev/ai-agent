@@ -1,7 +1,8 @@
-# Task Tracking — Stage 3 Surgical Build
+# Task Tracking — Chat History Buffer Surgical Build
 
-- [x] Add `ConversationState` model to `schema.prisma`.
-- [x] Refactor `telegram_llm.ts` to export structured `LLMResult`.
-- [x] Create `telegram_fallback.ts` with Sales flow state machine.
-- [x] Intercept Telegram callbacks and text input in `app/api/telegram/webhook/route.ts`.
-- [x] Run `npx prisma db push` to synchronize local SQLite database.
+- [x] Add `ChatMessage` model to `schema.prisma`.
+- [x] Run `npx prisma generate` and `npx prisma db push`.
+- [x] Implement 6-message rolling buffer in `processTelegramMessageWithLLM`.
+- [x] Map role schema (`model` for Gemini native, `assistant` for Groq).
+- [x] Implement non-blocking background saves to `ChatMessage`.
+- [x] Pass `chatId` from `route.ts`.

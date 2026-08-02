@@ -1,13 +1,13 @@
-# Telegram Fallback Flow (No-AI) Implementation Plan
+# Chat History Buffer — Multi-Turn LLM Context Implementation Plan
 
 ## Overview
-Implement an offline, menu-driven state machine for Telegram that automatically activates when all AI providers (Gemini, Groq, OpenAI, OpenRouter) fail or exhaust quota. The initial MVP focuses on the 5-step Sales flow with confirmation.
+Implement a rolling 6-message Chat History Buffer per chat session (`tenantId` + `telegramChatId`) so that pronouns ("هو", "الباقي", "زي اللي قبل كده") and multi-turn context are preserved across Telegram text interactions.
 
 ---
 
 ## User Review Required
 > [!WARNING]
-> Database migration required: Adds `ConversationState` table to Prisma schema. `npx prisma db push` will be executed locally and on the HQ VPS server.
+> Database migration required: Adds `ChatMessage` model to Prisma schema. `npx prisma db push` will be executed locally and on HQ VPS.
 
 ---
 
@@ -15,64 +15,48 @@ Implement an offline, menu-driven state machine for Telegram that automatically 
 
 ### 1. Database Schema
 #### [MODIFY] [schema.prisma](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/prisma/schema.prisma)
-- Add `ConversationState` model linked to `Tenant`:
+- Add `ChatMessage` model:
 ```prisma
-model ConversationState {
+model ChatMessage {
   id             String   @id @default(cuid())
   tenantId       String
   tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  telegramChatId String   @unique
-  currentFlow    String?  // "sale" | "purchase" | null
-  currentStep    String?  // "customer" | "item" | "quantity" | "total_price" | "payment_method" | "confirm"
-  collectedData  String   @default("{}") // JSON object containing collected step values
+  telegramChatId String
+  role           String   // "user" | "assistant"
+  text           String
   createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
 
-  @@index([tenantId])
+  @@index([tenantId, telegramChatId])
+  @@index([createdAt])
 }
 ```
-- Add relation `conversationStates ConversationState[]` to `Tenant`.
+- Add `chatMessages ChatMessage[]` relation to `Tenant`.
 
 ---
 
-### 2. Structured LLM Result Type
+### 2. Multi-Turn LLM Engine Integration
 #### [MODIFY] [telegram_llm.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)
-- Update `processTelegramMessageWithLLM` signature to return a type-safe discriminator:
-```ts
-export type LLMResult =
-  | { status: "success"; text: string }
-  | { status: "all_providers_exhausted"; lastError?: string };
-```
+- Pass `telegramChatId` to `processTelegramMessageWithLLM`.
+- Query `ChatMessage` table for the last 6 messages within the last 60 minutes for `(tenantId, telegramChatId)`.
+- Format history:
+  - For **Gemini**: Map to `{ role: "user" | "model", parts: [{ text: "..." }] }` and pass to `model.startChat({ history })`.
+  - For **Groq**: Map to `{ role: "user" | "assistant", content: "..." }` and pass to `groq.chat.completions.create({ messages })`.
+- Save incoming user message and outgoing bot response to `ChatMessage` table after execution.
 
 ---
 
-### 3. Telegram Fallback Core State Machine
-#### [NEW] [telegram_fallback.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_fallback.ts)
-- Implement state machine helpers:
-  - `sendFallbackMainMenu(chatId, messageId?)`: Renders inline keyboard (`💰 مبيعات`, `📦 مشتريات`, etc.).
-  - `handleFallbackMenuCallback(...)`: Handles `menu:sale` click -> sets state `currentFlow: "sale", currentStep: "customer"`.
-  - `processFallbackInput(chatId, tenantId, text, state)`: Validates step inputs (customer, item, quantity, total_price) and transitions steps.
-  - `handleFallbackSaleCallback(...)`: Handles `sale:cash_customer`, `sale:pay:*`, `sale:confirm:*`.
-  - `executeSaleFlow(...)`: Creates DB Sale record, CustomerLedgerEntry, and JournalEntries within a Prisma transaction.
-  - `resetFallbackState(chatId)`: Clears current flow.
-
----
-
-### 4. Telegram Webhook Handler Integration
+### 3. Webhook Handler
 #### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/telegram/webhook/route.ts)
-- Intercept incoming text messages: if active `ConversationState` exists with `currentFlow`, pass text to `processFallbackInput`.
-- Intercept incoming callbacks: route `menu:*` and `sale:*` callbacks to fallback handlers.
-- Failover trigger: If `processTelegramMessageWithLLM` returns `status: "all_providers_exhausted"`, set `conversation.mode = "fallback_menu"`, call `sendFallbackMainMenu`, and notify admin.
+- Pass `chatId` to `processTelegramMessageWithLLM(text, tenant?.id, tenant?.name, tenant?.businessType, tenant?.workingHours, chatId)`.
 
 ---
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `npm run build` to verify strict TypeScript types.
-- Check Prisma schema validity with `npx prisma validate`.
+- Run `npm run build` to verify TypeScript compilation.
 
 ### Manual Verification
-- Simulate AI provider failure and verify automatic main menu trigger on Telegram.
-- Execute complete Sales Flow step-by-step: Customer -> Item -> Quantity -> Total Price -> Payment Method -> Confirm.
-- Verify DB records created: `Sale`, `CustomerLedgerEntry`, `JournalEntry`.
+1. Send message: `بيع 2 كرتونة مسامير لـ أحمد محمد`
+2. Send follow-up: `هو عليه كام كده؟`
+3. Verify the LLM understands "هو" refers to "أحمد محمد" and calls `get_customer_balance` for "أحمد محمد".

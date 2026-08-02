@@ -38,6 +38,7 @@ model Tenant {
   customerLedgers CustomerLedgerEntry[]
   journalEntries JournalEntry[]
   conversationStates ConversationState[]
+  chatMessages ChatMessage[]
 }
 
 // ── طلبات التسجيل الذاتي للشركة ──────────────────────────────
@@ -305,5 +306,20 @@ model ConversationState {
 
   @@index([tenantId])
 }
+
+// ── سجل رسائل المحادثة (Chat History Buffer) ──
+model ChatMessage {
+  id             String   @id @default(cuid())
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  telegramChatId String
+  role           String   // "user" | "assistant"
+  text           String
+  createdAt      DateTime @default(now())
+
+  @@index([tenantId, telegramChatId])
+  @@index([createdAt])
+}
+
 
 

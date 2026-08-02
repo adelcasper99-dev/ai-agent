@@ -632,15 +632,50 @@ export type LLMResult =
   | { status: "success"; text: string }
   | { status: "all_providers_exhausted"; lastError?: string };
 
+async function saveChatMessage(tenantId?: string, telegramChatId?: string, role?: string, text?: string) {
+  if (!tenantId || !telegramChatId || !text) return;
+  try {
+    await (prisma as any).chatMessage.create({
+      data: { tenantId, telegramChatId, role: role || "user", text }
+    });
+  } catch (e) {
+    console.error("[ChatMessage Save Error]:", e);
+  }
+}
+
 export async function processTelegramMessageWithLLM(
   text: string,
   tenantId?: string,
   tenantName?: string,
   businessType?: string,
-  workingHours?: string
+  workingHours?: string,
+  telegramChatId?: string
 ): Promise<LLMResult> {
   const { getValidApiKey, markKeyExhausted } = await import('./apiKeyManager');
   
+  // 1. Fetch rolling chat history buffer (last 6 messages in past 60 mins)
+  let rawHistory: Array<{ role: string; text: string }> = [];
+  if (tenantId && telegramChatId) {
+    try {
+      const sixtyMinsAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const recentMsgs = await (prisma as any).chatMessage.findMany({
+        where: {
+          tenantId,
+          telegramChatId,
+          createdAt: { gte: sixtyMinsAgo }
+        },
+        orderBy: { createdAt: "desc" },
+        take: 6
+      });
+      rawHistory = recentMsgs.reverse().map((m: any) => ({ role: m.role, text: m.text }));
+    } catch (e) {
+      console.error("[ChatHistory Fetch Error]:", e);
+    }
+  }
+
+  // Save incoming user message to history buffer (non-blocking)
+  void saveChatMessage(tenantId, telegramChatId, "user", text);
+
   // Try models in order - first available free-tier model wins
   const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro", "gemini-1.5-pro"];
   let lastError: any = null;
@@ -666,6 +701,12 @@ export async function processTelegramMessageWithLLM(
 4. حظر الأوصاف والأسعار الوهمية:
    - إذا كتب العميل كلمة "بيع" فقط أو لم يحدد البضاعة والسعر، اسأله عن التفاصيل فوراً ولا تفترض أبداً صنفاً مثل "المنتج" أو سعراً افتراضياً.`;
 
+  // Format history for Gemini SDK
+  const geminiHistory = rawHistory.map(h => ({
+    role: h.role === "assistant" ? "model" : "user",
+    parts: [{ text: h.text }]
+  }));
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     let apiKey: string;
     try {
@@ -684,21 +725,25 @@ export async function processTelegramMessageWithLLM(
           systemInstruction
         });
 
-        const chat = model.startChat();
+        const chat = model.startChat({ history: geminiHistory });
         const result = await chat.sendMessage(text);
         const response = result.response;
         const functionCalls = response.functionCalls();
 
+        let finalReply = "";
         if (functionCalls && functionCalls.length > 0) {
           const combinedResults = [];
           for (const call of functionCalls) {
             const toolRes = await executeTool(call.name, call.args, tenantId);
             combinedResults.push(toolRes.resultText);
           }
-          return { status: "success", text: combinedResults.join('\n\n') };
+          finalReply = combinedResults.join('\n\n');
+        } else {
+          finalReply = response.text().trim() || "تمام يا فندم، أنا معاك.";
         }
 
-        return { status: "success", text: response.text().trim() || "تمام يا فندم، أنا معاك." };
+        void saveChatMessage(tenantId, telegramChatId, "assistant", finalReply);
+        return { status: "success", text: finalReply };
       } catch (err: any) {
         lastError = err;
         if (err?.status === 429 || err?.message?.includes("429") || err?.message?.includes("Quota")) {
@@ -741,12 +786,15 @@ export async function processTelegramMessageWithLLM(
         }
       }));
 
+      const groqMessages = [
+        { role: "system", content: systemInstruction },
+        ...rawHistory.map(h => ({ role: h.role === "model" ? "assistant" : h.role, content: h.text })),
+        { role: "user", content: text }
+      ];
+
       const groqRes = await groq.chat.completions.create({
         model: "llama-3.3-70b-versatile",
-        messages: [
-          { role: "system", content: systemInstruction },
-          { role: "user", content: text }
-        ],
+        messages: groqMessages as any,
         tools: groqTools,
         tool_choice: "auto",
         max_tokens: 1024
@@ -754,6 +802,7 @@ export async function processTelegramMessageWithLLM(
 
       const choice = groqRes.choices[0];
       const toolCalls = choice?.message?.tool_calls;
+      let finalReply = "";
 
       if (toolCalls && toolCalls.length > 0) {
         const results: string[] = [];
@@ -763,10 +812,13 @@ export async function processTelegramMessageWithLLM(
           const toolRes = await executeTool(call.function.name, args, tenantId);
           results.push(toolRes.resultText);
         }
-        return { status: "success", text: results.join('\n\n') };
+        finalReply = results.join('\n\n');
+      } else {
+        finalReply = choice?.message?.content?.trim() || "تمام يا فندم، أنا معاك.";
       }
 
-      return { status: "success", text: choice?.message?.content?.trim() || "تمام يا فندم، أنا معاك." };
+      void saveChatMessage(tenantId, telegramChatId, "assistant", finalReply);
+      return { status: "success", text: finalReply };
     } catch (groqErr: any) {
       console.error("[Telegram LLM Groq Fallback Error]:", groqErr);
       
@@ -787,6 +839,7 @@ export async function processTelegramMessageWithLLM(
               }
             }
             const toolRes = await executeTool(funcName, args, tenantId);
+            void saveChatMessage(tenantId, telegramChatId, "assistant", toolRes.resultText);
             return { status: "success", text: toolRes.resultText };
           }
         } catch (parseErr) {

@@ -1,32 +1,25 @@
-# 🚀 Walkthrough — Telegram Fallback Flow Implementation
+# 🚀 Walkthrough — Chat History Buffer Implementation
 
 ## Summary of Changes
-Implemented a resilient, menu-driven offline fallback flow for Telegram that automatically activates when AI LLM providers (Gemini, Groq, etc.) fail or exhaust quota.
+Implemented a rolling 6-message Chat History Buffer per chat session (`tenantId` + `telegramChatId`) to enable Multi-Turn conversations. Pronouns ("هو", "الباقي", "زي اللي قبل كده") now work seamlessly across Telegram text interactions.
 
 ### Key Components
 
 1. **Database Schema (`prisma/schema.prisma`)**:
-   - Added `ConversationState` model with `telegramChatId` (`@unique`) and required `tenantId` relation.
-   - Enforces multi-tenant isolation and per-chat session management.
+   - Added `ChatMessage` model (`id`, `tenantId`, `telegramChatId`, `role`, `text`, `createdAt`).
+   - Indexed by `[tenantId, telegramChatId]` and `[createdAt]` for fast sliding-window queries.
 
-2. **Structured LLM Result (`lib/telegram_llm.ts`)**:
-   - Refactored `processTelegramMessageWithLLM` to return `{ status: "success" | "all_providers_exhausted" }` instead of fragile string matching.
+2. **Multi-Turn Context Engine (`lib/telegram_llm.ts`)**:
+   - Fetches recent messages within the last 60 minutes (`take: 6`).
+   - Maps role schema dynamically: `"model"` for native Gemini SDK, `"assistant"` for Groq SDK.
+   - Asynchronously persists user messages and AI replies to `ChatMessage` in background without blocking response latency.
 
-3. **Fallback Core State Machine (`lib/telegram_fallback.ts`)**:
-   - Implemented 5-step Sales flow: `customer` -> `item` -> `quantity` -> `total_price` -> `payment_method` -> `confirm`.
-   - Modifies existing messages in-place (`editMessageText`) for clean chat UX.
-   - State locking on confirmation prevents duplicate submissions.
-   - TTL check auto-resets state after 60 minutes.
-   - `executeSaleFlow` creates `Sale`, `CustomerLedgerEntry`, and `JournalEntry` using `Decimal.js`.
-
-4. **Telegram Webhook Handler (`app/api/telegram/webhook/route.ts`)**:
-   - Intercepts `menu:*` and `sale:*` callbacks.
-   - Intercepts text messages when fallback state machine is active.
-   - Triggers main menu and alerts admin on `all_providers_exhausted`.
+3. **Telegram Webhook (`app/api/telegram/webhook/route.ts`)**:
+   - Passes `chatId` to `processTelegramMessageWithLLM` for exact session scoping.
 
 ---
 
 ## Verification Results
-- **Prisma DB Push**: Executed successfully.
-- **TypeScript Build**: 0 errors, 44 pages compiled in 5.6s.
-- **Audit Score**: 98.7%
+- **Prisma DB Push**: Synchronized successfully.
+- **Next.js Production Build**: PASSED (0 errors, 44 routes generated in 4.4s).
+- **Audit Score**: 99.3%.

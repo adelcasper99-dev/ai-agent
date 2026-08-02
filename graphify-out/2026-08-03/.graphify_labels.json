@@ -438,6 +438,7 @@
   "436": "list_models.js",
   "437": "checkElementHeroEyebrow",
   "438": "rebuild_vps_dashboard.py",
+  "439": "preflight_check.py",
   "440": "route.ts",
   "441": "list_groq_models.sh"
 }

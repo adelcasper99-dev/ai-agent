@@ -395,7 +395,11 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
       const { customer_name, customer_phone, date, time, notes = "" } = args;
 
       // Detect placeholder/empty values that LLM inserts when user didn't provide info
-      const isPlaceholder = (v: any) => !v || String(v).includes("لم يُحدد") || String(v).includes("غير محدد") || String(v).trim() === "";
+      const isPlaceholder = (v: any) => {
+        if (!v || String(v).trim() === "") return true;
+        const s = String(v).toLowerCase();
+        return s.includes("يحدد") || s.includes("محدد") || s.includes("معروف") || s.includes("unspecified") || s.includes("unknown") || s.includes("none") || s.includes("null");
+      };
 
       if (isPlaceholder(customer_name) || isPlaceholder(date) || isPlaceholder(time)) {
         const missing = [];
@@ -630,7 +634,7 @@ export async function processTelegramMessageWithLLM(
   const hoursStr = workingHours ? `(مواعيد العمل: ${workingHours})` : "";
   const systemInstruction = `أنت المساعد الشخصي الذكي الخاص بمدير أو صاحب العمل ${companyStr} ${typeStr} ${hoursStr}.
 تحدث بالعامية المصرية الحية والراقية مباشرة وسريعة.
-إذا طلب العميل تسجيل بيع، مصروف، موعد، أو مشتريات، استخدم الأداة المناسبة فوراً.
+إذا طلب العميل حجز موعد، تأكد من معرفتك لاسم العميل والتاريخ والوقت قبل استخدام أداة الحجز. إذا كانت أي من هذه البيانات مفقودة، اسأله عنها أولاً ولا تستخدم أداة الحجز أبداً بقيم افتراضية أو وهمية (مثل "لم يحدد").
 إذا نفذت أداة بنجاح، أكد العملية للعميل بجملة ودية مختصرة.
 إذا سألك العميل عن مواعيد العمل أو نوع النشاط، استخدم البيانات المتاحة أعلاه للرد بدقة.`;
 

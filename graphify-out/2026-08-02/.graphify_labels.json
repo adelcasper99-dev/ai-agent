@@ -377,6 +377,7 @@
   "375": "page.tsx",
   "376": "page.tsx",
   "377": "next.config.ts",
+  "378": "resolveObjectImageRect",
   "379": "baseline.js",
   "380": "ponytail-statusline.ps1",
   "381": "ponytail.md",
@@ -419,6 +420,7 @@
   "418": "query.js",
   "419": "Adaptation Strategies",
   "420": "ecosystem.config.js",
+  "421": "selectAvailablePendingEvent",
   "422": "Generate Report",
   "423": "fix_env.py",
   "424": "audit-logger.ts",
@@ -431,5 +433,6 @@
   "434": "test_edge_fallback.py",
   "435": "page.tsx",
   "437": "checkElementHeroEyebrow",
-  "438": "rebuild_vps_dashboard.py"
+  "438": "rebuild_vps_dashboard.py",
+  "439": "checkCreamPalette"
 }

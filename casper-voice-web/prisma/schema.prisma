@@ -278,3 +278,15 @@ model InteractionDiagnostics {
 }
 
 
+
+// ?? ����� ������ ��� API ?????????????????????????????????????
+model ApiKeyPool {
+  id          String    @id @default(cuid())
+  provider    String
+  keyString   String    @unique
+  isActive    Boolean   @default(true)
+  isExhausted Boolean   @default(false)
+  exhaustedAt DateTime?
+  addedAt     DateTime  @default(now())
+}
+

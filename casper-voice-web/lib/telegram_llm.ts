@@ -608,9 +608,13 @@ export async function processTelegramMessageWithLLM(
   businessType?: string,
   workingHours?: string
 ): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-  if (!apiKey) {
-    return "⚠️ مفتاح Gemini API غير متاح في النظام حالياً.";
+  const { getValidApiKey, markKeyExhausted } = await import('./apiKeyManager');
+  
+  let apiKey: string;
+  try {
+    apiKey = await getValidApiKey("gemini");
+  } catch (err: any) {
+    return `⚠️ ${err.message || "عذراً، جميع مفاتيح الخدمة المجانية مستنفدة حالياً."}`;
   }
 
   const companyStr = tenantName ? `بشركة ${tenantName}` : "بنظامنا الذكي";
@@ -622,7 +626,7 @@ export async function processTelegramMessageWithLLM(
 إذا نفذت أداة بنجاح، أكد العملية للعميل بجملة ودية مختصرة.
 إذا سألك العميل عن مواعيد العمل أو نوع النشاط، استخدم البيانات المتاحة أعلاه للرد بدقة.`;
 
-  const models = ["gemini-2.0-flash", "gemini-1.5-flash"];
+  const models = ["gemini-2.0-flash-exp", "gemini-1.5-flash-latest", "gemini-1.5-pro-latest", "gemini-1.0-pro"];
   let lastError: any = null;
 
   for (const modelName of models) {
@@ -653,6 +657,8 @@ export async function processTelegramMessageWithLLM(
       console.error(`[Telegram LLM Process Error (${modelName})]:`, err);
       lastError = err;
       if (err?.status === 429 || err?.message?.includes("429") || err?.message?.includes("Quota exceeded")) {
+        // Mark key as exhausted so next message picks a fresh one
+        await markKeyExhausted(apiKey, "gemini");
         continue;
       }
       break;

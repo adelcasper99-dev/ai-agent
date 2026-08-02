@@ -409,10 +409,35 @@ async def load_settings():
     return settings.get("VOICE_PROVIDER", "gemini")
 
 
+def get_valid_api_key_from_db(provider="gemini"):
+    import sqlite3
+    try:
+        db_path = os.path.join(os.path.dirname(__file__), "..", "casper-voice-web", "dev.db")
+        if not os.path.exists(db_path): return None
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE ApiKeyPool 
+            SET isExhausted = 0, exhaustedAt = NULL 
+            WHERE provider = ? AND isExhausted = 1 AND exhaustedAt < datetime('now', '-1 day')
+        ''', (provider,))
+        conn.commit()
+        cursor.execute('''
+            SELECT keyString FROM ApiKeyPool 
+            WHERE provider = ? AND isActive = 1 AND isExhausted = 0 
+            ORDER BY addedAt ASC LIMIT 1
+        ''', (provider,))
+        row = cursor.fetchone()
+        conn.close()
+        if row: return row[0]
+    except Exception as e:
+        print(f"[ApiKeyPool] Error fetching from DB: {e}")
+    return None
+
 def create_agent_session(provider: str, settings: dict) -> AgentSession:
     groq_key = settings.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
     openai_key = settings.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
-    gemini_key = settings.get("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+    gemini_key = get_valid_api_key_from_db("gemini") or settings.get("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
 
     voice_tone = settings.get("VOICE_TONE", "shakir")
     selected_voice = "ar-EG-ShakirNeural" if voice_tone == "shakir" else "ar-EG-SalmaNeural"

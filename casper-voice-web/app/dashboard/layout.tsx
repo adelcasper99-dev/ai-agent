@@ -8,6 +8,7 @@ import VoiceCallModal from "@/components/VoiceCallModal";
 
 const TABS = [
   { href: "/dashboard/settings", label: "المفاتيح" },
+  { href: "/dashboard/api-keys", label: "🔑 مفاتيح Gemini" },
   { href: "/dashboard/tenants", label: "🏢 طلبات الشركات والتفعيل" },
   { href: "/dashboard/chat", label: "✈️ محاكي التليجرام" },
   { href: "/dashboard/logs", label: "اللوجز المباشرة 📡" },

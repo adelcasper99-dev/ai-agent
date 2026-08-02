@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     }
 
     // Call the Gemini API directly to check status
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyString}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${keyString}`;
     
     const response = await fetch(url, {
       method: "POST",

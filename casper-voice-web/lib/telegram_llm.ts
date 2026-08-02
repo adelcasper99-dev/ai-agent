@@ -685,7 +685,7 @@ export async function processTelegramMessageWithLLM(
         function: {
           name: t.name,
           description: t.description,
-          parameters: t.parameters
+          parameters: t.parameters as any  // Gemini schema is compatible at runtime
         }
       }));
 

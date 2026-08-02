@@ -108,7 +108,68 @@ export async function resetFallbackState(chatId: string) {
   });
 }
 
-// ── 1. MENU CALLBACK HANDLER ──
+export function tryParseQuickSale(text: string): { success: boolean; data?: any } {
+  const trimmed = text.trim();
+  if (!trimmed) return { success: false };
+
+  // Check if text contains at least one number
+  const numbers = trimmed.match(/\d+(\.\d+)?/g);
+  if (!numbers || numbers.length === 0) return { success: false };
+
+  const isCredit = /آجل|على الحساب|اجل|دين/i.test(trimmed);
+  const payment_method = isCredit ? "credit" : "cash";
+  const payment_label = isCredit ? "آجل" : "كاش";
+
+  let quantity = 1;
+  let total_price = 0;
+
+  if (numbers.length >= 2) {
+    quantity = parseInt(numbers[0], 10) || 1;
+    total_price = parseFloat(numbers[1]);
+  } else {
+    total_price = parseFloat(numbers[0]);
+  }
+
+  if (isNaN(total_price) || total_price <= 0) return { success: false };
+
+  // Strip keywords and prepositions
+  let cleanText = trimmed
+    .replace(/آجل|على الحساب|اجل|دين|كاش|نقدي/gi, '')
+    .replace(/\b(بـ|ب)\b/g, ' ')
+    .trim();
+
+  // Extract non-numeric tokens for item & customer names
+  let words = cleanText.split(/\s+/).filter(w => !/^\d+(\.\d+)?$/.test(w) && w.length > 0 && w !== "بـ" && w !== "ب");
+
+  if (words.length === 0) return { success: false };
+
+  let item_name = words[0];
+  let customer_name = isCredit ? "" : "عميل نقدي";
+
+  if (words.length > 1) {
+    if (isCredit) {
+      customer_name = words[words.length - 1];
+      item_name = words.slice(0, words.length - 1).join(" ");
+    } else {
+      item_name = words.join(" ");
+    }
+  }
+
+  if (!item_name) return { success: false };
+
+  return {
+    success: true,
+    data: {
+      item_name,
+      quantity,
+      total_price,
+      customer_name: customer_name || "عميل نقدي",
+      payment_method,
+      payment_label
+    }
+  };
+}
+
 export async function handleFallbackMenuCallback(
   chatId: string,
   tenantId: string,
@@ -127,10 +188,10 @@ export async function handleFallbackMenuCallback(
       create: { tenantId, telegramChatId: chatId, currentFlow: "sale", currentStep: "customer", collectedData: "{}" },
     });
 
-    const text = "💰 *تسجيل مبيعات جديدة*\n\nالخطوة 1 من 5: اكتب اسم العميل (أو اضغط زرار عميل نقدي):";
+    const text = "💰 *تسجيل مبيعات جديدة*\n\n⚡ *إدخال سريع (سطر واحد):*\nاكتب الجملة كاملة واستلم التعديل والـ Confirm فوراً!\n📌 *أمثلة:* `مفاتيح 300` أو `2 كرتونة مسامير 500 احمد آجل`\n\nأو اضغط زرار (عميل نقدي) للبدء بالتفصيل:";
     const replyMarkup = {
       inline_keyboard: [
-        [{ text: "💵 عميل نقدي", callback_data: "sale:cash_customer" }],
+        [{ text: "💵 عميل نقدي (بدء التخصيص)", callback_data: "sale:cash_customer" }],
         [{ text: "❌ إلغاء", callback_data: "sale:cancel" }],
       ],
     };
@@ -158,6 +219,42 @@ export async function processFallbackInput(
   }
 
   if (flow === "sale") {
+    // ⚡ Try Quick 1-Line Sale Parse first!
+    const quickResult = tryParseQuickSale(text);
+    if (quickResult.success && quickResult.data) {
+      const qData = quickResult.data;
+      if (qData.payment_method === "credit" && (!qData.customer_name || qData.customer_name === "عميل نقدي")) {
+        await sendTelegramAlert({
+          chatId,
+          text: "⚠️ *عذراً، البيع الآجل يتطلب تحديد اسم العميل!*\nيرجى إعادة كتابة الحركة شاملة اسم العميل (مثال: `2 مسامير 500 احمد آجل`).",
+          idempotencyKey: `fb_val_cred:${chatId}:${Date.now()}`
+        });
+        return true;
+      }
+
+      await (prisma as any).conversationState.update({
+        where: { telegramChatId: chatId },
+        data: { currentStep: "confirm", collectedData: JSON.stringify(qData) },
+      });
+
+      const summary = `📝 *تأكيد عملية البيع (سريع)*\n\n👤 *العميل:* ${qData.customer_name}\n📦 *الصنف:* ${qData.item_name}\n🔢 *الكمية:* ${qData.quantity}\n💰 *الإجمالي:* ${qData.total_price} جنيه\n💳 *طريقة الدفع:* ${qData.payment_label}\n\nهل تريد تأكيد تسجيل العملية؟`;
+
+      await sendTelegramAlert({
+        chatId,
+        text: summary,
+        replyMarkup: {
+          inline_keyboard: [
+            [{ text: "✅ تأكيد البيع", callback_data: "sale:confirm:yes" }],
+            [
+              { text: "✏️ إعادة البدء", callback_data: "sale:confirm:edit" },
+              { text: "❌ إلغاء", callback_data: "sale:cancel" },
+            ],
+          ],
+        },
+        idempotencyKey: `fb_quick:${chatId}:${Date.now()}`,
+      });
+      return true;
+    }
     // Step 1: Customer Name
     if (step === "customer") {
       const customerName = text.trim();

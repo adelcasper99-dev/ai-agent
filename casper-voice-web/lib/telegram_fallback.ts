@@ -207,6 +207,44 @@ export async function processFallbackInput(
   text: string,
   currentState: any
 ): Promise<boolean> {
+  // ⚡ 1. Try Quick 1-Line Sale Parse unconditionally first (even if currentFlow is null)!
+  const quickResult = tryParseQuickSale(text);
+  if (quickResult.success && quickResult.data) {
+    const qData = quickResult.data;
+    if (qData.payment_method === "credit" && (!qData.customer_name || qData.customer_name === "عميل نقدي")) {
+      await sendTelegramAlert({
+        chatId,
+        text: "⚠️ *عذراً، البيع الآجل يتطلب تحديد اسم العميل!*\nيرجى إعادة كتابة الحركة شاملة اسم العميل (مثال: `2 مسامير 500 احمد آجل`).",
+        idempotencyKey: `fb_val_cred:${chatId}:${Date.now()}`
+      });
+      return true;
+    }
+
+    await (prisma as any).conversationState.upsert({
+      where: { telegramChatId: chatId },
+      update: { tenantId, currentFlow: "sale", currentStep: "confirm", collectedData: JSON.stringify(qData) },
+      create: { tenantId, telegramChatId: chatId, currentFlow: "sale", currentStep: "confirm", collectedData: JSON.stringify(qData) },
+    });
+
+    const summary = `📝 *تأكيد عملية البيع (سريع)*\n\n👤 *العميل:* ${qData.customer_name}\n📦 *الصنف:* ${qData.item_name}\n🔢 *الكمية:* ${qData.quantity}\n💰 *الإجمالي:* ${qData.total_price} جنيه\n💳 *طريقة الدفع:* ${qData.payment_label}\n\nهل تريد تأكيد تسجيل العملية؟`;
+
+    await sendTelegramAlert({
+      chatId,
+      text: summary,
+      replyMarkup: {
+        inline_keyboard: [
+          [{ text: "✅ تأكيد البيع", callback_data: "sale:confirm:yes" }],
+          [
+            { text: "✏️ إعادة البدء", callback_data: "sale:confirm:edit" },
+            { text: "❌ إلغاء", callback_data: "sale:cancel" },
+          ],
+        ],
+      },
+      idempotencyKey: `fb_quick:${chatId}:${Date.now()}`,
+    });
+    return true;
+  }
+
   if (!currentState || !currentState.currentFlow) return false;
 
   const flow = currentState.currentFlow;
@@ -217,44 +255,7 @@ export async function processFallbackInput(
   } catch {
     data = {};
   }
-
   if (flow === "sale") {
-    // ⚡ Try Quick 1-Line Sale Parse first!
-    const quickResult = tryParseQuickSale(text);
-    if (quickResult.success && quickResult.data) {
-      const qData = quickResult.data;
-      if (qData.payment_method === "credit" && (!qData.customer_name || qData.customer_name === "عميل نقدي")) {
-        await sendTelegramAlert({
-          chatId,
-          text: "⚠️ *عذراً، البيع الآجل يتطلب تحديد اسم العميل!*\nيرجى إعادة كتابة الحركة شاملة اسم العميل (مثال: `2 مسامير 500 احمد آجل`).",
-          idempotencyKey: `fb_val_cred:${chatId}:${Date.now()}`
-        });
-        return true;
-      }
-
-      await (prisma as any).conversationState.update({
-        where: { telegramChatId: chatId },
-        data: { currentStep: "confirm", collectedData: JSON.stringify(qData) },
-      });
-
-      const summary = `📝 *تأكيد عملية البيع (سريع)*\n\n👤 *العميل:* ${qData.customer_name}\n📦 *الصنف:* ${qData.item_name}\n🔢 *الكمية:* ${qData.quantity}\n💰 *الإجمالي:* ${qData.total_price} جنيه\n💳 *طريقة الدفع:* ${qData.payment_label}\n\nهل تريد تأكيد تسجيل العملية؟`;
-
-      await sendTelegramAlert({
-        chatId,
-        text: summary,
-        replyMarkup: {
-          inline_keyboard: [
-            [{ text: "✅ تأكيد البيع", callback_data: "sale:confirm:yes" }],
-            [
-              { text: "✏️ إعادة البدء", callback_data: "sale:confirm:edit" },
-              { text: "❌ إلغاء", callback_data: "sale:cancel" },
-            ],
-          ],
-        },
-        idempotencyKey: `fb_quick:${chatId}:${Date.now()}`,
-      });
-      return true;
-    }
     // Step 1: Customer Name
     if (step === "customer") {
       const customerName = text.trim();

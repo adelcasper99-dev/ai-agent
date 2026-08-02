@@ -611,7 +611,7 @@ export async function processTelegramMessageWithLLM(
 ): Promise<string> {
   const { getValidApiKey, markKeyExhausted } = await import('./apiKeyManager');
   
-  const modelName = "gemini-2.0-flash";
+  const modelName = "gemini-1.5-flash";
   let lastError: any = null;
   const maxRetries = 3;
 

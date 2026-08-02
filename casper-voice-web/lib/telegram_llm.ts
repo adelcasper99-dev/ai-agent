@@ -153,6 +153,32 @@ const getCustomerBalanceTool: FunctionDeclaration = {
   }
 };
 
+const logSupplierPaymentTool: FunctionDeclaration = {
+  name: "log_supplier_payment",
+  description: "تسجيل دفعة سداد ديون أو مستحقات لمورد (سداد حساب مورد).",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      supplier_name: { type: SchemaType.STRING, description: "اسم المورد" },
+      amount: { type: SchemaType.NUMBER, description: "المبلغ المسدد بالجنيه" },
+      idempotency_key: { type: SchemaType.STRING, description: "رقم فريد عشوائي لمنع التكرار" }
+    },
+    required: ["supplier_name", "amount", "idempotency_key"]
+  }
+};
+
+const getSupplierBalanceTool: FunctionDeclaration = {
+  name: "get_supplier_balance",
+  description: "استعلام عن رصيد حساب مورد لمعرفة كشف المشتريات والديون المستحقة له.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      supplier_name: { type: SchemaType.STRING, description: "اسم المورد" }
+    },
+    required: ["supplier_name"]
+  }
+};
+
 const executedKeys = new Set<string>();
 
 async function syncCustomerLedgers(tx: any, customerId: string, tenantId: string) {
@@ -564,6 +590,96 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
       return { success: true, resultText: `تم تسجيل فاتورة مشتريات (${qty} ${purchase.itemName}) من المورد (${supplier.name}) بقيمة إجمالية ${purchase.totalAmount} جنيه بنجاح! 📦` };
     }
 
+    if (name === "log_supplier_payment") {
+      const { supplier_name, amount } = args;
+      if (!supplier_name || typeof amount !== "number" || amount <= 0) {
+        return { success: false, resultText: "خطأ: اسم المورد والمبلغ مطلوبين." };
+      }
+      const payAmount = new Decimal(amount);
+      const supName = String(supplier_name).trim();
+
+      const supplier = await prisma.supplier.findFirst({
+        where: { name: { contains: supName }, ...(tenantId && { tenantId }) }
+      });
+      if (!supplier) {
+        return { success: false, resultText: `لم يتم العثور على المورد: ${supName}` };
+      }
+
+      // 1. Record SupplierPayment
+      await prisma.supplierPayment.create({
+        data: {
+          supplierId: supplier.id,
+          amount: payAmount.toNumber(),
+          notes: `سداد دفعة نقدية للمورد`,
+          ...(tenantId && { tenantId })
+        }
+      });
+
+      // 2. Deduct from deferredAmount on open purchases
+      const openPurchases = await prisma.purchase.findMany({
+        where: { supplierId: supplier.id, deferredAmount: { gt: 0 } },
+        orderBy: { createdAt: "asc" }
+      });
+
+      let remainingToDeduct = payAmount;
+      for (const p of openPurchases) {
+        if (remainingToDeduct.lte(0)) break;
+        const curDef = new Decimal(p.deferredAmount);
+        const curPaid = new Decimal(p.paidAmount);
+        if (remainingToDeduct.gte(curDef)) {
+          await prisma.purchase.update({
+            where: { id: p.id },
+            data: {
+              paidAmount: curPaid.add(curDef).toNumber(),
+              deferredAmount: 0
+            }
+          });
+          remainingToDeduct = remainingToDeduct.sub(curDef);
+        } else {
+          await prisma.purchase.update({
+            where: { id: p.id },
+            data: {
+              paidAmount: curPaid.add(remainingToDeduct).toNumber(),
+              deferredAmount: curDef.sub(remainingToDeduct).toNumber()
+            }
+          });
+          remainingToDeduct = new Decimal(0);
+        }
+      }
+
+      // 3. Calculate remaining total debt for supplier
+      const allPurchases = await prisma.purchase.findMany({ where: { supplierId: supplier.id } });
+      const totalDebt = allPurchases.reduce((sum, p) => sum + p.deferredAmount, 0);
+
+      return {
+        success: true,
+        resultText: `تم تسجيل سداد مبلغ ${amount} جنيه للمورد (${supplier.name}) بنجاح! 💸\nالمتبقي له (الديون): ${totalDebt} جنيه.`
+      };
+    }
+
+    if (name === "get_supplier_balance") {
+      const { supplier_name } = args;
+      const supName = String(supplier_name).trim();
+
+      const supplier = await prisma.supplier.findFirst({
+        where: { name: { contains: supName }, ...(tenantId && { tenantId }) },
+        include: { purchases: true, payments: true }
+      });
+
+      if (!supplier) {
+        return { success: false, resultText: `لم يتم العثور على المورد: ${supName}` };
+      }
+
+      const totalPurchases = supplier.purchases.reduce((acc, p) => acc + p.totalAmount, 0);
+      const totalPaidOnPurchases = supplier.purchases.reduce((acc, p) => acc + p.paidAmount, 0);
+      const totalDebt = supplier.purchases.reduce((acc, p) => acc + p.deferredAmount, 0);
+
+      return {
+        success: true,
+        resultText: `📊 *كشف حساب المورد (${supplier.name}):*\n\n📦 *إجمالي المشتريات منه:* ${totalPurchases} جنيه\n💵 *إجمالي المسدد له:* ${totalPaidOnPurchases} جنيه\n📝 *الديون المتبقية له (الآجل):* ${totalDebt} جنيه`
+      };
+    }
+
     if (name === "get_financial_summary") {
       const { period, start_date, end_date } = args;
       const today = new Date();
@@ -730,8 +846,9 @@ export async function processTelegramMessageWithLLM(
    - إذا كتب العميل كلمة "بيع" فقط أو لم يحدد البضاعة والسعر، اسأله عن التفاصيل فوراً ولا تفترض أبداً صنفاً مثل "المنتج" أو سعراً افتراضياً.
 5. الاستعلام عن رصيد وحساب عميل (get_customer_balance):
    - عندما يكتب العميل عبارات مثل: "حساب [اسم العميل]", "كشف حساب [اسم]", "رصيد [اسم]", "هو عليه كام؟" -> يجب استخدام أداة get_customer_balance فوراً واستخراج اسم العميل من السياق أو الجملة. يمنع منعاً باتاً استخدام أداة log_sale لطلبات الاستعلام عن الحسابات!
-6. تسجيل المشتريات والمصاريف (log_purchase / log_expense):
-   - إذا كتب العميل كلمة "شراء" أو "مصروف" فقط بدون تحديد اسم المورد أو الصنف والمبلغ، اسأله عن التفاصيل فوراً ولا تستخدم أداة log_purchase أو log_expense ببيانات افتراضية أو وهمية.`;
+7. سداد ديون واستعلام حسابات الموردين (log_supplier_payment / get_supplier_balance):
+   - عند السداد للمورد ("دفعت للمورد المتخصص 500", "سددت للمورد احمد 200") -> استخدم فوراً أداة log_supplier_payment.
+   - عند الاستعلام عن حساب ورصيد مورد ("حساب المورد المتخصص", "كشف حساب المورد علي", "ديون المورد احمد") -> استخدم فوراً أداة get_supplier_balance!`;
 
   // Format history for Gemini SDK
   const geminiHistory = rawHistory.map(h => ({
@@ -753,7 +870,7 @@ export async function processTelegramMessageWithLLM(
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
           model: modelName,
-          tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool] }],
+          tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool] }],
           systemInstruction
         });
 
@@ -808,7 +925,7 @@ export async function processTelegramMessageWithLLM(
       const groqTools = [
         logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool,
         getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool,
-        logCustomerPaymentTool, getCustomerBalanceTool
+        logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool
       ].map(t => ({
         type: "function" as const,
         function: {

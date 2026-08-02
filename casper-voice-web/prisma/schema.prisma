@@ -33,6 +33,7 @@ model Tenant {
   sales          Sale[]
   purchases      Purchase[]
   suppliers      Supplier[]
+  supplierPayments SupplierPayment[]
   appointments   Appointment[]
   customers      Customer[]
   customerLedgers CustomerLedgerEntry[]
@@ -113,14 +114,15 @@ model Sale {
 
 // ── الموردين والمشتريات ─────────────────────────────────────
 model Supplier {
-  id        String     @id @default(cuid())
+  id        String            @id @default(cuid())
   tenantId  String?
-  tenant    Tenant?    @relation(fields: [tenantId], references: [id])
+  tenant    Tenant?           @relation(fields: [tenantId], references: [id])
   name      String
-  phone     String     @default("")
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @default(now()) @updatedAt
+  phone     String            @default("")
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @default(now()) @updatedAt
   purchases Purchase[]
+  payments  SupplierPayment[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -141,6 +143,20 @@ model Purchase {
   updatedAt      DateTime @default(now()) @updatedAt
 
   @@index([tenantId])
+}
+
+model SupplierPayment {
+  id         String   @id @default(cuid())
+  tenantId   String?
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id])
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  amount     Float
+  notes      String   @default("")
+  createdAt  DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([supplierId])
 }
 
 // ── المواعيد ─────────────────────────────────────────────

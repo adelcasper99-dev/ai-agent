@@ -710,7 +710,7 @@ export async function processTelegramMessageWithLLM(
       }));
 
       const groqRes = await groq.chat.completions.create({
-        model: "llama3-groq-70b-8192-tool-use-preview",
+        model: "llama-3.1-70b-versatile",
         messages: [
           { role: "system", content: systemInstruction },
           { role: "user", content: text }

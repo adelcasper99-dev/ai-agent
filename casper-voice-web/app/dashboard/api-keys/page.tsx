@@ -219,11 +219,24 @@ export default function ApiKeysPage() {
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                           🔴 مستنفد (429)
                         </span>
-                        {k.exhaustedAt && (
-                          <p className="text-[11px] text-red-500">
-                            منذ {new Date(k.exhaustedAt).toLocaleTimeString("ar-EG")} — {new Date(k.exhaustedAt).toLocaleDateString("ar-EG")}
-                          </p>
-                        )}
+                        {k.exhaustedAt && (() => {
+                          const exhaustedDate = new Date(k.exhaustedAt);
+                          const resetDate = new Date(exhaustedDate.getTime() + 24 * 60 * 60 * 1000);
+                          const now = new Date();
+                          const msLeft = resetDate.getTime() - now.getTime();
+                          const hoursLeft = Math.floor(msLeft / (1000 * 60 * 60));
+                          const minutesLeft = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
+                          return (
+                            <div className="text-[11px] space-y-0.5">
+                              <p className="text-red-500">
+                                خلص الساعة: {exhaustedDate.toLocaleTimeString("ar-EG")} — {exhaustedDate.toLocaleDateString("ar-EG")}
+                              </p>
+                              <p className="text-orange-600 font-medium">
+                                🕐 ريفريش تلقائي: {resetDate.toLocaleTimeString("ar-EG")} ({hoursLeft > 0 ? `${hoursLeft}س ${minutesLeft}د` : `${minutesLeft} دقيقة`} متبقية)
+                              </p>
+                            </div>
+                          );
+                        })()}
                       </div>
                     ) : (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">

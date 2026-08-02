@@ -387,8 +387,13 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
 
     if (name === "log_expense") {
       const { amount, description, category = "عام" } = args;
-      if (typeof amount !== "number" || amount <= 0 || !description) {
-        return { success: false, resultText: "خطأ: المبلغ والسبب مطلوبين." };
+      const isPlaceholderDesc = (v: any) => {
+        if (!v || String(v).trim() === "") return true;
+        const s = String(v).trim().toLowerCase();
+        return s === "مصروف" || s === "مصاريف" || s.includes("يحدد") || s.includes("محدد");
+      };
+      if (typeof amount !== "number" || amount <= 0 || isPlaceholderDesc(description)) {
+        return { success: false, resultText: "عشان أسجلك المصروف محتاج تقولي: المبلغ وبيان المصروف (مثال: كهرباء 500ج أو إيجار 2000ج) 💸" };
       }
       const expense = await prisma.expense.create({
         data: {
@@ -508,8 +513,15 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
 
     if (name === "log_purchase") {
       const { supplier_name, item_name, total_amount, paid_amount } = args;
-      if (!supplier_name || !item_name || typeof total_amount !== "number") {
-        return { success: false, resultText: "خطأ: اسم المورد والصنف والمبلغ الإجمالي مطلوبين." };
+      
+      const isPlaceholder = (v: any) => {
+        if (!v || String(v).trim() === "") return true;
+        const s = String(v).trim().toLowerCase();
+        return s === "مشتريات" || s === "شراء" || s === "مورد" || s === "محمد علي" || s.includes("يحدد") || s.includes("محدد") || s.includes("unspecified");
+      };
+
+      if (isPlaceholder(supplier_name) || isPlaceholder(item_name) || typeof total_amount !== "number" || total_amount <= 0) {
+        return { success: false, resultText: "عشان أسجلك فاتورة المشتريات محتاج تقولي: اسم المورد، الصنف المشترى، والسعر الإجمالي 📦" };
       }
       if (!tenantId) {
         return { success: false, resultText: "عذراً، لم أتمكن من تسجيل المشتريات لوجود مشكلة في التعرف على حساب الشركة (tenantId مفقود)." };
@@ -701,7 +713,9 @@ export async function processTelegramMessageWithLLM(
 4. حظر الأوصاف والأسعار الوهمية:
    - إذا كتب العميل كلمة "بيع" فقط أو لم يحدد البضاعة والسعر، اسأله عن التفاصيل فوراً ولا تفترض أبداً صنفاً مثل "المنتج" أو سعراً افتراضياً.
 5. الاستعلام عن رصيد وحساب عميل (get_customer_balance):
-   - عندما يكتب العميل عبارات مثل: "حساب [اسم العميل]", "كشف حساب [اسم]", "رصيد [اسم]", "هو عليه كام؟" -> يجب استخدام أداة get_customer_balance فوراً واستخراج اسم العميل من السياق أو الجملة. يمنع منعاً باتاً استخدام أداة log_sale لطلبات الاستعلام عن الحسابات!`;
+   - عندما يكتب العميل عبارات مثل: "حساب [اسم العميل]", "كشف حساب [اسم]", "رصيد [اسم]", "هو عليه كام؟" -> يجب استخدام أداة get_customer_balance فوراً واستخراج اسم العميل من السياق أو الجملة. يمنع منعاً باتاً استخدام أداة log_sale لطلبات الاستعلام عن الحسابات!
+6. تسجيل المشتريات والمصاريف (log_purchase / log_expense):
+   - إذا كتب العميل كلمة "شراء" أو "مصروف" فقط بدون تحديد اسم المورد أو الصنف والمبلغ، اسأله عن التفاصيل فوراً ولا تستخدم أداة log_purchase أو log_expense ببيانات افتراضية أو وهمية.`;
 
   // Format history for Gemini SDK
   const geminiHistory = rawHistory.map(h => ({

@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, FunctionDeclaration, SchemaType } from "@google/generative-ai";
+import Groq from "groq-sdk";
 import { PrismaClient } from "@prisma/client";
 import Decimal from "decimal.js";
 import { sendTelegramAlert } from "./telegram";
@@ -627,8 +628,9 @@ export async function processTelegramMessageWithLLM(
     let apiKey: string;
     try {
       apiKey = await getValidApiKey("gemini");
-    } catch (err: any) {
-      return `⚠️ ${err.message || "عذراً، جميع مفاتيح الخدمة المجانية مستنفدة حالياً."}`;
+    } catch {
+      // All Gemini keys exhausted — break to Groq fallback
+      break;
     }
 
     try {
@@ -658,13 +660,66 @@ export async function processTelegramMessageWithLLM(
       console.error(`[Telegram LLM Process Error (Attempt ${attempt})]:`, err);
       lastError = err;
       if (err?.status === 429 || err?.message?.includes("429") || err?.message?.includes("Quota exceeded")) {
-        // Mark key as exhausted so next attempt picks a fresh one
         await markKeyExhausted(apiKey, "gemini");
         continue;
       }
-      break; // Not a quota error, break out of retry loop
+      break;
     }
   }
 
-  return `💡 عذراً، تم استنفاد الحدود اليومية للاستخدام المجاني (Rate Limit 429). يُرجى المحاولة بعد قليل أو إضافة مفاتيح جديدة.\n\n\`تفاصيل الخطأ: ${lastError?.message || String(lastError)}\``;
+  // ========== GROQ FALLBACK ==========
+  // Triggered when all Gemini keys are exhausted or unavailable
+  const groqApiKey = process.env.GROQ_API_KEY;
+  if (groqApiKey) {
+    console.log("[Telegram LLM] Gemini exhausted — falling back to Groq Llama");
+    try {
+      const groq = new Groq({ apiKey: groqApiKey });
+
+      // Build OpenAI-compatible tools from our FunctionDeclarations
+      const groqTools = [
+        logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool,
+        getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool,
+        logCustomerPaymentTool, getCustomerBalanceTool
+      ].map(t => ({
+        type: "function" as const,
+        function: {
+          name: t.name,
+          description: t.description,
+          parameters: t.parameters
+        }
+      }));
+
+      const groqRes = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemInstruction },
+          { role: "user", content: text }
+        ],
+        tools: groqTools,
+        tool_choice: "auto",
+        max_tokens: 1024
+      });
+
+      const choice = groqRes.choices[0];
+      const toolCalls = choice?.message?.tool_calls;
+
+      if (toolCalls && toolCalls.length > 0) {
+        const results: string[] = [];
+        for (const call of toolCalls) {
+          let args: Record<string, any> = {};
+          try { args = JSON.parse(call.function.arguments); } catch {}
+          const toolRes = await executeTool(call.function.name, args, tenantId);
+          results.push(toolRes.resultText);
+        }
+        return results.join('\n\n');
+      }
+
+      return choice?.message?.content?.trim() || "تمام يا فندم، أنا معاك.";
+    } catch (groqErr: any) {
+      console.error("[Telegram LLM Groq Fallback Error]:", groqErr);
+      return `⚠️ كل المفاتيح المتاحة مستنفدة حالياً، يرجى المحاولة بعد قليل أو إضافة مفاتيح جديدة من لوحة التحكم.`;
+    }
+  }
+
+  return `⚠️ كل مفاتيح Gemini مستنفدة ولا يوجد مفتاح Groq احتياطي. يرجى إضافة مفاتيح جديدة من لوحة التحكم.`;
 }

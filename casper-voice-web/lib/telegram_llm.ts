@@ -710,7 +710,7 @@ export async function processTelegramMessageWithLLM(
       }));
 
       const groqRes = await groq.chat.completions.create({
-        model: "llama-3.1-70b-versatile",
+        model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemInstruction },
           { role: "user", content: text }
@@ -737,7 +737,30 @@ export async function processTelegramMessageWithLLM(
       return choice?.message?.content?.trim() || "تمام يا فندم، أنا معاك.";
     } catch (groqErr: any) {
       console.error("[Telegram LLM Groq Fallback Error]:", groqErr);
-      return `⚠️ كل المفاتيح المتاحة مستنفدة حالياً، يرجى المحاولة بعد قليل أو إضافة مفاتيح جديدة من لوحة التحكم.`;
+      
+      // Handle Groq's custom XML tool failure (e.g. <function=name {...} </function>)
+      const failedGen = groqErr?.error?.error?.failed_generation || groqErr?.error?.failed_generation;
+      if (failedGen && typeof failedGen === 'string' && failedGen.includes('<function=')) {
+        try {
+          const match = failedGen.match(/<function=([^\s>]+)\s*(.*?)<\/?function>/i) || failedGen.match(/<function=([^\s>]+)\s*(.*)/i);
+          if (match && match[1]) {
+            const funcName = match[1].trim();
+            let args = {};
+            try {
+               let jsonStr = match[2].replace(/<\/function>$/, '').trim();
+               if (jsonStr) args = JSON.parse(jsonStr);
+            } catch (e) {
+               console.error("Failed to parse Groq fallback args:", match[2]);
+            }
+            const toolRes = await executeTool(funcName, args, tenantId);
+            return toolRes.resultText;
+          }
+        } catch (parseErr) {
+          console.error("Error parsing failed_generation:", parseErr);
+        }
+      }
+
+      return `⚠️ عذراً، جميع الخدمات متوقفة حالياً. يرجى المحاولة لاحقاً.`;
     }
   }
 

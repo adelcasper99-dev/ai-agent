@@ -754,19 +754,21 @@ export async function processTelegramMessageWithLLM(
     } catch (groqErr: any) {
       console.error("[Telegram LLM Groq Fallback Error]:", groqErr);
       
-      // Handle Groq's custom XML tool failure (e.g. <function=name {...} </function>)
+      // Handle Groq's custom XML tool failure (e.g. <function=log_sale{...}></function>)
       const failedGen = groqErr?.error?.error?.failed_generation || groqErr?.error?.failed_generation;
       if (failedGen && typeof failedGen === 'string' && failedGen.includes('<function=')) {
         try {
-          const match = failedGen.match(/<function=([^\s>]+)\s*(.*?)<\/?function>/i) || failedGen.match(/<function=([^\s>]+)\s*(.*)/i);
-          if (match && match[1]) {
-            const funcName = match[1].trim();
+          const nameMatch = failedGen.match(/<function=([a-zA-Z0-9_]+)/i);
+          if (nameMatch && nameMatch[1]) {
+            const funcName = nameMatch[1].trim();
             let args = {};
-            try {
-               let jsonStr = match[2].replace(/<\/function>$/, '').trim();
-               if (jsonStr) args = JSON.parse(jsonStr);
-            } catch (e) {
-               console.error("Failed to parse Groq fallback args:", match[2]);
+            const jsonMatch = failedGen.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              try {
+                args = JSON.parse(jsonMatch[0]);
+              } catch (e) {
+                console.error("[Groq Parser] JSON parse error:", jsonMatch[0], e);
+              }
             }
             const toolRes = await executeTool(funcName, args, tenantId);
             return { status: "success", text: toolRes.resultText };

@@ -262,6 +262,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
+      if (data === "cmd_menu") {
+        await sendFallbackMainMenu(callbackChatId);
+        await answerCallback("تم فتح القائمة!");
+        return NextResponse.json({ ok: true });
+      }
+
       if (data === "cmd_appointments") {
         const appointments = await prisma.appointment.findMany({
           orderBy: { createdAt: "desc" },
@@ -549,6 +555,7 @@ export async function POST(req: NextRequest) {
           idempotencyKey: `start:tenant:${chatId}:${message.message_id}`,
           replyMarkup: {
             inline_keyboard: [
+              [{ text: "📱 القائمة المباشرة (تسجيل مبيعات/خدمات)", callback_data: "cmd_menu" }],
               [{ text: "🎤 اتصال صوتي مباشر", web_app: { url: `https://ai.casper-erp.com/telegram-voice?tenantId=${tenant.id}` } }],
               [{ text: "⚙️ تعديل الإعدادات والنشاط", callback_data: "type:custom" }],
               [
@@ -581,7 +588,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    if (text === "/appointments") {
+    if (text === "/menu") {
+      await sendFallbackMainMenu(chatId);
+    } else if (text === "/appointments") {
       const appointments = await prisma.appointment.findMany({
         orderBy: { createdAt: "desc" },
         take: 10,

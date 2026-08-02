@@ -795,8 +795,8 @@
     "semantic_hash": ""
   },
   ".agents/stage_log.json": {
-    "mtime": 1785606004.3790557,
-    "ast_hash": "2aaa78354180028b0e9e5cf8db3383ce",
+    "mtime": 1785653416.5068345,
+    "ast_hash": "e43be944ef24cb34c47beba631527a9d",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -985,8 +985,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/next-env.d.ts": {
-    "mtime": 1785605984.4346793,
-    "ast_hash": "d0f8375ae1199dc7acd3977fc33b78b8",
+    "mtime": 1785653374.1493363,
+    "ast_hash": "2a74d3909800ca5467fa83b0ab4a4890",
     "semantic_hash": ""
   },
   "casper-voice-web/next.config.ts": {
@@ -1015,8 +1015,8 @@
     "semantic_hash": ""
   },
   "voice_service/agent.py": {
-    "mtime": 1785583853.5490472,
-    "ast_hash": "7051904259c84234cdb7e4a29e1f8180",
+    "mtime": 1785653301.8421686,
+    "ast_hash": "a849fde925fa2b1e9bb5e9a69c6b13e5",
     "semantic_hash": ""
   },
   "voice_service/edge_tts_wrapper.py": {
@@ -2675,8 +2675,8 @@
     "semantic_hash": ""
   },
   "scripts/rebuild_vps_dashboard.py": {
-    "mtime": 1785579300.8916752,
-    "ast_hash": "5cdbcfa8cc2b3ab3c07b4974227ad7ae",
+    "mtime": 1785606031.676826,
+    "ast_hash": "0cb3cd0c02176b4f727e19a05f264af7",
     "semantic_hash": ""
   },
   "voice_service/preflight_check.py": {
@@ -2720,8 +2720,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram_llm.ts": {
-    "mtime": 1785605878.5555475,
-    "ast_hash": "4c7bd7a348dfcd9969724345ab9053d5",
+    "mtime": 1785653222.508916,
+    "ast_hash": "e86048e8bdf50f828ac2a7e443f17317",
     "semantic_hash": ""
   },
   "casper-voice-web/app/telegram-voice/page.tsx": {
@@ -2752,6 +2752,21 @@
   "casper-voice-web/test_gemini.py": {
     "mtime": 1785588240.792252,
     "ast_hash": "06db16d6b282f8ed7cf00d69e67b8284",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/app/api/admin/api-keys/route.ts": {
+    "mtime": 1785653360.4223807,
+    "ast_hash": "f253a76c3c548a619ff0b770656fa122",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/app/dashboard/api-keys/page.tsx": {
+    "mtime": 1785653325.3176713,
+    "ast_hash": "d8f3ee4d66686c65ff7b88e0e930d66c",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/lib/apiKeyManager.ts": {
+    "mtime": 1785653361.836946,
+    "ast_hash": "ea1a1f9dffeadb979ce1858413654407",
     "semantic_hash": ""
   }
 }

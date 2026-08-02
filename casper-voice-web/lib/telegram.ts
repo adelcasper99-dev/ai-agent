@@ -63,6 +63,7 @@ export async function setTelegramBotCommands() {
 
   const commands = [
     { command: "start", description: "بدء التفاعل مع المساعد" },
+    { command: "menu", description: "فتح قائمة المبيعات والخدمات المباشرة" },
     { command: "settings", description: "تعديل إعدادات ونشاط الشركة والمواعيد" },
     { command: "appointments", description: "عرض المواعيد المسجلة" },
     { command: "human", description: "التحدث مع موظف الدعم الفني" },

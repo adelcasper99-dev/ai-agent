@@ -622,31 +622,42 @@ export async function processTelegramMessageWithLLM(
 إذا نفذت أداة بنجاح، أكد العملية للعميل بجملة ودية مختصرة.
 إذا سألك العميل عن مواعيد العمل أو نوع النشاط، استخدم البيانات المتاحة أعلاه للرد بدقة.`;
 
-  try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-3.5-flash",
-      tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool] }],
-      systemInstruction
-    });
+  const models = ["gemini-2.0-flash", "gemini-1.5-flash"];
+  let lastError: any = null;
 
-    const chat = model.startChat();
-    const result = await chat.sendMessage(text);
-    const response = result.response;
-    const functionCalls = response.functionCalls();
+  for (const modelName of models) {
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool] }],
+        systemInstruction
+      });
 
-    if (functionCalls && functionCalls.length > 0) {
-      let combinedResults = [];
-      for (const call of functionCalls) {
-        const toolRes = await executeTool(call.name, call.args, tenantId);
-        combinedResults.push(toolRes.resultText);
+      const chat = model.startChat();
+      const result = await chat.sendMessage(text);
+      const response = result.response;
+      const functionCalls = response.functionCalls();
+
+      if (functionCalls && functionCalls.length > 0) {
+        let combinedResults = [];
+        for (const call of functionCalls) {
+          const toolRes = await executeTool(call.name, call.args, tenantId);
+          combinedResults.push(toolRes.resultText);
+        }
+        return combinedResults.join('\n\n');
       }
-      return combinedResults.join('\n\n');
-    }
 
-    return response.text().trim() || "تمام يا فندم، أنا معاك.";
-  } catch (err: any) {
-    console.error("[Telegram LLM Process Error]:", err);
-    return `💡 حصلت مشكلة بسيطة في معالجة الرسالة، جرب تاني يا فندم.\n\n\`تفاصيل الخطأ: ${err?.message || String(err)}\``;
+      return response.text().trim() || "تمام يا فندم، أنا معاك.";
+    } catch (err: any) {
+      console.error(`[Telegram LLM Process Error (${modelName})]:`, err);
+      lastError = err;
+      if (err?.status === 429 || err?.message?.includes("429") || err?.message?.includes("Quota exceeded")) {
+        continue;
+      }
+      break;
+    }
   }
+
+  return `💡 عذراً، تم استنفاد الحدود اليومية للاستخدام المجاني (Rate Limit 429). يُرجى المحاولة بعد قليل أو تحديث المفتاح.\n\n\`تفاصيل الخطأ: ${lastError?.message || String(lastError)}\``;
 }

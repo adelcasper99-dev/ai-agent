@@ -611,7 +611,8 @@ export async function processTelegramMessageWithLLM(
 ): Promise<string> {
   const { getValidApiKey, markKeyExhausted } = await import('./apiKeyManager');
   
-  const modelName = "gemini-1.5-flash";
+  // Try models in order - first available free-tier model wins
+  const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro", "gemini-1.5-pro"];
   let lastError: any = null;
   const maxRetries = 3;
 
@@ -629,41 +630,51 @@ export async function processTelegramMessageWithLLM(
     try {
       apiKey = await getValidApiKey("gemini");
     } catch {
-      // All Gemini keys exhausted — break to Groq fallback
-      break;
+      break; // All Gemini keys exhausted — fall to Groq
     }
 
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({
-        model: modelName,
-        tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool] }],
-        systemInstruction
-      });
+    let modelWorked = false;
+    for (const modelName of modelsToTry) {
+      try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool] }],
+          systemInstruction
+        });
 
-      const chat = model.startChat();
-      const result = await chat.sendMessage(text);
-      const response = result.response;
-      const functionCalls = response.functionCalls();
+        const chat = model.startChat();
+        const result = await chat.sendMessage(text);
+        const response = result.response;
+        const functionCalls = response.functionCalls();
 
-      if (functionCalls && functionCalls.length > 0) {
-        let combinedResults = [];
-        for (const call of functionCalls) {
-          const toolRes = await executeTool(call.name, call.args, tenantId);
-          combinedResults.push(toolRes.resultText);
+        if (functionCalls && functionCalls.length > 0) {
+          const combinedResults = [];
+          for (const call of functionCalls) {
+            const toolRes = await executeTool(call.name, call.args, tenantId);
+            combinedResults.push(toolRes.resultText);
+          }
+          return combinedResults.join('\n\n');
         }
-        return combinedResults.join('\n\n');
-      }
 
-      return response.text().trim() || "تمام يا فندم، أنا معاك.";
-    } catch (err: any) {
-      console.error(`[Telegram LLM Process Error (Attempt ${attempt})]:`, err);
-      lastError = err;
-      if (err?.status === 429 || err?.message?.includes("429") || err?.message?.includes("Quota exceeded")) {
-        await markKeyExhausted(apiKey, "gemini");
-        continue;
+        return response.text().trim() || "تمام يا فندم، أنا معاك.";
+      } catch (err: any) {
+        lastError = err;
+        if (err?.status === 429 || err?.message?.includes("429") || err?.message?.includes("Quota")) {
+          await markKeyExhausted(apiKey, "gemini");
+          modelWorked = false;
+          break; // Key exhausted — get next key
+        }
+        if (err?.status === 404 || err?.message?.includes("not found") || err?.message?.includes("404")) {
+          console.warn(`[Telegram LLM] Model ${modelName} not available, trying next...`);
+          continue; // Model not available — try next model
+        }
+        // Unknown error — break both loops
+        break;
       }
-      break;
+    }
+    if (!modelWorked && lastError?.status !== 429 && !lastError?.message?.includes("429")) {
+      break; // Non-quota error, stop retrying
     }
   }
 

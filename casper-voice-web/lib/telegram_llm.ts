@@ -626,7 +626,7 @@ export async function processTelegramMessageWithLLM(
 إذا نفذت أداة بنجاح، أكد العملية للعميل بجملة ودية مختصرة.
 إذا سألك العميل عن مواعيد العمل أو نوع النشاط، استخدم البيانات المتاحة أعلاه للرد بدقة.`;
 
-  const models = ["gemini-3.5-flash", "gemini-3.5-pro"];
+  const models = ["gemini-2.0-flash", "gemini-1.5-flash"];
   let lastError: any = null;
 
   for (const modelName of models) {

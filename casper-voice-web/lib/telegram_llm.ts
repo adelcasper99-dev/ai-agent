@@ -127,13 +127,17 @@ const reportMissingFeatureTool: FunctionDeclaration = {
 
 const logCustomerPaymentTool: FunctionDeclaration = {
   name: "log_customer_payment",
-  description: "تسجيل دفعة سداد ديون نقدية من عميل. (تستخدم فقط عند وجود أمر سداد صريح مثل: 'سدد 50', 'دفع 100', 'قبضت منه 200'. يمنع استخدامها عند طلب كشف الحساب).",
+  description: "تسجيل حركة نقدية مع عميل (سداد من العميل أو استرداد/دفع مبلغ كاش للعميل).",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
       customer_name: { type: SchemaType.STRING, description: "اسم العميل" },
       customer_phone: { type: SchemaType.STRING, description: "تليفون العميل (إن وجد)" },
-      amount: { type: SchemaType.NUMBER, description: "المبلغ المسدد بالجنيه" },
+      amount: { type: SchemaType.NUMBER, description: "المبلغ بالجنيه" },
+      is_refund: { 
+        type: SchemaType.BOOLEAN, 
+        description: "ضع true إذا كان المحل هو من يدفع/يرد المبلغ كاش للعميل (مثل: 'ادفع 100 لأحمد' أو 'رديت له 100'). ضع false إذا كان العميل هو من يسدد للمحل." 
+      },
       idempotency_key: { type: SchemaType.STRING, description: "رقم فريد عشوائي لمنع التكرار" }
     },
     required: ["customer_name", "amount", "idempotency_key"]
@@ -512,7 +516,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
     }
 
     if (name === "log_customer_payment") {
-       const { customer_name, customer_phone, amount } = args;
+       const { customer_name, customer_phone, amount, is_refund = false } = args;
        const numAmount = Number(amount);
        const isPlaceholder = (v: any) => {
          if (!v || String(v).trim() === "") return true;
@@ -521,7 +525,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
        };
 
        if (isPlaceholder(customer_name) || isNaN(numAmount) || numAmount <= 0) {
-         return { success: false, resultText: "عشان أسجلك سداد الدفعة محتاج تقولي: اسم العميل والمبلغ المسدد 💵" };
+         return { success: false, resultText: "عشان أسجلك الحركة النقدية محتاج تقولي: اسم العميل والمبلغ 💵" };
        }
        const payAmount = new Decimal(numAmount);
        const custName = String(customer_name).replace(/^(لـ|ل|من|عن)\s+/, '').trim();
@@ -533,26 +537,47 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
             if (!customer) {
                throw new Error(`لم يتم العثور على العميل: ${custName}`);
             }
-            const ledgerEntry = await tx.customerLedgerEntry.create({
-               data: {
-                 customerId: customer.id,
-                 entryType: "PAYMENT_CREDIT",
-                 amount: payAmount.toNumber(),
-                 description: `سداد دفعة نقدية`,
-                 ...(tenantId && { tenantId })
-               }
-            });
-            await tx.journalEntry.create({
-               data: { accountCode: "CASH", debit: payAmount.toNumber(), referenceId: ledgerEntry.id, description: `استلام دفعة من ${customer.name}`, ...(tenantId && { tenantId }) }
-            });
-            await tx.journalEntry.create({
-               data: { accountCode: "ACCOUNTS_RECEIVABLE", credit: payAmount.toNumber(), referenceId: ledgerEntry.id, description: `تخفيض مديونية ${customer.name}`, ...(tenantId && { tenantId }) }
-            });
+            if (is_refund) {
+              const ledgerEntry = await tx.customerLedgerEntry.create({
+                 data: {
+                   customerId: customer.id,
+                   entryType: "REFUND_DEBIT",
+                   amount: payAmount.toNumber(),
+                   description: `رد مبلغ نقداً للعميل`,
+                   ...(tenantId && { tenantId })
+                 }
+              });
+              await tx.journalEntry.create({
+                 data: { accountCode: "ACCOUNTS_RECEIVABLE", debit: payAmount.toNumber(), referenceId: ledgerEntry.id, description: `استرداد نقدي لـ ${customer.name}`, ...(tenantId && { tenantId }) }
+              });
+              await tx.journalEntry.create({
+                 data: { accountCode: "CASH", credit: payAmount.toNumber(), referenceId: ledgerEntry.id, description: `دفع نقدية للعميل ${customer.name}`, ...(tenantId && { tenantId }) }
+              });
+            } else {
+              const ledgerEntry = await tx.customerLedgerEntry.create({
+                 data: {
+                   customerId: customer.id,
+                   entryType: "PAYMENT_CREDIT",
+                   amount: payAmount.toNumber(),
+                   description: `سداد دفعة نقدية`,
+                   ...(tenantId && { tenantId })
+                 }
+              });
+              await tx.journalEntry.create({
+                 data: { accountCode: "CASH", debit: payAmount.toNumber(), referenceId: ledgerEntry.id, description: `استلام دفعة من ${customer.name}`, ...(tenantId && { tenantId }) }
+              });
+              await tx.journalEntry.create({
+                 data: { accountCode: "ACCOUNTS_RECEIVABLE", credit: payAmount.toNumber(), referenceId: ledgerEntry.id, description: `تخفيض مديونية ${customer.name}`, ...(tenantId && { tenantId }) }
+              });
+            }
             return customer;
          });
-         return { success: true, resultText: `تم تسجيل سداد مبلغ ${amount} جنيه من العميل ${paymentResult.name} بنجاح!` };
+         if (is_refund) {
+           return { success: true, resultText: `تم تسجيل دفع مبلغ ${amount} جنيه كاش للعميل (${paymentResult.name}) وتحديث حسابه بنجاح! 💵` };
+         }
+         return { success: true, resultText: `تم تسجيل سداد مبلغ ${amount} جنيه من العميل (${paymentResult.name}) بنجاح! 💵` };
        } catch (err: any) {
-         return { success: false, resultText: err.message || "حدث خطأ أثناء السداد." };
+         return { success: false, resultText: err.message || "حدث خطأ أثناء العملية." };
        }
     }
 
@@ -565,24 +590,28 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
           return { success: false, resultText: `لم يتم العثور على العميل: ${custName}` };
        }
        
-       let totalDebit = new Decimal(0);
-       let totalCredit = new Decimal(0);
-       let totalReturn = new Decimal(0);
+       let totalSales = new Decimal(0);
+       let totalRefundPayouts = new Decimal(0);
+       let totalSalesReturns = new Decimal(0);
+       let totalCashReceived = new Decimal(0);
 
        customer.ledgers.forEach((l: any) => {
           if (l.entryType === "SALE_DEBIT") {
-            totalDebit = totalDebit.plus(l.amount);
+            totalSales = totalSales.plus(l.amount);
+          } else if (l.entryType === "REFUND_DEBIT") {
+            totalRefundPayouts = totalRefundPayouts.plus(l.amount);
           } else if (l.entryType === "PAYMENT_CREDIT") {
             if (l.description?.startsWith("مرتجع مبيعات")) {
-              totalReturn = totalReturn.plus(l.amount);
+              totalSalesReturns = totalSalesReturns.plus(l.amount);
             } else {
-              totalCredit = totalCredit.plus(l.amount);
+              totalCashReceived = totalCashReceived.plus(l.amount);
             }
           }
        });
 
-       const netPurchases = totalDebit.minus(totalReturn);
-       const balance = netPurchases.minus(totalCredit);
+       const netPurchases = totalSales.minus(totalSalesReturns);
+       const netPaid = totalCashReceived.minus(totalRefundPayouts);
+       const balance = netPurchases.minus(netPaid);
 
        let balanceStr = "";
        if (balance.gt(0)) {
@@ -595,7 +624,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
 
        return { 
          success: true, 
-         resultText: `📊 *كشف حساب العميل (${customer.name}):*\n\n🛍️ *إجمالي المشتريات:* ${totalDebit.toNumber()} جنيه\n🔄 *إجمالي المرتجعات:* ${totalReturn.toNumber()} جنيه\n💵 *المسدد نقداً:* ${totalCredit.toNumber()} جنيه\n📝 *الرصيد النهائي:* ${balanceStr}` 
+         resultText: `📊 *كشف حساب العميل (${customer.name}):*\n\n🛍️ *إجمالي المشتريات:* ${totalSales.toNumber()} جنيه\n🔄 *إجمالي المرتجعات:* ${totalSalesReturns.toNumber()} جنيه\n💵 *المسدد نقداً (الصافي):* ${netPaid.toNumber()} جنيه\n📝 *الرصيد النهائي:* ${balanceStr}` 
        };
     }
 
@@ -988,7 +1017,10 @@ export async function processTelegramMessageWithLLM(
    - عند الاستعلام عن حساب ورصيد مورد ("حساب المورد المتخصص", "كشف حساب المورد علي", "ديون المورد احمد") -> استخدم فوراً أداة get_supplier_balance!
 8. تسجيل مرتجعات المبيعات والمشتريات (log_sales_return / log_purchase_return):
    - عند إرجاع العميل لبضاعة ("رجعت من احمد 1 كرتونة", "مرتجع مبيعات كرتونة مسامير من أحمد قيمة 50") -> استخدم أداة log_sales_return.
-   - عند إرجاع بضاعة للمورد ("رجعت للمورد المتخصص 2 كرتونة بـ 100", "مرتجع مشتريات للمورد المتخصص بقيمة 100") -> استخدم أداة log_purchase_return!`;
+   - عند إرجاع بضاعة للمورد ("رجعت للمورد المتخصص 2 كرتونة بـ 100", "مرتجع مشتريات للمورد المتخصص بقيمة 100") -> استخدم أداة log_purchase_return!
+9. التمييز بين سداد العميل واسترداد العميل للكاش (log_customer_payment):
+   - إذا كان العميل يسدد للمحل ("سدد أحمد 100", "قبضت من أحمد 100", "أحمد دفع 100") -> استخدم log_customer_payment بـ is_refund: false.
+   - إذا كان المحل هو من يدفع/يرد مبلغ كاش للعميل ("ادفع 100 لأحمد", "رديت 100 لأحمد", "اعطي أحمد 100") -> استخدم log_customer_payment بـ is_refund: true!`;
 
   // Format history for Gemini SDK
   const geminiHistory = rawHistory.map(h => ({

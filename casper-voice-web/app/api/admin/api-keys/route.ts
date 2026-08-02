@@ -45,3 +45,18 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
+// PATCH: Reset all exhausted keys back to active (manual admin override)
+export async function PATCH(req: Request) {
+  try {
+    const { provider = "gemini" } = await req.json().catch(() => ({}));
+    const result = await prisma.apiKeyPool.updateMany({
+      where: { provider, isExhausted: true },
+      data: { isExhausted: false, exhaustedAt: null }
+    });
+    return NextResponse.json({ success: true, resetCount: result.count });
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+

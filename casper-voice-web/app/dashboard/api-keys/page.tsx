@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface ApiKey {
   id: string;
@@ -16,12 +16,10 @@ export default function ApiKeysPage() {
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [newKey, setNewKey] = useState("");
   const [loading, setLoading] = useState(true);
+  const [resetting, setResetting] = useState(false);
+  const [testingId, setTestingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchKeys();
-  }, []);
-
-  const fetchKeys = async () => {
+  const fetchKeys = useCallback(async () => {
     setLoading(true);
     const res = await fetch("/api/admin/api-keys");
     const data = await res.json();
@@ -29,7 +27,19 @@ export default function ApiKeysPage() {
       setKeys(data.keys);
     }
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchKeys();
+    // Auto-refresh every 30s to reflect real-time exhaustion status
+    const interval = setInterval(fetchKeys, 30000);
+    return () => clearInterval(interval);
+  }, [fetchKeys]);
+
+  const allExhausted =
+    keys.length > 0 && keys.every((k) => k.isExhausted || !k.isActive);
+  const exhaustedCount = keys.filter((k) => k.isExhausted).length;
+  const availableCount = keys.filter((k) => !k.isExhausted && k.isActive).length;
 
   const handleAddKey = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +47,7 @@ export default function ApiKeysPage() {
     const res = await fetch("/api/admin/api-keys", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ provider: "gemini", keyString: newKey })
+      body: JSON.stringify({ provider: "gemini", keyString: newKey }),
     });
     const data = await res.json();
     if (data.success) {
@@ -49,21 +59,38 @@ export default function ApiKeysPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this key?")) return;
+    if (!confirm("هل أنت متأكد من حذف هذا المفتاح؟")) return;
     const res = await fetch(`/api/admin/api-keys?id=${id}`, { method: "DELETE" });
     if (res.ok) {
       fetchKeys();
     }
   };
 
-  const handleTestKey = async (keyString: string) => {
-    if (!keyString) return;
-    setLoading(true);
+  const handleResetAll = async () => {
+    if (!confirm("هل تريد إعادة تفعيل جميع المفاتيح المستنفدة؟")) return;
+    setResetting(true);
+    const res = await fetch("/api/admin/api-keys", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ provider: "gemini" }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`✅ تم إعادة تفعيل ${data.resetCount} مفتاح بنجاح`);
+      fetchKeys();
+    } else {
+      alert("❌ فشل إعادة التفعيل: " + data.error);
+    }
+    setResetting(false);
+  };
+
+  const handleTestKey = async (id: string, keyString: string) => {
+    setTestingId(id);
     try {
       const res = await fetch("/api/admin/api-keys/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyString })
+        body: JSON.stringify({ keyString }),
       });
       const data = await res.json();
       if (data.success) {
@@ -74,15 +101,70 @@ export default function ApiKeysPage() {
     } catch (e) {
       alert("❌ حدث خطأ أثناء الاتصال");
     }
-    setLoading(false);
+    setTestingId(null);
+    fetchKeys(); // Refresh after test in case status changed
   };
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6" dir="rtl">
+      {/* Page Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">محفظة مفاتيح Gemini (API Keys)</h1>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500">
+            {availableCount} متاح / {exhaustedCount} مستنفد
+          </span>
+          <button
+            onClick={fetchKeys}
+            className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600"
+          >
+            🔄 تحديث
+          </button>
+        </div>
       </div>
 
+      {/* 🚨 All-Keys-Exhausted Banner */}
+      {allExhausted && (
+        <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 flex items-start gap-3">
+          <span className="text-2xl">🚨</span>
+          <div className="flex-1">
+            <p className="font-bold text-red-800 text-base">
+              تحذير: جميع مفاتيح Gemini مستنفدة!
+            </p>
+            <p className="text-red-700 text-sm mt-1">
+              البوت لن يستطيع معالجة أي رسائل حتى تُضاف مفاتيح جديدة أو تُعاد تفعيل المفاتيح الحالية.
+            </p>
+            <button
+              onClick={handleResetAll}
+              disabled={resetting}
+              className="mt-2 px-4 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 disabled:opacity-50"
+            >
+              {resetting ? "جاري الإعادة..." : "⚡ إعادة تفعيل الكل الآن"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ⚠️ Partial exhaustion warning */}
+      {!allExhausted && exhaustedCount > 0 && (
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">⚠️</span>
+            <p className="text-amber-800 text-sm">
+              <strong>{exhaustedCount} مفتاح مستنفد</strong> — النظام يعمل على المفاتيح المتبقية ({availableCount} متاح)
+            </p>
+          </div>
+          <button
+            onClick={handleResetAll}
+            disabled={resetting}
+            className="px-3 py-1.5 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 disabled:opacity-50"
+          >
+            {resetting ? "..." : "إعادة تفعيل المستنفدة"}
+          </button>
+        </div>
+      )}
+
+      {/* Add Key Form */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <form onSubmit={handleAddKey} className="flex gap-4 items-end">
           <div className="flex-1 space-y-2">
@@ -102,11 +184,14 @@ export default function ApiKeysPage() {
         </form>
       </div>
 
+      {/* Keys Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-gray-500">جاري التحميل...</div>
         ) : keys.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">لا يوجد مفاتيح مسجلة. النظام يستخدم المفتاح الموجود في ملف .env حالياً.</div>
+          <div className="p-8 text-center text-gray-500">
+            لا يوجد مفاتيح مسجلة. النظام يستخدم المفتاح الموجود في ملف .env حالياً.
+          </div>
         ) : (
           <table className="w-full text-right">
             <thead className="bg-gray-50 border-b">
@@ -119,34 +204,52 @@ export default function ApiKeysPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {keys.map(k => (
-                <tr key={k.id} className="hover:bg-gray-50">
+              {keys.map((k) => (
+                <tr
+                  key={k.id}
+                  className={`hover:bg-gray-50 ${k.isExhausted ? "bg-red-50/30" : ""}`}
+                >
                   <td className="px-6 py-4 text-sm capitalize">{k.provider}</td>
                   <td className="px-6 py-4 text-sm font-mono text-gray-500 text-left" dir="ltr">
                     {k.keyString.substring(0, 8)}...{k.keyString.slice(-4)}
                   </td>
                   <td className="px-6 py-4 text-sm">
                     {k.isExhausted ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        🔴 مستنفد (429)
-                        {k.exhaustedAt && <span className="mr-1 text-[10px] text-red-600">منذ {new Date(k.exhaustedAt).toLocaleTimeString()}</span>}
-                      </span>
+                      <div className="space-y-1">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          🔴 مستنفد (429)
+                        </span>
+                        {k.exhaustedAt && (
+                          <p className="text-[11px] text-red-500">
+                            منذ {new Date(k.exhaustedAt).toLocaleTimeString("ar-EG")} — {new Date(k.exhaustedAt).toLocaleDateString("ar-EG")}
+                          </p>
+                        )}
+                      </div>
                     ) : (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        🟢 متاح
+                        🟢 متاح وشغال
                       </span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-sm">
                     {new Date(k.addedAt).toLocaleDateString("ar-EG")}
                   </td>
-                  <td className="px-6 py-4 text-sm flex gap-3">
-                    <button onClick={() => handleTestKey(k.keyString)} className="text-blue-600 hover:text-blue-800 font-medium">
-                      فحص
-                    </button>
-                    <button onClick={() => handleDelete(k.id)} className="text-red-500 hover:text-red-700 font-medium">
-                      حذف
-                    </button>
+                  <td className="px-6 py-4 text-sm">
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleTestKey(k.id, k.keyString)}
+                        disabled={testingId === k.id}
+                        className="text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50"
+                      >
+                        {testingId === k.id ? "⏳" : "فحص"}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(k.id)}
+                        className="text-red-500 hover:text-red-700 font-medium"
+                      >
+                        حذف
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -154,9 +257,12 @@ export default function ApiKeysPage() {
           </table>
         )}
       </div>
-      
+
+      {/* Info Box */}
       <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800">
-        <p><strong>ملاحظة هامة:</strong> النظام يقوم بالتبديل تلقائياً بين المفاتيح المتاحة (🟢 متاح). إذا حدث خطأ (429 Quota Exceeded)، سيتم تحويل حالة المفتاح إلى (🔴 مستنفد) ولن يُستخدم لمدة 24 ساعة، وسيقوم النظام باستخدام المفتاح المتاح التالي.</p>
+        <p>
+          <strong>كيف يعمل النظام:</strong> عند وصول رسالة، يختار النظام أول مفتاح 🟢 متاح. إذا أعاد جوجل خطأ 429 (مستنفد)، يُعلَّم المفتاح 🔴 ويُجرَّب المفتاح التالي تلقائياً. الصفحة تتحدث تلقائياً كل 30 ثانية.
+        </p>
       </div>
     </div>
   );

@@ -266,7 +266,7 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
   if (!customer && name) {
     customer = await tx.customer.findUnique({ where: { tenantId_name: { tenantId: tId, name } }, include });
     if (!customer) {
-      const normalize = (s: string) => s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+      const normalize = (s: string) => s.replace(/^(لـ|ل|من|عن|حساب|عميل)\s+/, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
       const normalizedInput = normalize(name);
       const allCustomers = await tx.customer.findMany({ where: { tenantId: tId }, select: { id: true, name: true } });
       const match = allCustomers.find((c: any) => normalize(c.name) === normalizedInput);
@@ -513,11 +513,18 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
 
     if (name === "log_customer_payment") {
        const { customer_name, customer_phone, amount } = args;
-       if (!customer_name || typeof amount !== "number" || amount <= 0) {
-         return { success: false, resultText: "خطأ: اسم العميل والمبلغ مطلوبين." };
+       const numAmount = Number(amount);
+       const isPlaceholder = (v: any) => {
+         if (!v || String(v).trim() === "") return true;
+         const s = String(v).trim().toLowerCase();
+         return s.includes("يحدد") || s.includes("محدد") || s.includes("unspecified");
+       };
+
+       if (isPlaceholder(customer_name) || isNaN(numAmount) || numAmount <= 0) {
+         return { success: false, resultText: "عشان أسجلك سداد الدفعة محتاج تقولي: اسم العميل والمبلغ المسدد 💵" };
        }
-       const payAmount = new Decimal(amount);
-       const custName = String(customer_name).trim();
+       const payAmount = new Decimal(numAmount);
+       const custName = String(customer_name).replace(/^(لـ|ل|من|عن)\s+/, '').trim();
        const custPhone = customer_phone ? String(customer_phone).trim() : null;
 
        try {

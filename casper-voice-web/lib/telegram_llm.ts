@@ -57,18 +57,18 @@ const bookAppointmentTool: FunctionDeclaration = {
 
 const logPurchaseTool: FunctionDeclaration = {
   name: "log_purchase",
-  description: "تسجيل فاتورة مشتريات جديدة من مورد أو بضائع مششراة.",
+  description: "تسجيل فاتورة مشتريات جديدة من مورد وبضائع مششراة.",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
-      supplier_name: { type: SchemaType.STRING, description: "اسم المورد المشترى منه (إذا لم يذكر استخدم 'مورد عام')" },
+      supplier_name: { type: SchemaType.STRING, description: "اسم المورد المشترى منه (إجباري لمتابعة الحسابات والآجل)" },
       item_name: { type: SchemaType.STRING, description: "اسم الصنف أو البضاعة المششراة" },
       quantity: { type: SchemaType.NUMBER, description: "الكمية المششراة كرقم (مثال: '5 كراتين' = 5)" },
       price_per_unit: { type: SchemaType.NUMBER, description: "سعر الكرتونة أو القطعة الواحدة بالجنيه" },
       total_amount: { type: SchemaType.NUMBER, description: "إجمالي قيمة الفاتورة بالجنيه (إذا ذكر سعر الوحدة والكمية قم بضربهما)" },
       paid_amount: { type: SchemaType.NUMBER, description: "المبلغ المدفوع (إذا ذكر كاش يساوى الإجمالي، إذا آجل يساوى 0)" }
     },
-    required: ["item_name"]
+    required: ["supplier_name", "item_name"]
   }
 };
 
@@ -516,19 +516,12 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
     if (name === "log_purchase") {
       const { supplier_name, item_name, total_amount, paid_amount, quantity = 1, price_per_unit } = args;
       
-      const isPlaceholderItem = (v: any) => {
+      const isPlaceholder = (v: any) => {
         if (!v || String(v).trim() === "") return true;
         const s = String(v).trim().toLowerCase();
-        return s === "مشتريات" || s === "شراء" || s === "صنف" || s.includes("يحدد") || s.includes("محدد") || s.includes("unspecified");
+        return s === "مشتريات" || s === "شراء" || s === "صنف" || s === "مورد" || s.includes("يحدد") || s.includes("محدد") || s.includes("unspecified");
       };
 
-      const isPlaceholderSupplier = (v: any) => {
-        if (!v || String(v).trim() === "") return true;
-        const s = String(v).trim().toLowerCase();
-        return s === "مورد" || s.includes("يحدد") || s.includes("محدد");
-      };
-
-      const supplierNameStr = (!isPlaceholderSupplier(supplier_name)) ? String(supplier_name).trim() : "مورد عام";
       const qty = Number(quantity) || 1;
 
       let calcTotal = 0;
@@ -538,8 +531,8 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
         calcTotal = price_per_unit * qty;
       }
 
-      if (isPlaceholderItem(item_name) || calcTotal <= 0) {
-        return { success: false, resultText: "عشان أسجلك فاتورة المشتريات محتاج تقولي: الصنف المشترى والسعر 📦" };
+      if (isPlaceholder(supplier_name) || isPlaceholder(item_name) || calcTotal <= 0) {
+        return { success: false, resultText: "عشان أسجلك فاتورة المشتريات محتاج تقولي: اسم المورد، الصنف المشترى، والسعر 📦" };
       }
 
       if (!tenantId) {
@@ -549,6 +542,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
       const total = new Decimal(calcTotal);
       const paid = new Decimal(paid_amount ?? calcTotal);
       const remaining = total.sub(paid);
+      const supplierNameStr = String(supplier_name).trim();
 
       const supplier = await prisma.supplier.upsert({
         where: { tenantId_name: { tenantId, name: supplierNameStr } },
@@ -567,7 +561,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
         }
       });
 
-      return { success: true, resultText: `تم تسجيل فاتورة مشتريات (${qty} ${purchase.itemName}) من ${supplier.name} بقيمة إجمالية ${purchase.totalAmount} جنيه بنجاح! 📦` };
+      return { success: true, resultText: `تم تسجيل فاتورة مشتريات (${qty} ${purchase.itemName}) من المورد (${supplier.name}) بقيمة إجمالية ${purchase.totalAmount} جنيه بنجاح! 📦` };
     }
 
     if (name === "get_financial_summary") {

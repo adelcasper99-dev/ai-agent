@@ -610,12 +610,9 @@ export async function processTelegramMessageWithLLM(
 ): Promise<string> {
   const { getValidApiKey, markKeyExhausted } = await import('./apiKeyManager');
   
-  let apiKey: string;
-  try {
-    apiKey = await getValidApiKey("gemini");
-  } catch (err: any) {
-    return `⚠️ ${err.message || "عذراً، جميع مفاتيح الخدمة المجانية مستنفدة حالياً."}`;
-  }
+  const modelName = "gemini-2.0-flash";
+  let lastError: any = null;
+  const maxRetries = 3;
 
   const companyStr = tenantName ? `بشركة ${tenantName}` : "بنظامنا الذكي";
   const typeStr = businessType ? `(نوع النشاط: ${businessType})` : "";
@@ -626,10 +623,14 @@ export async function processTelegramMessageWithLLM(
 إذا نفذت أداة بنجاح، أكد العملية للعميل بجملة ودية مختصرة.
 إذا سألك العميل عن مواعيد العمل أو نوع النشاط، استخدم البيانات المتاحة أعلاه للرد بدقة.`;
 
-  const models = ["gemini-2.0-flash", "gemini-1.5-flash"];
-  let lastError: any = null;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    let apiKey: string;
+    try {
+      apiKey = await getValidApiKey("gemini");
+    } catch (err: any) {
+      return `⚠️ ${err.message || "عذراً، جميع مفاتيح الخدمة المجانية مستنفدة حالياً."}`;
+    }
 
-  for (const modelName of models) {
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
@@ -654,16 +655,16 @@ export async function processTelegramMessageWithLLM(
 
       return response.text().trim() || "تمام يا فندم، أنا معاك.";
     } catch (err: any) {
-      console.error(`[Telegram LLM Process Error (${modelName})]:`, err);
+      console.error(`[Telegram LLM Process Error (Attempt ${attempt})]:`, err);
       lastError = err;
       if (err?.status === 429 || err?.message?.includes("429") || err?.message?.includes("Quota exceeded")) {
-        // Mark key as exhausted so next message picks a fresh one
+        // Mark key as exhausted so next attempt picks a fresh one
         await markKeyExhausted(apiKey, "gemini");
         continue;
       }
-      break;
+      break; // Not a quota error, break out of retry loop
     }
   }
 
-  return `💡 عذراً، تم استنفاد الحدود اليومية للاستخدام المجاني (Rate Limit 429). يُرجى المحاولة بعد قليل أو تحديث المفتاح.\n\n\`تفاصيل الخطأ: ${lastError?.message || String(lastError)}\``;
+  return `💡 عذراً، تم استنفاد الحدود اليومية للاستخدام المجاني (Rate Limit 429). يُرجى المحاولة بعد قليل أو إضافة مفاتيح جديدة.\n\n\`تفاصيل الخطأ: ${lastError?.message || String(lastError)}\``;
 }

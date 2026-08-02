@@ -393,9 +393,18 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
 
     if (name === "book_appointment") {
       const { customer_name, customer_phone, date, time, notes = "" } = args;
-      if (!customer_name || !date || !time) {
-        return { success: false, resultText: "خطأ: اسم العميل والتاريخ والوقت مطلوبين." };
+
+      // Detect placeholder/empty values that LLM inserts when user didn't provide info
+      const isPlaceholder = (v: any) => !v || String(v).includes("لم يُحدد") || String(v).includes("غير محدد") || String(v).trim() === "";
+
+      if (isPlaceholder(customer_name) || isPlaceholder(date) || isPlaceholder(time)) {
+        const missing = [];
+        if (isPlaceholder(customer_name)) missing.push("اسم العميل");
+        if (isPlaceholder(date)) missing.push("التاريخ (مثال: 2025-08-10)");
+        if (isPlaceholder(time)) missing.push("الوقت (مثال: 03:00 مساءً)");
+        return { success: false, resultText: `عشان أحجزلك الموعد محتاج تقولي: ${missing.join("، ")} 📅` };
       }
+
       const existing = await prisma.appointment.findFirst({
         where: {
           date: { contains: String(date).trim() },
@@ -420,7 +429,7 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
           ...(tenantId && { tenantId })
         }
       });
-      return { success: true, resultText: `تم حجز موعد لـ ${app.customerName} يوم ${app.date} الساعة ${app.time} بنجاح!` };
+      return { success: true, resultText: `تم حجز موعد لـ ${app.customerName} يوم ${app.date} الساعة ${app.time} بنجاح! ✅` };
     }
 
     if (name === "log_customer_payment") {

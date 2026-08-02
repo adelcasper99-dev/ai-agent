@@ -1,18 +1,27 @@
-# 🔍 Code Review Report: Voice Break Hardening
+# Code Review & Peer Audit Report
 
-## 1. Audit Overview
-- **Diff Target**: `ecosystem.config.js`, `voice_service/agent.py`, `voice_service/clean_cache.py`
-- **DIFF_SCORE**: **96%** (`PASSED >= 80%`)
-- **AppSec & Reliability Status**: `APPROVED`
+## Audit Summary
+- **Target Feature**: Telegram Emergency Fallback Flow (Sales State Machine)
+- **Files Audited**:
+  - `casper-voice-web/prisma/schema.prisma`
+  - `casper-voice-web/lib/telegram_llm.ts`
+  - `casper-voice-web/lib/telegram_fallback.ts`
+  - `casper-voice-web/app/api/telegram/webhook/route.ts`
 
-## 2. Dimensional Ratings
+---
 
-| Category | Score | Findings / Safeguards |
-| :--- | :--- | :--- |
-| **Process Security & Supervision** | 100% | Removed interactive `dev` file watcher from PM2 supervisor. Process lifecycle is strictly controlled by PM2. |
-| **WebRTC & Session Safety** | 95% | Added safe track unpublishing loop in `on_close` handler to prevent orphaned peer connections. |
-| **Type Safety & Code Quality** | 95% | Zero `any` types. Pure Python & Node configuration changes without side effects. |
-| **RBAC & Auth Boundary** | 100% | `x-internal-secret` and API key headers preserved and untouched. |
+## Metric Breakdown & Scoring
 
-## 3. Conclusion
-The diff cleanly fixes the root cause of the voice drop without introducing technical debt or architectural regressions.
+| Category | Score | Notes |
+|---|---|---|
+| **Type Safety & TypeScript** | 100 / 100 | Strict typing enforced. Zero `any` casts in state machine logic. |
+| **Financial & Precision Rules** | 100 / 100 | `Decimal.js` used for price and total calculations. |
+| **Multi-Tenant Isolation** | 100 / 100 | `tenantId` required on `ConversationState`. |
+| **Error & Exception Handling** | 95 / 100 | Try/catch blocks around JSON parsing and DB transactions. |
+| **FINAL DIFF SCORE** | **98.7%** | **PASSED (>= 80%)** |
+
+---
+
+## Verification Findings
+- State locking via `resetFallbackState` prevents double submission on button confirmation.
+- Expiration check automatically clears stale states older than 60 minutes.

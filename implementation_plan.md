@@ -1,40 +1,78 @@
-# Implementation Plan: Voice Break Diagnostic & PM2 LiveKit Hardening
+# Telegram Fallback Flow (No-AI) Implementation Plan
 
-Fix the 100% voice-to-voice audio drop after code modifications by eliminating the LiveKit `dev` file watcher collision with PM2 and implementing graceful WebRTC shutdown handlers.
+## Overview
+Implement an offline, menu-driven state machine for Telegram that automatically activates when all AI providers (Gemini, Groq, OpenAI, OpenRouter) fail or exhaust quota. The initial MVP focuses on the 5-step Sales flow with confirmation.
+
+---
+
+## User Review Required
+> [!WARNING]
+> Database migration required: Adds `ConversationState` table to Prisma schema. `npx prisma db push` will be executed locally and on the HQ VPS server.
+
+---
 
 ## Proposed Changes
 
-### Root Ecosystem Configuration
+### 1. Database Schema
+#### [MODIFY] [schema.prisma](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/prisma/schema.prisma)
+- Add `ConversationState` model linked to `Tenant`:
+```prisma
+model ConversationState {
+  id             String   @id @default(cuid())
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  telegramChatId String   @unique
+  currentFlow    String?  // "sale" | "purchase" | null
+  currentStep    String?  // "customer" | "item" | "quantity" | "total_price" | "payment_method" | "confirm"
+  collectedData  String   @default("{}") // JSON object containing collected step values
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-#### [MODIFY] [ecosystem.config.js](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/ecosystem.config.js)
-- Change `args: 'dev'` to `args: 'start'` for `casper-livekit-worker` (Line 40).
+  @@index([tenantId])
+}
+```
+- Add relation `conversationStates ConversationState[]` to `Tenant`.
 
 ---
 
-### Voice Service Agent
-
-#### [MODIFY] [agent.py](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/voice_service/agent.py)
-- Ensure `ctx.add_shutdown_callback` cleanly unpublishes local audio tracks and flushes diagnostic sessions upon worker shutdown.
-- Verify fallback audio stream cleanups to prevent hanging WebRTC audio sources.
+### 2. Structured LLM Result Type
+#### [MODIFY] [telegram_llm.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)
+- Update `processTelegramMessageWithLLM` signature to return a type-safe discriminator:
+```ts
+export type LLMResult =
+  | { status: "success"; text: string }
+  | { status: "all_providers_exhausted"; lastError?: string };
+```
 
 ---
 
-### Process Maintenance & Cleanup
+### 3. Telegram Fallback Core State Machine
+#### [NEW] [telegram_fallback.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_fallback.ts)
+- Implement state machine helpers:
+  - `sendFallbackMainMenu(chatId, messageId?)`: Renders inline keyboard (`💰 مبيعات`, `📦 مشتريات`, etc.).
+  - `handleFallbackMenuCallback(...)`: Handles `menu:sale` click -> sets state `currentFlow: "sale", currentStep: "customer"`.
+  - `processFallbackInput(chatId, tenantId, text, state)`: Validates step inputs (customer, item, quantity, total_price) and transitions steps.
+  - `handleFallbackSaleCallback(...)`: Handles `sale:cash_customer`, `sale:pay:*`, `sale:confirm:*`.
+  - `executeSaleFlow(...)`: Creates DB Sale record, CustomerLedgerEntry, and JournalEntries within a Prisma transaction.
+  - `resetFallbackState(chatId)`: Clears current flow.
 
-#### [NEW] [clean_cache.py](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/voice_service/clean_cache.py)
-- Utility script to recursively remove `__pycache__` directories across `voice_service/`.
+---
+
+### 4. Telegram Webhook Handler Integration
+#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/telegram/webhook/route.ts)
+- Intercept incoming text messages: if active `ConversationState` exists with `currentFlow`, pass text to `processFallbackInput`.
+- Intercept incoming callbacks: route `menu:*` and `sale:*` callbacks to fallback handlers.
+- Failover trigger: If `processTelegramMessageWithLLM` returns `status: "all_providers_exhausted"`, set `conversation.mode = "fallback_menu"`, call `sendFallbackMainMenu`, and notify admin.
+
+---
 
 ## Verification Plan
 
-### Automated Verification
-- Run `python -m py_compile voice_service/agent.py` to verify zero syntax/bytecode errors.
-- Verify `ecosystem.config.js` syntax via `node -c ecosystem.config.js`.
+### Automated Tests
+- Run `npm run build` to verify strict TypeScript types.
+- Check Prisma schema validity with `npx prisma validate`.
 
-### Manual Verification (Exact Reproduction Scenario)
-1. **Live In-Call Hot-Edit Stress Test**:
-   - Establish an active, ongoing voice call session with the assistant.
-   - While the call is active and speaking, edit an unrelated file (e.g. modify a comment or button label in `casper-voice-web/app/dashboard/page.tsx` or `specs/SPEC.md`).
-   - Save the file and verify that the active voice stream continues without any audio drop or WebRTC track unsubscription.
-2. **Post-Deployment Session Test**:
-   - Deploy via `pm2 reload ecosystem.config.js --env production`.
-   - Verify clean startup without `watchfiles` or `dev` mode file watchers attached.
+### Manual Verification
+- Simulate AI provider failure and verify automatic main menu trigger on Telegram.
+- Execute complete Sales Flow step-by-step: Customer -> Item -> Quantity -> Total Price -> Payment Method -> Confirm.
+- Verify DB records created: `Sale`, `CustomerLedgerEntry`, `JournalEntry`.

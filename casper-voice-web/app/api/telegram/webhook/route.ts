@@ -11,6 +11,13 @@ import {
   setTelegramBotCommands,
 } from "@/lib/telegram";
 import { processTelegramMessageWithLLM } from "@/lib/telegram_llm";
+import {
+  sendFallbackMainMenu,
+  getActiveConversationState,
+  handleFallbackMenuCallback,
+  handleFallbackSaleCallback,
+  processFallbackInput,
+} from "@/lib/telegram_fallback";
 
 const prisma = new PrismaClient();
 
@@ -48,6 +55,24 @@ export async function POST(req: NextRequest) {
           }).catch(() => null);
         }
       };
+
+      if (data.startsWith("menu:")) {
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (tenant) {
+          await handleFallbackMenuCallback(callbackChatId, tenant.id, data, callback.message?.message_id);
+        }
+        await answerCallback("جاري فتح القائمة...");
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data.startsWith("sale:")) {
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (tenant) {
+          await handleFallbackSaleCallback(callbackChatId, tenant.id, data, callback.message?.message_id);
+        }
+        await answerCallback("تم الاختيار!");
+        return NextResponse.json({ ok: true });
+      }
 
       if (data === "agree_terms") {
         const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
@@ -623,15 +648,44 @@ export async function POST(req: NextRequest) {
         });
       }
     } else {
-      // Direct Text Message Routing to LLM Pipeline
       const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: chatId } });
-      const replyText = await processTelegramMessageWithLLM(
+      const tenantId = tenant?.id || "";
+
+      // 1. Check if active Fallback Flow state machine is in progress
+      if (tenantId) {
+        const state = await getActiveConversationState(chatId, tenantId);
+        if (state && state.currentFlow) {
+          const handled = await processFallbackInput(chatId, tenantId, text, state);
+          if (handled) {
+            return NextResponse.json({ ok: true });
+          }
+        }
+      }
+
+      // 2. Direct Text Message Routing to LLM Pipeline
+      const llmResult = await processTelegramMessageWithLLM(
         text,
         tenant?.id,
         tenant?.name,
         tenant?.businessType,
         tenant?.workingHours
       );
+
+      if (llmResult.status === "all_providers_exhausted") {
+        await sendFallbackMainMenu(chatId);
+
+        const adminChatId = process.env.ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
+        if (adminChatId) {
+          await sendTelegramAlert({
+            chatId: adminChatId,
+            text: `⚠️ *تنبيه طوارئ:* جميع مفاتيح والخدمات الخاصة بالذكاء الاصطناعي مستنفدة/متوقفة حالياً. تم تحويل التاجر (${tenant?.name || chatId}) إلى نظام القوائم الطارئة بنجاح.`,
+            idempotencyKey: `emergency_alert:${chatId}:${Date.now()}`,
+          });
+        }
+        return NextResponse.json({ ok: true });
+      }
+
+      const replyText = llmResult.text;
 
       await sendTelegramAlert({
         chatId,

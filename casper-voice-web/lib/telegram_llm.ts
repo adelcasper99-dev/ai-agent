@@ -615,13 +615,17 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
   }
 }
 
+export type LLMResult =
+  | { status: "success"; text: string }
+  | { status: "all_providers_exhausted"; lastError?: string };
+
 export async function processTelegramMessageWithLLM(
   text: string,
   tenantId?: string,
   tenantName?: string,
   businessType?: string,
   workingHours?: string
-): Promise<string> {
+): Promise<LLMResult> {
   const { getValidApiKey, markKeyExhausted } = await import('./apiKeyManager');
   
   // Try models in order - first available free-tier model wins
@@ -667,10 +671,10 @@ export async function processTelegramMessageWithLLM(
             const toolRes = await executeTool(call.name, call.args, tenantId);
             combinedResults.push(toolRes.resultText);
           }
-          return combinedResults.join('\n\n');
+          return { status: "success", text: combinedResults.join('\n\n') };
         }
 
-        return response.text().trim() || "تمام يا فندم، أنا معاك.";
+        return { status: "success", text: response.text().trim() || "تمام يا فندم، أنا معاك." };
       } catch (err: any) {
         lastError = err;
         if (err?.status === 429 || err?.message?.includes("429") || err?.message?.includes("Quota")) {
@@ -735,10 +739,10 @@ export async function processTelegramMessageWithLLM(
           const toolRes = await executeTool(call.function.name, args, tenantId);
           results.push(toolRes.resultText);
         }
-        return results.join('\n\n');
+        return { status: "success", text: results.join('\n\n') };
       }
 
-      return choice?.message?.content?.trim() || "تمام يا فندم، أنا معاك.";
+      return { status: "success", text: choice?.message?.content?.trim() || "تمام يا فندم، أنا معاك." };
     } catch (groqErr: any) {
       console.error("[Telegram LLM Groq Fallback Error]:", groqErr);
       
@@ -757,16 +761,14 @@ export async function processTelegramMessageWithLLM(
                console.error("Failed to parse Groq fallback args:", match[2]);
             }
             const toolRes = await executeTool(funcName, args, tenantId);
-            return toolRes.resultText;
+            return { status: "success", text: toolRes.resultText };
           }
         } catch (parseErr) {
           console.error("Error parsing failed_generation:", parseErr);
         }
       }
-
-      return `⚠️ عذراً، جميع الخدمات متوقفة حالياً. يرجى المحاولة لاحقاً.`;
     }
   }
 
-  return `⚠️ كل مفاتيح Gemini مستنفدة ولا يوجد مفتاح Groq احتياطي. يرجى إضافة مفاتيح جديدة من لوحة التحكم.`;
+  return { status: "all_providers_exhausted", lastError: lastError?.message };
 }

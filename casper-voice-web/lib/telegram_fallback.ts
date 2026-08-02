@@ -330,6 +330,24 @@ export async function handleFallbackSaleCallback(
 
   if (dataStr.startsWith("sale:pay:")) {
     const method = dataStr.replace("sale:pay:", "");
+    const isCashCustomer = !data.customer_name || data.customer_name === "عميل نقدي";
+
+    if (method === "credit" && isCashCustomer) {
+      delete data.customer_name;
+      await (prisma as any).conversationState.update({
+        where: { telegramChatId: chatId },
+        data: { currentStep: "customer", collectedData: JSON.stringify(data) },
+      });
+
+      await sendTelegramMessageOrEdit(
+        chatId,
+        "⚠️ *عذراً، البيع الآجل يتطلب تحديد اسم العميل!*\nلا يمكن تسجيل مبيعات آجل لحساب (عميل نقدي).\n\nالخطوة 1 من 5: يرجى كتابة اسم العميل الصريح أولاً:",
+        { inline_keyboard: [[{ text: "❌ إلغاء", callback_data: "sale:cancel" }]] },
+        messageId
+      );
+      return;
+    }
+
     const methodLabels: Record<string, string> = {
       cash: "كاش",
       credit: "آجل",

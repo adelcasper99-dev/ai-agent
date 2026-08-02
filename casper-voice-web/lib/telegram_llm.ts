@@ -190,12 +190,12 @@ const logSalesReturnTool: FunctionDeclaration = {
     type: SchemaType.OBJECT,
     properties: {
       customer_name: { type: SchemaType.STRING, description: "اسم العميل" },
-      item_name: { type: SchemaType.STRING, description: "اسم الصنف المرتجع" },
+      item_name: { type: SchemaType.STRING, description: "اسم الصنف المرتجع (اختياري)" },
       quantity: { type: SchemaType.NUMBER, description: "الكمية المرتجعة (مثال: 1)" },
       amount: { type: SchemaType.NUMBER, description: "إجمالي قيمة المرتجع بالجنيه" },
       idempotency_key: { type: SchemaType.STRING, description: "رقم فريد عشوائي لمنع التكرار" }
     },
-    required: ["customer_name", "item_name", "amount", "idempotency_key"]
+    required: ["customer_name", "amount", "idempotency_key"]
   }
 };
 
@@ -206,12 +206,12 @@ const logPurchaseReturnTool: FunctionDeclaration = {
     type: SchemaType.OBJECT,
     properties: {
       supplier_name: { type: SchemaType.STRING, description: "اسم المورد" },
-      item_name: { type: SchemaType.STRING, description: "اسم الصنف المرتجع" },
+      item_name: { type: SchemaType.STRING, description: "اسم الصنف المرتجع (اختياري)" },
       quantity: { type: SchemaType.NUMBER, description: "الكمية المرتجعة (مثال: 1)" },
       amount: { type: SchemaType.NUMBER, description: "إجمالي قيمة المرتجع بالجنيه" },
       idempotency_key: { type: SchemaType.STRING, description: "رقم فريد عشوائي لمنع التكرار" }
     },
-    required: ["supplier_name", "item_name", "amount", "idempotency_key"]
+    required: ["supplier_name", "amount", "idempotency_key"]
   }
 };
 
@@ -779,11 +779,19 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
 
     if (name === "log_sales_return") {
       const { customer_name, item_name, quantity = 1, amount } = args;
-      if (!customer_name || !item_name || typeof amount !== "number" || amount <= 0) {
-        return { success: false, resultText: "خطأ: اسم العميل، الصنف، والمبلغ مطلوبين لتسجيل مرتجع المبيعات." };
+      const numAmount = Number(amount);
+      const isPlaceholder = (v: any) => {
+        if (!v || String(v).trim() === "") return true;
+        const s = String(v).trim().toLowerCase();
+        return s.includes("يحدد") || s.includes("محدد") || s.includes("unspecified");
+      };
+
+      if (isPlaceholder(customer_name) || isNaN(numAmount) || numAmount <= 0) {
+        return { success: false, resultText: "عشان أسجلك مرتجع المبيعات محتاج تقولي: اسم العميل وقيمة المرتجع 🔄" };
       }
-      const retAmount = new Decimal(amount);
-      const custName = String(customer_name).trim();
+      const retAmount = new Decimal(numAmount);
+      const custName = String(customer_name).replace(/^(لـ|ل|من|عن)\s+/, '').trim();
+      const itemNameStr = item_name && !isPlaceholder(item_name) ? String(item_name).trim() : "بضاعة مرتجعة";
       const qty = Number(quantity) || 1;
 
       let customer = await findCustomerFuzzy(prisma, tenantId || "", custName, null);
@@ -796,24 +804,32 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
           customerId: customer.id,
           entryType: "PAYMENT_CREDIT",
           amount: retAmount.toNumber(),
-          description: `مرتجع مبيعات: ${qty} ${item_name}`,
+          description: `مرتجع مبيعات: ${qty} ${itemNameStr}`,
           ...(tenantId && { tenantId })
         }
       });
 
       return {
         success: true,
-        resultText: `تم تسجيل مرتجع مبيعات (${qty} ${item_name}) من العميل (${customer.name}) بقيمة ${retAmount.toNumber()} جنيه وتحديث حسابه بنجاح! 🔄`
+        resultText: `تم تسجيل مرتجع مبيعات (${qty} ${itemNameStr}) من العميل (${customer.name}) بقيمة ${retAmount.toNumber()} جنيه وتحديث حسابه بنجاح! 🔄`
       };
     }
 
     if (name === "log_purchase_return") {
       const { supplier_name, item_name, quantity = 1, amount } = args;
-      if (!supplier_name || !item_name || typeof amount !== "number" || amount <= 0) {
-        return { success: false, resultText: "خطأ: اسم المورد، الصنف، والمبلغ مطلوبين لتسجيل مرتجع المشتريات." };
+      const numAmount = Number(amount);
+      const isPlaceholder = (v: any) => {
+        if (!v || String(v).trim() === "") return true;
+        const s = String(v).trim().toLowerCase();
+        return s.includes("يحدد") || s.includes("محدد") || s.includes("unspecified");
+      };
+
+      if (isPlaceholder(supplier_name) || isNaN(numAmount) || numAmount <= 0) {
+        return { success: false, resultText: "عشان أسجلك مرتجع المشتريات محتاج تقولي: اسم المورد والقيمة 📦" };
       }
-      const retAmount = new Decimal(amount);
-      const supName = String(supplier_name).trim();
+      const retAmount = new Decimal(numAmount);
+      const supName = String(supplier_name).replace(/^(لـ|ل|من|عن|للمورد|مورد)\s+/, '').trim();
+      const itemNameStr = item_name && !isPlaceholder(item_name) ? String(item_name).trim() : "بضاعة مرتجعة";
       const qty = Number(quantity) || 1;
 
       const supplier = await prisma.supplier.findFirst({
@@ -850,7 +866,7 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
 
       return {
         success: true,
-        resultText: `تم تسجيل مرتجع مشتريات (${qty} ${item_name}) للمورد (${supplier.name}) بقيمة ${retAmount.toNumber()} جنيه بنجاح! 🔄`
+        resultText: `تم تسجيل مرتجع مشتريات (${qty} ${itemNameStr}) للمورد (${supplier.name}) بقيمة ${retAmount.toNumber()} جنيه بنجاح! 🔄`
       };
     }
 

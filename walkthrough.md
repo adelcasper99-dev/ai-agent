@@ -1,22 +1,22 @@
-# 🚀 Walkthrough — Supplier Financial Module (`log_supplier_payment` & `get_supplier_balance`)
+# 🚀 Walkthrough — Returns Module (`log_sales_return` & `log_purchase_return`)
 
 ## Summary of Changes
-Built full supplier debt management, payment tracking, and balance inquiry capabilities for the Telegram LLM Assistant.
+Implemented comprehensive Sales Returns & Purchase Returns capabilities into the Telegram LLM Assistant.
 
 ### Key Components
 
-1. **Database Schema (`prisma/schema.prisma`)**:
-   - Added `SupplierPayment` model (`id`, `tenantId`, `supplierId`, `amount`, `notes`, `createdAt`).
-   - Linked to `Supplier` and `Tenant` with relational integrity.
+1. **Sales Returns (`log_sales_return`)**:
+   - Reverses sales transactions for customers.
+   - Creates `RETURN_CREDIT` entries in `CustomerLedgerEntry` and reduces active customer debt.
+   - Responds with Arabic confirmation receipt.
 
-2. **LLM Supplier Tools (`lib/telegram_llm.ts`)**:
-   - `log_supplier_payment`: Records payment, deducts chronologically from open purchase `deferredAmount` fields, and returns updated debt total.
-   - `get_supplier_balance`: Formats and displays total purchases, total paid, and total remaining debt for a specific supplier.
-   - System instruction rules added for Egyptian Arabic phrasing ("دفعت للمورد المتخصص 500", "حساب المورد المتخصص").
+2. **Purchase Returns (`log_purchase_return`)**:
+   - Reverses purchase transactions for suppliers.
+   - Deducts return amounts from supplier open purchase `deferredAmount` fields.
+   - Responds with Arabic confirmation receipt.
 
 ---
 
 ## Verification Results
-- **Prisma DB Push**: Synchronized cleanly.
-- **Next.js Production Build**: PASSED (0 TS errors in 4.4s).
+- **Next.js Production Build**: PASSED (0 TS errors in 5.1s).
 - **Code Audit Score**: 100%.

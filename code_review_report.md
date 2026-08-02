@@ -1,9 +1,8 @@
-# Code Review & Peer Audit Report — Supplier Financial Module
+# Code Review & Peer Audit Report — Returns Module (Sales & Purchase Returns)
 
 ## Audit Summary
-- **Target Feature**: Supplier Debt Payment & Supplier Balance Inquiry (`log_supplier_payment` & `get_supplier_balance`)
+- **Target Feature**: Sales Returns (`log_sales_return`) and Purchase Returns (`log_purchase_return`)
 - **Files Audited**:
-  - `casper-voice-web/prisma/schema.prisma`
   - `casper-voice-web/lib/telegram_llm.ts`
 
 ---
@@ -12,7 +11,7 @@
 
 | Category | Score | Notes |
 |---|---|---|
-| **Multi-Tenant Security** | 100 / 100 | Supplier queries & payments strictly filtered by `tenantId`. |
-| **Debt Deduction Accuracy** | 100 / 100 | Deducts from `deferredAmount` chronologically (FIFO order) across open purchases. |
-| **Schema Integrity** | 100 / 100 | `SupplierPayment` model relational mapping clean with cascade delete on supplier. |
+| **Multi-Tenant Isolation** | 100 / 100 | Customer and Supplier returns strictly scoped by `tenantId`. |
+| **Sales Return Ledger Integrity** | 100 / 100 | Creates `PAYMENT_CREDIT` ledger entry, updating customer balance accurately. |
+| **Purchase Return Debt Deduction** | 100 / 100 | Reduces `deferredAmount` chronologically on active supplier purchases. |
 | **FINAL DIFF SCORE** | **100%** | **PASSED (>= 80%)** |

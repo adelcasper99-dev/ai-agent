@@ -179,6 +179,38 @@ const getSupplierBalanceTool: FunctionDeclaration = {
   }
 };
 
+const logSalesReturnTool: FunctionDeclaration = {
+  name: "log_sales_return",
+  description: "تسجيل مرتجع مبيعات من عميل (إعادة بضاعة من العميل).",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل" },
+      item_name: { type: SchemaType.STRING, description: "اسم الصنف المرتجع" },
+      quantity: { type: SchemaType.NUMBER, description: "الكمية المرتجعة (مثال: 1)" },
+      amount: { type: SchemaType.NUMBER, description: "إجمالي قيمة المرتجع بالجنيه" },
+      idempotency_key: { type: SchemaType.STRING, description: "رقم فريد عشوائي لمنع التكرار" }
+    },
+    required: ["customer_name", "item_name", "amount", "idempotency_key"]
+  }
+};
+
+const logPurchaseReturnTool: FunctionDeclaration = {
+  name: "log_purchase_return",
+  description: "تسجيل مرتجع مشتريات لمورد (إعادة بضاعة للمورد).",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      supplier_name: { type: SchemaType.STRING, description: "اسم المورد" },
+      item_name: { type: SchemaType.STRING, description: "اسم الصنف المرتجع" },
+      quantity: { type: SchemaType.NUMBER, description: "الكمية المرتجعة (مثال: 1)" },
+      amount: { type: SchemaType.NUMBER, description: "إجمالي قيمة المرتجع بالجنيه" },
+      idempotency_key: { type: SchemaType.STRING, description: "رقم فريد عشوائي لمنع التكرار" }
+    },
+    required: ["supplier_name", "item_name", "amount", "idempotency_key"]
+  }
+};
+
 const executedKeys = new Set<string>();
 
 async function syncCustomerLedgers(tx: any, customerId: string, tenantId: string) {
@@ -680,6 +712,83 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
       };
     }
 
+    if (name === "log_sales_return") {
+      const { customer_name, item_name, quantity = 1, amount } = args;
+      if (!customer_name || !item_name || typeof amount !== "number" || amount <= 0) {
+        return { success: false, resultText: "خطأ: اسم العميل، الصنف، والمبلغ مطلوبين لتسجيل مرتجع المبيعات." };
+      }
+      const retAmount = new Decimal(amount);
+      const custName = String(customer_name).trim();
+      const qty = Number(quantity) || 1;
+
+      let customer = await findCustomerFuzzy(prisma, tenantId || "", custName, null);
+      if (!customer) {
+        return { success: false, resultText: `لم يتم العثور على العميل: ${custName}` };
+      }
+
+      await prisma.customerLedgerEntry.create({
+        data: {
+          customerId: customer.id,
+          entryType: "PAYMENT_CREDIT",
+          amount: retAmount.toNumber(),
+          description: `مرتجع مبيعات: ${qty} ${item_name}`,
+          ...(tenantId && { tenantId })
+        }
+      });
+
+      return {
+        success: true,
+        resultText: `تم تسجيل مرتجع مبيعات (${qty} ${item_name}) من العميل (${customer.name}) بقيمة ${retAmount.toNumber()} جنيه وتحديث حسابه بنجاح! 🔄`
+      };
+    }
+
+    if (name === "log_purchase_return") {
+      const { supplier_name, item_name, quantity = 1, amount } = args;
+      if (!supplier_name || !item_name || typeof amount !== "number" || amount <= 0) {
+        return { success: false, resultText: "خطأ: اسم المورد، الصنف، والمبلغ مطلوبين لتسجيل مرتجع المشتريات." };
+      }
+      const retAmount = new Decimal(amount);
+      const supName = String(supplier_name).trim();
+      const qty = Number(quantity) || 1;
+
+      const supplier = await prisma.supplier.findFirst({
+        where: { name: { contains: supName }, ...(tenantId && { tenantId }) }
+      });
+      if (!supplier) {
+        return { success: false, resultText: `لم يتم العثور على المورد: ${supName}` };
+      }
+
+      // Deduct from deferredAmount on open purchases
+      const openPurchases = await prisma.purchase.findMany({
+        where: { supplierId: supplier.id, deferredAmount: { gt: 0 } },
+        orderBy: { createdAt: "desc" }
+      });
+
+      let remainingToDeduct = retAmount;
+      for (const p of openPurchases) {
+        if (remainingToDeduct.lte(0)) break;
+        const curDef = new Decimal(p.deferredAmount);
+        if (remainingToDeduct.gte(curDef)) {
+          await prisma.purchase.update({
+            where: { id: p.id },
+            data: { deferredAmount: 0 }
+          });
+          remainingToDeduct = remainingToDeduct.sub(curDef);
+        } else {
+          await prisma.purchase.update({
+            where: { id: p.id },
+            data: { deferredAmount: curDef.sub(remainingToDeduct).toNumber() }
+          });
+          remainingToDeduct = new Decimal(0);
+        }
+      }
+
+      return {
+        success: true,
+        resultText: `تم تسجيل مرتجع مشتريات (${qty} ${item_name}) للمورد (${supplier.name}) بقيمة ${retAmount.toNumber()} جنيه بنجاح! 🔄`
+      };
+    }
+
     if (name === "get_financial_summary") {
       const { period, start_date, end_date } = args;
       const today = new Date();
@@ -848,7 +957,10 @@ export async function processTelegramMessageWithLLM(
    - عندما يكتب العميل عبارات مثل: "حساب [اسم العميل]", "كشف حساب [اسم]", "رصيد [اسم]", "هو عليه كام؟" -> يجب استخدام أداة get_customer_balance فوراً واستخراج اسم العميل من السياق أو الجملة. يمنع منعاً باتاً استخدام أداة log_sale لطلبات الاستعلام عن الحسابات!
 7. سداد ديون واستعلام حسابات الموردين (log_supplier_payment / get_supplier_balance):
    - عند السداد للمورد ("دفعت للمورد المتخصص 500", "سددت للمورد احمد 200") -> استخدم فوراً أداة log_supplier_payment.
-   - عند الاستعلام عن حساب ورصيد مورد ("حساب المورد المتخصص", "كشف حساب المورد علي", "ديون المورد احمد") -> استخدم فوراً أداة get_supplier_balance!`;
+   - عند الاستعلام عن حساب ورصيد مورد ("حساب المورد المتخصص", "كشف حساب المورد علي", "ديون المورد احمد") -> استخدم فوراً أداة get_supplier_balance!
+8. تسجيل مرتجعات المبيعات والمشتريات (log_sales_return / log_purchase_return):
+   - عند إرجاع العميل لبضاعة ("رجعت من احمد 1 كرتونة", "مرتجع مبيعات كرتونة مسامير من أحمد قيمة 50") -> استخدم أداة log_sales_return.
+   - عند إرجاع بضاعة للمورد ("رجعت للمورد المتخصص 2 كرتونة بـ 100", "مرتجع مشتريات للمورد المتخصص بقيمة 100") -> استخدم أداة log_purchase_return!`;
 
   // Format history for Gemini SDK
   const geminiHistory = rawHistory.map(h => ({
@@ -870,7 +982,7 @@ export async function processTelegramMessageWithLLM(
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
           model: modelName,
-          tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool] }],
+          tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool] }],
           systemInstruction
         });
 
@@ -925,7 +1037,8 @@ export async function processTelegramMessageWithLLM(
       const groqTools = [
         logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool,
         getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool,
-        logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool
+        logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool,
+        logSalesReturnTool, logPurchaseReturnTool
       ].map(t => ({
         type: "function" as const,
         function: {

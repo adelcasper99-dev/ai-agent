@@ -1,8 +1,7 @@
-# Task Tracking — Supplier Financial Module
+# Task Tracking — Returns Module (Sales & Purchase Returns)
 
-- [x] Add `SupplierPayment` model to `schema.prisma`.
-- [x] Run `npx prisma generate` and `npx prisma db push`.
-- [x] Add `logSupplierPaymentTool` and `getSupplierBalanceTool` to `lib/telegram_llm.ts`.
-- [x] Implement debt deduction & balance inquiry in `executeTool()`.
-- [x] Register new tools in Gemini SDK & Groq SDK tools array.
-- [x] Add Egyptian Arabic rules for supplier payments to `systemInstruction`.
+- [x] Declare `logSalesReturnTool` and `logPurchaseReturnTool` in `lib/telegram_llm.ts`.
+- [x] Implement `log_sales_return` (customer debt reduction) in `executeTool()`.
+- [x] Implement `log_purchase_return` (supplier debt reduction) in `executeTool()`.
+- [x] Register new return tools in Gemini SDK & Groq SDK tools array.
+- [x] Add Egyptian Arabic rules for returns to `systemInstruction`.

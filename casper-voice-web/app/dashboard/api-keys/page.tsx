@@ -56,6 +56,27 @@ export default function ApiKeysPage() {
     }
   };
 
+  const handleTestKey = async (keyString: string) => {
+    if (!keyString) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/api-keys/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyString })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("✅ " + data.message);
+      } else {
+        alert("❌ " + data.message);
+      }
+    } catch (e) {
+      alert("❌ حدث خطأ أثناء الاتصال");
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6" dir="rtl">
       <div className="flex justify-between items-center">
@@ -116,11 +137,14 @@ export default function ApiKeysPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm">
                     {new Date(k.addedAt).toLocaleDateString("ar-EG")}
                   </td>
-                  <td className="px-6 py-4 text-sm">
-                    <button onClick={() => handleDelete(k.id)} className="text-red-500 hover:text-red-700">
+                  <td className="px-6 py-4 text-sm flex gap-3">
+                    <button onClick={() => handleTestKey(k.keyString)} className="text-blue-600 hover:text-blue-800 font-medium">
+                      فحص
+                    </button>
+                    <button onClick={() => handleDelete(k.id)} className="text-red-500 hover:text-red-700 font-medium">
                       حذف
                     </button>
                   </td>

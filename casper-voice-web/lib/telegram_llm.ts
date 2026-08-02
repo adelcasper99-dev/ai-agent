@@ -127,7 +127,7 @@ const reportMissingFeatureTool: FunctionDeclaration = {
 
 const logCustomerPaymentTool: FunctionDeclaration = {
   name: "log_customer_payment",
-  description: "تسجيل دفعة سداد ديون أو آجل من عميل (سداد من حسابه).",
+  description: "تسجيل دفعة سداد ديون نقدية من عميل. (تستخدم فقط عند وجود أمر سداد صريح مثل: 'سدد 50', 'دفع 100', 'قبضت منه 200'. يمنع استخدامها عند طلب كشف الحساب).",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
@@ -560,14 +560,35 @@ async function executeTool(name: string, args: any, tenantId?: string): Promise<
        
        let totalDebit = new Decimal(0);
        let totalCredit = new Decimal(0);
+       let totalReturn = new Decimal(0);
+
        customer.ledgers.forEach((l: any) => {
-          if (l.entryType === "SALE_DEBIT") totalDebit = totalDebit.plus(l.amount);
-          if (l.entryType === "PAYMENT_CREDIT") totalCredit = totalCredit.plus(l.amount);
+          if (l.entryType === "SALE_DEBIT") {
+            totalDebit = totalDebit.plus(l.amount);
+          } else if (l.entryType === "PAYMENT_CREDIT") {
+            if (l.description?.startsWith("مرتجع مبيعات")) {
+              totalReturn = totalReturn.plus(l.amount);
+            } else {
+              totalCredit = totalCredit.plus(l.amount);
+            }
+          }
        });
-       const balance = totalDebit.minus(totalCredit);
+
+       const netPurchases = totalDebit.minus(totalReturn);
+       const balance = netPurchases.minus(totalCredit);
+
+       let balanceStr = "";
+       if (balance.gt(0)) {
+         balanceStr = `${balance.toNumber()} جنيه (مستحق عليه / آجل)`;
+       } else if (balance.lt(0)) {
+         balanceStr = `${balance.abs().toNumber()} جنيه (دائن / له في المحل)`;
+       } else {
+         balanceStr = `0 جنيه (خالص)`;
+       }
+
        return { 
          success: true, 
-         resultText: `📊 *كشف حساب العميل (${customer.name}):*\n\n🛍️ *إجمالي المشتريات:* ${totalDebit.toNumber()} جنيه\n💵 *المسدد:* ${totalCredit.toNumber()} جنيه\n📝 *الرصيد المتبقي عليه (الآجل):* ${balance.toNumber()} جنيه` 
+         resultText: `📊 *كشف حساب العميل (${customer.name}):*\n\n🛍️ *إجمالي المشتريات:* ${totalDebit.toNumber()} جنيه\n🔄 *إجمالي المرتجعات:* ${totalReturn.toNumber()} جنيه\n💵 *المسدد نقداً:* ${totalCredit.toNumber()} جنيه\n📝 *الرصيد النهائي:* ${balanceStr}` 
        };
     }
 
@@ -954,7 +975,7 @@ export async function processTelegramMessageWithLLM(
 4. حظر الأوصاف والأسعار الوهمية:
    - إذا كتب العميل كلمة "بيع" فقط أو لم يحدد البضاعة والسعر، اسأله عن التفاصيل فوراً ولا تفترض أبداً صنفاً مثل "المنتج" أو سعراً افتراضياً.
 5. الاستعلام عن رصيد وحساب عميل (get_customer_balance):
-   - عندما يكتب العميل عبارات مثل: "حساب [اسم العميل]", "كشف حساب [اسم]", "رصيد [اسم]", "هو عليه كام؟" -> يجب استخدام أداة get_customer_balance فوراً واستخراج اسم العميل من السياق أو الجملة. يمنع منعاً باتاً استخدام أداة log_sale لطلبات الاستعلام عن الحسابات!
+   - عندما يكتب العميل عبارات مثل: "حساب [اسم العميل]", "كشف حساب [اسم]", "رصيد [اسم]", "هو عليه كام؟" -> يجب استخدام أداة get_customer_balance فقط! يُمنع منعاً باتاً استدعاء أداة سداد log_customer_payment أو أداة log_sale عند الاستعلام عن الحسابات!
 7. سداد ديون واستعلام حسابات الموردين (log_supplier_payment / get_supplier_balance):
    - عند السداد للمورد ("دفعت للمورد المتخصص 500", "سددت للمورد احمد 200") -> استخدم فوراً أداة log_supplier_payment.
    - عند الاستعلام عن حساب ورصيد مورد ("حساب المورد المتخصص", "كشف حساب المورد علي", "ديون المورد احمد") -> استخدم فوراً أداة get_supplier_balance!

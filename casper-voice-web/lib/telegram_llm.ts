@@ -8,17 +8,17 @@ const prisma = new PrismaClient();
 
 const logSaleTool: FunctionDeclaration = {
   name: "log_sale",
-  description: "تسجيل عملية بيع لعميل (منتج، سعر، كمية، اسم العميل، وتليفونه)",
+  description: "تسجيل عملية بيع لعميل (استخراج المنتج، سعر الوحدة أو الإجمالي، الكمية، اسم العميل، والمدفوع والآجل)",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
-      item_name: { type: SchemaType.STRING, description: "اسم المنتج المباع" },
-      price: { type: SchemaType.NUMBER, description: "سعر الوحدة أو إجمالي السعر المتفق عليه بالجنيه" },
-      quantity: { type: SchemaType.NUMBER, description: "الكمية المباعة (الافتراضي 1)" },
-      customer_name: { type: SchemaType.STRING, description: "اسم العميل (اختياري)" },
-      customer_phone: { type: SchemaType.STRING, description: "تليفون العميل (اختياري، يفضل استخدامه إن وجد)" },
-      paid_amount: { type: SchemaType.NUMBER, description: "المبلغ المدفوع (عربون أو دفعة مقدمة)" },
-      deferred_amount: { type: SchemaType.NUMBER, description: "المبلغ المتبقي الآجل" },
+      item_name: { type: SchemaType.STRING, description: "اسم المنتج أو البضاعة المباعة فقط (مثال: كرتونة مسامير، زيت، شاشة)" },
+      price: { type: SchemaType.NUMBER, description: "سعر الوحدة بالجنيه (إذا ذكر الإجمالي فقط قم بقسمته على الكمية)" },
+      quantity: { type: SchemaType.NUMBER, description: "الكمية المباعة كرقم (مثال: 'كرتونتين' = 2، '5 قطع' = 5، الافتراضي 1)" },
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل (إذا ذكر بعد 'لـ' أو 'حساب' أو في نهاية الجملة)" },
+      customer_phone: { type: SchemaType.STRING, description: "تليفون العميل (إن وجد)" },
+      paid_amount: { type: SchemaType.NUMBER, description: "المبلغ المدفوع كاش أو مقدم/عربون بالجنيه (إذا كانت كاش بالكامل يساوى الإجمالي، إذا كانت آجل بالكامل يساوى 0)" },
+      deferred_amount: { type: SchemaType.NUMBER, description: "المبلغ المتبقي آجل على العميل بالجنيه (الإجمالي minus المدفوع)" },
       idempotency_key: { type: SchemaType.STRING, description: "رقم فريد عشوائي لمنع تكرار العملية بالخطأ" }
     },
     required: ["item_name", "price", "idempotency_key"]
@@ -645,10 +645,20 @@ export async function processTelegramMessageWithLLM(
   const hoursStr = workingHours ? `(مواعيد العمل: ${workingHours})` : "";
   const systemInstruction = `أنت المساعد الشخصي الذكي الخاص بمدير أو صاحب العمل ${companyStr} ${typeStr} ${hoursStr}.
 تحدث بالعامية المصرية الحية والراقية مباشرة وسريعة.
-إذا طلب العميل تسجيل بيع، تأكد من معرفتك لاسم الصنف والسعر بوضوح. إذا كتب العميل مجرد كلمة "بيع" أو لم يحدد الصنف والسعر، اسأله عن التفاصيل فوراً ولا تستخدم أداة log_sale بأصناف افتراضية (مثل "المنتج") أو أسعار وهمية.
-إذا طلب العميل حجز موعد، تأكد من معرفتك لاسم العميل والتاريخ والوقت قبل استخدام أداة الحجز. إذا كانت أي من هذه البيانات مفقودة، اسأله عنها أولاً ولا تستخدم أداة الحجز أبداً بقيم افتراضية أو وهمية (مثل "لم يحدد").
-إذا نفذت أداة بنجاح، أكد العملية للعميل بجملة ودية مختصرة.
-إذا سألك العميل عن مواعيد العمل أو نوع النشاط، استخدم البيانات المتاحة أعلاه للرد بدقة.`;
+
+قواعد استخراج وفهم المبيعات عند استخدام أداة log_sale:
+1. فصل اسم البضاعة عن اسم العميل:
+   - اسم البضاعة بييجي في البداية (مثال: "2 كرتونة مسامير", "زيت موتور", "شاشة 55").
+   - اسم العميل بييجي في نهاية الجملة أو بعد (لـ / حساب / عميل) مثل: "احمد محمد", "لـ أحمد", "حساب المهندس مدحت".
+2. استخراج الكميات والأسعار:
+   - الأرقام والوحدات: "2 كرتونة مسامير بـ 250" -> الكمية quantity = 2, اسم المنتج item_name = "كرتونة مسامير", سعر الوحدة price = 125 (أو قسمة 250 على 2).
+   - الصيغ والجموع: "كرتونتين مسامير" -> quantity = 2، "5 قطف" -> quantity = 5.
+3. التمييز الدقيق بين الكاش والآجل:
+   - إذا ذكر كلمة "آجل" أو "على الحساب" -> paid_amount: 0, deferred_amount: الإجمالي.
+   - إذا كان البيع عادي أو كاش -> paid_amount: الإجمالي, deferred_amount: 0.
+   - إذا كان عربون/مقدم: "دفع 100 والباقي آجل" -> paid_amount: 100, deferred_amount: المتبقي.
+4. حظر الأوصاف والأسعار الوهمية:
+   - إذا كتب العميل كلمة "بيع" فقط أو لم يحدد البضاعة والسعر، اسأله عن التفاصيل فوراً ولا تفترض أبداً صنفاً مثل "المنتج" أو سعراً افتراضياً.`;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     let apiKey: string;

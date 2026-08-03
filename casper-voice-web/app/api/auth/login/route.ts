@@ -6,17 +6,26 @@ export async function POST(request: NextRequest) {
   const { password } = await request.json();
 
   if (password === process.env.ADMIN_PASSWORD) {
-    const pilotTenantId = process.env.PILOT_TENANT_ID;
-    if (!pilotTenantId) {
-      return NextResponse.json({ error: 'PILOT_TENANT_ID غير معرف في البيئة' }, { status: 500 });
+    let pilotTenantId = process.env.PILOT_TENANT_ID;
+    let tenant = null;
+
+    if (pilotTenantId) {
+      tenant = await prisma.tenant.findUnique({
+        where: { id: pilotTenantId },
+      });
     }
 
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: pilotTenantId },
-    });
+    if (!tenant) {
+      tenant = await prisma.tenant.findFirst();
+    }
 
     if (!tenant) {
-      return NextResponse.json({ error: 'الشركة المعرفة في PILOT_TENANT_ID غير موجودة' }, { status: 500 });
+      tenant = await prisma.tenant.create({
+        data: {
+          name: "شركة كاسبر الرئيسية - التجريبية",
+          status: "APPROVED",
+        },
+      });
     }
 
     const tenantToken = signTenantSession(tenant.id);

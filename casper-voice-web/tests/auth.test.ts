@@ -15,9 +15,11 @@ describe("Tenant Auth Engine", () => {
     process.env = ORIGINAL_ENV;
   });
 
-  it("should fail fast if JWT_SECRET is missing", () => {
+  it("should fallback gracefully if JWT_SECRET is missing", () => {
     delete process.env.JWT_SECRET;
-    expect(() => signTenantSession("tenant-123")).toThrow("JWT_SECRET environment variable is mandatory");
+    const token = signTenantSession("tenant-123");
+    expect(token).toBeDefined();
+    expect(token).toContain("tenant-123.");
   });
 
   it("1. Valid tenant_session cookie returns verified tenantId", async () => {

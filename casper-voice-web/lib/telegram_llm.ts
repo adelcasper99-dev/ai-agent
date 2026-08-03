@@ -326,7 +326,7 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
   return customer;
 }
 
-async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string): Promise<{ success: boolean; resultText: string }> {
+export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string): Promise<{ success: boolean; resultText: string }> {
   try {
     const isPureInquiry = userMessageText && /^(حساب|كشف\s*حساب|رصيد|ديون|كام\s*(على|له))\s+/i.test(userMessageText.trim());
     const isMutationTool = ["log_customer_payment", "log_supplier_payment", "log_sale", "log_purchase", "log_sales_return", "log_purchase_return"].includes(name);
@@ -464,13 +464,14 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
         const s = String(v).trim().toLowerCase();
         return s === "مصروف" || s === "مصاريف" || s.includes("يحدد") || s.includes("محدد");
       };
-      if (typeof amount !== "number" || amount <= 0 || isPlaceholderDesc(description)) {
+      const expAmount = new Decimal(typeof amount === "number" || typeof amount === "string" ? amount : 0);
+      if (!expAmount.isFinite() || expAmount.lte(0) || isPlaceholderDesc(description)) {
         return { success: false, resultText: "عشان أسجلك المصروف محتاج تقولي: المبلغ وبيان المصروف (مثال: كهرباء 500ج أو إيجار 2000ج) 💸" };
       }
       const expenseResult = await prisma.$transaction(async (tx) => {
         const expense = await tx.expense.create({
           data: {
-            amount: amount,
+            amount: expAmount.toNumber(),
             description: String(description).trim(),
             category: String(category).trim(),
             ...(tenantId && { tenantId })
@@ -478,11 +479,11 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
         });
         
         await tx.journalEntry.create({
-          data: { accountCode: "OPERATING_EXPENSES", debit: amount, referenceId: expense.id, description: `مصروف: ${expense.description}`, ...(tenantId && { tenantId }) }
+          data: { accountCode: "OPERATING_EXPENSES", debit: expAmount.toNumber(), referenceId: expense.id, description: `مصروف: ${expense.description}`, ...(tenantId && { tenantId }) }
         });
         
         await tx.journalEntry.create({
-          data: { accountCode: "CASH", credit: amount, referenceId: expense.id, description: `دفع مصروف: ${expense.description}`, ...(tenantId && { tenantId }) }
+          data: { accountCode: "CASH", credit: expAmount.toNumber(), referenceId: expense.id, description: `دفع مصروف: ${expense.description}`, ...(tenantId && { tenantId }) }
         });
         
         return expense;
@@ -620,8 +621,8 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
             totalSales = totalSales.plus(l.amount);
           } else if (l.entryType === "REFUND_DEBIT") {
             totalRefundPayouts = totalRefundPayouts.plus(l.amount);
-          } else if (l.entryType === "PAYMENT_CREDIT") {
-            if (l.description?.startsWith("مرتجع مبيعات")) {
+          } else if (l.entryType === "PAYMENT_CREDIT" || l.entryType === "SALES_RETURN_CREDIT") {
+            if (l.entryType === "SALES_RETURN_CREDIT" || l.description?.startsWith("مرتجع مبيعات")) {
               totalSalesReturns = totalSalesReturns.plus(l.amount);
             } else {
               totalCashReceived = totalCashReceived.plus(l.amount);
@@ -727,86 +728,90 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
       const payAmount = new Decimal(amount);
       const supName = String(supplier_name).trim();
 
-      const supplier = await prisma.supplier.findFirst({
-        where: { name: { contains: supName }, ...(tenantId && { tenantId }) }
-      });
-      if (!supplier) {
-        return { success: false, resultText: `لم يتم العثور على المورد: ${supName}` };
+      try {
+        const { totalDebtResult, supplierFound } = await prisma.$transaction(async (tx) => {
+          const supplier = await tx.supplier.findFirst({
+            where: { name: { contains: supName }, ...(tenantId && { tenantId }) }
+          });
+          if (!supplier) {
+            throw new Error(` لم يتم العثور على المورد: ${supName}`);
+          }
+
+          // 1. Record SupplierPayment
+          const supplierPayment = await tx.supplierPayment.create({
+            data: {
+              supplierId: supplier.id,
+              amount: payAmount.toNumber(),
+              notes: `سداد دفعة نقدية للمورد`,
+              ...(tenantId && { tenantId })
+            }
+          });
+
+          // 2. Deduct from deferredAmount on open purchases
+          const openPurchases = await tx.purchase.findMany({
+            where: { supplierId: supplier.id, deferredAmount: { gt: 0 } },
+            orderBy: { createdAt: "asc" }
+          });
+
+          let remainingToDeduct = payAmount;
+          for (const p of openPurchases) {
+            if (remainingToDeduct.lte(0)) break;
+            const curDef = new Decimal(p.deferredAmount);
+            const curPaid = new Decimal(p.paidAmount);
+            if (remainingToDeduct.gte(curDef)) {
+              await tx.purchase.update({
+                where: { id: p.id },
+                data: {
+                  paidAmount: curPaid.add(curDef).toNumber(),
+                  deferredAmount: 0
+                }
+              });
+              remainingToDeduct = remainingToDeduct.sub(curDef);
+            } else {
+              await tx.purchase.update({
+                where: { id: p.id },
+                data: {
+                  paidAmount: curPaid.add(remainingToDeduct).toNumber(),
+                  deferredAmount: curDef.sub(remainingToDeduct).toNumber()
+                }
+              });
+              remainingToDeduct = new Decimal(0);
+            }
+          }
+
+          // 3. Create Journal Entries
+          await tx.journalEntry.create({
+            data: { accountCode: "ACCOUNTS_PAYABLE", debit: payAmount.toNumber(), referenceId: supplierPayment.id, description: `سداد للمورد: ${supplier.name}`, ...(tenantId && { tenantId }) }
+          });
+          await tx.journalEntry.create({
+            data: { accountCode: "CASH", credit: payAmount.toNumber(), referenceId: supplierPayment.id, description: `نقدية مدفوعة للمورد: ${supplier.name}`, ...(tenantId && { tenantId }) }
+          });
+
+          // 4. Calculate remaining total debt for supplier
+          const allPurchases = await tx.purchase.findMany({ where: { supplierId: supplier.id } });
+          let totalDebtCalc = new Decimal(0);
+          for (const p of allPurchases) {
+            totalDebtCalc = totalDebtCalc.add(p.deferredAmount);
+          }
+          return { totalDebtResult: totalDebtCalc.toNumber(), supplierFound: supplier.name };
+        });
+
+        return {
+          success: true,
+          resultText: `تم تسجيل سداد مبلغ ${amount} جنيه للمورد (${supplierFound}) بنجاح! 💸\nالمتبقي له (الديون): ${totalDebtResult} جنيه.`
+        };
+      } catch (err: any) {
+        return { success: false, resultText: err.message || "حدث خطأ أثناء العملية." };
       }
-
-      const totalDebtResult = await prisma.$transaction(async (tx) => {
-        // 1. Record SupplierPayment
-        const supplierPayment = await (tx as any).supplierPayment.create({
-          data: {
-            supplierId: supplier.id,
-            amount: payAmount.toNumber(),
-            notes: `سداد دفعة نقدية للمورد`,
-            ...(tenantId && { tenantId })
-          }
-        });
-
-        // 2. Deduct from deferredAmount on open purchases
-        const openPurchases = await tx.purchase.findMany({
-          where: { supplierId: supplier.id, deferredAmount: { gt: 0 } },
-          orderBy: { createdAt: "asc" }
-        });
-
-        let remainingToDeduct = payAmount;
-        for (const p of openPurchases) {
-          if (remainingToDeduct.lte(0)) break;
-          const curDef = new Decimal(p.deferredAmount);
-          const curPaid = new Decimal(p.paidAmount);
-          if (remainingToDeduct.gte(curDef)) {
-            await tx.purchase.update({
-              where: { id: p.id },
-              data: {
-                paidAmount: curPaid.add(curDef).toNumber(),
-                deferredAmount: 0
-              }
-            });
-            remainingToDeduct = remainingToDeduct.sub(curDef);
-          } else {
-            await tx.purchase.update({
-              where: { id: p.id },
-              data: {
-                paidAmount: curPaid.add(remainingToDeduct).toNumber(),
-                deferredAmount: curDef.sub(remainingToDeduct).toNumber()
-              }
-            });
-            remainingToDeduct = new Decimal(0);
-          }
-        }
-
-        // 3. Create Journal Entries
-        await tx.journalEntry.create({
-          data: { accountCode: "ACCOUNTS_PAYABLE", debit: payAmount.toNumber(), referenceId: supplierPayment.id, description: `سداد للمورد: ${supplier.name}`, ...(tenantId && { tenantId }) }
-        });
-        await tx.journalEntry.create({
-          data: { accountCode: "CASH", credit: payAmount.toNumber(), referenceId: supplierPayment.id, description: `نقدية مدفوعة للمورد: ${supplier.name}`, ...(tenantId && { tenantId }) }
-        });
-
-        // 4. Calculate remaining total debt for supplier
-        const allPurchases = await tx.purchase.findMany({ where: { supplierId: supplier.id } });
-        let totalDebtCalc = new Decimal(0);
-        for (const p of allPurchases) {
-          totalDebtCalc = totalDebtCalc.add(p.deferredAmount);
-        }
-        return totalDebtCalc.toNumber();
-      });
-
-      return {
-        success: true,
-        resultText: `تم تسجيل سداد مبلغ ${amount} جنيه للمورد (${supplier.name}) بنجاح! 💸\nالمتبقي له (الديون): ${totalDebtResult} جنيه.`
-      };
     }
 
     if (name === "get_supplier_balance") {
       const { supplier_name } = args;
       const supName = String(supplier_name).trim();
 
-      const supplier = await (prisma as any).supplier.findFirst({
+      const supplier = await prisma.supplier.findFirst({
         where: { name: { contains: supName }, ...(tenantId && { tenantId }) },
-        include: { purchases: true, supplierPayments: true }
+        include: { purchases: true }
       });
 
       if (!supplier) {
@@ -846,35 +851,41 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
       const itemNameStr = item_name && !isPlaceholder(item_name) ? String(item_name).trim() : "بضاعة مرتجعة";
       const qty = Number(quantity) || 1;
 
-      let customer = await findCustomerFuzzy(prisma, tenantId || "", custName, null);
-      if (!customer) {
-        return { success: false, resultText: `لم يتم العثور على العميل: ${custName}` };
-      }
-
-      await prisma.$transaction(async (tx) => {
-        const entry = await tx.customerLedgerEntry.create({
-          data: {
-            customerId: customer.id,
-            entryType: "PAYMENT_CREDIT",
-            amount: retAmount.toNumber(),
-            description: `مرتجع مبيعات: ${qty} ${itemNameStr}`,
-            ...(tenantId && { tenantId })
+      try {
+        const customerFound = await prisma.$transaction(async (tx) => {
+          const customer = await findCustomerFuzzy(tx, tenantId || "", custName, null);
+          if (!customer) {
+            throw new Error(`لم يتم العثور على العميل: ${custName}`);
           }
-        });
-        
-        await tx.journalEntry.create({
-          data: { accountCode: "SALES_REVENUE", debit: retAmount.toNumber(), referenceId: entry.id, description: `عكس إيراد - مرتجع مبيعات: ${itemNameStr}`, ...(tenantId && { tenantId }) }
-        });
-        
-        await tx.journalEntry.create({
-          data: { accountCode: "ACCOUNTS_RECEIVABLE", credit: retAmount.toNumber(), referenceId: entry.id, description: `تسوية حساب عميل - مرتجع: ${customer.name}`, ...(tenantId && { tenantId }) }
-        });
-      });
 
-      return {
-        success: true,
-        resultText: `تم تسجيل مرتجع مبيعات (${qty} ${itemNameStr}) من العميل (${customer.name}) بقيمة ${retAmount.toNumber()} جنيه وتحديث حسابه بنجاح! 🔄`
-      };
+          const entry = await tx.customerLedgerEntry.create({
+            data: {
+              customerId: customer.id,
+              entryType: "SALES_RETURN_CREDIT",
+              amount: retAmount.toNumber(),
+              description: `مرتجع مبيعات: ${qty} ${itemNameStr}`,
+              ...(tenantId && { tenantId })
+            }
+          });
+          
+          await tx.journalEntry.create({
+            data: { accountCode: "SALES_REVENUE", debit: retAmount.toNumber(), referenceId: entry.id, description: `عكس إيراد - مرتجع مبيعات: ${itemNameStr}`, ...(tenantId && { tenantId }) }
+          });
+          
+          await tx.journalEntry.create({
+            data: { accountCode: "ACCOUNTS_RECEIVABLE", credit: retAmount.toNumber(), referenceId: entry.id, description: `تسوية حساب عميل - مرتجع: ${customer.name}`, ...(tenantId && { tenantId }) }
+          });
+
+          return customer.name;
+        });
+
+        return {
+          success: true,
+          resultText: `تم تسجيل مرتجع مبيعات (${qty} ${itemNameStr}) من العميل (${customerFound}) بقيمة ${retAmount.toNumber()} جنيه وتحديث حسابه بنجاح! 🔄`
+        };
+      } catch (err: any) {
+        return { success: false, resultText: err.message || "حدث خطأ أثناء العملية." };
+      }
     }
 
     if (name === "log_purchase_return") {
@@ -894,54 +905,67 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
       const itemNameStr = item_name && !isPlaceholder(item_name) ? String(item_name).trim() : "بضاعة مرتجعة";
       const qty = Number(quantity) || 1;
 
-      const supplier = await prisma.supplier.findFirst({
-        where: { name: { contains: supName }, ...(tenantId && { tenantId }) }
-      });
-      if (!supplier) {
-        return { success: false, resultText: `لم يتم العثور على المورد: ${supName}` };
-      }
-
-      await prisma.$transaction(async (tx) => {
-        // Deduct from deferredAmount on open purchases
-        const openPurchases = await tx.purchase.findMany({
-          where: { supplierId: supplier.id, deferredAmount: { gt: 0 } },
-          orderBy: { createdAt: "desc" }
-        });
-
-        let remainingToDeduct = retAmount;
-        for (const p of openPurchases) {
-          if (remainingToDeduct.lte(0)) break;
-          const curDef = new Decimal(p.deferredAmount);
-          if (remainingToDeduct.gte(curDef)) {
-            await tx.purchase.update({
-              where: { id: p.id },
-              data: { deferredAmount: 0 }
-            });
-            remainingToDeduct = remainingToDeduct.sub(curDef);
-          } else {
-            await tx.purchase.update({
-              where: { id: p.id },
-              data: { deferredAmount: curDef.sub(remainingToDeduct).toNumber() }
-            });
-            remainingToDeduct = new Decimal(0);
+      try {
+        const supplierFound = await prisma.$transaction(async (tx) => {
+          const supplier = await tx.supplier.findFirst({
+            where: { name: { contains: supName }, ...(tenantId && { tenantId }) }
+          });
+          if (!supplier) {
+            throw new Error(`لم يتم العثور على المورد: ${supName}`);
           }
-        }
 
-        const returnRef = `PURCHASE_RET_${Date.now()}`;
-        
-        await tx.journalEntry.create({
-          data: { accountCode: "ACCOUNTS_PAYABLE", debit: retAmount.toNumber(), referenceId: returnRef, description: `تسوية مورد - مرتجع مشتريات: ${supplier.name}`, ...(tenantId && { tenantId }) }
-        });
-        
-        await tx.journalEntry.create({
-          data: { accountCode: "INVENTORY", credit: retAmount.toNumber(), referenceId: returnRef, description: `عكس مخزون - مرتجع مشتريات: ${itemNameStr}`, ...(tenantId && { tenantId }) }
-        });
-      });
+          // Deduct from deferredAmount on open purchases
+          const openPurchases = await tx.purchase.findMany({
+            where: { supplierId: supplier.id, deferredAmount: { gt: 0 } },
+            orderBy: { createdAt: "desc" }
+          });
 
-      return {
-        success: true,
-        resultText: `تم تسجيل مرتجع مشتريات (${qty} ${itemNameStr}) للمورد (${supplier.name}) بقيمة ${retAmount.toNumber()} جنيه بنجاح! 🔄`
-      };
+          let remainingToDeduct = retAmount;
+          for (const p of openPurchases) {
+            if (remainingToDeduct.lte(0)) break;
+            const curDef = new Decimal(p.deferredAmount);
+            const curPaid = new Decimal(p.paidAmount);
+            if (remainingToDeduct.gte(curDef)) {
+              await tx.purchase.update({
+                where: { id: p.id },
+                data: {
+                  deferredAmount: 0,
+                  paidAmount: curPaid.add(curDef).toNumber()
+                }
+              });
+              remainingToDeduct = remainingToDeduct.sub(curDef);
+            } else {
+              await tx.purchase.update({
+                where: { id: p.id },
+                data: {
+                  deferredAmount: curDef.sub(remainingToDeduct).toNumber(),
+                  paidAmount: curPaid.add(remainingToDeduct).toNumber()
+                }
+              });
+              remainingToDeduct = new Decimal(0);
+            }
+          }
+
+          const returnRef = crypto.randomUUID();
+          
+          await tx.journalEntry.create({
+            data: { accountCode: "ACCOUNTS_PAYABLE", debit: retAmount.toNumber(), referenceId: returnRef, description: `تسوية مورد - مرتجع مشتريات: ${supplier.name}`, ...(tenantId && { tenantId }) }
+          });
+          
+          await tx.journalEntry.create({
+            data: { accountCode: "INVENTORY", credit: retAmount.toNumber(), referenceId: returnRef, description: `عكس مخزون - مرتجع مشتريات: ${itemNameStr}`, ...(tenantId && { tenantId }) }
+          });
+
+          return supplier.name;
+        });
+
+        return {
+          success: true,
+          resultText: `تم تسجيل مرتجع مشتريات (${qty} ${itemNameStr}) للمورد (${supplierFound}) بقيمة ${retAmount.toNumber()} جنيه بنجاح! 🔄`
+        };
+      } catch (err: any) {
+        return { success: false, resultText: err.message || "حدث خطأ أثناء العملية." };
+      }
     }
 
     if (name === "get_financial_summary") {

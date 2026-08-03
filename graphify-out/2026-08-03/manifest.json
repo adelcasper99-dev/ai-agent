@@ -795,8 +795,8 @@
     "semantic_hash": ""
   },
   ".agents/stage_log.json": {
-    "mtime": 1785715414.1353624,
-    "ast_hash": "1cb3dd3da49d023feb552f3eb58e16ef",
+    "mtime": 1785731990.0160418,
+    "ast_hash": "87af0476c8781fdc8fe33a380c855232",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -1005,8 +1005,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/tests/update_routes.test.ts": {
-    "mtime": 1785397180.604174,
-    "ast_hash": "085f88328c431b3b5b52a95a95b17ef7",
+    "mtime": 1785731941.674546,
+    "ast_hash": "4cdac04ea00222ad94927a80b4b3996f",
     "semantic_hash": ""
   },
   "casper-voice-web/tsconfig.json": {
@@ -2585,8 +2585,8 @@
     "semantic_hash": ""
   },
   ".antigravity/condense-state.yaml": {
-    "mtime": 1785451786.8874469,
-    "ast_hash": "5983ec1f7aa0cd4a6b8a7a1b4d1a9546",
+    "mtime": 1785728029.6261675,
+    "ast_hash": "2f8e8f3f6d12e387652c57c7e7b7c833",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/phone-sanitizer.ts": {
@@ -2720,8 +2720,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram_llm.ts": {
-    "mtime": 1785715298.364284,
-    "ast_hash": "4156935dd63f9d14b5997e7d5a4fb141",
+    "mtime": 1785731811.6617124,
+    "ast_hash": "dde0e7bdb50a86c40d75f7143c0353f4",
     "semantic_hash": ""
   },
   "casper-voice-web/app/telegram-voice/page.tsx": {
@@ -2755,13 +2755,13 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/admin/api-keys/route.ts": {
-    "mtime": 1785657098.5745935,
-    "ast_hash": "1374b5b389a7f071eb12a04174503411",
+    "mtime": 1785715866.0896287,
+    "ast_hash": "66a25fb9439cddb86a73e81d28656013",
     "semantic_hash": ""
   },
   "casper-voice-web/app/dashboard/api-keys/page.tsx": {
-    "mtime": 1785657917.0497937,
-    "ast_hash": "b5c773f22d77b5d59c8233e243f3722c",
+    "mtime": 1785716360.3416934,
+    "ast_hash": "64138b982326fb2fdb4ab325d658f8a0",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/apiKeyManager.ts": {
@@ -2770,8 +2770,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/admin/api-keys/validate/route.ts": {
-    "mtime": 1785658644.5826223,
-    "ast_hash": "bdd1295384f94eda6ec8d4b60234fd36",
+    "mtime": 1785718362.7311835,
+    "ast_hash": "3c58f64ca3e3bf85af2e4219f3f3ae21",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram_fallback.ts": {
@@ -2787,6 +2787,16 @@
   "list_models.js": {
     "mtime": 1785656449.816549,
     "ast_hash": "b4023033c96f4f493f31d5c1a754a4fd",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/check_tables.js": {
+    "mtime": 1785725792.0657187,
+    "ast_hash": "458934518744151d64b82695ebd387d4",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/prisma/migrations/20260803000000_add_chat_message_conversation_state/migration.sql": {
+    "mtime": 1785727078.6581483,
+    "ast_hash": "edc6636cbae01907c16144294a3178ac",
     "semantic_hash": ""
   }
 }

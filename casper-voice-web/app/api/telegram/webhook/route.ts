@@ -19,6 +19,7 @@ import {
   processFallbackInput,
 } from "@/lib/telegram_fallback";
 import { correctTranscriptWithLLM } from "@/lib/llm_correction";
+import { buildWhisperPrompt } from "@/lib/whisper_prompt";
 
 const prisma = new PrismaClient();
 
@@ -367,7 +368,10 @@ export async function POST(req: NextRequest) {
           formData.append('file', blob, 'voice.ogg');
           formData.append('model', 'whisper-large-v3-turbo');
           formData.append('language', 'ar');
-          formData.append('prompt', 'نظام كاسبر مبيعات ومشتريات كرتونة كرتون مسمار مسامير عسل صاج عميل فاتورة حساب بنزين صيانة مصاريف جنيه أجهزة بضاعة مورد قطع غيار');
+
+          const voiceTenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: chatId } });
+          const dynamicPrompt = await buildWhisperPrompt(voiceTenant?.id);
+          formData.append('prompt', dynamicPrompt);
 
           let groqKey = process.env.GROQ_API_KEY;
           if (!groqKey) {

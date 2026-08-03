@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { correctTranscriptWithLLM } from "@/lib/llm_correction";
+import { buildWhisperPrompt } from "@/lib/whisper_prompt";
 
 const prisma = new PrismaClient();
 
@@ -46,7 +47,8 @@ export async function POST(req: NextRequest) {
         groqFormData.append("file", blob, "audio.webm");
         groqFormData.append("model", "whisper-large-v3-turbo");
         groqFormData.append("language", "ar");
-        groqFormData.append("prompt", "نظام كاسبر، مصاريف، مبيعات، بنزين، صيانة، جنيه، مواعيد");
+        const dynamicPrompt = await buildWhisperPrompt(null);
+        groqFormData.append("prompt", dynamicPrompt);
 
         const sttRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
           method: "POST",

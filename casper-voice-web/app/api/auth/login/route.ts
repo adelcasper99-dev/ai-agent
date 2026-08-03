@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       tenant = await prisma.tenant.create({
         data: {
           name: "شركة كاسبر الرئيسية - التجريبية",
-          status: "APPROVED",
+          state: "active",
         },
       });
     }

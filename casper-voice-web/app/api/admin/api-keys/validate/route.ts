@@ -41,10 +41,11 @@ export async function POST(req: Request) {
       }
     }
 
-    // Use Gemini SDK for Google keys
+    // Use Gemini SDK for Google keys (Groq code untouched!)
     const genAI = new GoogleGenerativeAI(keyString.trim());
-    const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
+    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-pro"];
 
+    let lastGeminiError = "";
     for (const modelName of modelsToTry) {
       try {
         const model = genAI.getGenerativeModel({ model: modelName });
@@ -55,11 +56,19 @@ export async function POST(req: Request) {
           message: `مفتاح Gemini صالح ويعمل بنجاح (${modelName})`
         });
       } catch (err: any) {
+        lastGeminiError = err?.message || String(err);
         if (err?.status === 429 || err?.message?.includes("429") || err?.message?.includes("Quota")) {
           return NextResponse.json({
             success: false,
             status: "EXHAUSTED",
-            message: `الرصيد المجاني مستنفد (429) — المفتاح صالح لكن تجاوز الحصة`
+            message: `الرصيد المجاني مستنفد (429) — المفتاح صالح لكن تجاوز الحصة اليومية`
+          });
+        }
+        if (err?.message?.includes("API_KEY_INVALID") || err?.message?.includes("API key not valid") || err?.status === 400) {
+          return NextResponse.json({
+            success: false,
+            status: "INVALID",
+            message: "مفتاح Gemini غير صالح أو خاطئ (API_KEY_INVALID). يرجى التأكد من نسخته من Google AI Studio."
           });
         }
         if (err?.status === 404 || err?.message?.includes("404") || err?.message?.includes("not found")) {
@@ -68,7 +77,7 @@ export async function POST(req: Request) {
         return NextResponse.json({
           success: false,
           status: "INVALID",
-          message: err?.message || "مفتاح غير صالح"
+          message: err?.message || "مفتاح Gemini غير صالح"
         });
       }
     }
@@ -76,7 +85,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: false,
       status: "INVALID",
-      message: "لا يوجد موديل متاح لهذا المفتاح — تأكد من صحة المفتاح وصلاحياته"
+      message: `لم نتمكن من الوصول للموديل: ${lastGeminiError || "تأكد من تفعيل الموديلات في حساب Google AI Studio"}`
     });
 
   } catch (error: any) {

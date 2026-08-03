@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import Groq from "groq-sdk";
+import { correctTranscriptWithLLM } from "@/lib/llm_correction";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // 60s max execution time
@@ -51,10 +52,15 @@ export async function POST(req: NextRequest) {
       prompt: "تغذية قاعدة المعرفة لنظام كاسبر، أسئلة وأجوبة تفاصيل المشروع والخدمات والعملاء",
     });
 
-    const rawText = transcription.text;
+    let rawText = transcription.text;
     if (!rawText || rawText.trim().length < 5) {
       return NextResponse.json({ error: "لم يتم التعرف على أي كلام في الملف الصوتي" }, { status: 400 });
     }
+    
+    // Post-STT Correction Pass
+    console.log(`\n[Knowledge STT] Raw STT: "${rawText}"`);
+    rawText = await correctTranscriptWithLLM(rawText);
+    console.log(`[Knowledge STT] Corrected STT: "${rawText}"\n`);
 
     // 4. LLM Q&A JSON Extraction via Groq Llama 3.3 70B
     const prompt = `

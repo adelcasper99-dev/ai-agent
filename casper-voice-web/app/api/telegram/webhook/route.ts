@@ -18,6 +18,7 @@ import {
   handleFallbackSaleCallback,
   processFallbackInput,
 } from "@/lib/telegram_fallback";
+import { correctTranscriptWithLLM } from "@/lib/llm_correction";
 
 const prisma = new PrismaClient();
 
@@ -381,7 +382,10 @@ export async function POST(req: NextRequest) {
             });
             const groqData = await groqRes.json();
             if (groqData.text) {
-              text = groqData.text; // Override the text and continue!
+              const rawText = groqData.text;
+              console.log(`\n[Voice Webhook] Raw STT: "${rawText}"`);
+              text = await correctTranscriptWithLLM(rawText); // Override the text and continue!
+              console.log(`[Voice Webhook] Corrected STT: "${text}"\n`);
             } else {
               throw new Error("No text returned from Groq API");
             }

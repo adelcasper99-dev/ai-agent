@@ -1,46 +1,25 @@
-session_intent: "Chat History Buffer Pipeline: Context injection for Groq pronoun resolution & Prisma migration for ConversationState/ChatMessage"
-
+ï»¿session_intent: 'Hardening financial transaction logic in telegram_llm.ts, running 7-stage autonomous pipeline, conducting concurrent stress testing, and deploying to HQ VPS'
 decisions:
-  - "Groq key rotation: scan ENV vars GROQ_API_KEY, GROQ_API_KEY_1..N + DB ApiKeyPool provider='groq'"
-  - "Provider isolation in _exhaustedEnvKeys: prefix format 'gemini:KEY' / 'groq:KEY'"
-  - "Gemini exhausted -> auto-failover to Groq Llama 3.3 pool (up to 5 rotation attempts)"
-  - "Emergency fallback guard: payment method 'ÂÌá' blocked when customer = 'Úãíá äÞÏí'"
-  - "1-step quick sale parser (tryParseQuickSale): e.g. 'ãÝÇÊíÍ 300' or '2 ßÑÊæäÉ ãÓÇãíÑ 500 ÇÍãÏ ÂÌá'"
-  - "Quick sale parsing fires unconditionally at top of processFallbackInput (no button click needed)"
-  - "API Keys UI: provider dropdown (Gemini / Groq), status badges, multi-provider reset"
-  - "Groq validation: Groq SDK, llama-3.3-70b-versatile, 5 max_tokens test call"
-  - "Gemini validation model list: gemini-2.0-flash -> 1.5-flash -> 1.5-flash-latest -> 1.5-pro -> gemini-pro"
-  - "Gemini API_KEY_INVALID (400) returns specific Arabic error"
-  - "lastGeminiError captured and surfaced in final INVALID response for traceability"
-  - "Groq block in validate/route.ts is sealed — no changes allowed"
-  - "Chat History DB: Created official migration for ChatMessage and ConversationState"
-  - "Type Safety: Removed '(prisma as any)' in telegram_llm.ts, strongly typed chat message queries"
-  - "Groq History Context: Injected last 3 messages into system prompt instead of user/assistant array to preserve tool-calling sequence"
-
+  - 'Use Decimal.js for all monetary math across log_expense, log_purchase, log_customer_payment, log_sales_return, and log_purchase_return'
+  - 'Enforce strict double-entry ledger (SALE_DEBIT, PAYMENT_CREDIT, REFUND_DEBIT, SALES_RETURN_CREDIT) with full journal entry sync'
+  - 'Satisfy purchase return invariant by updating paidAmount and zeroing deferredAmount dynamically via waterfall'
+  - 'Use crypto.randomUUID() for return reference IDs to prevent TOCTOU race conditions'
+  - 'Export executeTool from telegram_llm.ts for direct unit and stress testing'
+  - 'Defer Emergency Fallback Menu until after normal mode stability is 100% verified'
 files_modified:
   - path: casper-voice-web/lib/telegram_llm.ts
-    why: "Groq contextSummary injection & Prisma type-safe updates for chat messages"
-  - path: casper-voice-web/prisma/migrations/20260803000000_add_chat_message_conversation_state/migration.sql
-    why: "Official production schema migration for chat history"
-  - path: casper-voice-web/prisma/migrations/migration_lock.toml
-    why: "Prisma migration tracker"
-  - path: .agents/stage_log.json
-    why: "Logged chat history buffer pipeline execution (0a-6)"
-
+    why: 'Hardened monetary math with Decimal.js, removed any types, fixed purchase returns waterfall, added UUIDs, exported executeTool'
+  - path: casper-voice-web/tests/concurrent_stress.test.ts
+    why: 'Created concurrent stress test verifying 3 simultaneous sales + 2 simultaneous payments settle with exact ledger math and idempotency replay'
 active_goals:
-  - "System fully deployed & live on HQ VPS (109.123.247.119) — PM2 online"
-
+  - 'Production monitoring of HQ VPS deployment'
 next_steps:
-  - "none — awaiting user next directive"
-
+  - 'Monitor HQ VPS logs and PM2 processes (casper-voice-web, casper-livekit-worker)'
+  - 'Plan Emergency Mode architecture as an isolated fallback layer when requested'
 failed_approaches:
-  - "GoogleGenerativeAI SDK used for Groq validation — 400 Bad Request; fixed to Groq SDK"
-  - "Gemini validate returning generic no-model message — fixed to API_KEY_INVALID guard"
-  - "Prisma migrate dev failed non-interactively — fixed via migrate diff and resolve --applied"
-  - "Passing history array to Groq broke function calls — fixed by system prompt contextSummary injection"
-
+  - 'Relying on Date.now() for reference IDs created potential race conditions during concurrent API calls â€” replaced with crypto.randomUUID()'
 last_condense:
-  timestamp: "2026-08-03T06:33:49.6178719+03:00"
-  tokens_before: 195000
-  tokens_after: 58000
-  reduction_pct: 70
+  timestamp: '2026-08-03T05:51:30Z'
+  tokens_before: 145000
+  tokens_after: 28000
+  reduction_pct: 81

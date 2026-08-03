@@ -59,6 +59,10 @@ class DiagnosticsSession:
         self.corrected_transcript: str | None = None
         self.correction_applied = False
         self.stt_confidence: float | None = None
+        self.stt_provider: str | None = None
+
+    def set_stt_provider(self, provider: str | None):
+        self.stt_provider = provider
 
     def record_latency(self, stage: str, elapsed_ms: int):
         """Records latency for a turn, preserving peak/max latency across multi-turn interactions."""
@@ -120,6 +124,7 @@ class DiagnosticsSession:
             "vadCutoffs": self.vad_cutoffs,
             "silenceDurationMs": self.silence_duration_ms,
             "sttConfidence": self.stt_confidence,
+            "sttProvider": self.stt_provider,
             "rawTranscript": self.raw_transcript,
             "correctedTranscript": self.corrected_transcript,
             "correctionApplied": self.correction_applied,

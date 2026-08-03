@@ -3,6 +3,7 @@ import { spawn } from "child_process";
 import fs from "fs";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
+import { correctTranscriptWithLLM } from "@/lib/llm_correction";
 
 const prisma = new PrismaClient();
 
@@ -57,7 +58,12 @@ export async function POST(req: NextRequest) {
 
         if (sttRes.ok) {
           const sttData = await sttRes.json() as { text?: string };
-          userTranscript = sttData.text?.trim() || "";
+          const rawText = sttData.text?.trim() || "";
+          if (rawText) {
+            console.log(`\n[Sim Voice STT] Raw STT: "${rawText}"`);
+            userTranscript = await correctTranscriptWithLLM(rawText);
+            console.log(`[Sim Voice STT] Corrected STT: "${userTranscript}"\n`);
+          }
         }
       } catch (e) {
         console.error("STT Error:", e);

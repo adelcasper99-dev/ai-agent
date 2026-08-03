@@ -969,7 +969,7 @@ export type LLMResult =
 async function saveChatMessage(tenantId?: string, telegramChatId?: string, role?: string, text?: string) {
   if (!tenantId || !telegramChatId || !text) return;
   try {
-    await (prisma as any).chatMessage.create({
+    await prisma.chatMessage.create({
       data: { tenantId, telegramChatId, role: role || "user", text }
     });
   } catch (e) {
@@ -992,7 +992,7 @@ export async function processTelegramMessageWithLLM(
   if (tenantId && telegramChatId) {
     try {
       const sixtyMinsAgo = new Date(Date.now() - 60 * 60 * 1000);
-      const recentMsgs = await (prisma as any).chatMessage.findMany({
+      const recentMsgs = await prisma.chatMessage.findMany({
         where: {
           tenantId,
           telegramChatId,
@@ -1001,7 +1001,7 @@ export async function processTelegramMessageWithLLM(
         orderBy: { createdAt: "desc" },
         take: 6
       });
-      rawHistory = recentMsgs.reverse().map((m: any) => ({ role: m.role, text: m.text }));
+      rawHistory = recentMsgs.reverse().map((m) => ({ role: m.role, text: m.text }));
     } catch (e) {
       console.error("[ChatHistory Fetch Error]:", e);
     }
@@ -1140,9 +1140,17 @@ export async function processTelegramMessageWithLLM(
         }
       }));
 
+      // P2: Inject last 3 messages as context summary in system prompt
+      // Groq function calling conflicts with multi-turn history arrays — system injection is more reliable
+      const contextSummary = rawHistory.length > 0
+        ? `\n\n---\n[سياق آخر رسائل المحادثة - استخدمه لربط الضمائر مثل "هو/هي/الباقي/نفس العميل"]:\n` +
+          rawHistory.slice(-3).map(h =>
+            `${h.role === "user" ? "🧑 التاجر" : "🤖 المساعد"}: ${h.text.slice(0, 200)}`
+          ).join("\n")
+        : "";
+
       const groqMessages = [
-        { role: "system", content: systemInstruction },
-        ...rawHistory.map(h => ({ role: h.role === "model" ? "assistant" : h.role, content: h.text })),
+        { role: "system", content: systemInstruction + contextSummary },
         { role: "user", content: text }
       ];
 

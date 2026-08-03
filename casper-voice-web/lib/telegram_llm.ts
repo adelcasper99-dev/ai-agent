@@ -467,15 +467,27 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
       if (typeof amount !== "number" || amount <= 0 || isPlaceholderDesc(description)) {
         return { success: false, resultText: "عشان أسجلك المصروف محتاج تقولي: المبلغ وبيان المصروف (مثال: كهرباء 500ج أو إيجار 2000ج) 💸" };
       }
-      const expense = await prisma.expense.create({
-        data: {
-          amount: amount,
-          description: String(description).trim(),
-          category: String(category).trim(),
-          ...(tenantId && { tenantId })
-        }
+      const expenseResult = await prisma.$transaction(async (tx) => {
+        const expense = await tx.expense.create({
+          data: {
+            amount: amount,
+            description: String(description).trim(),
+            category: String(category).trim(),
+            ...(tenantId && { tenantId })
+          }
+        });
+        
+        await tx.journalEntry.create({
+          data: { accountCode: "OPERATING_EXPENSES", debit: amount, referenceId: expense.id, description: `مصروف: ${expense.description}`, ...(tenantId && { tenantId }) }
+        });
+        
+        await tx.journalEntry.create({
+          data: { accountCode: "CASH", credit: amount, referenceId: expense.id, description: `دفع مصروف: ${expense.description}`, ...(tenantId && { tenantId }) }
+        });
+        
+        return expense;
       });
-      return { success: true, resultText: `تم تسجيل مصروف ${expense.amount} جنيه (${expense.description}) بنجاح!` };
+      return { success: true, resultText: `تم تسجيل مصروف ${expenseResult.amount} جنيه (${expenseResult.description}) بنجاح!` };
     }
 
     if (name === "book_appointment") {
@@ -647,14 +659,14 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
 
       const qty = Number(quantity) || 1;
 
-      let calcTotal = 0;
+      let calcTotal = new Decimal(0);
       if (typeof total_amount === "number" && total_amount > 0) {
-        calcTotal = total_amount;
+        calcTotal = new Decimal(total_amount);
       } else if (typeof price_per_unit === "number" && price_per_unit > 0) {
-        calcTotal = price_per_unit * qty;
+        calcTotal = new Decimal(price_per_unit).mul(qty);
       }
 
-      if (isPlaceholder(supplier_name) || isPlaceholder(item_name) || calcTotal <= 0) {
+      if (isPlaceholder(supplier_name) || isPlaceholder(item_name) || calcTotal.lte(0)) {
         return { success: false, resultText: "عشان أسجلك فاتورة المشتريات محتاج تقولي: اسم المورد، الصنف المشترى، والسعر 📦" };
       }
 
@@ -662,29 +674,49 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
         return { success: false, resultText: "عذراً، لم أتمكن من تسجيل المشتريات لوجود مشكلة في التعرف على حساب الشركة (tenantId مفقود)." };
       }
 
-      const total = new Decimal(calcTotal);
-      const paid = new Decimal(paid_amount ?? calcTotal);
+      const total = calcTotal;
+      const paid = paid_amount !== undefined ? new Decimal(paid_amount) : calcTotal;
       const remaining = total.sub(paid);
       const supplierNameStr = String(supplier_name).trim();
 
-      const supplier = await prisma.supplier.upsert({
-        where: { tenantId_name: { tenantId, name: supplierNameStr } },
-        update: {},
-        create: { name: supplierNameStr, tenantId }
-      });
+      const purchaseResult = await prisma.$transaction(async (tx) => {
+        const supplier = await tx.supplier.upsert({
+          where: { tenantId_name: { tenantId, name: supplierNameStr } },
+          update: {},
+          create: { name: supplierNameStr, tenantId }
+        });
 
-      const purchase = await prisma.purchase.create({
-        data: {
-          supplierId: supplier.id,
-          itemName: String(item_name).trim(),
-          totalAmount: total.toNumber(),
-          paidAmount: paid.toNumber(),
-          deferredAmount: remaining.toNumber(),
-          ...(tenantId && { tenantId })
+        const purchase = await tx.purchase.create({
+          data: {
+            supplierId: supplier.id,
+            itemName: String(item_name).trim(),
+            totalAmount: total.toNumber(),
+            paidAmount: paid.toNumber(),
+            deferredAmount: remaining.toNumber(),
+            ...(tenantId && { tenantId })
+          }
+        });
+
+        await tx.journalEntry.create({
+          data: { accountCode: "INVENTORY", debit: total.toNumber(), referenceId: purchase.id, description: `مشتريات: ${purchase.itemName}`, ...(tenantId && { tenantId }) }
+        });
+        
+        if (paid.gt(0)) {
+          await tx.journalEntry.create({
+            data: { accountCode: "CASH", credit: paid.toNumber(), referenceId: purchase.id, description: `سداد مشتريات: ${purchase.itemName}`, ...(tenantId && { tenantId }) }
+          });
         }
+        
+        if (remaining.gt(0)) {
+          await tx.journalEntry.create({
+            data: { accountCode: "ACCOUNTS_PAYABLE", credit: remaining.toNumber(), referenceId: purchase.id, description: `آجل مورد: ${supplierNameStr}`, ...(tenantId && { tenantId }) }
+          });
+        }
+
+        return { purchase, supplier };
       });
 
-      return { success: true, resultText: `تم تسجيل فاتورة مشتريات (${qty} ${purchase.itemName}) من المورد (${supplier.name}) بقيمة إجمالية ${purchase.totalAmount} جنيه بنجاح! 📦` };
+      return { success: true, resultText: `تم تسجيل فاتورة مشتريات (${qty} ${purchaseResult.purchase.itemName}) من المورد (${purchaseResult.supplier.name}) بقيمة إجمالية ${purchaseResult.purchase.totalAmount} جنيه بنجاح! 📦` };
     }
 
     if (name === "log_supplier_payment") {
@@ -702,55 +734,69 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
         return { success: false, resultText: `لم يتم العثور على المورد: ${supName}` };
       }
 
-      // 1. Record SupplierPayment
-      await (prisma as any).supplierPayment.create({
-        data: {
-          supplierId: supplier.id,
-          amount: payAmount.toNumber(),
-          notes: `سداد دفعة نقدية للمورد`,
-          ...(tenantId && { tenantId })
+      const totalDebtResult = await prisma.$transaction(async (tx) => {
+        // 1. Record SupplierPayment
+        const supplierPayment = await (tx as any).supplierPayment.create({
+          data: {
+            supplierId: supplier.id,
+            amount: payAmount.toNumber(),
+            notes: `سداد دفعة نقدية للمورد`,
+            ...(tenantId && { tenantId })
+          }
+        });
+
+        // 2. Deduct from deferredAmount on open purchases
+        const openPurchases = await tx.purchase.findMany({
+          where: { supplierId: supplier.id, deferredAmount: { gt: 0 } },
+          orderBy: { createdAt: "asc" }
+        });
+
+        let remainingToDeduct = payAmount;
+        for (const p of openPurchases) {
+          if (remainingToDeduct.lte(0)) break;
+          const curDef = new Decimal(p.deferredAmount);
+          const curPaid = new Decimal(p.paidAmount);
+          if (remainingToDeduct.gte(curDef)) {
+            await tx.purchase.update({
+              where: { id: p.id },
+              data: {
+                paidAmount: curPaid.add(curDef).toNumber(),
+                deferredAmount: 0
+              }
+            });
+            remainingToDeduct = remainingToDeduct.sub(curDef);
+          } else {
+            await tx.purchase.update({
+              where: { id: p.id },
+              data: {
+                paidAmount: curPaid.add(remainingToDeduct).toNumber(),
+                deferredAmount: curDef.sub(remainingToDeduct).toNumber()
+              }
+            });
+            remainingToDeduct = new Decimal(0);
+          }
         }
-      });
 
-      // 2. Deduct from deferredAmount on open purchases
-      const openPurchases = await prisma.purchase.findMany({
-        where: { supplierId: supplier.id, deferredAmount: { gt: 0 } },
-        orderBy: { createdAt: "asc" }
-      });
+        // 3. Create Journal Entries
+        await tx.journalEntry.create({
+          data: { accountCode: "ACCOUNTS_PAYABLE", debit: payAmount.toNumber(), referenceId: supplierPayment.id, description: `سداد للمورد: ${supplier.name}`, ...(tenantId && { tenantId }) }
+        });
+        await tx.journalEntry.create({
+          data: { accountCode: "CASH", credit: payAmount.toNumber(), referenceId: supplierPayment.id, description: `نقدية مدفوعة للمورد: ${supplier.name}`, ...(tenantId && { tenantId }) }
+        });
 
-      let remainingToDeduct = payAmount;
-      for (const p of openPurchases) {
-        if (remainingToDeduct.lte(0)) break;
-        const curDef = new Decimal(p.deferredAmount);
-        const curPaid = new Decimal(p.paidAmount);
-        if (remainingToDeduct.gte(curDef)) {
-          await prisma.purchase.update({
-            where: { id: p.id },
-            data: {
-              paidAmount: curPaid.add(curDef).toNumber(),
-              deferredAmount: 0
-            }
-          });
-          remainingToDeduct = remainingToDeduct.sub(curDef);
-        } else {
-          await prisma.purchase.update({
-            where: { id: p.id },
-            data: {
-              paidAmount: curPaid.add(remainingToDeduct).toNumber(),
-              deferredAmount: curDef.sub(remainingToDeduct).toNumber()
-            }
-          });
-          remainingToDeduct = new Decimal(0);
+        // 4. Calculate remaining total debt for supplier
+        const allPurchases = await tx.purchase.findMany({ where: { supplierId: supplier.id } });
+        let totalDebtCalc = new Decimal(0);
+        for (const p of allPurchases) {
+          totalDebtCalc = totalDebtCalc.add(p.deferredAmount);
         }
-      }
-
-      // 3. Calculate remaining total debt for supplier
-      const allPurchases = await prisma.purchase.findMany({ where: { supplierId: supplier.id } });
-      const totalDebt = allPurchases.reduce((sum, p) => sum + p.deferredAmount, 0);
+        return totalDebtCalc.toNumber();
+      });
 
       return {
         success: true,
-        resultText: `تم تسجيل سداد مبلغ ${amount} جنيه للمورد (${supplier.name}) بنجاح! 💸\nالمتبقي له (الديون): ${totalDebt} جنيه.`
+        resultText: `تم تسجيل سداد مبلغ ${amount} جنيه للمورد (${supplier.name}) بنجاح! 💸\nالمتبقي له (الديون): ${totalDebtResult} جنيه.`
       };
     }
 
@@ -767,13 +813,19 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
         return { success: false, resultText: `لم يتم العثور على المورد: ${supName}` };
       }
 
-      const totalPurchases = (supplier.purchases || []).reduce((acc: number, p: any) => acc + p.totalAmount, 0);
-      const totalPaidOnPurchases = (supplier.purchases || []).reduce((acc: number, p: any) => acc + p.paidAmount, 0);
-      const totalDebt = (supplier.purchases || []).reduce((acc: number, p: any) => acc + p.deferredAmount, 0);
+      let totalPurchases = new Decimal(0);
+      let totalPaidOnPurchases = new Decimal(0);
+      let totalDebt = new Decimal(0);
+      
+      for (const p of supplier.purchases || []) {
+        totalPurchases = totalPurchases.add(p.totalAmount);
+        totalPaidOnPurchases = totalPaidOnPurchases.add(p.paidAmount);
+        totalDebt = totalDebt.add(p.deferredAmount);
+      }
 
       return {
         success: true,
-        resultText: `📊 *كشف حساب المورد (${supplier.name}):*\n\n📦 *إجمالي المشتريات منه:* ${totalPurchases} جنيه\n💵 *إجمالي المسدد له:* ${totalPaidOnPurchases} جنيه\n📝 *الديون المتبقية له (الآجل):* ${totalDebt} جنيه`
+        resultText: `📊 *كشف حساب المورد (${supplier.name}):*\n\n📦 *إجمالي المشتريات منه:* ${totalPurchases.toNumber()} جنيه\n💵 *إجمالي المسدد له:* ${totalPaidOnPurchases.toNumber()} جنيه\n📝 *الديون المتبقية له (الآجل):* ${totalDebt.toNumber()} جنيه`
       };
     }
 
@@ -799,14 +851,24 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
         return { success: false, resultText: `لم يتم العثور على العميل: ${custName}` };
       }
 
-      await prisma.customerLedgerEntry.create({
-        data: {
-          customerId: customer.id,
-          entryType: "PAYMENT_CREDIT",
-          amount: retAmount.toNumber(),
-          description: `مرتجع مبيعات: ${qty} ${itemNameStr}`,
-          ...(tenantId && { tenantId })
-        }
+      await prisma.$transaction(async (tx) => {
+        const entry = await tx.customerLedgerEntry.create({
+          data: {
+            customerId: customer.id,
+            entryType: "PAYMENT_CREDIT",
+            amount: retAmount.toNumber(),
+            description: `مرتجع مبيعات: ${qty} ${itemNameStr}`,
+            ...(tenantId && { tenantId })
+          }
+        });
+        
+        await tx.journalEntry.create({
+          data: { accountCode: "SALES_REVENUE", debit: retAmount.toNumber(), referenceId: entry.id, description: `عكس إيراد - مرتجع مبيعات: ${itemNameStr}`, ...(tenantId && { tenantId }) }
+        });
+        
+        await tx.journalEntry.create({
+          data: { accountCode: "ACCOUNTS_RECEIVABLE", credit: retAmount.toNumber(), referenceId: entry.id, description: `تسوية حساب عميل - مرتجع: ${customer.name}`, ...(tenantId && { tenantId }) }
+        });
       });
 
       return {
@@ -839,30 +901,42 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
         return { success: false, resultText: `لم يتم العثور على المورد: ${supName}` };
       }
 
-      // Deduct from deferredAmount on open purchases
-      const openPurchases = await prisma.purchase.findMany({
-        where: { supplierId: supplier.id, deferredAmount: { gt: 0 } },
-        orderBy: { createdAt: "desc" }
-      });
+      await prisma.$transaction(async (tx) => {
+        // Deduct from deferredAmount on open purchases
+        const openPurchases = await tx.purchase.findMany({
+          where: { supplierId: supplier.id, deferredAmount: { gt: 0 } },
+          orderBy: { createdAt: "desc" }
+        });
 
-      let remainingToDeduct = retAmount;
-      for (const p of openPurchases) {
-        if (remainingToDeduct.lte(0)) break;
-        const curDef = new Decimal(p.deferredAmount);
-        if (remainingToDeduct.gte(curDef)) {
-          await prisma.purchase.update({
-            where: { id: p.id },
-            data: { deferredAmount: 0 }
-          });
-          remainingToDeduct = remainingToDeduct.sub(curDef);
-        } else {
-          await prisma.purchase.update({
-            where: { id: p.id },
-            data: { deferredAmount: curDef.sub(remainingToDeduct).toNumber() }
-          });
-          remainingToDeduct = new Decimal(0);
+        let remainingToDeduct = retAmount;
+        for (const p of openPurchases) {
+          if (remainingToDeduct.lte(0)) break;
+          const curDef = new Decimal(p.deferredAmount);
+          if (remainingToDeduct.gte(curDef)) {
+            await tx.purchase.update({
+              where: { id: p.id },
+              data: { deferredAmount: 0 }
+            });
+            remainingToDeduct = remainingToDeduct.sub(curDef);
+          } else {
+            await tx.purchase.update({
+              where: { id: p.id },
+              data: { deferredAmount: curDef.sub(remainingToDeduct).toNumber() }
+            });
+            remainingToDeduct = new Decimal(0);
+          }
         }
-      }
+
+        const returnRef = `PURCHASE_RET_${Date.now()}`;
+        
+        await tx.journalEntry.create({
+          data: { accountCode: "ACCOUNTS_PAYABLE", debit: retAmount.toNumber(), referenceId: returnRef, description: `تسوية مورد - مرتجع مشتريات: ${supplier.name}`, ...(tenantId && { tenantId }) }
+        });
+        
+        await tx.journalEntry.create({
+          data: { accountCode: "INVENTORY", credit: retAmount.toNumber(), referenceId: returnRef, description: `عكس مخزون - مرتجع مشتريات: ${itemNameStr}`, ...(tenantId && { tenantId }) }
+        });
+      });
 
       return {
         success: true,
@@ -903,7 +977,10 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
           ...(tenantId && { tenantId })
         }
       });
-      const totalSales = sales.reduce((acc, s) => acc + s.total, 0);
+      let totalSales = new Decimal(0);
+      for (const s of sales) {
+        totalSales = totalSales.add(s.total);
+      }
 
       const expenses = await prisma.expense.findMany({
         where: {
@@ -911,11 +988,16 @@ async function executeTool(name: string, args: any, tenantId?: string, userMessa
           ...(tenantId && { tenantId })
         }
       });
-      const totalExpenses = expenses.reduce((acc, e) => acc + e.amount, 0);
+      let totalExpenses = new Decimal(0);
+      for (const e of expenses) {
+        totalExpenses = totalExpenses.add(e.amount);
+      }
+
+      const net = totalSales.sub(totalExpenses);
 
       return { 
         success: true, 
-        resultText: `📊 **ملخص ${periodName}:**\n\n🟢 المبيعات: ${totalSales} جنيه\n🔴 المصروفات: ${totalExpenses} جنيه\n\nالصافي: ${totalSales - totalExpenses} جنيه`
+        resultText: `📊 **ملخص ${periodName}:**\n\n🟢 المبيعات: ${totalSales.toNumber()} جنيه\n🔴 المصروفات: ${totalExpenses.toNumber()} جنيه\n\nالصافي: ${net.toNumber()} جنيه`
       };
     }
 

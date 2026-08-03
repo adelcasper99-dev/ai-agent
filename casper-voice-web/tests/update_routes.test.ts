@@ -1,5 +1,5 @@
 // casper-voice-web/tests/update_routes.test.ts
-import { describe, it, expect, afterAll } from "vitest";
+import { describe, it, expect, afterAll, beforeAll } from "vitest";
 import { PrismaClient } from "@prisma/client";
 import Decimal from "decimal.js";
 import { NextRequest } from "next/server";
@@ -26,6 +26,18 @@ function makePutRequest(url: string, body: unknown, headers: Record<string, stri
 }
 
 describe("Update Routes Test Suite", () => {
+  beforeAll(async () => {
+    await prisma.tenant.upsert({
+      where: { id: "test-tenant-id" },
+      update: {},
+      create: {
+        id: "test-tenant-id",
+        name: "Test Tenant",
+        phoneNumber: "0000000000"
+      }
+    });
+  });
+
   afterAll(async () => {
     await prisma.$disconnect();
   });
@@ -138,10 +150,11 @@ describe("Update Routes Test Suite", () => {
 
   describe("[Group 5] G4: Idempotency-Key Cache Guards", () => {
     it("G4.1 & G4.2: Purchases Idempotency Cache Guard", async () => {
+      const uniqueName = `مورد ايدمبوتنسي ${Date.now()}`;
       const supplier = await prisma.supplier.upsert({
-        where: { name: "مورد تجارب ألي" },
+        where: { tenantId_name: { tenantId: "test-tenant-id", name: uniqueName } },
         update: {},
-        create: { name: "مورد تجارب ألي" },
+        create: { name: uniqueName, tenantId: "test-tenant-id" },
       });
       const purchase = await prisma.purchase.create({
         data: {
@@ -155,7 +168,7 @@ describe("Update Routes Test Suite", () => {
       });
 
       const idempotencyKeyPurch = `test-uuid-purch-${Date.now()}`;
-      const payPayload = { supplier_name: "مورد تجارب ألي", payment_amount: 100 };
+      const payPayload = { supplier_name: uniqueName, payment_amount: 100 };
 
       const req1 = makePutRequest("http://localhost/api/purchases", payPayload, {
         Authorization: `Bearer ${VALID_TOKEN}`,

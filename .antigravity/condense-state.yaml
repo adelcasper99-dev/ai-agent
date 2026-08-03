@@ -1,47 +1,46 @@
-ï»¿session_intent: "Groq multi-key rotation pool, Emergency fallback enhancements, Multi-provider API Keys UI & validation hardening for Casper Voice Telegram bot"
+session_intent: "Chat History Buffer Pipeline: Context injection for Groq pronoun resolution & Prisma migration for ConversationState/ChatMessage"
 
 decisions:
   - "Groq key rotation: scan ENV vars GROQ_API_KEY, GROQ_API_KEY_1..N + DB ApiKeyPool provider='groq'"
   - "Provider isolation in _exhaustedEnvKeys: prefix format 'gemini:KEY' / 'groq:KEY'"
   - "Gemini exhausted -> auto-failover to Groq Llama 3.3 pool (up to 5 rotation attempts)"
-  - "Emergency fallback guard: payment method 'Ø¢Ø¬Ù„' blocked when customer = 'Ø¹Ù…ÙŠÙ„ Ù†Ù‚Ø¯ÙŠ'"
-  - "1-step quick sale parser (tryParseQuickSale): e.g. 'Ù…ÙØ§ØªÙŠØ­ 300' or '2 ÙƒØ±ØªÙˆÙ†Ø© Ù…Ø³Ø§Ù…ÙŠØ± 500 Ø§Ø­Ù…Ø¯ Ø¢Ø¬Ù„'"
+  - "Emergency fallback guard: payment method 'ÂÌá' blocked when customer = 'Úãíá äÞÏí'"
+  - "1-step quick sale parser (tryParseQuickSale): e.g. 'ãÝÇÊíÍ 300' or '2 ßÑÊæäÉ ãÓÇãíÑ 500 ÇÍãÏ ÂÌá'"
   - "Quick sale parsing fires unconditionally at top of processFallbackInput (no button click needed)"
   - "API Keys UI: provider dropdown (Gemini / Groq), status badges, multi-provider reset"
   - "Groq validation: Groq SDK, llama-3.3-70b-versatile, 5 max_tokens test call"
   - "Gemini validation model list: gemini-2.0-flash -> 1.5-flash -> 1.5-flash-latest -> 1.5-pro -> gemini-pro"
   - "Gemini API_KEY_INVALID (400) returns specific Arabic error"
   - "lastGeminiError captured and surfaced in final INVALID response for traceability"
-  - "Groq block in validate/route.ts is sealed â€” no changes allowed"
+  - "Groq block in validate/route.ts is sealed — no changes allowed"
+  - "Chat History DB: Created official migration for ChatMessage and ConversationState"
+  - "Type Safety: Removed '(prisma as any)' in telegram_llm.ts, strongly typed chat message queries"
+  - "Groq History Context: Injected last 3 messages into system prompt instead of user/assistant array to preserve tool-calling sequence"
 
 files_modified:
-  - path: casper-voice-web/lib/apiKeyManager.ts
-    why: "Provider-prefixed ENV+DB rotation pool for Gemini and Groq"
   - path: casper-voice-web/lib/telegram_llm.ts
-    why: "Groq 5-attempt rotation loop + smart item disambiguation rule 8"
-  - path: casper-voice-web/lib/telegram_fallback.ts
-    why: "tryParseQuickSale + unconditional trigger + Ø¢Ø¬Ù„/Ø¹Ù…ÙŠÙ„ Ù†Ù‚Ø¯ÙŠ guard"
-  - path: casper-voice-web/app/dashboard/api-keys/page.tsx
-    why: "Provider dropdown, status badges, multi-provider reset"
-  - path: casper-voice-web/app/api/admin/api-keys/route.ts
-    why: "PATCH: reset all exhausted keys when provider=all"
-  - path: casper-voice-web/app/api/admin/api-keys/validate/route.ts
-    why: "Groq SDK validation + expanded Gemini model list + API_KEY_INVALID guard"
+    why: "Groq contextSummary injection & Prisma type-safe updates for chat messages"
+  - path: casper-voice-web/prisma/migrations/20260803000000_add_chat_message_conversation_state/migration.sql
+    why: "Official production schema migration for chat history"
+  - path: casper-voice-web/prisma/migrations/migration_lock.toml
+    why: "Prisma migration tracker"
   - path: .agents/stage_log.json
-    why: "All 9 pipeline stages (0a-6) logged COMPLETED"
+    why: "Logged chat history buffer pipeline execution (0a-6)"
 
 active_goals:
-  - "System fully deployed & live on HQ VPS (109.123.247.119) â€” PM2 online"
+  - "System fully deployed & live on HQ VPS (109.123.247.119) — PM2 online"
 
 next_steps:
-  - "none â€” awaiting user next directive"
+  - "none — awaiting user next directive"
 
 failed_approaches:
-  - "GoogleGenerativeAI SDK used for Groq validation â€” 400 Bad Request; fixed to Groq SDK"
-  - "Gemini validate returning generic no-model message â€” fixed to API_KEY_INVALID guard"
+  - "GoogleGenerativeAI SDK used for Groq validation — 400 Bad Request; fixed to Groq SDK"
+  - "Gemini validate returning generic no-model message — fixed to API_KEY_INVALID guard"
+  - "Prisma migrate dev failed non-interactively — fixed via migrate diff and resolve --applied"
+  - "Passing history array to Groq broke function calls — fixed by system prompt contextSummary injection"
 
 last_condense:
-  timestamp: "2026-08-03T02:26:00Z"
-  tokens_before: 190000
-  tokens_after: 57000
+  timestamp: "2026-08-03T06:33:49.6178719+03:00"
+  tokens_before: 195000
+  tokens_after: 58000
   reduction_pct: 70

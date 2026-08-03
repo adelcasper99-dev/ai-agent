@@ -346,6 +346,7 @@
   "344": "opencode.json",
   "345": "Phase 0: Assess and Route",
   "346": "Phase 1: Investigate Candidate Learnings",
+  "347": "resolveLiveInjectionAnchor",
   "348": "route.ts",
   "349": "route.ts",
   "350": "route.ts",
@@ -437,7 +438,11 @@
   "436": "list_models.js",
   "437": "checkElementHeroEyebrow",
   "438": "rebuild_vps_dashboard.py",
+  "439": "surface-briefs.mjs",
   "440": "route.ts",
   "441": "list_groq_models.sh",
-  "443": "checkElementGptBorderShadowDOM"
+  "442": "correctTranscriptWithLLM",
+  "443": "checkElementGptBorderShadowDOM",
+  "444": "source-search.mjs",
+  "445": "createInsertPlaceholder"
 }

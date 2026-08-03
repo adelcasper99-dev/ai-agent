@@ -367,6 +367,7 @@ export async function POST(req: NextRequest) {
           formData.append('file', blob, 'voice.ogg');
           formData.append('model', 'whisper-large-v3-turbo');
           formData.append('language', 'ar');
+          formData.append('prompt', 'نظام كاسبر مبيعات ومشتريات كرتونة كرتون مسمار مسامير عسل صاج عميل فاتورة حساب بنزين صيانة مصاريف جنيه أجهزة بضاعة مورد قطع غيار');
 
           let groqKey = process.env.GROQ_API_KEY;
           if (!groqKey) {

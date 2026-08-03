@@ -16,6 +16,9 @@ if (fs.existsSync(path.join(__dirname, '.env.production'))) {
 } else if (fs.existsSync(path.join(__dirname, '.env'))) {
   require('dotenv').config({ path: path.join(__dirname, '.env') });
 }
+if (fs.existsSync(path.join(__dirname, 'casper-voice-web', '.env'))) {
+  require('dotenv').config({ path: path.join(__dirname, 'casper-voice-web', '.env') });
+}
 
 module.exports = {
   apps: [
@@ -27,11 +30,14 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3006,
+        ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
+        PILOT_TENANT_ID: process.env.PILOT_TENANT_ID,
+        JWT_SECRET: process.env.JWT_SECRET || 'casper-default-jwt-secret-key-2026',
         TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
         ADMIN_CHAT_ID: process.env.ADMIN_CHAT_ID,
         TELEGRAM_WEBHOOK_SECRET: process.env.TELEGRAM_WEBHOOK_SECRET,
-        JWT_SECRET: process.env.JWT_SECRET,
         INTERNAL_API_KEY: process.env.INTERNAL_API_KEY,
+        INTERNAL_SERVICE_SECRET: process.env.INTERNAL_SERVICE_SECRET,
       },
     },
     {

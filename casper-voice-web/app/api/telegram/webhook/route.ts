@@ -687,7 +687,8 @@ export async function POST(req: NextRequest) {
         tenant?.name,
         tenant?.businessType,
         tenant?.workingHours,
-        chatId
+        chatId,
+        message.message_id
       );
 
       if (llmResult.status === "all_providers_exhausted") {

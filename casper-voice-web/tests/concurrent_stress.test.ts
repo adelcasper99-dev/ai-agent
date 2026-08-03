@@ -236,4 +236,38 @@ describe("Concurrent Financial Stress Test", () => {
       `\n=== IDEMPOTENCY GUARD: entries after replay = ${entriesAfterReplay.length} (expected 5) ✅`
     );
   });
+
+  it("C3 — True Concurrent Idempotency: exact same key fired concurrently throws P2002 but handles gracefully", async () => {
+    const identicalKey = `stress-collision-${RUN_ID}`;
+    const args = {
+      item_name: "بضاعة C3",
+      price: 500,
+      quantity: 1,
+      customer_name: CUSTOMER_NAME,
+      customer_phone: CUSTOMER_PHONE,
+      paid_amount: 0,
+      deferred_amount: 500,
+      idempotency_key: identicalKey,
+    };
+    
+    // Fire identical requests concurrently (simulating network retry storm)
+    const [req1, req2] = await Promise.all([
+      executeTool("log_sale", args, TENANT_ID),
+      executeTool("log_sale", args, TENANT_ID)
+    ]);
+    
+    // Both should report success
+    expect(req1.success).toBe(true);
+    expect(req2.success).toBe(true);
+    
+    // Exactly ONE sale should exist with this key
+    const sales = await prisma.sale.findMany({ where: { idempotencyKey: identicalKey }});
+    expect(sales.length).toBe(1);
+    
+    // Exactly ONE SALE_DEBIT should exist for this sale
+    const debits = await prisma.customerLedgerEntry.findMany({ where: { saleId: sales[0].id, entryType: "SALE_DEBIT" }});
+    expect(debits.length).toBe(1);
+    
+    console.log("\n=== TRUE CONCURRENCY GUARD: 2 concurrent requests -> 1 sale recorded ✅");
+  });
 });

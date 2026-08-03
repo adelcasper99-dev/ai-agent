@@ -2,21 +2,28 @@
 import { NextRequest } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { PrismaClient } from "@prisma/client";
+import { getResolvedTenantId } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function POST(req: NextRequest) {
-  const { message, tenantId } = await req.json();
+  const resolvedTenantId = await getResolvedTenantId(req);
+  if (!resolvedTenantId) {
+    return new Response(JSON.stringify({ error: "غير مصرح" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const { message } = await req.json();
 
   if (!message || typeof message !== "string") {
     return new Response(JSON.stringify({ error: "message مطلوب" }), {
       status: 400,
+      headers: { "Content-Type": "application/json" },
     });
   }
-
-  const headerTenantId = req.headers.get("x-tenant-id");
-  const resolvedTenantId = tenantId || headerTenantId || undefined;
 
   // 1) RAG: هات أقرب معلومات من الـ KB (Prisma) - محدودة بـ take عشان التوكنز
   const kbEntries = await prisma.knowledgeItem.findMany({

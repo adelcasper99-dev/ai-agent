@@ -104,6 +104,7 @@ model Sale {
   customerName   String   @default("")
   paidAmount     Float    @default(0)
   deferredAmount Float    @default(0)
+  idempotencyKey String?  @unique
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
 
@@ -214,6 +215,7 @@ model CustomerLedgerEntry {
 
   @@index([tenantId])
   @@index([customerId])
+  @@unique([saleId, entryType])
 }
 
 // ── قيود اليومية (General Ledger) ─────────────────────────
@@ -232,6 +234,7 @@ model JournalEntry {
 
   @@index([tenantId])
   @@index([accountCode])
+  @@unique([referenceId, accountCode])
 }
 
 // ── تتبع استهلاك التوكنز والحدود ─────────────────────────────

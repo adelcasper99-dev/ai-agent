@@ -2,16 +2,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { fireAndForgetTelegramAlert } from "@/lib/telegram";
-import { isInternalAuthValid } from "@/lib/auth";
+import { getResolvedTenantId, isInternalAuthValid } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
+    const resolvedTenantId = await getResolvedTenantId(req);
+    if (!resolvedTenantId) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    }
+
     const body = await req.json();
-    const { customer_name, date, time, notes, tenantId } = body;
-    const headerTenantId = req.headers.get("x-tenant-id");
-    const resolvedTenantId = tenantId || headerTenantId || undefined;
+    const { customer_name, date, time, notes } = body;
 
     if (!customer_name || !date || !time) {
       return NextResponse.json(
@@ -25,7 +28,7 @@ export async function POST(req: NextRequest) {
       where: {
         date: { contains: date.trim() },
         time: { contains: time.trim() },
-        ...(resolvedTenantId && { tenantId: resolvedTenantId }),
+        tenantId: resolvedTenantId,
       },
     });
 
@@ -46,7 +49,7 @@ export async function POST(req: NextRequest) {
         date: date.trim(),
         time: time.trim(),
         notes: notes || "",
-        ...(resolvedTenantId && { tenantId: resolvedTenantId }),
+        tenantId: resolvedTenantId,
       },
     });
 
@@ -68,13 +71,13 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const tenantId = searchParams.get("tenantId") || req.headers.get("x-tenant-id");
+  const tenantId = await getResolvedTenantId(req);
+  if (!tenantId) {
+    return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+  }
 
   const appointments = await prisma.appointment.findMany({
-    where: {
-      ...(tenantId && { tenantId }),
-    },
+    where: { tenantId },
     orderBy: { createdAt: "desc" },
     take: 50,
   });

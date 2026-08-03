@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getResolvedTenantId } from "@/lib/auth";
 
 const THRESHOLDS = {
   llmLatencyMs: 1500,
@@ -10,18 +11,15 @@ const THRESHOLDS = {
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Verify internal service secret for security
-    const internalSecret = process.env.INTERNAL_SERVICE_SECRET || "casper-voice-internal-secret-9988776655";
-    const reqSecret = req.headers.get("x-internal-secret");
-    if (reqSecret !== internalSecret) {
-      return NextResponse.json({ error: "Unauthorized: Invalid internal secret" }, { status: 401 });
+    const resolvedTenantId = await getResolvedTenantId(req);
+    if (!resolvedTenantId) {
+      return NextResponse.json({ error: "Unauthorized: Invalid session or internal secret" }, { status: 401 });
     }
 
     const body = await req.json();
     const {
       channel,
       sessionId,
-      tenantId,
       audioSnrDb,
       audioClipping,
       vadCutoffs,
@@ -40,15 +38,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    // 2. Enforce Strict Tenant Isolation: Require valid tenantId
-    if (!tenantId || tenantId === "default-tenant") {
-      return NextResponse.json(
-        { error: "tenantId مطلوب ومستقل لكل شركة (Strict Multi-tenant Isolation active)" },
-        { status: 400 }
-      );
-    }
-    const resolvedTenantId = tenantId;
 
     const hasIssue =
       (llmLatencyMs ?? 0) > THRESHOLDS.llmLatencyMs ||
@@ -104,10 +93,14 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
+    const tenantId = await getResolvedTenantId(req);
+    if (!tenantId) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const channel = searchParams.get("channel");
     const onlyIssues = searchParams.get("onlyIssues") === "true";
-    const tenantId = searchParams.get("tenantId");
 
     let records: any[] = [];
     if ((prisma as any).interactionDiagnostics) {
@@ -115,7 +108,7 @@ export async function GET(req: NextRequest) {
         where: {
           ...(channel ? { channel } : {}),
           ...(onlyIssues ? { hasIssue: true } : {}),
-          ...(tenantId ? { tenantId } : {}),
+          tenantId,
         },
         orderBy: { createdAt: "desc" },
         take: 100,

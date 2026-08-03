@@ -4,6 +4,8 @@ import { PrismaClient } from "@prisma/client";
 import Decimal from "decimal.js";
 import { sendTelegramAlert } from "./telegram";
 
+Decimal.set({ rounding: Decimal.ROUND_HALF_UP });
+
 const prisma = new PrismaClient();
 
 const logSaleTool: FunctionDeclaration = {
@@ -326,7 +328,7 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
   return customer;
 }
 
-export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string): Promise<{ success: boolean; resultText: string }> {
+export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string): Promise<{ success: boolean; resultText: string }> {
   try {
     const isPureInquiry = userMessageText && /^(حساب|كشف\s*حساب|رصيد|ديون|كام\s*(على|له))\s+/i.test(userMessageText.trim());
     const isMutationTool = ["log_customer_payment", "log_supplier_payment", "log_sale", "log_purchase", "log_sales_return", "log_purchase_return"].includes(name);
@@ -337,10 +339,11 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     }
 
     const { idempotency_key } = args;
+    const effectiveIdempotencyKey = String(idempotency_key || (telegramMessageId ? `msg:${telegramMessageId}` : "")).trim();
     const isMutation = name.startsWith("log_") || name.startsWith("book_");
     
-    if (isMutation && idempotency_key && String(idempotency_key).length > 5) {
-      const fullKey = `${name}:${idempotency_key}`;
+    if (isMutation && effectiveIdempotencyKey && effectiveIdempotencyKey.length > 3) {
+      const fullKey = `${name}:${effectiveIdempotencyKey}`;
       if (executedKeys.has(fullKey)) {
         return { success: true, resultText: `تمت العملية بنجاح.` };
       }
@@ -360,11 +363,22 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       if (isPlaceholderItem(item_name) || typeof price !== "number" || price <= 0) {
         return { success: false, resultText: "عشان أسجلك عملية البيع محتاج تقولي: اسم الصنف المباع، السعر الإجمالي، اسم العميل (اختياري) 💰" };
       }
-      const totalAmount = new Decimal(price).mul(quantity);
-      const paid = paid_amount !== undefined ? new Decimal(paid_amount) : totalAmount;
-      const deferred = deferred_amount !== undefined ? new Decimal(deferred_amount) : totalAmount.minus(paid);
+      const priceDecimal = new Decimal(price).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+      const totalAmount = priceDecimal.mul(quantity).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+      const paid = (paid_amount !== undefined ? new Decimal(paid_amount) : totalAmount).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+      const deferred = (deferred_amount !== undefined ? new Decimal(deferred_amount) : totalAmount.minus(paid)).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
       
-      const saleResult = await prisma.$transaction(async (tx) => {
+      let saleResult;
+      try {
+        saleResult = await prisma.$transaction(async (tx) => {
+          // DB-level idempotency check
+        if (effectiveIdempotencyKey) {
+          const existing = await tx.sale.findUnique({ where: { idempotencyKey: effectiveIdempotencyKey } });
+          if (existing) {
+            return existing;
+          }
+        }
+
         let customerId = null;
         const custName = customer_name ? String(customer_name).trim() : "";
         const custPhone = customer_phone ? String(customer_phone).trim() : null;
@@ -386,74 +400,103 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         const sale = await tx.sale.create({
           data: {
             itemName: String(item_name).trim(),
-            price: price,
+            price: priceDecimal.toNumber(),
             quantity: Number(quantity) || 1,
             total: totalAmount.toNumber(),
             paidAmount: paid.toNumber(),
             deferredAmount: deferred.toNumber(),
             customerName: custName,
+            ...(effectiveIdempotencyKey && { idempotencyKey: effectiveIdempotencyKey }),
             ...(customerId && { customerId }),
             ...(tenantId && { tenantId })
           }
         });
 
         if (customerId) {
-           await tx.customerLedgerEntry.create({
-             data: {
-               customerId,
-               saleId: sale.id,
-               entryType: "SALE_DEBIT",
-               amount: totalAmount.toNumber(),
-               description: `فاتورة مبيعات: ${sale.quantity} ${sale.itemName}`,
-               ...(tenantId && { tenantId })
-             }
+           const existingDebit = await tx.customerLedgerEntry.findFirst({
+             where: { customerId, saleId: sale.id, entryType: "SALE_DEBIT" }
            });
-           if (paid.gt(0)) {
+           if (!existingDebit) {
              await tx.customerLedgerEntry.create({
                data: {
                  customerId,
                  saleId: sale.id,
-                 entryType: "PAYMENT_CREDIT",
-                 amount: paid.toNumber(),
-                 description: `دفعة مسددة عند البيع: ${sale.itemName}`,
+                 entryType: "SALE_DEBIT",
+                 amount: totalAmount.toNumber(),
+                 description: `فاتورة مبيعات: ${sale.quantity} ${sale.itemName}`,
+                 ...(tenantId && { tenantId })
+               }
+             });
+           }
+           if (paid.gt(0)) {
+             const existingCredit = await tx.customerLedgerEntry.findFirst({
+               where: { customerId, saleId: sale.id, entryType: "PAYMENT_CREDIT" }
+             });
+             if (!existingCredit) {
+               await tx.customerLedgerEntry.create({
+                 data: {
+                   customerId,
+                   saleId: sale.id,
+                   entryType: "PAYMENT_CREDIT",
+                   amount: paid.toNumber(),
+                   description: `دفعة مسددة عند البيع: ${sale.itemName}`,
+                   ...(tenantId && { tenantId })
+                 }
+               });
+             }
+           }
+        }
+        if (deferred.gt(0)) {
+           const existingAr = await tx.journalEntry.findFirst({ where: { referenceId: sale.id, accountCode: "ACCOUNTS_RECEIVABLE" } });
+           if (!existingAr) {
+             await tx.journalEntry.create({
+               data: {
+                 accountCode: "ACCOUNTS_RECEIVABLE",
+                 debit: deferred.toNumber(),
+                 referenceId: sale.id,
+                 description: `مديونية عميل: ${custName} (${sale.itemName})`,
                  ...(tenantId && { tenantId })
                }
              });
            }
         }
-        if (deferred.gt(0)) {
-           await tx.journalEntry.create({
-             data: {
-               accountCode: "ACCOUNTS_RECEIVABLE",
-               debit: deferred.toNumber(),
-               referenceId: sale.id,
-               description: `مديونية عميل: ${custName} (${sale.itemName})`,
-               ...(tenantId && { tenantId })
-             }
-           });
-        }
         if (paid.gt(0)) {
-           await tx.journalEntry.create({
-             data: {
-               accountCode: "CASH",
-               debit: paid.toNumber(),
-               referenceId: sale.id,
-               description: `مقبوضات مبيعات: ${sale.itemName}`,
-               ...(tenantId && { tenantId })
-             }
-           });
+           const existingCash = await tx.journalEntry.findFirst({ where: { referenceId: sale.id, accountCode: "CASH" } });
+           if (!existingCash) {
+             await tx.journalEntry.create({
+               data: {
+                 accountCode: "CASH",
+                 debit: paid.toNumber(),
+                 referenceId: sale.id,
+                 description: `مقبوضات مبيعات: ${sale.itemName}`,
+                 ...(tenantId && { tenantId })
+               }
+             });
+           }
         }
-        await tx.journalEntry.create({
-             data: {
-               accountCode: "SALES_REVENUE",
-               credit: totalAmount.toNumber(),
-               referenceId: sale.id,
-               description: `إيرادات مبيعات: ${sale.itemName}`,
-               ...(tenantId && { tenantId })
-             }
-        });
+        const existingRev = await tx.journalEntry.findFirst({ where: { referenceId: sale.id, accountCode: "SALES_REVENUE" } });
+        if (!existingRev) {
+          await tx.journalEntry.create({
+               data: {
+                 accountCode: "SALES_REVENUE",
+                 credit: totalAmount.toNumber(),
+                 referenceId: sale.id,
+                 description: `إيرادات مبيعات: ${sale.itemName}`,
+                 ...(tenantId && { tenantId })
+               }
+          });
+        }
         return sale;
       });
+      } catch (err: any) {
+        if (err.code === "P2002" && effectiveIdempotencyKey) {
+          const existingSale = await prisma.sale.findUnique({ where: { idempotencyKey: effectiveIdempotencyKey } });
+          if (existingSale) {
+            return { success: true, resultText: `تم تسجيل البيع مسبقاً. تفاصيل العملية: ${existingSale.quantity} ${existingSale.itemName} إجمالي ${existingSale.total} جنيه بنجاح!` };
+          }
+        }
+        throw err;
+      }
       return { success: true, resultText: `تم تسجيل بيع ${saleResult.quantity} ${saleResult.itemName} إجمالي ${saleResult.total} جنيه (مدفوع: ${saleResult.paidAmount}، متبقي: ${saleResult.deferredAmount}) بنجاح!` };
     }
 
@@ -1089,7 +1132,8 @@ export async function processTelegramMessageWithLLM(
   tenantName?: string,
   businessType?: string,
   workingHours?: string,
-  telegramChatId?: string
+  telegramChatId?: string,
+  telegramMessageId?: number | string
 ): Promise<LLMResult> {
   const { getValidApiKey, markKeyExhausted } = await import('./apiKeyManager');
   
@@ -1186,7 +1230,7 @@ export async function processTelegramMessageWithLLM(
         if (functionCalls && functionCalls.length > 0) {
           const combinedResults = [];
           for (const call of functionCalls) {
-            const toolRes = await executeTool(call.name, call.args, tenantId, text);
+            const toolRes = await executeTool(call.name, call.args, tenantId, text, telegramMessageId);
             combinedResults.push(toolRes.resultText);
           }
           finalReply = combinedResults.join('\n\n').trim();
@@ -1277,7 +1321,7 @@ export async function processTelegramMessageWithLLM(
         for (const call of toolCalls) {
           let args: Record<string, any> = {};
           try { args = JSON.parse(call.function.arguments); } catch {}
-          const toolRes = await executeTool(call.function.name, args, tenantId, text);
+          const toolRes = await executeTool(call.function.name, args, tenantId, text, telegramMessageId);
           results.push(toolRes.resultText);
         }
         finalReply = results.join('\n\n').trim();
@@ -1306,7 +1350,7 @@ export async function processTelegramMessageWithLLM(
                 console.error("[Groq Parser] JSON parse error:", jsonMatch[0], e);
               }
             }
-            const toolRes = await executeTool(funcName, args, tenantId, text);
+            const toolRes = await executeTool(funcName, args, tenantId, text, telegramMessageId);
             void saveChatMessage(tenantId, telegramChatId, "assistant", toolRes.resultText);
             return { status: "success", text: toolRes.resultText };
           }

@@ -1,7 +1,7 @@
 // app/api/purchases/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { isInternalAuthValid } from "@/lib/auth";
+import { getResolvedTenantId, isInternalAuthValid } from "@/lib/auth";
 import Decimal from "decimal.js";
 
 const prisma = new PrismaClient();
@@ -11,8 +11,13 @@ const idempotencyMap = new Map<string, { timestamp: number; response: any }>();
 
 export async function POST(req: NextRequest) {
   try {
+    const resolvedTenantId = await getResolvedTenantId(req);
+    if (!resolvedTenantId) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    }
+
     const body = await req.json();
-    const { supplier_name, item_name, total_amount, paid_amount = 0, notes = "", tenantId } = body;
+    const { supplier_name, item_name, total_amount, paid_amount = 0, notes = "" } = body;
 
     if (!supplier_name || !item_name || typeof total_amount !== "number" || total_amount <= 0) {
       return NextResponse.json(
@@ -26,13 +31,12 @@ export async function POST(req: NextRequest) {
 
     // 1. Find or create Supplier by tenantId & name
     const supplierNameStr = supplier_name.trim();
-    const effectiveTenantId = tenantId || null;
     let supplier = await prisma.supplier.findFirst({
-      where: { name: supplierNameStr, tenantId: effectiveTenantId },
+      where: { name: supplierNameStr, tenantId: resolvedTenantId },
     });
     if (!supplier) {
       supplier = await prisma.supplier.create({
-        data: { name: supplierNameStr, tenantId: effectiveTenantId },
+        data: { name: supplierNameStr, tenantId: resolvedTenantId },
       });
     }
 

@@ -123,6 +123,7 @@ describe("Update Routes Test Suite", () => {
 
   describe("[Group 4] G1: Disambiguation Candidate List", () => {
     it("G1.1 - G1.3: Appointment Disambiguation", async () => {
+      await prisma.appointment.deleteMany({ where: { customerName: "عميل تكرار موثق" } });
       const appt1 = await prisma.appointment.create({
         data: { customerName: "عميل تكرار موثق", date: "2026-08-01", time: "10:00", notes: "اختبار 1" },
       });

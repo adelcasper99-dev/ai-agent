@@ -17,12 +17,18 @@ interface Message {
   content: string;
 }
 
+import { getResolvedTenantId } from "@/lib/auth";
+
 export async function POST(req: NextRequest) {
   try {
-    const { message, history = [], tenantId, tenantName } = await req.json() as {
+    const resolvedTenantId = await getResolvedTenantId(req);
+    if (!resolvedTenantId) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    }
+
+    const { message, history = [], tenantName } = await req.json() as {
       message: string;
       history: Message[];
-      tenantId?: string;
       tenantName?: string;
     };
 
@@ -31,9 +37,6 @@ export async function POST(req: NextRequest) {
     }
 
     let resolvedTenantName = tenantName;
-    const headerTenantId = req.headers.get("x-tenant-id");
-    const resolvedTenantId = tenantId || headerTenantId;
-
     if (!resolvedTenantName && resolvedTenantId) {
       const tenant = await prisma.tenant.findUnique({ where: { id: resolvedTenantId } });
       if (tenant) resolvedTenantName = tenant.name;

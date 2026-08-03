@@ -1,15 +1,19 @@
 // app/api/knowledge/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { getResolvedTenantId } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
+    const resolvedTenantId = await getResolvedTenantId(req);
+    if (!resolvedTenantId) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    }
+
     const body = await req.json();
-    const { question, answer, keywords, tenantId } = body;
-    const headerTenantId = req.headers.get("x-tenant-id");
-    const resolvedTenantId = tenantId || headerTenantId || undefined;
+    const { question, answer, keywords } = body;
 
     if (!question || !answer) {
       return NextResponse.json({ error: "question و answer مطلوبين" }, { status: 400 });
@@ -20,7 +24,7 @@ export async function POST(req: NextRequest) {
         question,
         answer,
         keywords: JSON.stringify(Array.isArray(keywords) ? keywords : []),
-        ...(resolvedTenantId && { tenantId: resolvedTenantId }),
+        tenantId: resolvedTenantId,
       },
     });
 
@@ -32,15 +36,15 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const tenantId = searchParams.get("tenantId") || req.headers.get("x-tenant-id");
+  const tenantId = await getResolvedTenantId(req);
+  if (!tenantId) {
+    return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+  }
 
   const rawItems = await prisma.knowledgeItem.findMany({
-    where: tenantId
-      ? {
-          OR: [{ tenantId }, { tenantId: null }],
-        }
-      : {},
+    where: {
+      OR: [{ tenantId }, { tenantId: null }],
+    },
     orderBy: { createdAt: "desc" },
     take: 200,
   });

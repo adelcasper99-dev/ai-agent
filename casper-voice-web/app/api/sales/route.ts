@@ -2,43 +2,79 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import Decimal from "decimal.js";
+import { getResolvedTenantId } from "@/lib/auth";
+
+Decimal.set({ rounding: Decimal.ROUND_HALF_UP });
 
 const prisma = new PrismaClient();
 
+// In-memory idempotency cache (60 seconds)
+const salesIdempotencyMap = new Map<string, { timestamp: number; response: any }>();
+
 export async function POST(req: NextRequest) {
   try {
+    const resolvedTenantId = await getResolvedTenantId(req);
+    if (!resolvedTenantId) {
+      return NextResponse.json({ error: "غير مصرح: يجب تسجيل الدخول كمؤسسة" }, { status: 401 });
+    }
+
+    const idempotencyKey = req.headers.get("idempotency-key");
+    const now = Date.now();
+    if (idempotencyKey) {
+      const cached = salesIdempotencyMap.get(idempotencyKey);
+      if (cached && now - cached.timestamp < 60000) {
+        return NextResponse.json({ ...cached.response, cached: true });
+      }
+      
+      const existingSale = await prisma.sale.findUnique({ where: { idempotencyKey } });
+      if (existingSale) {
+        const cachedRes = { success: true, sale: existingSale, deferredAmount: existingSale.deferredAmount, cached: true };
+        salesIdempotencyMap.set(idempotencyKey, { timestamp: now, response: cachedRes });
+        return NextResponse.json(cachedRes);
+      }
+    }
+
     const body = await req.json();
-    const { item_name, price, quantity = 1, customer_name = "", paid_amount, tenantId } = body;
-    const headerTenantId = req.headers.get("x-tenant-id");
-    const resolvedTenantId = tenantId || headerTenantId || undefined;
+    const { item_name, price, quantity = 1, customer_name = "", paid_amount, idempotency_key: bodyKey } = body;
+    const effectiveKey = idempotencyKey || (bodyKey ? String(bodyKey) : undefined);
 
     if (!item_name || typeof price !== "number" || price <= 0) {
       return NextResponse.json({ error: "item_name و price مطلوبين (السعر يجب أن يكون أكبر من صفر)" }, { status: 400 });
     }
 
     const qty = quantity && quantity > 0 ? quantity : 1;
-    const priceDecimal = new Decimal(price);
-    const totalDecimal = priceDecimal.times(qty);
+    const priceDecimal = new Decimal(price).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+    const totalDecimal = priceDecimal.times(qty).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
     const total = totalDecimal.toNumber();
 
-    const paid = typeof paid_amount === "number" ? paid_amount : total;
-    const deferredDecimal = Decimal.max(0, totalDecimal.minus(paid));
+    const paidDecimal = typeof paid_amount === "number" 
+      ? new Decimal(paid_amount).toDecimalPlaces(2, Decimal.ROUND_HALF_UP) 
+      : totalDecimal;
+    const paid = paidDecimal.toNumber();
+    const deferredDecimal = Decimal.max(0, totalDecimal.minus(paidDecimal)).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
     const deferred = deferredDecimal.toNumber();
 
     const sale = await prisma.sale.create({
       data: {
         itemName: item_name.trim(),
-        price,
+        price: priceDecimal.toNumber(),
         quantity: qty,
         total,
         customerName: customer_name ? customer_name.trim() : "عميل نقدي",
         paidAmount: paid,
         deferredAmount: deferred,
-        ...(resolvedTenantId && { tenantId: resolvedTenantId }),
+        ...(effectiveKey && { idempotencyKey: effectiveKey }),
+        tenantId: resolvedTenantId,
       },
     });
 
-    return NextResponse.json({ success: true, sale, deferredAmount: deferred });
+    const responsePayload = { success: true, sale, deferredAmount: deferred };
+
+    if (effectiveKey) {
+      salesIdempotencyMap.set(effectiveKey, { timestamp: now, response: responsePayload });
+    }
+
+    return NextResponse.json(responsePayload);
   } catch (err) {
     console.error("[Sales POST Error]", err);
     return NextResponse.json({ error: "حصل خطأ في تسجيل عملية البيع" }, { status: 500 });
@@ -46,15 +82,16 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const tenantId = searchParams.get("tenantId") || req.headers.get("x-tenant-id");
+  const tenantId = await getResolvedTenantId(req);
+  if (!tenantId) {
+    return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+  }
 
   const sales = await prisma.sale.findMany({
-    where: {
-      ...(tenantId && { tenantId }),
-    },
+    where: { tenantId },
     orderBy: { createdAt: "desc" },
     take: 50,
   });
   return NextResponse.json({ sales });
 }
+

@@ -38,6 +38,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto p-6" dir="rtl">
       <div className="flex justify-between items-center mb-4">
@@ -54,6 +63,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-lg transition"
           >
             🎤 اختبار المساعد الصوتي
+          </button>
+          <button 
+            onClick={handleLogout}
+            className="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-md transition"
+            title="تسجيل خروج"
+          >
+            🚪 تسجيل خروج
           </button>
         </div>
       </div>

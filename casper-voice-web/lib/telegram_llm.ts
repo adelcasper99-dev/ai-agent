@@ -1110,11 +1110,18 @@ export async function processTelegramMessageWithLLM(
     }
   }
 
-  // ========== GROQ FALLBACK ==========
+  // ========== GROQ FALLBACK ROTATION POOL ==========
   // Triggered when all Gemini keys are exhausted or unavailable
-  const groqApiKey = process.env.GROQ_API_KEY;
-  if (groqApiKey) {
-    console.log("[Telegram LLM] Gemini exhausted — falling back to Groq Llama");
+  const maxGroqAttempts = 5;
+  for (let gAttempt = 1; gAttempt <= maxGroqAttempts; gAttempt++) {
+    let groqApiKey: string;
+    try {
+      groqApiKey = await getValidApiKey("groq");
+    } catch {
+      break; // All Groq keys exhausted
+    }
+
+    console.log(`[Telegram LLM] Gemini exhausted — using Groq Llama rotation pool (Attempt ${gAttempt})...`);
     try {
       const groq = new Groq({ apiKey: groqApiKey });
 
@@ -1167,7 +1174,7 @@ export async function processTelegramMessageWithLLM(
       void saveChatMessage(tenantId, telegramChatId, "assistant", finalReply);
       return { status: "success", text: finalReply };
     } catch (groqErr: any) {
-      console.error("[Telegram LLM Groq Fallback Error]:", groqErr);
+      console.error(`[Telegram LLM Groq Key ${gAttempt} Error]:`, groqErr);
       
       // Handle Groq's custom XML tool failure (e.g. <function=log_sale{...}></function>)
       const failedGen = groqErr?.error?.error?.failed_generation || groqErr?.error?.failed_generation;
@@ -1185,7 +1192,7 @@ export async function processTelegramMessageWithLLM(
                 console.error("[Groq Parser] JSON parse error:", jsonMatch[0], e);
               }
             }
-            const toolRes = await executeTool(funcName, args, tenantId);
+            const toolRes = await executeTool(funcName, args, tenantId, text);
             void saveChatMessage(tenantId, telegramChatId, "assistant", toolRes.resultText);
             return { status: "success", text: toolRes.resultText };
           }
@@ -1193,6 +1200,16 @@ export async function processTelegramMessageWithLLM(
           console.error("Error parsing failed_generation:", parseErr);
         }
       }
+
+      const is429 = groqErr?.status === 429 || groqErr?.statusCode === 429 || /429|rate_limit|quota/i.test(groqErr?.message || "");
+      if (is429) {
+        await markKeyExhausted(groqApiKey, "groq");
+        console.warn(`[Telegram LLM] Groq Key exhausted, trying next Groq key in pool...`);
+        continue;
+      }
+
+      // Non-429 error -> break loop
+      break;
     }
   }
 

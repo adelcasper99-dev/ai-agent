@@ -1,37 +1,38 @@
 import { prisma } from "./prisma";
 
-// Cache valid keys in memory to prevent excessive DB calls, but check DB if we run out.
-let _validKeysCache: string[] = [];
+// Track in-memory exhausted ENV keys (e.g. "gemini:KEY", "groq:KEY")
+const _exhaustedEnvKeys = new Set<string>();
 
 export async function getValidApiKey(provider: string = "gemini"): Promise<string> {
-  // Try to find a valid key that is not exhausted
+  const normProvider = provider.toLowerCase();
+
+  // 1. Try DB Pool first
   let validKeyRecord = await prisma.apiKeyPool.findFirst({
     where: {
-      provider,
+      provider: { equals: normProvider },
       isActive: true,
       isExhausted: false,
     },
     orderBy: {
-      addedAt: 'asc' // pick the oldest first or you can randomize
+      addedAt: 'asc'
     }
   });
 
   if (!validKeyRecord) {
-    // If all keys are exhausted, check if any exhausted key has passed the 24-hour limit
+    // If all DB keys are exhausted, check if any exhausted key passed the 24-hour limit
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const expiredKeys = await prisma.apiKeyPool.findMany({
       where: {
-        provider,
+        provider: { equals: normProvider },
         isActive: true,
         isExhausted: true,
         exhaustedAt: {
-          lt: twentyFourHoursAgo, // exhausted before 24h ago
+          lt: twentyFourHoursAgo,
         }
       }
     });
 
     if (expiredKeys.length > 0) {
-      // Reset them
       await prisma.apiKeyPool.updateMany({
         where: {
           id: { in: expiredKeys.map(k => k.id) }
@@ -41,9 +42,8 @@ export async function getValidApiKey(provider: string = "gemini"): Promise<strin
           exhaustedAt: null,
         }
       });
-      // Try fetching again
       validKeyRecord = await prisma.apiKeyPool.findFirst({
-        where: { provider, isActive: true, isExhausted: false }
+        where: { provider: { equals: normProvider }, isActive: true, isExhausted: false }
       });
     }
   }
@@ -52,36 +52,49 @@ export async function getValidApiKey(provider: string = "gemini"): Promise<strin
     return validKeyRecord.keyString;
   }
 
-  // Fallback to environment variable if no key in DB or all are strictly exhausted and within 24h
-  console.warn(`[ApiKeyManager] No valid API keys found in DB for provider ${provider}. Falling back to ENV variables.`);
-  if (provider === "gemini" && process.env.GEMINI_API_KEY) {
-    return process.env.GEMINI_API_KEY;
+  // 2. Scan ENV Variables pool (e.g. GROQ_API_KEY, GROQ_API_KEY_1, GROQ_API_KEY_2...)
+  const envPrefix = normProvider === "groq" ? "GROQ_API_KEY" : "GEMINI_API_KEY";
+  const envKeys: string[] = [];
+
+  for (const [envKey, envVal] of Object.entries(process.env)) {
+    if (envKey.toUpperCase().startsWith(envPrefix) && envVal && typeof envVal === "string") {
+      const trimmed = envVal.trim();
+      if (trimmed && !_exhaustedEnvKeys.has(`${normProvider}:${trimmed}`)) {
+        envKeys.push(trimmed);
+      }
+    }
   }
-  
+
+  if (envKeys.length > 0) {
+    return envKeys[0];
+  }
+
   throw new Error(`[ApiKeyManager] No valid API keys available for ${provider}.`);
 }
 
 export async function markKeyExhausted(keyString: string, provider: string = "gemini"): Promise<void> {
+  const normProvider = provider.toLowerCase();
+  const trimmedKey = keyString.trim();
+  _exhaustedEnvKeys.add(`${normProvider}:${trimmedKey}`);
+
   try {
-    // Check if it's the environment key, we can't update it in DB if it's not there, but let's try
     const existing = await prisma.apiKeyPool.findUnique({
-      where: { keyString }
+      where: { keyString: trimmedKey }
     });
     if (existing) {
       await prisma.apiKeyPool.update({
-        where: { keyString },
+        where: { keyString: trimmedKey },
         data: {
           isExhausted: true,
           exhaustedAt: new Date()
         }
       });
-      console.log(`[ApiKeyManager] Key for ${provider} marked as exhausted (429 Rate Limit).`);
+      console.log(`[ApiKeyManager] Key for ${normProvider} marked as exhausted in DB.`);
     } else {
-      // If it's an ENV key that isn't in DB, maybe we should insert it as exhausted?
-      // For now, just log.
-      console.warn(`[ApiKeyManager] The key that got exhausted is not in the DB pool.`);
+      console.warn(`[ApiKeyManager] Key for ${normProvider} marked as exhausted in memory.`);
     }
   } catch (err) {
     console.error(`[ApiKeyManager] Failed to mark key as exhausted:`, err);
   }
 }
+

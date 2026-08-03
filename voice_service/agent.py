@@ -434,6 +434,30 @@ def get_valid_api_key_from_db(provider="gemini"):
         print(f"[ApiKeyPool] Error fetching from DB: {e}")
     return None
 
+
+async def preprocess_audio_with_ffmpeg(input_path: str, output_path: str) -> bool:
+    """
+    Applies highpass filter (f=100) + loudnorm + 16kHz resampling.
+    Returns True on success, False on failure.
+    Applicable to file-based voice notes (WhatsApp/Telegram), not live WebRTC stream.
+    """
+    import asyncio
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "ffmpeg", "-y", "-i", input_path,
+            "-af", "highpass=f=100,loudnorm",
+            "-ar", "16000",
+            output_path,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL,
+        )
+        await asyncio.wait_for(proc.wait(), timeout=10.0)
+        return proc.returncode == 0
+    except Exception as e:
+        print(f"[ffmpeg Preprocess] Failed: {e}")
+        return False
+
+
 def create_agent_session(provider: str, settings: dict) -> AgentSession:
     groq_key = settings.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
     openai_key = settings.get("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
@@ -498,6 +522,31 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
             tts=tts_engine,
             vad=arabic_vad,
         )
+    elif provider == "soniox_pipeline":
+        soniox_key = settings.get("SONIOX_API_KEY") or os.getenv("SONIOX_API_KEY")
+        fallback_provider = settings.get("STT_FALLBACK_PROVIDER", "deepgram_pipeline")
+        if not soniox_key:
+            print(f"[STT Failover] Soniox key missing, falling back to {fallback_provider}")
+            settings["ACTIVE_PROVIDER"] = fallback_provider
+            return create_agent_session(fallback_provider, settings)
+        if not groq_key:
+            raise ValueError("مفتاح Groq API Key مفقود (مطلوب للـ LLM). يرجى إدخاله من صفحة الإعدادات أولاً.")
+
+        from livekit.plugins import soniox, groq
+        from edge_tts_wrapper import EdgeTTS
+        print(f"Using Soniox STT Pipeline Architecture with Voice Tone: {voice_tone} ({selected_voice})")
+        tts_engine = EdgeTTS(voice=selected_voice)
+
+        return AgentSession(
+            stt=soniox.STT(
+                api_key=soniox_key,
+                model="soniox-phone-multilingual",
+                language_hints=["ar", "en"],
+            ),
+            llm=groq.LLM(api_key=groq_key, model="llama-3.3-70b-versatile"),
+            tts=tts_engine,
+            vad=arabic_vad,
+        )
     elif provider == "fish_audio":
         fish_key = settings.get("FISH_API_KEY") or os.getenv("FISH_API_KEY")
         if not groq_key:
@@ -551,6 +600,30 @@ def create_agent_session(provider: str, settings: dict) -> AgentSession:
             ),
             tts=EdgeTTS(voice=selected_voice)
         )
+
+
+def create_agent_session_with_failover(provider: str, settings: dict) -> AgentSession:
+    """
+    STT Multi-Provider Failover Wrapper.
+    Primary STT specified by STT_PROVIDER (or provider parameter).
+    Falls back to STT_FALLBACK_PROVIDER (default: deepgram_pipeline) if primary initialization fails.
+    Note: Catches session creation failures.
+    """
+    primary = settings.get("STT_PROVIDER", provider)
+    fallback = settings.get("STT_FALLBACK_PROVIDER", "deepgram_pipeline")
+    settings["ACTIVE_PROVIDER"] = primary
+    try:
+        session = create_agent_session(primary, settings)
+        actual_provider = settings.get("ACTIVE_PROVIDER", primary)
+        print(f"[STT Pool] Active provider: {actual_provider}")
+        return session
+    except Exception as e:
+        print(f"[STT Failover] Primary '{primary}' session creation failed: {e}. Falling back to '{fallback}'")
+        settings["ACTIVE_PROVIDER"] = fallback
+        session = create_agent_session(fallback, settings)
+        actual_provider = settings.get("ACTIVE_PROVIDER", fallback)
+        print(f"[STT Pool] Active provider (fallback): {actual_provider}")
+        return session
 
 
 
@@ -648,7 +721,7 @@ async def entrypoint(ctx: JobContext):
         diag = DiagnosticsSession(session_id=ctx.room.name, tenant_id=tenant_id, channel="voice_call")
 
     try:
-        session = create_agent_session(provider, settings)
+        session = create_agent_session_with_failover(provider, settings)
 
         async def emit_datachannel_event(payload_data: dict):
             try:
@@ -660,6 +733,7 @@ async def entrypoint(ctx: JobContext):
 
         import time as _time
         last_user_speech_time = [_time.monotonic()]
+        stt_conf_threshold = float(os.getenv("STT_CONFIDENCE_THRESHOLD", "0.6"))
 
         @session.on("user_input_transcribed")
         def on_user_input_transcribed(ev):
@@ -676,7 +750,28 @@ async def entrypoint(ctx: JobContext):
                 if text and is_final:
                     last_user_speech_time[0] = _time.monotonic()
                     import asyncio
+                    active_stt_provider = settings.get("ACTIVE_PROVIDER", settings.get("STT_PROVIDER", provider))
+                    diag.set_stt_provider(active_stt_provider)
+                    asyncio.ensure_future(emit_datachannel_event({
+                        "type": "STT_DIAGNOSTIC",
+                        "provider": active_stt_provider,
+                        "confidence": conf,
+                        "transcript": text
+                    }))
                     asyncio.ensure_future(emit_datachannel_event({"type": "TRANSCRIPT", "role": "user", "text": text}))
+
+                    # Confidence-based clarification fallback
+                    if conf is not None:
+                        try:
+                            numeric_conf = float(conf)
+                            if numeric_conf < stt_conf_threshold:
+                                print(f"[Low Confidence STT Triggered] Score {numeric_conf} < {stt_conf_threshold}")
+                                asyncio.ensure_future(session.say(
+                                    "لم أسمع بوضوح، ممكن تكرر أو تكتب؟",
+                                    allow_interruptions=True
+                                ))
+                        except (TypeError, ValueError):
+                            pass
             except Exception as e:
                 print(f"[user_input_transcribed] {e}")
 

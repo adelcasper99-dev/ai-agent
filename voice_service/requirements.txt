@@ -7,3 +7,4 @@ livekit-plugins-deepgram>=0.9
 livekit-plugins-soniox>=0.9
 httpx
 python-dotenv
+edge-tts

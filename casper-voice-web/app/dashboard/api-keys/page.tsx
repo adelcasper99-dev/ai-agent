@@ -15,6 +15,7 @@ interface ApiKey {
 export default function ApiKeysPage() {
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [newKey, setNewKey] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState<"gemini" | "groq">("gemini");
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState(false);
   const [testingId, setTestingId] = useState<string | null>(null);
@@ -47,7 +48,7 @@ export default function ApiKeysPage() {
     const res = await fetch("/api/admin/api-keys", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ provider: "gemini", keyString: newKey }),
+      body: JSON.stringify({ provider: selectedProvider, keyString: newKey }),
     });
     const data = await res.json();
     if (data.success) {
@@ -72,7 +73,7 @@ export default function ApiKeysPage() {
     const res = await fetch("/api/admin/api-keys", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ provider: "gemini" }),
+      body: JSON.stringify({ provider: "all" }),
     });
     const data = await res.json();
     if (data.success) {
@@ -102,14 +103,17 @@ export default function ApiKeysPage() {
       alert("❌ حدث خطأ أثناء الاتصال");
     }
     setTestingId(null);
-    fetchKeys(); // Refresh after test in case status changed
+    fetchKeys();
   };
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6" dir="rtl">
       {/* Page Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">محفظة مفاتيح Gemini (API Keys)</h1>
+        <div>
+          <h1 className="text-2xl font-bold">محفظة مفاتيح الذكاء الاصطناعي (API Keys Pool)</h1>
+          <p className="text-sm text-gray-500 mt-1">إدارة مفاتيح Gemini و Groq والتنقل التلقائي عند استنفاذ الكوتا</p>
+        </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500">
             {availableCount} متاح / {exhaustedCount} مستنفد
@@ -129,10 +133,10 @@ export default function ApiKeysPage() {
           <span className="text-2xl">🚨</span>
           <div className="flex-1">
             <p className="font-bold text-red-800 text-base">
-              تحذير: جميع مفاتيح Gemini مستنفدة!
+              تحذير: جميع المفاتيح المسجلة مستنفدة!
             </p>
             <p className="text-red-700 text-sm mt-1">
-              البوت لن يستطيع معالجة أي رسائل حتى تُضاف مفاتيح جديدة أو تُعاد تفعيل المفاتيح الحالية.
+              النظام يتحول تلقائياً لوضع القوائم الطارئ حتى تُضاف مفاتيح جديدة أو تُعاد تفعيل المفاتيح الحالية.
             </p>
             <button
               onClick={handleResetAll}
@@ -164,21 +168,32 @@ export default function ApiKeysPage() {
         </div>
       )}
 
-      {/* Add Key Form */}
+      {/* Add Key Form with Provider Selector */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <form onSubmit={handleAddKey} className="flex gap-4 items-end">
+          <div className="w-48 space-y-2">
+            <label className="block text-sm font-medium text-gray-700">المزود (Provider)</label>
+            <select
+              value={selectedProvider}
+              onChange={(e) => setSelectedProvider(e.target.value as "gemini" | "groq")}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium"
+            >
+              <option value="gemini">💎 Gemini (Google)</option>
+              <option value="groq">⚡ Groq (Llama 3.3)</option>
+            </select>
+          </div>
           <div className="flex-1 space-y-2">
-            <label className="block text-sm font-medium text-gray-700">إضافة مفتاح جديد</label>
+            <label className="block text-sm font-medium text-gray-700">مفتاح API الجديد</label>
             <input
               type="password"
-              placeholder="AIzaSy..."
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-left"
+              placeholder={selectedProvider === "gemini" ? "AIzaSy..." : "gsk_..."}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-left font-mono"
               dir="ltr"
               value={newKey}
               onChange={(e) => setNewKey(e.target.value)}
             />
           </div>
-          <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 h-[42px]">
+          <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 h-[42px] font-medium">
             إضافة المفتاح
           </button>
         </form>
@@ -190,7 +205,7 @@ export default function ApiKeysPage() {
           <div className="p-8 text-center text-gray-500">جاري التحميل...</div>
         ) : keys.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
-            لا يوجد مفاتيح مسجلة. النظام يستخدم المفتاح الموجود في ملف .env حالياً.
+            لا يوجد مفاتيح مسجلة في قاعدة البيانات. النظام يقرأ المفاتيح الموجودة في ملف .env تلقائياً.
           </div>
         ) : (
           <table className="w-full text-right">
@@ -209,7 +224,17 @@ export default function ApiKeysPage() {
                   key={k.id}
                   className={`hover:bg-gray-50 ${k.isExhausted ? "bg-red-50/30" : ""}`}
                 >
-                  <td className="px-6 py-4 text-sm capitalize">{k.provider}</td>
+                  <td className="px-6 py-4 text-sm">
+                    {k.provider?.toLowerCase() === "groq" ? (
+                      <span className="inline-flex items-center gap-1 font-semibold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-md text-xs">
+                        ⚡ Groq
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-md text-xs">
+                        💎 Gemini
+                      </span>
+                    )}
+                  </td>
                   <td className="px-6 py-4 text-sm font-mono text-gray-500 text-left" dir="ltr">
                     {k.keyString.substring(0, 8)}...{k.keyString.slice(-4)}
                   </td>
@@ -244,7 +269,7 @@ export default function ApiKeysPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm">
+                  <td className="px-6 py-4 text-sm text-gray-500">
                     {new Date(k.addedAt).toLocaleDateString("ar-EG")}
                   </td>
                   <td className="px-6 py-4 text-sm">
@@ -272,9 +297,9 @@ export default function ApiKeysPage() {
       </div>
 
       {/* Info Box */}
-      <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800">
+      <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800 border border-blue-100">
         <p>
-          <strong>كيف يعمل النظام:</strong> عند وصول رسالة، يختار النظام أول مفتاح 🟢 متاح. إذا أعاد جوجل خطأ 429 (مستنفد)، يُعلَّم المفتاح 🔴 ويُجرَّب المفتاح التالي تلقائياً. الصفحة تتحدث تلقائياً كل 30 ثانية.
+          <strong>كيف يعمل مجمّع المفاتيح الذكي:</strong> يبدأ النظام بمفاتيح 💎 <strong>Gemini</strong> المتاحة. وفي حال مواجهة 429 (انتهاء الكوتا اليومية)، ينتقل لمفتاح Gemini التالي. وعند انتهاء جميع مفاتيح Gemini، يتحول تلقائياً لمفاتيح ⚡ <strong>Groq (Llama 3.3)</strong> الدائرية. ولا يرسل وضع القوائم الطارئ إلا إذا نفذت جميع المفاتيح معاً.
         </p>
       </div>
     </div>

@@ -1,17 +1,48 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 
 export async function POST(req: Request) {
   try {
-    const { keyString } = await req.json();
+    const { keyString, provider } = await req.json();
     if (!keyString) {
       return NextResponse.json({ success: false, error: "Missing keyString" });
     }
 
-    // Use SDK directly — handles API versioning automatically
-    const genAI = new GoogleGenerativeAI(keyString);
+    const isGroq = provider?.toLowerCase() === "groq" || keyString.trim().startsWith("gsk_");
 
-    // Try models in order: newest with free tier first
+    if (isGroq) {
+      // Validate Groq Key via Groq SDK
+      try {
+        const groq = new Groq({ apiKey: keyString.trim() });
+        await groq.chat.completions.create({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: "hi" }],
+          max_tokens: 5,
+        });
+        return NextResponse.json({
+          success: true,
+          status: "VALID",
+          message: "مفتاح Groq صالح ويعمل بنجاح (Llama 3.3 70B)"
+        });
+      } catch (err: any) {
+        if (err?.status === 429 || err?.statusCode === 429 || /429|rate_limit|quota/i.test(err?.message || "")) {
+          return NextResponse.json({
+            success: false,
+            status: "EXHAUSTED",
+            message: "رصيد Groq مستنفد (429) — المفتاح صالح لكن تجاوز الحصة"
+          });
+        }
+        return NextResponse.json({
+          success: false,
+          status: "INVALID",
+          message: err?.message || "مفتاح Groq غير صالح"
+        });
+      }
+    }
+
+    // Use Gemini SDK for Google keys
+    const genAI = new GoogleGenerativeAI(keyString.trim());
     const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
 
     for (const modelName of modelsToTry) {
@@ -21,7 +52,7 @@ export async function POST(req: Request) {
         return NextResponse.json({
           success: true,
           status: "VALID",
-          message: `المفتاح صالح ويعمل بنجاح (${modelName})`
+          message: `مفتاح Gemini صالح ويعمل بنجاح (${modelName})`
         });
       } catch (err: any) {
         if (err?.status === 429 || err?.message?.includes("429") || err?.message?.includes("Quota")) {
@@ -31,11 +62,9 @@ export async function POST(req: Request) {
             message: `الرصيد المجاني مستنفد (429) — المفتاح صالح لكن تجاوز الحصة`
           });
         }
-        // 404 = model not available for this key, try next
         if (err?.status === 404 || err?.message?.includes("404") || err?.message?.includes("not found")) {
           continue;
         }
-        // Other error (invalid key, etc.)
         return NextResponse.json({
           success: false,
           status: "INVALID",

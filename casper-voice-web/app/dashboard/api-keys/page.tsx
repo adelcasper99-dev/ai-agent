@@ -85,13 +85,13 @@ export default function ApiKeysPage() {
     setResetting(false);
   };
 
-  const handleTestKey = async (id: string, keyString: string) => {
+  const handleTestKey = async (id: string, keyString: string, provider: string) => {
     setTestingId(id);
     try {
       const res = await fetch("/api/admin/api-keys/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyString }),
+        body: JSON.stringify({ keyString, provider }),
       });
       const data = await res.json();
       if (data.success) {
@@ -275,7 +275,7 @@ export default function ApiKeysPage() {
                   <td className="px-6 py-4 text-sm">
                     <div className="flex gap-3">
                       <button
-                        onClick={() => handleTestKey(k.id, k.keyString)}
+                        onClick={() => handleTestKey(k.id, k.keyString, k.provider)}
                         disabled={testingId === k.id}
                         className="text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50"
                       >

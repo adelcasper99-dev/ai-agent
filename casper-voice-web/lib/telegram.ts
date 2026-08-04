@@ -227,15 +227,18 @@ export async function approveTenantRequest(requestId: string, decidedBy: string)
     throw new Error(`Pending tenant request ${requestId} not found.`);
   }
 
-  const tenant = await (prisma as any).tenant.upsert({
-    where: { telegramChatId: req.telegramChatId },
-    update: { state: 'active' },
-    create: {
-      name: req.customerName,
-      state: 'trial',
-      telegramChatId: req.telegramChatId,
-    },
+  // Provision tenant atomically (upsert + seed KnowledgeItems)
+  const { TenantProvisioner } = await import('./tenant-provisioner');
+  const provisionResult = await TenantProvisioner.provision({
+    name: req.customerName,
+    telegramChatId: req.telegramChatId,
+    phoneNumber: req.phoneNumber ?? undefined,
+    pendingRequestId: undefined, // already marked approved above
   });
+
+  const tenant = provisionResult.tenantId
+    ? await (prisma as any).tenant.findUnique({ where: { id: provisionResult.tenantId } })
+    : null;
 
   // Non-blocking notification to customer
   fireAndForgetTelegramAlert({

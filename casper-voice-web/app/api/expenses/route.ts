@@ -1,9 +1,8 @@
+import { prisma } from "@/lib/prisma";
 // app/api/expenses/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { getResolvedTenantId, isInternalAuthValid } from "@/lib/auth";
 
-const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {

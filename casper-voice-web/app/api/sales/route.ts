@@ -1,12 +1,11 @@
+import { prisma } from "@/lib/prisma";
 // app/api/sales/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import Decimal from "decimal.js";
 import { getResolvedTenantId } from "@/lib/auth";
 
 Decimal.set({ rounding: Decimal.ROUND_HALF_UP });
 
-const prisma = new PrismaClient();
 
 // In-memory idempotency cache (60 seconds)
 const salesIdempotencyMap = new Map<string, { timestamp: number; response: any }>();

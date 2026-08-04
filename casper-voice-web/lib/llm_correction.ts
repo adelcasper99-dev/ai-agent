@@ -1,7 +1,6 @@
+import { prisma } from "@/lib/prisma";
 import Groq from "groq-sdk";
-import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
 
 /**
  * Performs a fast Post-STT LLM correction pass on raw transcribed text.

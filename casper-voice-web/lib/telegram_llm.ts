@@ -1,12 +1,11 @@
+import { prisma } from "@/lib/prisma";
 import { GoogleGenerativeAI, FunctionDeclaration, SchemaType } from "@google/generative-ai";
 import Groq from "groq-sdk";
-import { PrismaClient } from "@prisma/client";
 import Decimal from "decimal.js";
 import { sendTelegramAlert } from "./telegram";
 
 Decimal.set({ rounding: Decimal.ROUND_HALF_UP });
 
-const prisma = new PrismaClient();
 
 const logSaleTool: FunctionDeclaration = {
   name: "log_sale",

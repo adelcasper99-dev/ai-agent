@@ -1,12 +1,11 @@
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "child_process";
 import fs from "fs";
 import path from "path";
-import { PrismaClient } from "@prisma/client";
 import { correctTranscriptWithLLM } from "@/lib/llm_correction";
 import { buildWhisperPrompt } from "@/lib/whisper_prompt";
 
-const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {

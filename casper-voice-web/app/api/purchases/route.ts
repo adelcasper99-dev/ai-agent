@@ -1,10 +1,9 @@
+import { prisma } from "@/lib/prisma";
 // app/api/purchases/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { getResolvedTenantId, isInternalAuthValid } from "@/lib/auth";
 import Decimal from "decimal.js";
 
-const prisma = new PrismaClient();
 
 // Simple in-memory idempotency cache (60 seconds)
 const idempotencyMap = new Map<string, { timestamp: number; response: any }>();

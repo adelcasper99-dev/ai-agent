@@ -1,10 +1,9 @@
+import { prisma } from "@/lib/prisma";
 // app/api/appointments/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { fireAndForgetTelegramAlert } from "@/lib/telegram";
 import { getResolvedTenantId, isInternalAuthValid } from "@/lib/auth";
 
-const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {

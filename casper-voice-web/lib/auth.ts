@@ -1,41 +1,9 @@
 import { NextRequest } from "next/server";
 import crypto from "crypto";
+// Session token utils live in session.ts (zero Prisma imports — prevents circular dep)
+export { signTenantSession, verifyTenantSession } from "./session";
 
-function getJwtSecret(): string {
-  return process.env.JWT_SECRET || "casper-voice-jwt-fallback-secret-key-2026";
-}
 
-export function signTenantSession(tenantId: string): string {
-  const secret = getJwtSecret();
-  const hmac = crypto.createHmac("sha256", secret);
-  hmac.update(tenantId);
-  const signature = hmac.digest("hex");
-  return `${tenantId}.${signature}`;
-}
-
-export function verifyTenantSession(token: string): string | null {
-  if (!token || !token.includes(".")) return null;
-  const secret = getJwtSecret();
-  const [tenantId, signature] = token.split(".");
-  if (!tenantId || !signature) return null;
-
-  const hmac = crypto.createHmac("sha256", secret);
-  hmac.update(tenantId);
-  const expectedSignature = hmac.digest("hex");
-
-  const sigBuffer = Buffer.from(signature);
-  const expectedBuffer = Buffer.from(expectedSignature);
-
-  if (sigBuffer.length !== expectedBuffer.length) {
-    return null;
-  }
-
-  if (crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {
-    return tenantId;
-  }
-
-  return null;
-}
 
 export async function getResolvedTenantId(req: NextRequest): Promise<string | undefined> {
   // 1. Internal service authentication (e.g. Telegram webhook bot)

@@ -1,8 +1,7 @@
+import { prisma } from "@/lib/prisma";
 // app/api/conversations/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
 
 // الـ agent (صوت أو واتساب) يبعت هنا آخر المكالمة/المحادثة
 export async function POST(req: NextRequest) {

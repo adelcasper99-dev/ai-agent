@@ -1,6 +1,6 @@
+import { prisma } from "@/lib/prisma";
 // app/api/telegram/webhook/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import {
   sendTelegramAlert,
   isUpdateProcessed,
@@ -21,7 +21,6 @@ import {
 import { correctTranscriptWithLLM } from "@/lib/llm_correction";
 import { buildWhisperPrompt } from "@/lib/whisper_prompt";
 
-const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {

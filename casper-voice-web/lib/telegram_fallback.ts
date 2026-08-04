@@ -1,9 +1,8 @@
+import { prisma } from "@/lib/prisma";
 // lib/telegram_fallback.ts
-import { PrismaClient } from "@prisma/client";
 import Decimal from "decimal.js";
 import { sendTelegramAlert } from "./telegram";
 
-const prisma = new PrismaClient();
 
 const STATE_TTL_MINUTES = 60;
 

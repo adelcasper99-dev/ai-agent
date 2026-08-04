@@ -1,6 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
 
 const DEFAULT_FALLBACK_PROMPT = "نظام كاسبر مبيعات ومشتريات كرتونة كرتون مسمار مسامير عسل صاج عميل فاتورة حساب بنزين صيانة مصاريف جنيه أجهزة بضاعة مورد قطع غيار";
 

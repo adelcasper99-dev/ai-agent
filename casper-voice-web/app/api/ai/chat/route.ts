@@ -1,10 +1,9 @@
+import { prisma } from "@/lib/prisma";
 // app/api/ai/chat/route.ts
 import { NextRequest } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { PrismaClient } from "@prisma/client";
 import { getResolvedTenantId } from "@/lib/auth";
 
-const prisma = new PrismaClient();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function POST(req: NextRequest) {

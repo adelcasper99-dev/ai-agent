@@ -1,6 +1,6 @@
+import { prisma } from "@/lib/prisma";
 // app/api/knowledge/voice-ingest/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import Groq from "groq-sdk";
 import { correctTranscriptWithLLM } from "@/lib/llm_correction";
 
@@ -8,7 +8,6 @@ export const runtime = "nodejs";
 export const maxDuration = 60; // 60s max execution time
 
 const MAX_SIZE = 4 * 1024 * 1024; // 4MB hard limit for Vercel body size
-const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {

@@ -1,11 +1,4 @@
 [
-  { "stage": "0a-grill-me", "status": "COMPLETED", "timestamp": "2026-08-04T00:55:10Z", "artifacts": [] },
-  { "stage": "0b-research", "status": "COMPLETED", "timestamp": "2026-08-04T00:55:11Z", "artifacts": ["research_findings.md"] },
-  { "stage": "1-spec", "status": "COMPLETED", "timestamp": "2026-08-04T00:55:12Z", "artifacts": ["implementation_plan.md"] },
-  { "stage": "2ab-ironclad", "status": "COMPLETED", "timestamp": "2026-08-04T00:55:13Z", "artifacts": ["ironclad_review_implementation_plan.md"] },
-  { "stage": "3-build", "status": "COMPLETED", "timestamp": "2026-08-04T01:00:46Z", "artifacts": ["task.md"] },
-  { "stage": "3b-audit", "status": "COMPLETED", "timestamp": "2026-08-04T01:00:41Z", "artifacts": ["code_review_report.md"] },
-  { "stage": "4-test", "status": "COMPLETED", "timestamp": "2026-08-04T01:00:35Z", "artifacts": ["test_results.txt"] },
-  { "stage": "5-accept", "status": "COMPLETED", "timestamp": "2026-08-04T01:00:50Z", "artifacts": ["walkthrough.md"] },
-  { "stage": "6-compliance", "status": "COMPLETED", "timestamp": "2026-08-04T01:25:00Z", "artifacts": [] }
+  { "stage": "0a-grill-me", "status": "COMPLETED", "timestamp": "2026-08-04T07:44:00Z", "artifacts": [] },
+  { "stage": "0b-research", "status": "COMPLETED", "timestamp": "2026-08-04T07:44:50Z", "artifacts": ["research_findings.md"] }
 ]

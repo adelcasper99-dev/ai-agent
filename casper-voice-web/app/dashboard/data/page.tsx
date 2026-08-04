@@ -140,15 +140,15 @@ export default function DataPage() {
   return (
     <div className="space-y-6 w-full max-w-7xl mx-auto pb-10 dir-rtl">
       {/* 🎙️ Voice Knowledge Ingestion Widget */}
-      <div className="bento-card p-5 sm:p-6 space-y-4" style={{ border: "1px solid rgba(128,82,255,0.25)" }}>
+      <div className="bento-card p-5 sm:p-6 space-y-4 bg-pastel-purple border-0">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-brand/10" style={{ background: "rgba(128,82,255,0.15)", color: "var(--color-brand)" }}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white" style={{ color: "var(--color-brand)" }}>
               <Sparkles className="w-5 h-5" />
             </div>
             <h2 className="font-bold text-lg" style={{ color: "var(--color-text-primary)" }}>التغذية الصوتية لقاعدة المعرفة (Voice RAG)</h2>
           </div>
-          <span className="text-[10px] font-bold px-3 py-1.5 rounded-full" style={{ background: "rgba(128,82,255,0.1)", color: "var(--color-brand)" }}>
+          <span className="text-[10px] font-bold px-3 py-1.5 rounded-full" style={{ background: "#fff", color: "var(--color-brand)" }}>
             WebM/Opus AI Ingest
           </span>
         </div>
@@ -163,7 +163,7 @@ export default function DataPage() {
               onClick={startRecording}
               disabled={isIngesting}
               className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold px-6 py-3 rounded-xl transition-all disabled:opacity-50"
-              style={{ background: "var(--color-brand)", color: "#fff", boxShadow: "var(--shadow-glow)" }}
+              style={{ background: "var(--color-brand)", color: "#fff", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
             >
               <Mic className="w-4 h-4" />
               ابدأ التسجيل الصوتي
@@ -172,7 +172,7 @@ export default function DataPage() {
             <button
               onClick={stopRecording}
               className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold px-6 py-3 rounded-xl transition-all animate-pulse"
-              style={{ background: "var(--color-danger)", color: "#fff", boxShadow: "0 0 15px rgba(229,72,77,0.3)" }}
+              style={{ background: "var(--color-danger)", color: "#fff", boxShadow: "0 0 15px rgba(229,72,77,0.15)" }}
             >
               <Square className="w-4 h-4 fill-current" />
               إيقاف ومعالجة التسجيل
@@ -180,7 +180,7 @@ export default function DataPage() {
           )}
 
           {ingestStatus && (
-            <p className="text-sm font-bold w-full sm:flex-1 px-4 py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--color-border-glass)", color: "var(--color-text-primary)" }}>
+            <p className="text-sm font-bold w-full sm:flex-1 px-4 py-3 rounded-xl bg-white shadow-sm" style={{ border: "1px solid var(--color-border-subtle)", color: "var(--color-text-primary)" }}>
               {ingestStatus}
             </p>
           )}
@@ -211,8 +211,8 @@ export default function DataPage() {
         />
         <button
           onClick={add}
-          className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold transition-all"
-          style={{ background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)" }}
+          className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold transition-all bg-white hover:bg-gray-50 shadow-sm"
+          style={{ color: "var(--color-text-primary)", border: "1px solid var(--color-border-subtle)" }}
         >
           إضافة لقاعدة المعرفة
         </button>
@@ -232,7 +232,7 @@ export default function DataPage() {
             ))}
           </div>
         ) : items.length === 0 ? (
-          <div className="bento-card p-10 text-center border-dashed">
+          <div className="nested-card p-10 text-center border-dashed" style={{ borderColor: "rgba(0,0,0,0.1)" }}>
             <p className="text-sm font-bold" style={{ color: "var(--color-text-muted)" }}>لا توجد أسئلة مسجلة حالياً.</p>
           </div>
         ) : (
@@ -260,7 +260,7 @@ export default function DataPage() {
                     return (
                       <div className="flex flex-wrap gap-2 pt-2">
                         {parsedKw.map((kw, i) => (
-                          <span key={i} className="text-xs font-bold px-2 py-1 rounded" style={{ background: "rgba(255,255,255,0.05)", color: "var(--color-text-muted)" }}>
+                          <span key={i} className="text-xs font-bold px-2 py-1 rounded" style={{ background: "#f1f5f9", color: "var(--color-text-secondary)" }}>
                             #{kw}
                           </span>
                         ))}
@@ -271,7 +271,7 @@ export default function DataPage() {
                 <button
                   onClick={() => remove(item.id)}
                   className="self-end text-sm p-2 rounded-lg transition-all"
-                  style={{ color: "var(--color-danger)", background: "rgba(229,72,77,0.1)" }}
+                  style={{ color: "var(--color-danger)", background: "#fef2f2" }}
                   title="حذف"
                 >
                   <Trash2 className="w-4 h-4" />

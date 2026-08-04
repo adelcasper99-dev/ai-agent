@@ -12,7 +12,7 @@ export default function ChatPage() {
           <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: "var(--color-text-primary)" }}>
             ✈️ محاكي بوت التليجرام (Telegram Offline Simulator)
           </h2>
-          <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>
+          <p className="text-sm mt-1" style={{ color: "var(--color-text-secondary)" }}>
             اختبر الأنماط الثلاثة في مكان واحد قبل الإطلاق: كتابة نصية • تسجيل فويس نوت • مكالمة هاتفية حية 📞
           </p>
         </div>

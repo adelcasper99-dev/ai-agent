@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { Key, AlertTriangle, AlertCircle, RefreshCw, Plus, Trash2, CheckCircle2 } from "lucide-react";
 
 interface ApiKey {
   id: string;
@@ -32,13 +33,11 @@ export default function ApiKeysPage() {
 
   useEffect(() => {
     fetchKeys();
-    // Auto-refresh every 30s to reflect real-time exhaustion status
     const interval = setInterval(fetchKeys, 30000);
     return () => clearInterval(interval);
   }, [fetchKeys]);
 
-  const allExhausted =
-    keys.length > 0 && keys.every((k) => k.isExhausted || !k.isActive);
+  const allExhausted = keys.length > 0 && keys.every((k) => k.isExhausted || !k.isActive);
   const exhaustedCount = keys.filter((k) => k.isExhausted).length;
   const availableCount = keys.filter((k) => !k.isExhausted && k.isActive).length;
 
@@ -106,229 +105,220 @@ export default function ApiKeysPage() {
     fetchKeys();
   };
 
-  // Shared inline styles
-  const actionBtn = (variant: "default" | "success" | "brand" | "danger" | "warning") => ({
-    default: {
-      background: "rgba(255,255,255,0.06)",
-      color: "var(--color-text-muted)",
-      border: "1px solid var(--color-border-glass)",
-    },
-    success: {
-      background: "rgba(21,132,110,0.12)",
-      color: "#1fc9a4",
-      border: "1px solid rgba(21,132,110,0.24)",
-    },
-    brand: {
-      background: "rgba(128,82,255,0.12)",
-      color: "var(--color-brand)",
-      border: "1px solid rgba(128,82,255,0.24)",
-    },
-    danger: {
-      background: "rgba(229,72,77,0.12)",
-      color: "var(--color-danger)",
-      border: "1px solid rgba(229,72,77,0.24)",
-    },
-    warning: {
-      background: "rgba(255,178,36,0.12)",
-      color: "#ffb224",
-      border: "1px solid rgba(255,178,36,0.24)",
-    }
-  }[variant]);
-
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pb-10" dir="rtl">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-8 max-w-7xl mx-auto">
+      {/* ── Page Header ── */}
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-8">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>محفظة مفاتيح الذكاء الاصطناعي (API Keys Pool)</h1>
-          <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>إدارة مفاتيح Gemini و Groq والتنقل التلقائي عند استنفاذ الكوتا</p>
+          <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: "var(--foreground)" }}>
+            محفظة مفاتيح الذكاء الاصطناعي
+          </h1>
+          <div className="flex items-center gap-2 mt-2 text-sm">
+            <span className="px-2 py-0.5 rounded font-bold" style={{ background: "var(--border)", color: "var(--muted-foreground)" }}>API Keys Pool</span>
+            <span style={{ color: "var(--muted-foreground)" }}>•</span>
+            <span className="font-semibold" style={{ color: "var(--foreground)" }}>إدارة المفاتيح والتنقل التلقائي عند الاستنفاذ</span>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-bold" style={{ color: "var(--color-text-secondary)" }}>
-            {availableCount} متاح / {exhaustedCount} مستنفد
-          </span>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg border shadow-sm bg-white" style={{ borderColor: "var(--border)" }}>
+            <span className="text-sm font-bold text-emerald-600">{availableCount} متاح</span>
+            <div className="w-px h-5 mx-1" style={{ background: "var(--border)" }} />
+            <span className="text-sm font-bold text-rose-600">{exhaustedCount} مستنفد</span>
+          </div>
           <button
             onClick={fetchKeys}
-            className="px-3 py-1.5 text-sm rounded-lg font-bold transition-all"
-            style={actionBtn("default")}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all shadow-sm bg-white hover:bg-slate-50 border"
+            style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
           >
-            🔄 تحديث
+            <RefreshCw size={16} /> تحديث
           </button>
         </div>
       </div>
 
-      {/* 🚨 All-Keys-Exhausted Banner */}
+      {/* ── Alerts ── */}
       {allExhausted && (
-        <div className="p-4 rounded-xl flex items-start gap-3 border" style={{ background: "rgba(229,72,77,0.08)", borderColor: "rgba(229,72,77,0.3)" }}>
-          <span className="text-2xl">🚨</span>
+        <div className="flex items-start gap-4 p-5 rounded-xl border" style={{ background: "#fef2f2", borderColor: "#fca5a5" }}>
+          <AlertCircle className="w-8 h-8 text-rose-600 shrink-0" />
           <div className="flex-1">
-            <p className="font-bold text-base" style={{ color: "var(--color-danger)" }}>
-              تحذير: جميع المفاتيح المسجلة مستنفدة!
-            </p>
-            <p className="text-sm mt-1" style={{ color: "var(--color-danger)", opacity: 0.8 }}>
+            <h3 className="font-bold text-lg text-rose-700">تحذير: جميع المفاتيح المسجلة مستنفدة!</h3>
+            <p className="text-sm mt-1 text-rose-600 opacity-90">
               النظام يتحول تلقائياً لوضع القوائم الطارئ حتى تُضاف مفاتيح جديدة أو تُعاد تفعيل المفاتيح الحالية.
             </p>
             <button
               onClick={handleResetAll}
               disabled={resetting}
-              className="mt-3 px-4 py-2 text-sm rounded-lg font-bold transition-all disabled:opacity-50"
-              style={actionBtn("danger")}
+              className="mt-4 flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold transition-all disabled:opacity-50 text-white shadow-sm"
+              style={{ background: "var(--danger)", hover: "brightness(1.1)" }}
             >
-              {resetting ? "جاري الإعادة..." : "⚡ إعادة تفعيل الكل الآن"}
+              <RefreshCw size={16} className={resetting ? "animate-spin" : ""} />
+              {resetting ? "جاري الإعادة..." : "إعادة تفعيل الكل الآن"}
             </button>
           </div>
         </div>
       )}
 
-      {/* ⚠️ Partial exhaustion warning */}
       {!allExhausted && exhaustedCount > 0 && (
-        <div className="p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border" style={{ background: "rgba(255,178,36,0.08)", borderColor: "rgba(255,178,36,0.3)" }}>
-          <div className="flex items-center gap-2">
-            <span className="text-xl">⚠️</span>
-            <p className="text-sm font-bold" style={{ color: "#ffb224" }}>
-              <strong>{exhaustedCount} مفتاح مستنفد</strong> — النظام يعمل على المفاتيح المتبقية ({availableCount} متاح)
+        <div className="flex items-center justify-between gap-4 p-4 rounded-xl border shadow-sm" style={{ background: "#fffbeb", borderColor: "#fcd34d" }}>
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-6 h-6 text-amber-500 shrink-0" />
+            <p className="text-sm font-bold text-amber-700">
+              {exhaustedCount} مفتاح مستنفد — النظام يعمل على المفاتيح المتبقية ({availableCount} متاح)
             </p>
           </div>
           <button
             onClick={handleResetAll}
             disabled={resetting}
-            className="px-4 py-2 text-sm rounded-lg font-bold transition-all disabled:opacity-50"
-            style={actionBtn("warning")}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all disabled:opacity-50 bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300"
           >
+            <RefreshCw size={16} className={resetting ? "animate-spin" : ""} />
             {resetting ? "..." : "إعادة تفعيل المستنفدة"}
           </button>
         </div>
       )}
 
-      {/* Add Key Form with Provider Selector */}
-      <div className="bento-card p-5 sm:p-6">
+      {/* ── Add Key Form ── */}
+      <div className="float-panel p-6 border shadow-sm bg-white" style={{ borderColor: "var(--border)" }}>
+        <h3 className="font-bold text-lg mb-4 flex items-center gap-2" style={{ color: "var(--foreground)" }}>
+          <Plus size={18} className="text-cyan-500" /> إضافة مفتاح جديد
+        </h3>
         <form onSubmit={handleAddKey} className="flex flex-col sm:flex-row gap-4 sm:items-end">
-          <div className="w-full sm:w-48 space-y-2">
-            <label className="block text-sm font-bold" style={{ color: "var(--color-text-secondary)" }}>المزود (Provider)</label>
+          <div className="w-full sm:w-56 space-y-2">
+            <label className="block text-sm font-bold" style={{ color: "var(--muted-foreground)" }}>المزود</label>
             <select
               value={selectedProvider}
               onChange={(e) => setSelectedProvider(e.target.value as "gemini" | "groq")}
-              className="glass-input font-bold"
+              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-cyan-500 outline-none font-bold"
+              style={{ background: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
             >
               <option value="gemini">💎 Gemini (Google)</option>
               <option value="groq">⚡ Groq (Llama 3.3)</option>
             </select>
           </div>
           <div className="flex-1 space-y-2 w-full">
-            <label className="block text-sm font-bold" style={{ color: "var(--color-text-secondary)" }}>مفتاح API الجديد</label>
+            <label className="block text-sm font-bold" style={{ color: "var(--muted-foreground)" }}>مفتاح API</label>
             <input
               type="password"
               placeholder={selectedProvider === "gemini" ? "AIzaSy..." : "gsk_..."}
-              className="glass-input font-mono dir-ltr text-left"
+              className="w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-cyan-500 outline-none font-mono dir-ltr text-left"
+              style={{ background: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
               value={newKey}
               onChange={(e) => setNewKey(e.target.value)}
             />
           </div>
           <button 
             type="submit" 
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold transition-all whitespace-nowrap"
-            style={{
-              background: "var(--color-brand)",
-              color: "#fff",
-              boxShadow: "var(--shadow-glow)",
-              height: "44px"
-            }}
+            className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-bold transition-all whitespace-nowrap text-white shadow-md flex items-center gap-2 justify-center"
+            style={{ background: "var(--primary)" }}
           >
-            إضافة المفتاح
+            <Plus size={18} /> حفظ المفتاح
           </button>
         </form>
       </div>
 
-      {/* Keys Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* ── Keys Table ── */}
+      <div className="float-panel border shadow-sm bg-white overflow-hidden" style={{ borderColor: "var(--border)" }}>
+        <div className="px-6 py-4 border-b bg-slate-50 flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
+          <h3 className="font-bold text-lg flex items-center gap-2" style={{ color: "var(--foreground)" }}>
+            <Key size={18} className="text-cyan-500" /> المفاتيح المسجلة
+          </h3>
+        </div>
+        
         {loading ? (
-          <div className="p-8 text-center text-gray-500">جاري التحميل...</div>
+          <div className="p-12 flex justify-center">
+            <RefreshCw className="w-8 h-8 animate-spin text-cyan-500" />
+          </div>
         ) : keys.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            لا يوجد مفاتيح مسجلة في قاعدة البيانات. النظام يقرأ المفاتيح الموجودة في ملف .env تلقائياً.
+          <div className="p-12 text-center text-slate-500 font-semibold">
+            لا يوجد مفاتيح مسجلة. النظام يقرأ المفاتيح من ملف .env تلقائياً إذا وجدت.
           </div>
         ) : (
-          <table className="w-full text-right">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-4 text-sm font-medium text-gray-500">المزود</th>
-                <th className="px-6 py-4 text-sm font-medium text-gray-500">المفتاح</th>
-                <th className="px-6 py-4 text-sm font-medium text-gray-500">الحالة</th>
-                <th className="px-6 py-4 text-sm font-medium text-gray-500">وقت الإضافة</th>
-                <th className="px-6 py-4 text-sm font-medium text-gray-500">إجراء</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {keys.map((k) => (
-                <tr
-                  key={k.id}
-                  className={`hover:bg-gray-50 ${k.isExhausted ? "bg-red-50/30" : ""}`}
-                >
-                  <td className="px-6 py-4 text-sm">
-                    {k.provider?.toLowerCase() === "groq" ? (
-                      <span className="inline-flex items-center gap-1 font-semibold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-md text-xs">
-                        ⚡ Groq
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-md text-xs">
-                        💎 Gemini
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-mono text-gray-500 text-left" dir="ltr">
-                    {k.keyString.substring(0, 8)}...{k.keyString.slice(-4)}
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    {k.isExhausted ? (
-                      <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: "rgba(229,72,77,0.1)", color: "var(--color-danger)" }}>
-                        🔴 مستنفد (429)
-                      </span>
-                    ) : !k.isActive ? (
-                      <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: "rgba(255,255,255,0.1)", color: "var(--color-text-muted)" }}>
-                        ⚫ غير مفعل
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: "rgba(21,132,110,0.1)", color: "#1fc9a4" }}>
-                        🟢 متاح وشغال
-                      </span>
-                    )}
-                    {k.exhaustedAt && (
-                      <div className="text-[10px] mt-1" style={{ color: "var(--color-text-muted)" }}>
-                        مستنفد منذ: {new Date(k.exhaustedAt).toLocaleTimeString("ar-EG")}
-                      </div>
-                    )}
-                  </td>
-                    <td className="px-6 py-4" style={{ color: "var(--color-text-muted)" }}>
+          <div className="overflow-x-auto">
+            <table className="zebra-table">
+              <thead>
+                <tr>
+                  <th>المزود</th>
+                  <th>المفتاح</th>
+                  <th>الحالة</th>
+                  <th>تاريخ الإضافة</th>
+                  <th className="text-center">إجراء</th>
+                </tr>
+              </thead>
+              <tbody>
+                {keys.map((k) => (
+                  <tr key={k.id}>
+                    <td>
+                      {k.provider?.toLowerCase() === "groq" ? (
+                        <span className="inline-flex items-center gap-1 font-bold text-purple-700 bg-purple-50 px-3 py-1 rounded-md text-xs border border-purple-200">
+                          ⚡ Groq
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-md text-xs border border-blue-200">
+                          💎 Gemini
+                        </span>
+                      )}
+                    </td>
+                    <td className="font-mono text-sm text-slate-600 text-left dir-ltr">
+                      {k.keyString.substring(0, 8)}...{k.keyString.slice(-4)}
+                    </td>
+                    <td>
+                      {k.isExhausted ? (
+                        <div>
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200">
+                            🔴 مستنفد (429)
+                          </span>
+                          {k.exhaustedAt && (
+                            <div className="text-[10px] mt-1 text-slate-400">
+                              منذ: {new Date(k.exhaustedAt).toLocaleTimeString("ar-EG")}
+                            </div>
+                          )}
+                        </div>
+                      ) : !k.isActive ? (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200">
+                          ⚫ غير مفعل
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200">
+                          🟢 متاح وشغال
+                        </span>
+                      )}
+                    </td>
+                    <td className="text-sm text-slate-500 font-medium">
                       {new Date(k.addedAt).toLocaleDateString("ar-EG")}
                     </td>
-                    <td className="px-6 py-4 flex gap-2">
-                      <button
-                        onClick={() => handleTestKey(k.id, k.keyString, k.provider)}
-                        disabled={testingId === k.id}
-                        className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
-                        style={actionBtn("brand")}
-                      >
-                        {testingId === k.id ? "..." : "فحص"}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(k.id)}
-                        className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
-                        style={actionBtn("danger")}
-                      >
-                        حذف
-                      </button>
+                    <td>
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleTestKey(k.id, k.keyString, k.provider)}
+                          disabled={testingId === k.id}
+                          className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-md transition-all bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                        >
+                          {testingId === k.id ? <RefreshCw size={14} className="animate-spin" /> : <CheckCircle2 size={14} className="text-cyan-600" />}
+                          فحص
+                        </button>
+                        <button
+                          onClick={() => handleDelete(k.id)}
+                          className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-md transition-all bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                        >
+                          <Trash2 size={14} /> حذف
+                        </button>
+                      </div>
                     </td>
                   </tr>
-              ))}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      {/* Info Box */}
-      <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800 border border-blue-100">
-        <p>
-          <strong>كيف يعمل مجمّع المفاتيح الذكي:</strong> يبدأ النظام بمفاتيح 💎 <strong>Gemini</strong> المتاحة. وفي حال مواجهة 429 (انتهاء الكوتا اليومية)، ينتقل لمفتاح Gemini التالي. وعند انتهاء جميع مفاتيح Gemini، يتحول تلقائياً لمفاتيح ⚡ <strong>Groq (Llama 3.3)</strong> الدائرية. ولا يرسل وضع القوائم الطارئ إلا إذا نفذت جميع المفاتيح معاً.
+      {/* ── Info Box ── */}
+      <div className="bg-cyan-50/50 p-5 rounded-xl border border-cyan-100 text-sm text-cyan-800 shadow-sm">
+        <p className="flex items-start gap-3">
+          <span className="text-xl">ℹ️</span>
+          <span className="leading-relaxed font-medium">
+            <strong className="text-cyan-900">كيف يعمل مجمّع المفاتيح الذكي:</strong> يبدأ النظام بمفاتيح 💎 <strong>Gemini</strong> المتاحة. وفي حال مواجهة خطأ 429 (انتهاء الكوتا اليومية)، ينتقل النظام تلقائياً لمفتاح Gemini التالي. وعند انتهاء جميع مفاتيح Gemini، يتحول تدريجياً لمفاتيح ⚡ <strong>Groq (Llama 3.3)</strong> الدائرية لضمان استمرارية الخدمة. لا يتم اللجوء لوضع القوائم الطارئ إلا إذا استُنفِذت جميع المفاتيح معاً.
+          </span>
         </p>
       </div>
     </div>

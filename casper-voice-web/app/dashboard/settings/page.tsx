@@ -132,8 +132,8 @@ export default function SettingsPage() {
     return (
       <div className="space-y-4 max-w-4xl">
         <div className="bento-card p-6 space-y-4">
-          <div className="shimmer h-4 w-48 rounded-full" />
-          {[1,2,3].map(i => <div key={i} className="shimmer h-10 w-full rounded-xl" />)}
+          <div className="shimmer h-4 w-48 rounded-full" style={{ background: "#e2e8f0" }} />
+          {[1,2,3].map(i => <div key={i} className="shimmer h-10 w-full rounded-xl" style={{ background: "#f1f5f9" }} />)}
         </div>
       </div>
     );
@@ -144,19 +144,19 @@ export default function SettingsPage() {
   // ── Shared inline styles ───────────────────────────────────────────────────
   const actionBtn = (variant: "default" | "success" | "brand") => ({
     default: {
-      background: "rgba(255,255,255,0.06)",
-      color: "var(--color-text-muted)",
-      border: "1px solid var(--color-border-glass)",
+      background: "#fff",
+      color: "var(--color-text-secondary)",
+      border: "1px solid var(--color-border-subtle)",
     },
     success: {
-      background: "rgba(21,132,110,0.12)",
-      color: "#1fc9a4",
-      border: "1px solid rgba(21,132,110,0.24)",
+      background: "#ecfdf5",
+      color: "#059669",
+      border: "1px solid #a7f3d0",
     },
     brand: {
-      background: "rgba(128,82,255,0.12)",
+      background: "#eff6ff",
       color: "var(--color-brand)",
-      border: "1px solid rgba(128,82,255,0.24)",
+      border: "1px solid #bfdbfe",
     },
   }[variant]);
 
@@ -182,7 +182,7 @@ export default function SettingsPage() {
       </div>
 
       {/* ── Voice Tone ── */}
-      <div className="bento-card p-5 space-y-3" style={{ borderColor: "rgba(128,82,255,0.25)" }}>
+      <div className="bento-card p-5 space-y-3 bg-pastel-purple border-0">
         <label className="block text-sm font-bold flex items-center gap-1.5" style={{ color: "var(--color-text-primary)" }}>
           🎙️ اختيار نبرة وتنغيم الصوت المفضلة (Voice Tone)
         </label>
@@ -224,7 +224,7 @@ export default function SettingsPage() {
           className="font-bold text-base"
           style={{
             color: "var(--color-text-primary)",
-            borderTop: "1px solid var(--color-border-glass)",
+            borderTop: "1px solid var(--color-border-subtle)",
             paddingTop: "16px",
           }}
         >
@@ -275,9 +275,9 @@ export default function SettingsPage() {
               <div
                 className="p-2 rounded-lg text-xs font-bold flex items-center justify-between"
                 style={{
-                  background: checkStatus[f.group].valid ? "rgba(21,132,110,0.12)" : "rgba(229,72,77,0.10)",
-                  border: `1px solid ${checkStatus[f.group].valid ? "rgba(21,132,110,0.30)" : "rgba(229,72,77,0.28)"}`,
-                  color: checkStatus[f.group].valid ? "#1fc9a4" : "var(--color-danger)",
+                  background: checkStatus[f.group].valid ? "#ecfdf5" : "#fef2f2",
+                  border: `1px solid ${checkStatus[f.group].valid ? "#a7f3d0" : "#fca5a5"}`,
+                  color: checkStatus[f.group].valid ? "#059669" : "#dc2626",
                 }}
               >
                 <span>{checkStatus[f.group].message}</span>
@@ -292,7 +292,7 @@ export default function SettingsPage() {
       <div className="space-y-3">
         <div
           className="flex justify-between items-center"
-          style={{ borderTop: "1px solid var(--color-border-glass)", paddingTop: "16px" }}
+          style={{ borderTop: "1px solid var(--color-border-subtle)", paddingTop: "16px" }}
         >
           <h3 className="font-bold text-base" style={{ color: "var(--color-text-primary)" }}>
             مفاتيح خادم LiveKit
@@ -312,9 +312,9 @@ export default function SettingsPage() {
           <div
             className="p-2.5 rounded-xl text-sm font-bold"
             style={{
-              background: checkStatus["LIVEKIT"].valid ? "rgba(21,132,110,0.12)" : "rgba(229,72,77,0.10)",
-              border: `1px solid ${checkStatus["LIVEKIT"].valid ? "rgba(21,132,110,0.28)" : "rgba(229,72,77,0.28)"}`,
-              color: checkStatus["LIVEKIT"].valid ? "#1fc9a4" : "var(--color-danger)",
+              background: checkStatus["LIVEKIT"].valid ? "#ecfdf5" : "#fef2f2",
+              border: `1px solid ${checkStatus["LIVEKIT"].valid ? "#a7f3d0" : "#fca5a5"}`,
+              color: checkStatus["LIVEKIT"].valid ? "#059669" : "#dc2626",
             }}
           >
             {checkStatus["LIVEKIT"].message}
@@ -367,9 +367,9 @@ export default function SettingsPage() {
           <span
             className="text-xs font-bold px-2.5 py-0.5 rounded-full"
             style={{
-              background: "rgba(21,132,110,0.14)",
-              color: "#1fc9a4",
-              border: "1px solid rgba(21,132,110,0.28)",
+              background: "#ecfdf5",
+              color: "#059669",
+              border: "1px solid #a7f3d0",
             }}
           >
             عامية حية 100%
@@ -430,13 +430,13 @@ export default function SettingsPage() {
         style={{
           background: "var(--color-brand)",
           color: "#fff",
-          boxShadow: saving ? "none" : "var(--shadow-glow)",
+          boxShadow: saving ? "none" : "0 4px 12px rgba(0,0,0,0.1)",
         }}
       >
         {saving ? "جاري الحفظ..." : "حفظ الإعدادات"}
       </button>
       {saved && (
-        <p className="text-center font-bold text-sm" style={{ color: "#1fc9a4" }}>
+        <p className="text-center font-bold text-sm" style={{ color: "#059669" }}>
           تم الحفظ بنجاح ✓
         </p>
       )}

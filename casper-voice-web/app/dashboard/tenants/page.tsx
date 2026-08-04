@@ -74,29 +74,29 @@ export default function TenantsPage() {
   }
 
   const actionBtn = (variant: "brand" | "success" | "danger") => ({
-    brand: { background: "var(--color-brand)", color: "#fff", boxShadow: "var(--shadow-glow)", border: "none" },
-    success: { background: "var(--color-success)", color: "#fff", boxShadow: "var(--shadow-glow)", border: "none" },
-    danger: { background: "rgba(229,72,77,0.12)", color: "var(--color-danger)", border: "1px solid rgba(229,72,77,0.24)" }
+    brand: { background: "var(--color-brand)", color: "#fff", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", border: "none" },
+    success: { background: "var(--color-success)", color: "#fff", boxShadow: "0 4px 12px rgba(16, 185, 129, 0.2)", border: "none" },
+    danger: { background: "#fef2f2", color: "var(--color-danger)", border: "1px solid #fca5a5" } /* red-50 / red-300 */
   }[variant]);
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-10" dir="rtl">
-      <div className="bento-card p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      {/* Page Header Area with Pastel Gradient */}
+      <div className="bento-card p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-pastel-purple border-0">
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: "var(--color-text-primary)" }}>
             <span>🏢</span> إشعار وطلبات تفعيل الشركات والعملاء
           </h2>
-          <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>
+          <p className="text-xs mt-1" style={{ color: "var(--color-text-secondary)" }}>
             إدارة طلبات التسجيل الذاتي القادمة عبر بوت التليجرام أو الدشبورد والموافقة الفورية عليها.
           </p>
         </div>
         <button
           onClick={fetchRequests}
-          className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold transition-all"
+          className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white hover:bg-gray-50 shadow-sm"
           style={{
-            background: "rgba(255,255,255,0.06)",
-            color: "var(--color-text-muted)",
-            border: "1px solid var(--color-border-glass)",
+            color: "var(--color-text-primary)",
+            border: "1px solid var(--color-border-subtle)",
           }}
         >
           🔄 تحديث الطلبات
@@ -105,18 +105,18 @@ export default function TenantsPage() {
 
       <div className="space-y-4">
         {requests.length === 0 ? (
-          <div className="bento-card p-10 text-center space-y-3 border-dashed" style={{ borderColor: "rgba(255,255,255,0.15)" }}>
+          <div className="nested-card p-10 text-center space-y-3 border-dashed" style={{ borderColor: "rgba(0,0,0,0.1)" }}>
             <span className="text-3xl block">📥</span>
             <h4 className="font-bold text-sm" style={{ color: "var(--color-text-primary)" }}>لا توجد طلبات تسجيل معلقة حالياً</h4>
-            <p className="text-xs max-w-md mx-auto leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
-              عندما يرسل عميل جديد كلمة <code className="font-mono text-[10px] px-1.5 py-0.5 rounded" style={{ background: "rgba(128,82,255,0.15)", color: "var(--color-brand)" }}>/start</code> للبوت على التليجرام، سيصلك إشعار فوري هنا وعلى حسابك بالتليجرام للموافقة.
+            <p className="text-xs max-w-md mx-auto leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
+              عندما يرسل عميل جديد كلمة <code className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-800">/start</code> للبوت على التليجرام، سيصلك إشعار فوري هنا وعلى حسابك بالتليجرام للموافقة.
             </p>
           </div>
         ) : (
           requests.map((req) => (
             <div
               key={req.id}
-              className="bento-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 transition-all hover:bg-white/5"
+              className="bento-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 transition-all hover:bg-gray-50"
             >
               <div className="space-y-2">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
@@ -125,15 +125,15 @@ export default function TenantsPage() {
                     className="text-[10px] font-bold px-3 py-1 rounded-full w-fit"
                     style={{
                       background: req.status === "approved" 
-                        ? "rgba(21,132,110,0.12)" 
+                        ? "#ecfdf5" /* emerald-50 */
                         : req.status === "rejected" 
-                        ? "rgba(229,72,77,0.12)" 
-                        : "rgba(255,178,36,0.12)",
+                        ? "#fef2f2" /* red-50 */
+                        : "#fffbeb", /* amber-50 */
                       color: req.status === "approved"
-                        ? "#1fc9a4"
+                        ? "#059669" /* emerald-600 */
                         : req.status === "rejected"
-                        ? "var(--color-danger)"
-                        : "#ffb224"
+                        ? "#dc2626" /* red-600 */
+                        : "#d97706" /* amber-600 */
                     }}
                   >
                     {req.status === "approved"
@@ -144,8 +144,8 @@ export default function TenantsPage() {
                   </span>
                 </div>
                 <div className="text-xs flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 font-mono dir-ltr" style={{ color: "var(--color-text-secondary)" }}>
-                  <span className="bg-black/20 px-2 py-1 rounded">📱 {req.phoneNumber || "بدون رقم"}</span>
-                  <span className="bg-black/20 px-2 py-1 rounded">💬 Telegram ID: {req.telegramChatId}</span>
+                  <span className="bg-gray-100 px-2 py-1 rounded">📱 {req.phoneNumber || "بدون رقم"}</span>
+                  <span className="bg-gray-100 px-2 py-1 rounded">💬 Telegram ID: {req.telegramChatId}</span>
                 </div>
                 <p className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
                   تاريخ الطلب: {new Date(req.requestedAt).toLocaleString("ar-EG")}

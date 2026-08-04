@@ -149,19 +149,20 @@ export default function LogsPage() {
   // Shared action button styles
   const actionBtn = (variant: "default" | "brand" | "danger") => ({
     default: {
-      background: "rgba(255,255,255,0.06)",
-      color: "var(--color-text-muted)",
-      border: "1px solid var(--color-border-glass)",
+      background: "#fff",
+      color: "var(--color-text-secondary)",
+      border: "1px solid var(--color-border-subtle)",
     },
     brand: {
       background: "var(--color-brand)",
       color: "#fff",
       border: "none",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
     },
     danger: {
-      background: "rgba(229,72,77,0.12)",
+      background: "#fef2f2",
       color: "var(--color-danger)",
-      border: "1px solid rgba(229,72,77,0.24)",
+      border: "1px solid #fca5a5",
     }
   }[variant]);
 
@@ -176,13 +177,14 @@ export default function LogsPage() {
 
         <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
           {/* Mode Switcher */}
-          <div className="flex text-xs font-bold p-1 rounded-xl" style={{ background: "rgba(0,0,0,0.2)" }}>
+          <div className="flex text-xs font-bold p-1 rounded-xl" style={{ background: "rgba(0,0,0,0.05)" }}>
             <button
               onClick={() => setViewMode('translated')}
               className="px-3 py-1.5 rounded-lg transition-all"
               style={{
-                background: viewMode === 'translated' ? 'rgba(255,255,255,0.1)' : 'transparent',
-                color: viewMode === 'translated' ? '#fff' : 'var(--color-text-muted)'
+                background: viewMode === 'translated' ? '#fff' : 'transparent',
+                color: viewMode === 'translated' ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+                boxShadow: viewMode === 'translated' ? '0 2px 5px rgba(0,0,0,0.05)' : 'none'
               }}
             >
               مبسط بالعربي 💡
@@ -191,8 +193,9 @@ export default function LogsPage() {
               onClick={() => setViewMode('raw')}
               className="px-3 py-1.5 rounded-lg transition-all"
               style={{
-                background: viewMode === 'raw' ? 'rgba(255,255,255,0.1)' : 'transparent',
-                color: viewMode === 'raw' ? '#fff' : 'var(--color-text-muted)'
+                background: viewMode === 'raw' ? '#fff' : 'transparent',
+                color: viewMode === 'raw' ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+                boxShadow: viewMode === 'raw' ? '0 2px 5px rgba(0,0,0,0.05)' : 'none'
               }}
             >
               تقني (Code) 💻
@@ -236,12 +239,12 @@ export default function LogsPage() {
           ) : (
             parsedLogs.map((log) => {
               const styleMap = {
-                error: { bg: 'rgba(229,72,77,0.08)', border: 'rgba(229,72,77,0.2)', text: 'var(--color-danger)' },
-                warning: { bg: 'rgba(255,178,36,0.08)', border: 'rgba(255,178,36,0.2)', text: '#ffb224' },
-                user: { bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.2)', text: '#60a5fa' },
-                assistant: { bg: 'rgba(168,85,247,0.08)', border: 'rgba(168,85,247,0.2)', text: '#c084fc' },
-                success: { bg: 'rgba(21,132,110,0.08)', border: 'rgba(21,132,110,0.2)', text: '#1fc9a4' },
-                info: { bg: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.08)', text: 'var(--color-text-secondary)' }
+                error: { bg: '#fef2f2', border: '#fca5a5', text: '#dc2626' },
+                warning: { bg: '#fffbeb', border: '#fde68a', text: '#d97706' },
+                user: { bg: '#eff6ff', border: '#bfdbfe', text: '#2563eb' },
+                assistant: { bg: '#faf5ff', border: '#e9d5ff', text: '#9333ea' },
+                success: { bg: '#ecfdf5', border: '#a7f3d0', text: '#059669' },
+                info: { bg: '#f8fafc', border: '#e2e8f0', text: 'var(--color-text-secondary)' }
               };
               const s = styleMap[log.type];
 
@@ -267,15 +270,15 @@ export default function LogsPage() {
             
             if (line.includes("ERROR") || line.includes("CRITICAL") || line.includes("Exception") || line.includes("Error")) {
               color = "var(--color-danger)";
-              bg = "rgba(229,72,77,0.08)";
+              bg = "#fef2f2";
             } else if (line.includes("WARNING")) {
-              color = "#ffb224";
+              color = "#d97706";
             } else if (line.includes("INFO")) {
-              color = "#1fc9a4";
+              color = "#059669";
             }
 
             return (
-              <div key={idx} className="py-1 px-2 rounded mb-0.5 border-b border-white/5 transition-colors" style={{ color, background: bg }}>
+              <div key={idx} className="py-1 px-2 rounded mb-0.5 border-b border-gray-100 transition-colors" style={{ color, background: bg }}>
                 {line}
               </div>
             );

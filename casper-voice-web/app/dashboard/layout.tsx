@@ -102,196 +102,124 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer border-0 transition-all duration-200 whitespace-nowrap";
 
   return (
-    <div
-      className="flex flex-col min-h-screen"
-      style={{ background: "var(--color-surface-base)" }}
-    >
+    <div className="flex h-screen overflow-hidden" style={{ background: "var(--background)" }}>
       {/* ════════════════════════════════════════════
-          TOP BAR
+          ICON RAIL — Solid Sidebar (Right edge in RTL)
       ════════════════════════════════════════════ */}
-      <header
-        className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-5"
+      <aside 
+        className="flex-shrink-0 flex flex-col z-40 overflow-y-auto"
         style={{
-          height: "var(--topbar-h)",
-          background: "var(--color-surface-topbar)",
-          backdropFilter: "var(--backdrop-card)",
-          WebkitBackdropFilter: "var(--backdrop-card)",
-          borderBottom: "1px solid var(--color-border-glass)",
+          width: "var(--sidebar-w)",
+          background: "var(--sidebar-bg)",
+          borderLeft: "1px solid var(--sidebar-border)",
+          color: "var(--sidebar-text)"
         }}
       >
-        {/* Page title — RTL so this sits on the right */}
-        <span
-          className="text-lg font-bold"
-          style={{ color: "var(--color-text-primary)" }}
+        {/* Logo block */}
+        <div 
+          className="flex items-center justify-center flex-shrink-0"
+          style={{ height: "var(--topbar-h)", borderBottom: "1px solid var(--sidebar-border)" }}
         >
-          {pageTitle}
-        </span>
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-lg"
+              style={{ background: "#ffffff", color: "#000000", fontFamily: "var(--pr-font-primary)" }}
+            >
+              C
+            </div>
+            <span className="font-bold text-lg tracking-tight">كاسبر فويس</span>
+          </div>
+        </div>
 
-        {/* Actions — RTL so these sit on the left */}
-        <div className="flex items-center gap-2">
+        {/* Nav items */}
+        <nav className="flex-1 px-4 py-6 space-y-1">
+          {TABS.map(({ href, label, Icon }) => {
+            const isActive = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
+                style={{
+                  background: isActive ? "var(--primary)" : "transparent",
+                  color: isActive ? "var(--primary-foreground)" : "rgba(248,250,252,0.7)",
+                }}
+              >
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                <span className="text-sm font-semibold">{label}</span>
+              </Link>
+            );
+          })}
+        </nav>
 
-          {/* Logout — danger */}
+        {/* Bottom Actions */}
+        <div className="p-4" style={{ borderTop: "1px solid var(--sidebar-border)" }}>
           <button
             onClick={handleLogout}
-            className={btnBase}
-            style={{
-              background: "rgba(229,72,77,0.12)",
-              color: "var(--color-danger)",
-              border: "1px solid rgba(229,72,77,0.28)",
-            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:bg-red-500/10 text-red-400 hover:text-red-300"
           >
-            <LogOut size={13} />
-            <span className="hidden sm:inline">تسجيل خروج</span>
-          </button>
-
-          {/* Test voice assistant — primary purple */}
-          <button
-            onClick={() => setIsVoiceOpen(true)}
-            className={btnBase}
-            style={{
-              background: "var(--color-brand)",
-              color: "#fff",
-            }}
-          >
-            <Mic size={13} />
-            <span className="hidden sm:inline">اختبار المساعد الصوتي</span>
-          </button>
-
-          {/* Live diagnostics — info cyan */}
-          <button
-            onClick={runDiagnostics}
-            className={btnBase}
-            style={{
-              background: "rgba(0,240,255,0.08)",
-              color: isDark ? "var(--color-info)" : "#0099bb",
-              border: `1px solid ${isDark ? "rgba(0,240,255,0.22)" : "rgba(0,153,187,0.28)"}`,
-            }}
-          >
-            <Stethoscope size={13} />
-            <span className="hidden sm:inline">تشخيص الصوت اللحظي</span>
-          </button>
-
-          {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
-            aria-label="تغيير المظهر"
-            className="w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-150"
-            style={{
-              background: "transparent",
-              color: "var(--color-text-muted)",
-              border: "1px solid var(--color-border-glass)",
-            }}
-          >
-            {isDark ? (
-              // Sun — switch to light
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="4"/>
-                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
-              </svg>
-            ) : (
-              // Moon — switch to dark
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
-              </svg>
-            )}
+            <LogOut size={20} />
+            <span className="text-sm font-semibold">تسجيل الخروج</span>
           </button>
         </div>
-      </header>
+      </aside>
 
       {/* ════════════════════════════════════════════
-          BODY — content + right icon rail
+          MAIN CONTENT AREA
       ════════════════════════════════════════════ */}
-      <div
-        className="flex flex-1"
-        style={{ paddingTop: "var(--topbar-h)" }}
-      >
-        {/* ── MAIN CONTENT ── */}
-        <main className="flex-1 overflow-y-auto p-6" style={{ marginInlineEnd: "var(--rail-w)" }}>
-          <div className="casper-fade-up">
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* TOP BAR */}
+        <header
+          className="flex-shrink-0 flex items-center justify-between px-8 z-30"
+          style={{
+            height: "var(--topbar-h)",
+            background: "var(--background)",
+            borderBottom: "1px solid var(--border)",
+          }}
+        >
+          {/* Page title */}
+          <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: "var(--foreground)" }}>
+            {pageTitle}
+          </h1>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            {/* Test voice assistant — Solid cyan button */}
+            <button
+              onClick={() => setIsVoiceOpen(true)}
+              className={btnBase + " shadow-sm"}
+              style={{
+                background: "var(--primary)",
+                color: "var(--primary-foreground)",
+                padding: "10px 20px",
+              }}
+            >
+              <Mic size={16} />
+              <span className="hidden sm:inline">اختبار المساعد الصوتي</span>
+            </button>
+
+            {/* Live diagnostics */}
+            <button
+              onClick={runDiagnostics}
+              className={btnBase + " solid-card hover:bg-slate-50"}
+              style={{
+                color: "var(--foreground)",
+                padding: "10px 20px",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <Stethoscope size={16} className="text-blue-500" />
+              <span className="hidden sm:inline">تشخيص الصوت اللحظي</span>
+            </button>
+          </div>
+        </header>
+
+        {/* SCROLLABLE BODY */}
+        <main className="flex-1 overflow-y-auto p-8" style={{ background: "var(--background)" }}>
+          <div className="casper-fade-up max-w-[1400px] mx-auto">
             {children}
           </div>
         </main>
-
-        {/* ════════════════════════════════════════════
-            ICON RAIL — fixed, right edge (RTL leading)
-        ════════════════════════════════════════════ */}
-        <nav
-          className="fixed top-0 bottom-0 inset-inline-end-0 flex flex-col items-center py-3 z-40"
-          style={{
-            width: "var(--rail-w)",
-            top: "var(--topbar-h)",
-            background: "var(--color-surface-glass-rail)",
-            backdropFilter: "var(--backdrop-rail)",
-            WebkitBackdropFilter: "var(--backdrop-rail)",
-            borderInlineStart: "1px solid var(--color-border-glass)",
-          }}
-          aria-label="التنقل الرئيسي"
-        >
-          {/* Ghost C logo mark */}
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-extrabold text-base mb-5 flex-shrink-0"
-            style={{
-              background: "var(--color-brand)",
-              boxShadow: "0 0 16px rgba(128,82,255,0.40)",
-              letterSpacing: "-1px",
-              fontFamily: "var(--pr-font-primary)",
-            }}
-          >
-            C
-          </div>
-
-          {/* Nav items */}
-          <div className="flex-1 flex flex-col gap-1 w-full px-2.5 overflow-y-auto">
-            {TABS.map(({ href, label, Icon }) => {
-              const isActive = pathname === href;
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className="rail-item relative w-full h-11 flex items-center justify-center rounded-lg transition-all duration-200"
-                  style={{
-                    background: isActive ? "var(--color-brand)" : "transparent",
-                    color: isActive
-                      ? "#fff"
-                      : "var(--color-text-muted)",
-                    boxShadow: isActive
-                      ? "0 4px 12px rgba(128,82,255,0.35)"
-                      : "none",
-                  }}
-                  aria-label={label}
-                  aria-current={isActive ? "page" : undefined}
-                >
-                  <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                  {/* Flyout label */}
-                  <span className="rail-flyout">{label}</span>
-                </Link>
-              );
-            })}
-
-            {/* Divider before logout */}
-            <div
-              className="mx-auto my-2 flex-shrink-0"
-              style={{
-                width: "40px",
-                height: "1px",
-                background: "var(--color-border-glass)",
-              }}
-            />
-
-            {/* Logout */}
-            <button
-              onClick={handleLogout}
-              className="rail-item relative w-full h-11 flex items-center justify-center rounded-lg transition-all duration-200"
-              style={{ color: "var(--color-danger)" }}
-              aria-label="تسجيل الخروج"
-            >
-              <LogOut size={18} />
-              <span className="rail-flyout" style={{ color: "var(--color-danger)" }}>
-                تسجيل الخروج
-              </span>
-            </button>
-          </div>
-        </nav>
       </div>
 
       {/* ════════════════════════════════════════════

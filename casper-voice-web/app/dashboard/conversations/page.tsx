@@ -28,8 +28,8 @@ export default function ConversationsPage() {
       <div className="w-full max-w-7xl mx-auto space-y-4 pb-10">
         {[1,2,3,4].map(i => (
           <div key={i} className="bento-card p-4 space-y-2">
-            <div className="shimmer h-6 w-1/3 rounded-md" />
-            <div className="shimmer h-4 w-1/4 rounded-md" />
+            <div className="shimmer h-6 w-1/3 rounded-md" style={{ background: "#e2e8f0" }} />
+            <div className="shimmer h-4 w-1/4 rounded-md" style={{ background: "#f1f5f9" }} />
           </div>
         ))}
       </div>
@@ -56,8 +56,8 @@ export default function ConversationsPage() {
               <div 
                 className="w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm"
                 style={{
-                  background: c.channel === "voice" ? "rgba(128,82,255,0.15)" : "rgba(31,201,164,0.15)",
-                  color: c.channel === "voice" ? "var(--color-brand)" : "#1fc9a4"
+                  background: c.channel === "voice" ? "#eff6ff" : "#ecfdf5",
+                  color: c.channel === "voice" ? "var(--color-brand)" : "#059669"
                 }}
               >
                 {c.channel === "voice" ? "📞" : "💬"}
@@ -73,7 +73,7 @@ export default function ConversationsPage() {
             </div>
             
             <div className="flex items-center gap-3 mr-12 sm:mr-0">
-              <span className="text-xs px-3 py-1.5 rounded-lg font-bold" style={{ background: "rgba(255,255,255,0.05)", color: "var(--color-text-secondary)" }}>
+              <span className="text-xs px-3 py-1.5 rounded-lg font-bold" style={{ background: "#f1f5f9", color: "var(--color-text-secondary)" }}>
                 {c.transcript.length} حرف
               </span>
               <span 
@@ -92,7 +92,7 @@ export default function ConversationsPage() {
           )}
           
           {open === c.id && (
-            <div className="mt-4 pt-4 mr-12" style={{ borderTop: "1px solid var(--color-border-glass)" }}>
+            <div className="mt-4 pt-4 mr-12" style={{ borderTop: "1px solid var(--color-border-subtle)" }}>
               <pre className="nested-card p-4 rounded-xl text-sm leading-relaxed whitespace-pre-wrap font-sans" style={{ color: "var(--color-text-primary)" }}>
                 {c.transcript}
               </pre>

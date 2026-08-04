@@ -106,21 +106,51 @@ export default function ApiKeysPage() {
     fetchKeys();
   };
 
+  // Shared inline styles
+  const actionBtn = (variant: "default" | "success" | "brand" | "danger" | "warning") => ({
+    default: {
+      background: "rgba(255,255,255,0.06)",
+      color: "var(--color-text-muted)",
+      border: "1px solid var(--color-border-glass)",
+    },
+    success: {
+      background: "rgba(21,132,110,0.12)",
+      color: "#1fc9a4",
+      border: "1px solid rgba(21,132,110,0.24)",
+    },
+    brand: {
+      background: "rgba(128,82,255,0.12)",
+      color: "var(--color-brand)",
+      border: "1px solid rgba(128,82,255,0.24)",
+    },
+    danger: {
+      background: "rgba(229,72,77,0.12)",
+      color: "var(--color-danger)",
+      border: "1px solid rgba(229,72,77,0.24)",
+    },
+    warning: {
+      background: "rgba(255,178,36,0.12)",
+      color: "#ffb224",
+      border: "1px solid rgba(255,178,36,0.24)",
+    }
+  }[variant]);
+
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6" dir="rtl">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-10" dir="rtl">
       {/* Page Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold">محفظة مفاتيح الذكاء الاصطناعي (API Keys Pool)</h1>
-          <p className="text-sm text-gray-500 mt-1">إدارة مفاتيح Gemini و Groq والتنقل التلقائي عند استنفاذ الكوتا</p>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>محفظة مفاتيح الذكاء الاصطناعي (API Keys Pool)</h1>
+          <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>إدارة مفاتيح Gemini و Groq والتنقل التلقائي عند استنفاذ الكوتا</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500">
+          <span className="text-sm font-bold" style={{ color: "var(--color-text-secondary)" }}>
             {availableCount} متاح / {exhaustedCount} مستنفد
           </span>
           <button
             onClick={fetchKeys}
-            className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600"
+            className="px-3 py-1.5 text-sm rounded-lg font-bold transition-all"
+            style={actionBtn("default")}
           >
             🔄 تحديث
           </button>
@@ -129,19 +159,20 @@ export default function ApiKeysPage() {
 
       {/* 🚨 All-Keys-Exhausted Banner */}
       {allExhausted && (
-        <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 flex items-start gap-3">
+        <div className="p-4 rounded-xl flex items-start gap-3 border" style={{ background: "rgba(229,72,77,0.08)", borderColor: "rgba(229,72,77,0.3)" }}>
           <span className="text-2xl">🚨</span>
           <div className="flex-1">
-            <p className="font-bold text-red-800 text-base">
+            <p className="font-bold text-base" style={{ color: "var(--color-danger)" }}>
               تحذير: جميع المفاتيح المسجلة مستنفدة!
             </p>
-            <p className="text-red-700 text-sm mt-1">
+            <p className="text-sm mt-1" style={{ color: "var(--color-danger)", opacity: 0.8 }}>
               النظام يتحول تلقائياً لوضع القوائم الطارئ حتى تُضاف مفاتيح جديدة أو تُعاد تفعيل المفاتيح الحالية.
             </p>
             <button
               onClick={handleResetAll}
               disabled={resetting}
-              className="mt-2 px-4 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 disabled:opacity-50"
+              className="mt-3 px-4 py-2 text-sm rounded-lg font-bold transition-all disabled:opacity-50"
+              style={actionBtn("danger")}
             >
               {resetting ? "جاري الإعادة..." : "⚡ إعادة تفعيل الكل الآن"}
             </button>
@@ -151,17 +182,18 @@ export default function ApiKeysPage() {
 
       {/* ⚠️ Partial exhaustion warning */}
       {!allExhausted && exhaustedCount > 0 && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-center justify-between">
+        <div className="p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border" style={{ background: "rgba(255,178,36,0.08)", borderColor: "rgba(255,178,36,0.3)" }}>
           <div className="flex items-center gap-2">
             <span className="text-xl">⚠️</span>
-            <p className="text-amber-800 text-sm">
+            <p className="text-sm font-bold" style={{ color: "#ffb224" }}>
               <strong>{exhaustedCount} مفتاح مستنفد</strong> — النظام يعمل على المفاتيح المتبقية ({availableCount} متاح)
             </p>
           </div>
           <button
             onClick={handleResetAll}
             disabled={resetting}
-            className="px-3 py-1.5 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 disabled:opacity-50"
+            className="px-4 py-2 text-sm rounded-lg font-bold transition-all disabled:opacity-50"
+            style={actionBtn("warning")}
           >
             {resetting ? "..." : "إعادة تفعيل المستنفدة"}
           </button>
@@ -169,31 +201,39 @@ export default function ApiKeysPage() {
       )}
 
       {/* Add Key Form with Provider Selector */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <form onSubmit={handleAddKey} className="flex gap-4 items-end">
-          <div className="w-48 space-y-2">
-            <label className="block text-sm font-medium text-gray-700">المزود (Provider)</label>
+      <div className="bento-card p-5 sm:p-6">
+        <form onSubmit={handleAddKey} className="flex flex-col sm:flex-row gap-4 sm:items-end">
+          <div className="w-full sm:w-48 space-y-2">
+            <label className="block text-sm font-bold" style={{ color: "var(--color-text-secondary)" }}>المزود (Provider)</label>
             <select
               value={selectedProvider}
               onChange={(e) => setSelectedProvider(e.target.value as "gemini" | "groq")}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium"
+              className="glass-input font-bold"
             >
               <option value="gemini">💎 Gemini (Google)</option>
               <option value="groq">⚡ Groq (Llama 3.3)</option>
             </select>
           </div>
-          <div className="flex-1 space-y-2">
-            <label className="block text-sm font-medium text-gray-700">مفتاح API الجديد</label>
+          <div className="flex-1 space-y-2 w-full">
+            <label className="block text-sm font-bold" style={{ color: "var(--color-text-secondary)" }}>مفتاح API الجديد</label>
             <input
               type="password"
               placeholder={selectedProvider === "gemini" ? "AIzaSy..." : "gsk_..."}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-left font-mono"
-              dir="ltr"
+              className="glass-input font-mono dir-ltr text-left"
               value={newKey}
               onChange={(e) => setNewKey(e.target.value)}
             />
           </div>
-          <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 h-[42px] font-medium">
+          <button 
+            type="submit" 
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold transition-all whitespace-nowrap"
+            style={{
+              background: "var(--color-brand)",
+              color: "#fff",
+              boxShadow: "var(--shadow-glow)",
+              height: "44px"
+            }}
+          >
             إضافة المفتاح
           </button>
         </form>
@@ -248,48 +288,40 @@ export default function ApiKeysPage() {
                           const exhaustedDate = new Date(k.exhaustedAt);
                           const resetDate = new Date(exhaustedDate.getTime() + 24 * 60 * 60 * 1000);
                           const now = new Date();
-                          const msLeft = resetDate.getTime() - now.getTime();
-                          const hoursLeft = Math.floor(msLeft / (1000 * 60 * 60));
-                          const minutesLeft = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
-                          return (
-                            <div className="text-[11px] space-y-0.5">
-                              <p className="text-red-500">
-                                خلص الساعة: {exhaustedDate.toLocaleTimeString("ar-EG")} — {exhaustedDate.toLocaleDateString("ar-EG")}
-                              </p>
-                              <p className="text-orange-600 font-medium">
-                                🕐 ريفريش تلقائي: {resetDate.toLocaleTimeString("ar-EG")} ({hoursLeft > 0 ? `${hoursLeft}س ${minutesLeft}د` : `${minutesLeft} دقيقة`} متبقية)
-                              </p>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        🟢 متاح وشغال
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {new Date(k.addedAt).toLocaleDateString("ar-EG")}
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <div className="flex gap-3">
+                      ) : !k.isActive ? (
+                        <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: "rgba(255,255,255,0.1)", color: "var(--color-text-muted)" }}>
+                          ⚫ غير مفعل
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: "rgba(21,132,110,0.1)", color: "#1fc9a4" }}>
+                          🟢 متاح وشغال
+                        </span>
+                      )}
+                      {k.exhaustedAt && (
+                        <div className="text-[10px] mt-1" style={{ color: "var(--color-text-muted)" }}>
+                          مستنفد منذ: {new Date(k.exhaustedAt).toLocaleTimeString("ar-EG")}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4" style={{ color: "var(--color-text-muted)" }}>
+                      {new Date(k.addedAt).toLocaleDateString("ar-EG")}
+                    </td>
+                    <td className="px-6 py-4 flex gap-2">
                       <button
                         onClick={() => handleTestKey(k.id, k.keyString, k.provider)}
                         disabled={testingId === k.id}
-                        className="text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50"
+                        className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+                        style={actionBtn("brand")}
                       >
-                        {testingId === k.id ? "⏳" : "فحص"}
+                        {testingId === k.id ? "..." : "فحص"}
                       </button>
                       <button
                         onClick={() => handleDelete(k.id)}
-                        className="text-red-500 hover:text-red-700 font-medium"
+                        className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+                        style={actionBtn("danger")}
                       >
                         حذف
                       </button>
-                    </div>
-                  </td>
-                </tr>
               ))}
             </tbody>
           </table>

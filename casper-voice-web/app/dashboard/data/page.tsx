@@ -138,29 +138,32 @@ export default function DataPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl dir-rtl">
+    <div className="space-y-6 w-full max-w-7xl mx-auto pb-10 dir-rtl">
       {/* 🎙️ Voice Knowledge Ingestion Widget */}
-      <div className="border border-indigo-200 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 rounded-xl p-5 space-y-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-indigo-600" />
-            <h2 className="font-bold text-lg text-slate-800">التغذية الصوتية لقاعدة المعرفة (Voice RAG)</h2>
+      <div className="bento-card p-5 sm:p-6 space-y-4" style={{ border: "1px solid rgba(128,82,255,0.25)" }}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-brand/10" style={{ background: "rgba(128,82,255,0.15)", color: "var(--color-brand)" }}>
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <h2 className="font-bold text-lg" style={{ color: "var(--color-text-primary)" }}>التغذية الصوتية لقاعدة المعرفة (Voice RAG)</h2>
           </div>
-          <span className="text-xs bg-indigo-100 text-indigo-700 font-medium px-2.5 py-1 rounded-full">
+          <span className="text-[10px] font-bold px-3 py-1.5 rounded-full" style={{ background: "rgba(128,82,255,0.1)", color: "var(--color-brand)" }}>
             WebM/Opus AI Ingest
           </span>
         </div>
 
-        <p className="text-sm text-slate-600">
+        <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
           سجل بصوتك أي معلومات عن مشاريعك، الأسعار، أو الأسئلة الشائعة للعملاء، وسيقوم الذكاء الاصطناعي بتفريغها واستخراج الأسئلة والأجوبة وتغذية الأيجنت بها تلقائياً!
         </p>
 
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
           {!isRecording ? (
             <button
               onClick={startRecording}
               disabled={isIngesting}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-lg shadow transition disabled:opacity-50"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold px-6 py-3 rounded-xl transition-all disabled:opacity-50"
+              style={{ background: "var(--color-brand)", color: "#fff", boxShadow: "var(--shadow-glow)" }}
             >
               <Mic className="w-4 h-4" />
               ابدأ التسجيل الصوتي
@@ -168,7 +171,8 @@ export default function DataPage() {
           ) : (
             <button
               onClick={stopRecording}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2.5 rounded-lg shadow transition animate-pulse"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold px-6 py-3 rounded-xl transition-all animate-pulse"
+              style={{ background: "var(--color-danger)", color: "#fff", boxShadow: "0 0 15px rgba(229,72,77,0.3)" }}
             >
               <Square className="w-4 h-4 fill-current" />
               إيقاف ومعالجة التسجيل
@@ -176,7 +180,7 @@ export default function DataPage() {
           )}
 
           {ingestStatus && (
-            <p className="text-sm font-medium text-slate-700 bg-white/80 border px-3 py-2 rounded-lg flex-1">
+            <p className="text-sm font-bold w-full sm:flex-1 px-4 py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--color-border-glass)", color: "var(--color-text-primary)" }}>
               {ingestStatus}
             </p>
           )}
@@ -184,50 +188,60 @@ export default function DataPage() {
       </div>
 
       {/* Manual Input Section */}
-      <div className="border rounded-xl p-5 space-y-4 bg-white shadow-sm">
-        <h2 className="font-semibold text-slate-800">إضافة معلومة كتابياً</h2>
+      <div className="bento-card p-5 sm:p-6 space-y-4">
+        <h2 className="font-bold" style={{ color: "var(--color-text-primary)" }}>إضافة معلومة كتابياً</h2>
         <input
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="السؤال المتوقع من العميل"
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+          className="glass-input text-sm"
         />
         <textarea
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           placeholder="الإجابة التفصيلية التي سيرد بها الأيجنت"
           rows={3}
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+          className="glass-input text-sm"
         />
         <input
           value={keywords}
           onChange={(e) => setKeywords(e.target.value)}
           placeholder="كلمات مفتاحية (مفصولة بفاصلة)"
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+          className="glass-input text-sm"
         />
         <button
           onClick={add}
-          className="bg-slate-900 hover:bg-slate-800 text-white font-medium px-4 py-2 rounded-lg text-sm transition"
+          className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold transition-all"
+          style={{ background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)" }}
         >
           إضافة لقاعدة المعرفة
         </button>
       </div>
 
       {/* Existing Knowledge Items List */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-slate-800 text-base">الأسئلة والأجوبة المسجلة ({items.length})</h3>
+      <div className="space-y-4 pt-4">
+        <h3 className="font-bold text-lg" style={{ color: "var(--color-text-primary)" }}>الأسئلة والأجوبة المسجلة ({items.length})</h3>
 
         {loading ? (
-          <p className="text-sm text-slate-500">جاري التحميل...</p>
+          <div className="flex gap-4 overflow-hidden">
+            {[1,2,3].map(i => (
+              <div key={i} className="bento-card p-5 w-full space-y-3">
+                <div className="shimmer h-5 w-1/2 rounded" />
+                <div className="shimmer h-4 w-3/4 rounded" />
+              </div>
+            ))}
+          </div>
         ) : items.length === 0 ? (
-          <p className="text-sm text-slate-500">لا توجد أسئلة مسجلة حالياً.</p>
+          <div className="bento-card p-10 text-center border-dashed">
+            <p className="text-sm font-bold" style={{ color: "var(--color-text-muted)" }}>لا توجد أسئلة مسجلة حالياً.</p>
+          </div>
         ) : (
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {items.map((item) => (
-              <div key={item.id} className="border rounded-xl p-4 bg-white flex justify-between gap-4 shadow-sm">
-                <div className="space-y-1">
-                  <p className="font-semibold text-slate-800">{item.question}</p>
-                  <p className="text-sm text-slate-600">{item.answer}</p>
+              <div key={item.id} className="bento-card p-5 flex flex-col justify-between gap-4">
+                <div className="space-y-3">
+                  <p className="font-bold text-base" style={{ color: "var(--color-text-primary)" }}>{item.question}</p>
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>{item.answer}</p>
                   {(() => {
                     let parsedKw: string[] = [];
                     const kwData: unknown = item.keywords;
@@ -244,9 +258,9 @@ export default function DataPage() {
                     }
                     if (!parsedKw || parsedKw.length === 0) return null;
                     return (
-                      <div className="flex flex-wrap gap-1.5 pt-1">
+                      <div className="flex flex-wrap gap-2 pt-2">
                         {parsedKw.map((kw, i) => (
-                          <span key={i} className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                          <span key={i} className="text-xs font-bold px-2 py-1 rounded" style={{ background: "rgba(255,255,255,0.05)", color: "var(--color-text-muted)" }}>
                             #{kw}
                           </span>
                         ))}
@@ -256,7 +270,8 @@ export default function DataPage() {
                 </div>
                 <button
                   onClick={() => remove(item.id)}
-                  className="text-red-500 hover:text-red-700 text-sm p-1 hover:bg-red-50 rounded transition"
+                  className="self-end text-sm p-2 rounded-lg transition-all"
+                  style={{ color: "var(--color-danger)", background: "rgba(229,72,77,0.1)" }}
                   title="حذف"
                 >
                   <Trash2 className="w-4 h-4" />

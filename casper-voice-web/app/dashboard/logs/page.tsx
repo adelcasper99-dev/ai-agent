@@ -33,7 +33,7 @@ export default function LogsPage() {
   }
 
   async function clearLogs() {
-    if (!confirm("هل أنت تأكد من تصفير ومسح السجلات القديمة؟")) return;
+    if (!confirm("هل أنت متأكد من تصفير ومسح السجلات القديمة؟")) return;
     setClearing(true);
     try {
       await fetch("/api/logs", { method: "DELETE" });
@@ -78,27 +78,21 @@ export default function LogsPage() {
 
     if (line.includes("insufficient_quota") || line.includes("exceeded your current quota")) {
       parsedLogs.push({
-        id: idx,
-        time,
-        type: 'error',
+        id: idx, time, type: 'error',
         title: '🚨 انتهى رصيد الـ API (Quota Exceeded)',
         detail: 'رصيد حساب OpenAI أو المزود الحالي قد انتهى. يرجى شحن الرصيد أو التبديل لـ Groq Pipeline من الإعدادات.',
         raw: line
       });
     } else if (line.includes("DefaultCredentialsError")) {
       parsedLogs.push({
-        id: idx,
-        time,
-        type: 'warning',
+        id: idx, time, type: 'warning',
         title: '⚠️ اعتمادات Google Cloud مفقودة',
         detail: 'محرك Google TTS يحتاج اعتمادات سحابية GCP. تم التبديل التلقائي لمحرك آخر لتفادي التعطيل.',
         raw: line
       });
     } else if (line.includes("GROQ_API_KEY is required")) {
       parsedLogs.push({
-        id: idx,
-        time,
-        type: 'error',
+        id: idx, time, type: 'error',
         title: '🚨 مفتاح Groq مفقود',
         detail: 'يرجى كتابة مفتاح Groq API Key وحفظه من صفحة الإعدادات أولاً.',
         raw: line
@@ -107,9 +101,7 @@ export default function LogsPage() {
       const match = line.match(/"user_transcript":\s*"([^"]+)"/);
       const text = match ? match[1] : line;
       parsedLogs.push({
-        id: idx,
-        time,
-        type: 'user',
+        id: idx, time, type: 'user',
         title: '🗣️ العميل يـتحدث:',
         detail: `"${text}"`,
         raw: line
@@ -118,45 +110,35 @@ export default function LogsPage() {
       const match = line.match(/"text":\s*"([^"]+)"/);
       const text = match ? match[1] : line;
       parsedLogs.push({
-        id: idx,
-        time,
-        type: 'assistant',
+        id: idx, time, type: 'assistant',
         title: '🤖 المساعد الصوتي يـرد:',
         detail: `"${text}"`,
         raw: line
       });
     } else if (line.includes("registered worker") || line.includes("starting worker")) {
       parsedLogs.push({
-        id: idx,
-        time,
-        type: 'success',
+        id: idx, time, type: 'success',
         title: '🟢 سيرفر الصوت متصل وجاهز',
         detail: 'المساعد جاهز لاستقبال المكالمات والربط مع LiveKit بنجاح.',
         raw: line
       });
     } else if (line.includes("received job request")) {
       parsedLogs.push({
-        id: idx,
-        time,
-        type: 'info',
+        id: idx, time, type: 'info',
         title: '📞 مكالمة جديدة بدأت الآن',
         detail: 'جاري فتح الخط وتوصيل العميل بالمساعد الصوتي...',
         raw: line
       });
     } else if (line.includes("closing agent session")) {
       parsedLogs.push({
-        id: idx,
-        time,
-        type: 'info',
+        id: idx, time, type: 'info',
         title: '📴 انتهت المكالمة',
         detail: 'تم إغلاق الخط وحفظ المحادثة بنجاح.',
         raw: line
       });
-    } else if (line.includes("ERROR") || line.includes("CRITICAL") || line.includes("Exception")) {
+    } else if (line.includes("ERROR") || line.includes("CRITICAL") || line.includes("Exception") || line.includes("error")) {
       parsedLogs.push({
-        id: idx,
-        time,
-        type: 'error',
+        id: idx, time, type: 'error',
         title: '🚨 تنبيه خطأ في النظام',
         detail: line,
         raw: line
@@ -164,49 +146,73 @@ export default function LogsPage() {
     }
   });
 
+  // Shared action button styles
+  const actionBtn = (variant: "default" | "brand" | "danger") => ({
+    default: {
+      background: "rgba(255,255,255,0.06)",
+      color: "var(--color-text-muted)",
+      border: "1px solid var(--color-border-glass)",
+    },
+    brand: {
+      background: "var(--color-brand)",
+      color: "#fff",
+      border: "none",
+    },
+    danger: {
+      background: "rgba(229,72,77,0.12)",
+      color: "var(--color-danger)",
+      border: "1px solid rgba(229,72,77,0.24)",
+    }
+  }[variant]);
+
   return (
-    <div className="space-y-4">
+    <div className="w-full max-w-7xl mx-auto space-y-4 pb-10" dir="rtl">
       {/* Header controls */}
-      <div className="flex flex-wrap justify-between items-center bg-slate-100 p-4 rounded-xl border gap-3">
+      <div className="bento-card p-4 sm:p-5 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
-          <h2 className="font-bold text-lg text-slate-800">مُترجم سجلات السيرفر الذكي 📡</h2>
-          <p className="text-xs text-slate-500">تحويل اللوجز المعقدة لأحداث وتنبيهات مبسطة بالعربي تفهمها بسهولة</p>
+          <h2 className="font-bold text-lg" style={{ color: "var(--color-text-primary)" }}>مُترجم سجلات السيرفر الذكي 📡</h2>
+          <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>تحويل اللوجز المعقدة لأحداث وتنبيهات مبسطة بالعربي تفهمها بسهولة</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
           {/* Mode Switcher */}
-          <div className="bg-slate-200 p-1 rounded-lg flex text-xs font-bold ml-2">
+          <div className="flex text-xs font-bold p-1 rounded-xl" style={{ background: "rgba(0,0,0,0.2)" }}>
             <button
               onClick={() => setViewMode('translated')}
-              className={`px-3 py-1 rounded-md transition-all ${
-                viewMode === 'translated' ? 'bg-white text-blue-600 shadow' : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className="px-3 py-1.5 rounded-lg transition-all"
+              style={{
+                background: viewMode === 'translated' ? 'rgba(255,255,255,0.1)' : 'transparent',
+                color: viewMode === 'translated' ? '#fff' : 'var(--color-text-muted)'
+              }}
             >
               مبسط بالعربي 💡
             </button>
             <button
               onClick={() => setViewMode('raw')}
-              className={`px-3 py-1 rounded-md transition-all ${
-                viewMode === 'raw' ? 'bg-white text-blue-600 shadow' : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className="px-3 py-1.5 rounded-lg transition-all"
+              style={{
+                background: viewMode === 'raw' ? 'rgba(255,255,255,0.1)' : 'transparent',
+                color: viewMode === 'raw' ? '#fff' : 'var(--color-text-muted)'
+              }}
             >
               تقني (Code) 💻
             </button>
           </div>
 
-          <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+          <label className="flex items-center gap-2 text-xs font-bold cursor-pointer" style={{ color: "var(--color-text-secondary)" }}>
             <input
               type="checkbox"
               checked={autoRefresh}
               onChange={(e) => setAutoRefresh(e.target.checked)}
-              className="w-4 h-4 rounded text-blue-600"
+              className="w-4 h-4 rounded accent-purple-500"
             />
             تحديث تلقائي
           </label>
 
           <button
             onClick={copyLogs}
-            className="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-900 shadow"
+            className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm"
+            style={actionBtn("default")}
           >
             {copied ? "تم النسخ ✓" : "نسخ 📋"}
           </button>
@@ -214,7 +220,8 @@ export default function LogsPage() {
           <button
             onClick={clearLogs}
             disabled={clearing}
-            className="bg-red-100 text-red-700 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-200 shadow-sm"
+            className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50"
+            style={actionBtn("danger")}
           >
             {clearing ? "..." : "مسح 🗑️"}
           </button>
@@ -223,27 +230,28 @@ export default function LogsPage() {
 
       {/* Logs Content View */}
       {viewMode === 'translated' ? (
-        <div className="space-y-2 h-[500px] overflow-y-auto p-3 bg-slate-50 rounded-xl border shadow-inner">
+        <div className="bento-card space-y-3 h-[600px] overflow-y-auto p-4 sm:p-5">
           {parsedLogs.length === 0 ? (
-            <p className="text-center text-slate-400 py-20 font-bold">لا توجد أحداث أو أخطاء حالياً.. السيرفر يعمل بهدوء 🟢</p>
+            <p className="text-center py-20 font-bold" style={{ color: "var(--color-text-muted)" }}>لا توجد أحداث أو أخطاء حالياً.. السيرفر يعمل بهدوء 🟢</p>
           ) : (
             parsedLogs.map((log) => {
-              const bgMap = {
-                error: 'bg-red-50 border-red-200 text-red-900',
-                warning: 'bg-amber-50 border-amber-200 text-amber-900',
-                user: 'bg-blue-50 border-blue-200 text-blue-900',
-                assistant: 'bg-purple-50 border-purple-200 text-purple-900',
-                success: 'bg-emerald-50 border-emerald-200 text-emerald-900',
-                info: 'bg-slate-100 border-slate-200 text-slate-800'
+              const styleMap = {
+                error: { bg: 'rgba(229,72,77,0.08)', border: 'rgba(229,72,77,0.2)', text: 'var(--color-danger)' },
+                warning: { bg: 'rgba(255,178,36,0.08)', border: 'rgba(255,178,36,0.2)', text: '#ffb224' },
+                user: { bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.2)', text: '#60a5fa' },
+                assistant: { bg: 'rgba(168,85,247,0.08)', border: 'rgba(168,85,247,0.2)', text: '#c084fc' },
+                success: { bg: 'rgba(21,132,110,0.08)', border: 'rgba(21,132,110,0.2)', text: '#1fc9a4' },
+                info: { bg: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.08)', text: 'var(--color-text-secondary)' }
               };
+              const s = styleMap[log.type];
 
               return (
-                <div key={log.id} className={`p-3 rounded-xl border ${bgMap[log.type]} shadow-sm space-y-1`}>
-                  <div className="flex justify-between items-center font-bold text-sm">
+                <div key={log.id} className="p-4 rounded-xl border space-y-1.5 transition-all hover:bg-opacity-80" style={{ background: s.bg, borderColor: s.border }}>
+                  <div className="flex justify-between items-center font-bold text-sm" style={{ color: s.text }}>
                     <span>{log.title}</span>
                     {log.time && <span className="text-xs opacity-75 font-mono dir-ltr">{log.time}</span>}
                   </div>
-                  <p className="text-xs leading-relaxed font-medium">{log.detail}</p>
+                  <p className="text-sm leading-relaxed font-medium" style={{ color: "var(--color-text-secondary)" }}>{log.detail}</p>
                 </div>
               );
             })
@@ -252,19 +260,22 @@ export default function LogsPage() {
         </div>
       ) : (
         /* Raw Technical View */
-        <div className="bg-slate-950 text-green-400 font-mono p-4 rounded-xl text-xs h-[500px] overflow-y-auto shadow-inner leading-relaxed whitespace-pre-wrap border border-slate-800 dir-ltr text-left">
+        <div className="bento-card p-4 sm:p-5 h-[600px] overflow-y-auto font-mono text-xs leading-relaxed whitespace-pre-wrap dir-ltr text-left">
           {logs.map((line, idx) => {
-            let colorClass = "text-slate-300";
+            let color = "var(--color-text-secondary)";
+            let bg = "transparent";
+            
             if (line.includes("ERROR") || line.includes("CRITICAL") || line.includes("Exception") || line.includes("Error")) {
-              colorClass = "text-red-400 font-bold bg-red-950/50 px-1 rounded";
+              color = "var(--color-danger)";
+              bg = "rgba(229,72,77,0.08)";
             } else if (line.includes("WARNING")) {
-              colorClass = "text-yellow-400 font-semibold";
+              color = "#ffb224";
             } else if (line.includes("INFO")) {
-              colorClass = "text-cyan-300";
+              color = "#1fc9a4";
             }
 
             return (
-              <div key={idx} className={`${colorClass} py-0.5 border-b border-slate-900/40 hover:bg-slate-900 px-2 rounded transition-colors`}>
+              <div key={idx} className="py-1 px-2 rounded mb-0.5 border-b border-white/5 transition-colors" style={{ color, background: bg }}>
                 {line}
               </div>
             );

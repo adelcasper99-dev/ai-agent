@@ -60,53 +60,81 @@ export default function TenantsPage() {
     }
   };
 
-  if (loading) return <p className="text-sm font-bold text-slate-500 py-10 text-center animate-pulse">جاري تحميل طلبات التفعيل والتسجيل الذاتي...</p>;
+  if (loading) {
+    return (
+      <div className="w-full max-w-7xl mx-auto pb-10 space-y-4" dir="rtl">
+        {[1,2,3].map(i => (
+          <div key={i} className="bento-card p-5 space-y-3">
+            <div className="shimmer h-6 w-1/3 rounded-md" />
+            <div className="shimmer h-4 w-1/4 rounded-md" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  const actionBtn = (variant: "brand" | "success" | "danger") => ({
+    brand: { background: "var(--color-brand)", color: "#fff", boxShadow: "var(--shadow-glow)", border: "none" },
+    success: { background: "var(--color-success)", color: "#fff", boxShadow: "var(--shadow-glow)", border: "none" },
+    danger: { background: "rgba(229,72,77,0.12)", color: "var(--color-danger)", border: "1px solid rgba(229,72,77,0.24)" }
+  }[variant]);
 
   return (
-    <div className="space-y-6 max-w-4xl pb-10" dir="rtl">
-      <div className="flex justify-between items-center bg-slate-900 text-white p-5 rounded-2xl shadow-lg border border-slate-800">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-10" dir="rtl">
+      <div className="bento-card p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-black flex items-center gap-2">
+          <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: "var(--color-text-primary)" }}>
             <span>🏢</span> إشعار وطلبات تفعيل الشركات والعملاء
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>
             إدارة طلبات التسجيل الذاتي القادمة عبر بوت التليجرام أو الدشبورد والموافقة الفورية عليها.
           </p>
         </div>
         <button
           onClick={fetchRequests}
-          className="bg-slate-800 hover:bg-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl border border-slate-700 transition"
+          className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold transition-all"
+          style={{
+            background: "rgba(255,255,255,0.06)",
+            color: "var(--color-text-muted)",
+            border: "1px solid var(--color-border-glass)",
+          }}
         >
           🔄 تحديث الطلبات
         </button>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {requests.length === 0 ? (
-          <div className="bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-10 text-center space-y-2">
-            <span className="text-3xl">📥</span>
-            <h4 className="font-bold text-sm text-slate-700">لا توجد طلبات تسجيل معلقة حالياً</h4>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
-              عندما يرسل عميل جديد كلمة <code className="bg-slate-200 px-1.5 py-0.5 rounded text-blue-800 font-mono">/start</code> للبوت على التليجرام، سيصلك إشعار فوري هنا وعلى حسابك بالتليجرام للموافقة.
+          <div className="bento-card p-10 text-center space-y-3 border-dashed" style={{ borderColor: "rgba(255,255,255,0.15)" }}>
+            <span className="text-3xl block">📥</span>
+            <h4 className="font-bold text-sm" style={{ color: "var(--color-text-primary)" }}>لا توجد طلبات تسجيل معلقة حالياً</h4>
+            <p className="text-xs max-w-md mx-auto leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
+              عندما يرسل عميل جديد كلمة <code className="font-mono text-[10px] px-1.5 py-0.5 rounded" style={{ background: "rgba(128,82,255,0.15)", color: "var(--color-brand)" }}>/start</code> للبوت على التليجرام، سيصلك إشعار فوري هنا وعلى حسابك بالتليجرام للموافقة.
             </p>
           </div>
         ) : (
           requests.map((req) => (
             <div
               key={req.id}
-              className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+              className="bento-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 transition-all hover:bg-white/5"
             >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-black text-slate-900 text-base">{req.customerName}</span>
+              <div className="space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <span className="font-bold text-base" style={{ color: "var(--color-text-primary)" }}>{req.customerName}</span>
                   <span
-                    className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
-                      req.status === "approved"
-                        ? "bg-emerald-100 text-emerald-800"
+                    className="text-[10px] font-bold px-3 py-1 rounded-full w-fit"
+                    style={{
+                      background: req.status === "approved" 
+                        ? "rgba(21,132,110,0.12)" 
+                        : req.status === "rejected" 
+                        ? "rgba(229,72,77,0.12)" 
+                        : "rgba(255,178,36,0.12)",
+                      color: req.status === "approved"
+                        ? "#1fc9a4"
                         : req.status === "rejected"
-                        ? "bg-rose-100 text-rose-800"
-                        : "bg-amber-100 text-amber-800 animate-pulse"
-                    }`}
+                        ? "var(--color-danger)"
+                        : "#ffb224"
+                    }}
                   >
                     {req.status === "approved"
                       ? "✅ مفعل ومكتمل"
@@ -115,28 +143,30 @@ export default function TenantsPage() {
                       : "⏳ في انتظار موافقتك"}
                   </span>
                 </div>
-                <div className="text-xs text-slate-600 flex items-center gap-4 font-mono dir-ltr">
-                  <span>📱 {req.phoneNumber || "بدون رقم"}</span>
-                  <span>💬 Telegram ID: {req.telegramChatId}</span>
+                <div className="text-xs flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 font-mono dir-ltr" style={{ color: "var(--color-text-secondary)" }}>
+                  <span className="bg-black/20 px-2 py-1 rounded">📱 {req.phoneNumber || "بدون رقم"}</span>
+                  <span className="bg-black/20 px-2 py-1 rounded">💬 Telegram ID: {req.telegramChatId}</span>
                 </div>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px]" style={{ color: "var(--color-text-muted)" }}>
                   تاريخ الطلب: {new Date(req.requestedAt).toLocaleString("ar-EG")}
                 </p>
               </div>
 
               {req.status === "pending" && (
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
                   <button
                     onClick={() => handleAction(req.id, "approve")}
                     disabled={processingId === req.id}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow transition disabled:opacity-50"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs transition-all disabled:opacity-50"
+                    style={actionBtn("success")}
                   >
                     {processingId === req.id ? "جاري التفعيل..." : "✅ موافقة وتفعيل"}
                   </button>
                   <button
                     onClick={() => handleAction(req.id, "reject")}
                     disabled={processingId === req.id}
-                    className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow transition disabled:opacity-50"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs transition-all disabled:opacity-50"
+                    style={actionBtn("danger")}
                   >
                     ❌ رفض
                   </button>

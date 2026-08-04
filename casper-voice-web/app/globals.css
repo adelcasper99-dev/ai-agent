@@ -1,6 +1,302 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
+/* ============================================================
+   LAYER 1 — PRIMITIVE TOKENS
+   ============================================================ */
+:root {
+  --pr-color-void: #000000;
+  --pr-color-bone-white: #ffffff;
+  --pr-color-ash-gray: #9a9a9a;
+  --pr-color-silver-mist: #bdbdbd;
+  --pr-color-electric-iris-500: #8052ff;
+  --pr-color-electric-iris-600: #6b3bff;
+  --pr-color-electric-iris-700: #5824e6;
+  --pr-color-saffron-spark: #ffb829;
+  --pr-color-deep-verdant: #15846e;
+  --pr-color-cyan-glow: #00f0ff;
+  --pr-color-danger-red: #E5484D;
+
+  --pr-font-primary: 'Cairo', system-ui, sans-serif;
+  --pr-font-numeric: 'Plus Jakarta Sans', 'Cairo', monospace;
+
+  --pr-radius-sm: 8px;
+  --pr-radius-md: 16px;
+  --pr-radius-lg: 24px;
+  --pr-radius-full: 9999px;
+
+  --pr-t-fast: 150ms;
+  --pr-t-base: 200ms;
+  --pr-t-slow: 350ms;
+  --pr-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+   LAYER 2 — SEMANTIC TOKENS  (dark = default)
+   ============================================================ */
+html {
+  --color-surface-base: #050508;
+  --color-surface-glass: rgba(0, 0, 0, 0.82);
+  --color-surface-glass-rail: rgba(0, 0, 0, 0.88);
+  --color-surface-glass-nested: rgba(255, 255, 255, 0.04);
+  --color-surface-glass-input: rgba(15, 23, 42, 0.85);
+  --color-surface-topbar: rgba(0, 0, 0, 0.70);
+
+  --color-border-glass: rgba(255, 255, 255, 0.08);
+  --color-border-glass-hover: rgba(128, 82, 255, 0.50);
+
+  --color-text-primary: var(--pr-color-bone-white);
+  --color-text-secondary: var(--pr-color-silver-mist);
+  --color-text-muted: var(--pr-color-ash-gray);
+
+  --color-brand: var(--pr-color-electric-iris-500);
+  --color-brand-hover: var(--pr-color-electric-iris-600);
+  --color-success: var(--pr-color-deep-verdant);
+  --color-success-text: #1fc9a4;
+  --color-warning: var(--pr-color-saffron-spark);
+  --color-danger: var(--pr-color-danger-red);
+  --color-info: var(--pr-color-cyan-glow);
+
+  --shadow-glow: 0 0 28px rgba(128, 82, 255, 0.28);
+  --shadow-card: 0 4px 32px rgba(0, 0, 0, 0.50);
+  --backdrop-card: blur(24px) saturate(160%);
+  --backdrop-nested: blur(12px);
+  --backdrop-rail: blur(28px) saturate(180%);
+}
+
+/* ============================================================
+   LAYER 2 — LIGHT THEME OVERRIDES
+   ============================================================ */
+html:not(.dark) {
+  --color-surface-base: #f1f4f9;
+  --color-surface-glass: rgba(255, 255, 255, 0.88);
+  --color-surface-glass-rail: rgba(255, 255, 255, 0.95);
+  --color-surface-glass-nested: rgba(241, 245, 249, 0.90);
+  --color-surface-glass-input: rgba(255, 255, 255, 0.95);
+  --color-surface-topbar: rgba(255, 255, 255, 0.85);
+
+  --color-border-glass: rgba(0, 0, 0, 0.08);
+  --color-border-glass-hover: var(--pr-color-electric-iris-500);
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+
+  --shadow-glow: 0 0 20px rgba(128, 82, 255, 0.18);
+  --shadow-card: 0 2px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --backdrop-card: none;
+  --backdrop-nested: none;
+  --backdrop-rail: none;
+}
+
+/* ============================================================
+   LAYER 3 — COMPONENT TOKENS
+   ============================================================ */
+:root {
+  --rail-w: 76px;
+  --topbar-h: 60px;
+}
+
+/* ============================================================
+   GLOBAL BASE STYLES
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--pr-font-primary);
+  direction: rtl;
+}
+
+body {
+  font-family: var(--pr-font-primary);
+  background: var(--color-surface-base);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+}
+
+/* ============================================================
+   CASPER DESIGN SYSTEM — REUSABLE CLASSES
+   These classes are used directly in TSX via className=
+   ============================================================ */
+
+/* Bento card — primary glass container */
+.bento-card {
+  background: var(--color-surface-glass);
+  backdrop-filter: var(--backdrop-card);
+  -webkit-backdrop-filter: var(--backdrop-card);
+  border: 1px solid var(--color-border-glass);
+  border-radius: var(--pr-radius-lg);
+  box-shadow: var(--shadow-card);
+  transition:
+    border-color var(--pr-t-base) var(--pr-ease),
+    box-shadow var(--pr-t-base) var(--pr-ease);
+}
+.bento-card:hover {
+  border-color: var(--color-border-glass-hover);
+  box-shadow: var(--shadow-glow), var(--shadow-card);
+}
+
+/* Nested glass card — sits inside a bento-card */
+.nested-card {
+  background: var(--color-surface-glass-nested);
+  backdrop-filter: var(--backdrop-nested);
+  -webkit-backdrop-filter: var(--backdrop-nested);
+  border: 1px solid var(--color-border-glass);
+  border-radius: var(--pr-radius-md);
+  transition: border-color var(--pr-t-base) var(--pr-ease);
+}
+.nested-card:hover {
+  border-color: var(--color-border-glass-hover);
+}
+html:not(.dark) .nested-card {
+  background: rgba(248, 250, 252, 0.80);
+}
+
+/* Glass input / select */
+.glass-input {
+  width: 100%;
+  background: var(--color-surface-glass-input);
+  border: 1px solid var(--color-border-glass);
+  border-radius: var(--pr-radius-md);
+  color: var(--color-text-primary);
+  font-family: var(--pr-font-primary);
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  appearance: none;
+  -webkit-appearance: none;
+  transition:
+    border-color var(--pr-t-base) var(--pr-ease),
+    box-shadow var(--pr-t-base) var(--pr-ease);
+}
+.glass-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(128, 82, 255, 0.15);
+}
+.glass-input option {
+  background: #1e1e2e;
+  color: #fff;
+}
+html:not(.dark) .glass-input option {
+  background: #fff;
+  color: #0f172a;
+}
+
+/* Progress bar track */
+.progress-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: var(--pr-radius-full);
+  overflow: hidden;
+}
+html:not(.dark) .progress-track {
+  background: rgba(0, 0, 0, 0.08);
+}
+.progress-fill {
+  height: 100%;
+  border-radius: var(--pr-radius-full);
+  transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Icon rail flyout label */
+.rail-flyout {
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%) translateX(8px);
+  background: var(--color-surface-glass-rail);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border-glass);
+  color: var(--color-text-primary);
+  padding: 5px 12px;
+  border-radius: var(--pr-radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--pr-t-base) var(--pr-ease),
+    transform var(--pr-t-base) var(--pr-ease);
+  z-index: 200;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.30);
+}
+.rail-item:hover .rail-flyout {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Live pulse dot */
+@keyframes casper-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  animation: casper-pulse 1.8s ease-in-out infinite;
+}
+
+/* Tab panel fade-up */
+@keyframes casper-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.casper-fade-up {
+  animation: casper-fade-up 0.3s var(--pr-ease);
+}
+
+/* Shimmer skeleton */
+@keyframes casper-shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.10) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
+  background-size: 400% 100%;
+  animation: casper-shimmer 2s linear infinite;
+  border-radius: var(--pr-radius-sm);
+}
+
+/* Tabular numerals for financial data */
+.tabular-nums {
+  font-family: var(--pr-font-numeric);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 99px; }
+html:not(.dark) ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.10); }
+
+/* ============================================================
+   TAILWIND v4 THEME TOKENS (available via Tailwind utilities)
+   ============================================================ */
 @theme {
+  --color-iris-500: #8052ff;
+  --color-iris-600: #6b3bff;
+  --color-iris-700: #5824e6;
+  --color-verdant: #15846e;
+  --color-saffron: #ffb829;
+  --color-cyan-glow: #00f0ff;
+  --color-danger: #E5484D;
   --color-blue-500: #3b82f6;
   --color-blue-600: #2563eb;
+
+  --font-cairo: 'Cairo', system-ui, sans-serif;
+  --font-numeric: 'Plus Jakarta Sans', 'Cairo', monospace;
+
+  --radius-bento: 24px;
+  --radius-nested: 16px;
 }

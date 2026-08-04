@@ -44,7 +44,6 @@ export default function SettingsPage() {
   const [demoText, setDemoText] = useState("خلاص يا باشا، سجلتلك 50 جنيه بنزين في المصاريف وزي الفل!");
   const [demoVoice, setDemoVoice] = useState("salma");
   const [playingDemo, setPlayingDemo] = useState(false);
-  const [copiedDemo, setCopiedDemo] = useState(false);
   const [audioDemoUrl, setAudioDemoUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -104,13 +103,13 @@ export default function SettingsPage() {
       if (provider === "FISH") key = values["FISH_API_KEY"];
       if (provider === "TELEGRAM") key = values["TELEGRAM_BOT_TOKEN"];
 
-      const body = {
+      const body: Record<string, string | undefined> = {
         provider,
         key,
         secret: values["LIVEKIT_API_SECRET"],
         url: values["LIVEKIT_URL"],
       };
-      
+
       if (provider === "LIVEKIT") {
         body.key = values["LIVEKIT_API_KEY"];
       }
@@ -129,20 +128,51 @@ export default function SettingsPage() {
     }
   }
 
-  if (loading) return <p>جاري التحميل...</p>;
+  if (loading) {
+    return (
+      <div className="space-y-4 max-w-4xl">
+        <div className="bento-card p-6 space-y-4">
+          <div className="shimmer h-4 w-48 rounded-full" />
+          {[1,2,3].map(i => <div key={i} className="shimmer h-10 w-full rounded-xl" />)}
+        </div>
+      </div>
+    );
+  }
 
   const safeValues = values || {};
+
+  // ── Shared inline styles ───────────────────────────────────────────────────
+  const actionBtn = (variant: "default" | "success" | "brand") => ({
+    default: {
+      background: "rgba(255,255,255,0.06)",
+      color: "var(--color-text-muted)",
+      border: "1px solid var(--color-border-glass)",
+    },
+    success: {
+      background: "rgba(21,132,110,0.12)",
+      color: "#1fc9a4",
+      border: "1px solid rgba(21,132,110,0.24)",
+    },
+    brand: {
+      background: "rgba(128,82,255,0.12)",
+      color: "var(--color-brand)",
+      border: "1px solid rgba(128,82,255,0.24)",
+    },
+  }[variant]);
 
   return (
     <div className="space-y-6 max-w-4xl pb-10">
       <UsageIndicator />
 
-      <div>
-        <label className="block text-sm font-medium mb-1">مزود الصوت المستخدم دلوقتي</label>
+      {/* ── Voice Provider ── */}
+      <div className="bento-card p-5 space-y-2">
+        <label className="block text-sm font-bold" style={{ color: "var(--color-text-secondary)" }}>
+          مزود الصوت المستخدم دلوقتي
+        </label>
         <select
           value={safeValues["VOICE_PROVIDER"] || "gemini"}
           onChange={(e) => setValues({ ...safeValues, VOICE_PROVIDER: e.target.value })}
-          className="w-full border rounded-lg px-3 py-2 bg-white font-bold text-blue-900"
+          className="glass-input font-bold"
         >
           <option value="gemini">Google Gemini Realtime (صوت مباشر 🌟)</option>
           <option value="groq_pipeline">Groq Pipeline (Whisper + Llama3 + EdgeTTS)</option>
@@ -151,9 +181,10 @@ export default function SettingsPage() {
         </select>
       </div>
 
-      <div className="bg-blue-50/80 p-4 rounded-xl border border-blue-200 space-y-3">
-        <label className="block text-sm font-bold text-blue-950 flex items-center gap-1.5">
-          <span>🎙️</span> اختيار نبرة وتنغيم الصوت المفضلة (Voice Tone)
+      {/* ── Voice Tone ── */}
+      <div className="bento-card p-5 space-y-3" style={{ borderColor: "rgba(128,82,255,0.25)" }}>
+        <label className="block text-sm font-bold flex items-center gap-1.5" style={{ color: "var(--color-text-primary)" }}>
+          🎙️ اختيار نبرة وتنغيم الصوت المفضلة (Voice Tone)
         </label>
         <select
           value={safeValues["VOICE_TONE"] || "shakir"}
@@ -161,7 +192,7 @@ export default function SettingsPage() {
             setValues({ ...safeValues, VOICE_TONE: e.target.value });
             setDemoVoice(e.target.value === "salma" ? "salma" : "shakir");
           }}
-          className="w-full border rounded-lg px-3 py-2 bg-white font-bold text-slate-800 text-sm"
+          className="glass-input font-bold text-sm"
         >
           <option value="shakir">شاكر المصري 👨 (صوت رجل أعمال دافئ)</option>
           <option value="salma">سلمى المصرية 👩 (صوت مساعد أنثوي ناعم)</option>
@@ -170,7 +201,7 @@ export default function SettingsPage() {
 
         {(safeValues["VOICE_TONE"] === "custom_clone" || safeValues["VOICE_PROVIDER"] === "fish_audio") && (
           <div className="pt-2 space-y-1">
-            <label className="block text-xs font-bold text-slate-700">
+            <label className="block text-xs font-bold" style={{ color: "var(--color-text-muted)" }}>
               معرف بصمة صوتك الشخصي المستنسخ (Reference Voice ID)
             </label>
             <input
@@ -178,46 +209,57 @@ export default function SettingsPage() {
               placeholder="ضع معرف الصوت هنا (مثال: 7f8a9b0c1d...)"
               value={safeValues["FISH_VOICE_ID"] || ""}
               onChange={(e) => setValues({ ...safeValues, FISH_VOICE_ID: e.target.value })}
-              className="w-full border bg-white rounded-lg px-3 py-2 font-mono text-xs text-slate-800"
+              className="glass-input font-mono text-xs"
             />
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
               يمكنك رفع تسجيل 10 ثواني بصوتك على fish.audio ونسخ الـ Reference ID ووضعه هنا ليتحول السيستم لصوتك فوراً!
             </p>
           </div>
         )}
       </div>
 
-      <div className="space-y-4 border-t pt-4">
-        <div className="flex justify-between items-center">
-          <h3 className="font-bold text-lg">مفاتيح الذكاء الاصطناعي</h3>
-        </div>
-        
+      {/* ── AI API Keys ── */}
+      <div className="space-y-3">
+        <h3
+          className="font-bold text-base"
+          style={{
+            color: "var(--color-text-primary)",
+            borderTop: "1px solid var(--color-border-glass)",
+            paddingTop: "16px",
+          }}
+        >
+          مفاتيح الذكاء الاصطناعي
+        </h3>
+
         {FIELDS.filter(f => f.group !== "LIVEKIT").map((f) => (
-          <div key={f.key} className="space-y-1 bg-slate-50 p-3 rounded-xl border">
+          <div key={f.key} className="nested-card p-4 space-y-2">
             <div className="flex justify-between items-center">
-              <label className="block text-sm font-medium">{f.label}</label>
+              <label className="block text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
+                {f.label}
+              </label>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => toggleShowKey(f.key)}
-                  className="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded font-bold transition"
-                  title="إظهار / إخفاء المفتاح"
+                  className="text-xs px-2 py-1 rounded font-bold transition-all"
+                  style={actionBtn("default")}
                 >
                   {showKey[f.key] ? "🙈 إخفاء" : "👁️ إظهار"}
                 </button>
                 <button
                   type="button"
                   onClick={() => copyToClipboard(f.key, safeValues[f.key] || "")}
-                  className="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-2 py-1 rounded font-bold transition"
-                  title="نسخ المفتاح للحافظة"
+                  className="text-xs px-2 py-1 rounded font-bold transition-all"
+                  style={actionBtn("success")}
                 >
                   {copiedKey === f.key ? "تم النسخ ✓" : "📋 نسخ"}
                 </button>
-                <button 
+                <button
                   type="button"
-                  onClick={() => verifyKey(f.group)} 
+                  onClick={() => verifyKey(f.group)}
                   disabled={checking[f.group]}
-                  className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 font-bold transition"
+                  className="text-xs px-2 py-1 rounded font-bold transition-all disabled:opacity-50"
+                  style={actionBtn("brand")}
                 >
                   {checking[f.group] ? "جاري الفحص..." : "فحص المفتاح"}
                 </button>
@@ -227,51 +269,71 @@ export default function SettingsPage() {
               type={showKey[f.key] ? "text" : "password"}
               value={safeValues[f.key] || ""}
               onChange={(e) => setValues({ ...safeValues, [f.key]: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 font-mono text-sm"
+              className="glass-input font-mono text-sm"
             />
             {checkStatus[f.group] && (
-              <div className={`mt-2 p-2 rounded-lg text-xs font-bold border flex items-center justify-between ${
-                checkStatus[f.group].valid 
-                  ? 'bg-green-100 text-green-800 border-green-300' 
-                  : 'bg-red-100 text-red-800 border-red-300'
-              }`}>
+              <div
+                className="p-2 rounded-lg text-xs font-bold flex items-center justify-between"
+                style={{
+                  background: checkStatus[f.group].valid ? "rgba(21,132,110,0.12)" : "rgba(229,72,77,0.10)",
+                  border: `1px solid ${checkStatus[f.group].valid ? "rgba(21,132,110,0.30)" : "rgba(229,72,77,0.28)"}`,
+                  color: checkStatus[f.group].valid ? "#1fc9a4" : "var(--color-danger)",
+                }}
+              >
                 <span>{checkStatus[f.group].message}</span>
-                <span className="text-base">{checkStatus[f.group].valid ? '✅' : '🚨'}</span>
+                <span>{checkStatus[f.group].valid ? "✅" : "🚨"}</span>
               </div>
             )}
           </div>
         ))}
       </div>
 
-      <div className="space-y-4 border-t pt-4">
-        <div className="flex justify-between items-center">
-          <h3 className="font-bold text-lg">مفاتيح خادم LiveKit</h3>
-          <button 
+      {/* ── LiveKit Keys ── */}
+      <div className="space-y-3">
+        <div
+          className="flex justify-between items-center"
+          style={{ borderTop: "1px solid var(--color-border-glass)", paddingTop: "16px" }}
+        >
+          <h3 className="font-bold text-base" style={{ color: "var(--color-text-primary)" }}>
+            مفاتيح خادم LiveKit
+          </h3>
+          <button
             type="button"
-            onClick={() => verifyKey("LIVEKIT")} 
+            onClick={() => verifyKey("LIVEKIT")}
             disabled={checking["LIVEKIT"]}
-            className="text-xs bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg font-bold hover:bg-purple-200 transition"
+            className="text-xs px-3 py-1.5 rounded-full font-bold transition-all disabled:opacity-50"
+            style={actionBtn("brand")}
           >
             {checking["LIVEKIT"] ? "جاري فحص اتصال LiveKit..." : "فحص جودة الاتصال بـ LiveKit"}
           </button>
         </div>
-        
+
         {checkStatus["LIVEKIT"] && (
-          <div className={`p-2 rounded-lg text-sm font-bold border ${checkStatus["LIVEKIT"].valid ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+          <div
+            className="p-2.5 rounded-xl text-sm font-bold"
+            style={{
+              background: checkStatus["LIVEKIT"].valid ? "rgba(21,132,110,0.12)" : "rgba(229,72,77,0.10)",
+              border: `1px solid ${checkStatus["LIVEKIT"].valid ? "rgba(21,132,110,0.28)" : "rgba(229,72,77,0.28)"}`,
+              color: checkStatus["LIVEKIT"].valid ? "#1fc9a4" : "var(--color-danger)",
+            }}
+          >
             {checkStatus["LIVEKIT"].message}
           </div>
         )}
 
         {FIELDS.filter(f => f.group === "LIVEKIT").map((f) => (
-          <div key={f.key} className="space-y-1 bg-slate-50 p-3 rounded-xl border">
+          <div key={f.key} className="nested-card p-4 space-y-2">
             <div className="flex justify-between items-center">
-              <label className="block text-sm font-medium">{f.label}</label>
+              <label className="block text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
+                {f.label}
+              </label>
               <div className="flex items-center gap-1.5">
                 {f.key.includes("SECRET") && (
                   <button
                     type="button"
                     onClick={() => toggleShowKey(f.key)}
-                    className="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded font-bold transition"
+                    className="text-xs px-2 py-1 rounded font-bold transition-all"
+                    style={actionBtn("default")}
                   >
                     {showKey[f.key] ? "🙈 إخفاء" : "👁️ إظهار"}
                   </button>
@@ -279,34 +341,42 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => copyToClipboard(f.key, safeValues[f.key] || "")}
-                  className="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-2 py-1 rounded font-bold transition"
+                  className="text-xs px-2 py-1 rounded font-bold transition-all"
+                  style={actionBtn("success")}
                 >
                   {copiedKey === f.key ? "تم النسخ ✓" : "📋 نسخ"}
                 </button>
               </div>
             </div>
             <input
-              type={f.key.includes('SECRET') && !showKey[f.key] ? 'password' : 'text'}
+              type={f.key.includes("SECRET") && !showKey[f.key] ? "password" : "text"}
               value={safeValues[f.key] || ""}
               onChange={(e) => setValues({ ...safeValues, [f.key]: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 font-mono text-sm"
+              className="glass-input font-mono text-sm"
             />
           </div>
         ))}
       </div>
 
-      {/* Egyptian Voice Audio Preview & Copy Card */}
-      <div className="space-y-3 border-t pt-4 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+      {/* ── Voice Demo Card ── */}
+      <div className="bento-card p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-            <span>🔊</span> اختبار ومعاينة نبرة الصوت المصرية
+          <h3 className="font-bold text-base flex items-center gap-2" style={{ color: "var(--color-text-primary)" }}>
+            🔊 اختبار ومعاينة نبرة الصوت المصرية
           </h3>
-          <span className="text-[11px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+          <span
+            className="text-xs font-bold px-2.5 py-0.5 rounded-full"
+            style={{
+              background: "rgba(21,132,110,0.14)",
+              color: "#1fc9a4",
+              border: "1px solid rgba(21,132,110,0.28)",
+            }}
+          >
             عامية حية 100%
           </span>
         </div>
 
-        <p className="text-xs text-slate-600">
+        <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
           يمكنك الاستماع فوراً لكيفية نطق المساعد للجملة بالعامية الحية، ونسخ النص لمشاركته في الشات للتحليل والتعديل.
         </p>
 
@@ -314,7 +384,8 @@ export default function SettingsPage() {
           <select
             value={demoVoice}
             onChange={(e) => setDemoVoice(e.target.value)}
-            className="border bg-white text-xs font-bold rounded-lg px-3 py-2 text-slate-700"
+            className="glass-input text-xs font-bold"
+            style={{ width: "auto", minWidth: "160px" }}
           >
             <option value="salma">سلمى المصرية 👩 (أنثوي ناعم)</option>
             <option value="shakir">شاكر المصري 👨 (ذكوري إنساني)</option>
@@ -323,41 +394,52 @@ export default function SettingsPage() {
             type="text"
             value={demoText}
             onChange={(e) => setDemoText(e.target.value)}
-            className="border bg-white text-xs rounded-lg px-3 py-2 flex-1 font-medium text-slate-800 dir-rtl"
+            className="glass-input flex-1 text-xs"
             placeholder="اكتب أي جملة بالعامية لمعاينتها..."
           />
         </div>
 
-        <div className="flex items-center gap-2 pt-1">
-          <button
-            onClick={playAudioDemo}
-            disabled={playingDemo}
-            className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition shadow-sm disabled:opacity-50"
-          >
-            <span>{playingDemo ? "🎙️ جاري توليد الرسالة الصوتية..." : "توليد وسماع الرسالة الصوتية 🎙️🔊"}</span>
-          </button>
-        </div>
+        <button
+          onClick={playAudioDemo}
+          disabled={playingDemo}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
+          style={{
+            background: "var(--color-success)",
+            color: "#fff",
+          }}
+        >
+          {playingDemo ? "🎙️ جاري توليد الرسالة الصوتية..." : "توليد وسماع الرسالة الصوتية 🎙️🔊"}
+        </button>
 
-        {/* WhatsApp Style Voice Note Player Widget */}
-        <div className="pt-2">
+        <div className="pt-1">
           <VoiceNotePlayer
             audioUrl={audioDemoUrl}
             text={demoText}
-            senderName={demoVoice === 'shakir' ? 'شاكر المصري 👨' : 'سلمى المصرية 👩'}
+            senderName={demoVoice === "shakir" ? "شاكر المصري 👨" : "سلمى المصرية 👩"}
             onPlayDemo={playAudioDemo}
             isLoading={playingDemo}
           />
         </div>
       </div>
 
+      {/* ── Save ── */}
       <button
         onClick={save}
         disabled={saving}
-        className="w-full bg-blue-600 text-white px-4 py-3 rounded-xl font-bold shadow-md hover:bg-blue-700 disabled:opacity-50"
+        className="w-full px-4 py-3 rounded-xl font-bold transition-all disabled:opacity-50"
+        style={{
+          background: "var(--color-brand)",
+          color: "#fff",
+          boxShadow: saving ? "none" : "var(--shadow-glow)",
+        }}
       >
         {saving ? "جاري الحفظ..." : "حفظ الإعدادات"}
       </button>
-      {saved && <p className="text-green-600 font-bold text-center">تم الحفظ بنجاح ✓</p>}
+      {saved && (
+        <p className="text-center font-bold text-sm" style={{ color: "#1fc9a4" }}>
+          تم الحفظ بنجاح ✓
+        </p>
+      )}
     </div>
   );
 }

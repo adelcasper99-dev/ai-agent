@@ -317,6 +317,8 @@ export default function ApiKeysPage() {
                       >
                         حذف
                       </button>
+                    </td>
+                  </tr>
               ))}
             </tbody>
           </table>

@@ -280,29 +280,24 @@ export default function ApiKeysPage() {
                   </td>
                   <td className="px-6 py-4 text-sm">
                     {k.isExhausted ? (
-                      <div className="space-y-1">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          🔴 مستنفد (429)
-                        </span>
-                        {k.exhaustedAt && (() => {
-                          const exhaustedDate = new Date(k.exhaustedAt);
-                          const resetDate = new Date(exhaustedDate.getTime() + 24 * 60 * 60 * 1000);
-                          const now = new Date();
-                      ) : !k.isActive ? (
-                        <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: "rgba(255,255,255,0.1)", color: "var(--color-text-muted)" }}>
-                          ⚫ غير مفعل
-                        </span>
-                      ) : (
-                        <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: "rgba(21,132,110,0.1)", color: "#1fc9a4" }}>
-                          🟢 متاح وشغال
-                        </span>
-                      )}
-                      {k.exhaustedAt && (
-                        <div className="text-[10px] mt-1" style={{ color: "var(--color-text-muted)" }}>
-                          مستنفد منذ: {new Date(k.exhaustedAt).toLocaleTimeString("ar-EG")}
-                        </div>
-                      )}
-                    </td>
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: "rgba(229,72,77,0.1)", color: "var(--color-danger)" }}>
+                        🔴 مستنفد (429)
+                      </span>
+                    ) : !k.isActive ? (
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: "rgba(255,255,255,0.1)", color: "var(--color-text-muted)" }}>
+                        ⚫ غير مفعل
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: "rgba(21,132,110,0.1)", color: "#1fc9a4" }}>
+                        🟢 متاح وشغال
+                      </span>
+                    )}
+                    {k.exhaustedAt && (
+                      <div className="text-[10px] mt-1" style={{ color: "var(--color-text-muted)" }}>
+                        مستنفد منذ: {new Date(k.exhaustedAt).toLocaleTimeString("ar-EG")}
+                      </div>
+                    )}
+                  </td>
                     <td className="px-6 py-4" style={{ color: "var(--color-text-muted)" }}>
                       {new Date(k.addedAt).toLocaleDateString("ar-EG")}
                     </td>

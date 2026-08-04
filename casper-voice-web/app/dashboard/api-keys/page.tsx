@@ -149,7 +149,7 @@ export default function ApiKeysPage() {
               onClick={handleResetAll}
               disabled={resetting}
               className="mt-4 flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold transition-all disabled:opacity-50 text-white shadow-sm"
-              style={{ background: "var(--danger)", hover: "brightness(1.1)" }}
+              style={{ background: "var(--danger)" }}
             >
               <RefreshCw size={16} className={resetting ? "animate-spin" : ""} />
               {resetting ? "جاري الإعادة..." : "إعادة تفعيل الكل الآن"}

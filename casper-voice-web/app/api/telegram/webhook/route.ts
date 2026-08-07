@@ -1033,7 +1033,26 @@ export async function POST(req: NextRequest) {
       }
     } else {
       const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: chatId } });
-      const tenantId = tenant?.id || "";
+
+      if (!tenant) {
+        await sendTelegramAlert({
+          chatId,
+          text: "⚠️ *تنبيه:* حسابك غير مسجل أو تم حذفه. يرجى إرسال `/start` لبدء التسجيل وتفعيل الحساب من جديد.",
+          idempotencyKey: `unregistered_notice:${chatId}:${Math.floor(Date.now() / 60000)}`,
+        });
+        return NextResponse.json({ ok: true });
+      }
+
+      if (tenant.state !== "active") {
+        await sendTelegramAlert({
+          chatId,
+          text: "⚠️ *تنبيه:* حسابك غير نشط حالياً (قيد المراجعة أو موقوف). يرجى الانتظار للتفعيل من لوحة التحكم.",
+          idempotencyKey: `inactive_notice:${chatId}:${Math.floor(Date.now() / 60000)}`,
+        });
+        return NextResponse.json({ ok: true });
+      }
+
+      const tenantId = tenant.id;
 
       // 1. Check if active Fallback Flow state machine is in progress
       if (tenantId) {

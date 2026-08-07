@@ -13,8 +13,9 @@ import VoiceCallModal from "@/components/VoiceCallModal";
 
 // ── Tab routing — matches existing file-based routes exactly ──────────────────
 const TABS = [
-  { href: "/dashboard/keys",          label: "المفاتيح",                    Icon: Key },
   { href: "/dashboard/settings",      label: "الإعدادات",                   Icon: Settings },
+  { href: "/dashboard/voice",         label: "المساعد الصوتي",              Icon: Mic },
+  { href: "/dashboard/keys",          label: "المفاتيح",                    Icon: Key },
   { href: "/dashboard/tenants",       label: "طلبات الشركات والتفعيل",      Icon: Building2 },
   { href: "/dashboard/api-keys",      label: "مفاتيح Gemini",               Icon: Sparkles },
   { href: "/dashboard/chat",          label: "محاكي التليجرام",             Icon: Send },
@@ -26,8 +27,9 @@ const TABS = [
 
 // ── Page title map ────────────────────────────────────────────────────────────
 const PAGE_TITLES: Record<string, string> = {
+  "/dashboard/settings":      "الإعدادات وإدارة البوت",
+  "/dashboard/voice":         "إعدادات المساعد ونبرة الصوت",
   "/dashboard/keys":          "المفاتيح والاستخدام",
-  "/dashboard/settings":      "الإعدادات وإدارات البوت",
   "/dashboard/tenants":       "طلبات الشركات والتفعيل",
   "/dashboard/api-keys":      "مفاتيح Gemini",
   "/dashboard/chat":          "محاكي التليجرام",

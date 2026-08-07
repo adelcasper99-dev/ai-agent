@@ -25,12 +25,23 @@ export function getTenantId(): string | undefined {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { headers, cookies } = require('next/headers');
 
-    // Check x-tenant-id header first (internal service fast-path)
+    // Check x-tenant-id header first (internal service fast-path with secret verification)
     try {
       const reqHeaders = headers();
       const raw = reqHeaders.get('x-tenant-id');
-      if (raw) {
-        try { return decodeURIComponent(raw); } catch { return raw; }
+      const reqSecret = reqHeaders.get('x-internal-secret');
+      const expectedSecret = process.env.INTERNAL_SERVICE_SECRET;
+
+      if (raw && reqSecret && expectedSecret) {
+        const reqBuffer = Buffer.from(reqSecret);
+        const expectedBuffer = Buffer.from(expectedSecret);
+        const crypto = require('crypto');
+        if (
+          reqBuffer.length === expectedBuffer.length &&
+          crypto.timingSafeEqual(reqBuffer, expectedBuffer)
+        ) {
+          try { return decodeURIComponent(raw); } catch { return raw; }
+        }
       }
     } catch { /* not in headers context */ }
 

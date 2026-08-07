@@ -1,25 +1,30 @@
-﻿session_intent: 'Hardening financial transaction logic in telegram_llm.ts, running 7-stage autonomous pipeline, conducting concurrent stress testing, and deploying to HQ VPS'
+session_intent: "Implement Telegram Business routing agent, webhook endpoints, and UI dashboard card for Telegram setup & activation"
 decisions:
-  - 'Use Decimal.js for all monetary math across log_expense, log_purchase, log_customer_payment, log_sales_return, and log_purchase_return'
-  - 'Enforce strict double-entry ledger (SALE_DEBIT, PAYMENT_CREDIT, REFUND_DEBIT, SALES_RETURN_CREDIT) with full journal entry sync'
-  - 'Satisfy purchase return invariant by updating paidAmount and zeroing deferredAmount dynamically via waterfall'
-  - 'Use crypto.randomUUID() for return reference IDs to prevent TOCTOU race conditions'
-  - 'Export executeTool from telegram_llm.ts for direct unit and stress testing'
-  - 'Defer Emergency Fallback Menu until after normal mode stability is 100% verified'
+  - "Use Next.js 16 (App Router) + React 19 as core framework"
+  - "Order-independent linking via PendingBusinessConnection model"
+  - "Use Decimal.js for precise financial math"
+  - "Use Zod for payload and schema validation"
+  - "Glassmorphic aesthetic for TelegramSetupCard"
+  - "Setup code is treated as an OTP (One-Time Password) cleared immediately on use"
+  - "Separate admin PIN logic (4-digit, 5-min TTL) from business setup code logic (6-char alphanumeric OTP)"
 files_modified:
-  - path: casper-voice-web/lib/telegram_llm.ts
-    why: 'Hardened monetary math with Decimal.js, removed any types, fixed purchase returns waterfall, added UUIDs, exported executeTool'
-  - path: casper-voice-web/tests/concurrent_stress.test.ts
-    why: 'Created concurrent stress test verifying 3 simultaneous sales + 2 simultaneous payments settle with exact ledger math and idempotency replay'
-active_goals:
-  - 'Production monitoring of HQ VPS deployment'
-next_steps:
-  - 'Monitor HQ VPS logs and PM2 processes (casper-voice-web, casper-livekit-worker)'
-  - 'Plan Emergency Mode architecture as an isolated fallback layer when requested'
+  - path: "casper-voice-web/app/api/telegram/webhook/route.ts"
+    why: "Handled Telegram business_connection lifecycle, customer messaging, /start setupCode linking, and OTP single-use clearing"
+  - path: "casper-voice-web/components/TelegramSetupCard.tsx"
+    why: "Created full-throttle React component for Telegram setup card with live status and code generation UI"
+  - path: "casper-voice-web/app/dashboard/settings/page.tsx"
+    why: "Integrated TelegramSetupCard into the Settings dashboard page and wired to state/API"
+  - path: "casper-voice-web/app/api/dashboard/settings/tenant-setup/route.ts"
+    why: "Created endpoint to generate and fetch tenant setup codes"
+  - path: ".agents/stage_log.json"
+    why: "Updated stage execution log to reflect pipeline compliance and Stage 6 completion"
+active_goals: []
+next_steps: []
 failed_approaches:
-  - 'Relying on Date.now() for reference IDs created potential race conditions during concurrent API calls — replaced with crypto.randomUUID()'
+  - "Initial updateMany checked ownerTelegramUserId: null which prevented re-linking existing tenants — fixed by making setupCode single-use OTP"
+  - "Single GET /api/settings route only returned global env settings — resolved by adding dedicated tenant-setup API route"
 last_condense:
-  timestamp: '2026-08-03T05:51:30Z'
-  tokens_before: 145000
-  tokens_after: 28000
-  reduction_pct: 81
+  timestamp: "2026-08-07T10:53:00Z"
+  tokens_before: 175000
+  tokens_after: 1200
+  reduction_pct: 99

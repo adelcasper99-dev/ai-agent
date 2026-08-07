@@ -77,6 +77,7 @@ export async function setTelegramBotCommands() {
 
   const commands = [
     { command: "start", description: "بدء التفاعل مع المساعد" },
+    { command: "setup", description: "ربط حساب التليجرام بيزنس (Telegram Business Setup)" },
     { command: "menu", description: "فتح قائمة المبيعات والخدمات المباشرة" },
     { command: "settings", description: "تعديل إعدادات ونشاط الشركة والمواعيد" },
     { command: "appointments", description: "عرض المواعيد المسجلة" },
@@ -297,3 +298,56 @@ export async function rejectTenantRequest(requestId: string, decidedBy: string) 
 
   return { alreadyDecided: false, request: req };
 }
+
+/**
+ * Approves a direct Bot onboarding tenant in `pending_approval` state.
+ */
+export async function approveDirectTenant(tenantId: string, decidedBy: string) {
+  const updatedCount = await (prisma as any).tenant.updateMany({
+    where: { id: tenantId, state: 'pending_approval' },
+    data: { state: 'active' },
+  });
+
+  if (updatedCount.count === 0) {
+    const existing = await (prisma as any).tenant.findUnique({ where: { id: tenantId } });
+    return { alreadyDecided: true, tenant: existing };
+  }
+
+  const tenant = await (prisma as any).tenant.findUnique({ where: { id: tenantId } });
+  if (tenant && tenant.telegramChatId) {
+    fireAndForgetTelegramAlert({
+      chatId: tenant.telegramChatId,
+      text: `🎉 *تم تفعيل حسابك بنجاح!*\nأهلاً بك أستاذ/ة *${tenant.name}* في نظام Casper ERP & POS.\n\n📱 *الخطوة الأخيرة للربط:* قم بفتح إعدادات Telegram Business وحدد هذا البوت لاستقبال والرد على رسائل عملائك تلقائياً!`,
+      idempotencyKey: `direct_approved:${tenant.id}`,
+    });
+  }
+
+  return { alreadyDecided: false, tenant };
+}
+
+/**
+ * Rejects a direct Bot onboarding tenant in `pending_approval` state.
+ */
+export async function rejectDirectTenant(tenantId: string, decidedBy: string) {
+  const updatedCount = await (prisma as any).tenant.updateMany({
+    where: { id: tenantId, state: 'pending_approval' },
+    data: { state: 'rejected' },
+  });
+
+  if (updatedCount.count === 0) {
+    const existing = await (prisma as any).tenant.findUnique({ where: { id: tenantId } });
+    return { alreadyDecided: true, tenant: existing };
+  }
+
+  const tenant = await (prisma as any).tenant.findUnique({ where: { id: tenantId } });
+  if (tenant && tenant.telegramChatId) {
+    fireAndForgetTelegramAlert({
+      chatId: tenant.telegramChatId,
+      text: `عذراً أستاذ/ة *${tenant.name}*، نعتذر عن تفعيل حسابك حالياً. يرجى التواصل مع الدعم الفني لمزيد من التفاصيل.`,
+      idempotencyKey: `direct_rejected:${tenant.id}`,
+    });
+  }
+
+  return { alreadyDecided: false, tenant };
+}
+

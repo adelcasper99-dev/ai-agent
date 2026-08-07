@@ -118,4 +118,10 @@ Whenever the response, analysis, or report output exceeds 2 lines of text:
 2. **Provide Ultra-Short Summary & Link**: In the direct chat response, provide strictly 1-2 lines with the direct clickable file link `[filename.md](file:///path/to/filename.md)`.
 </RULE>
 
-
+<RULE>
+# Permanent Hallucination Review Protocol (Stage 6 Extension)
+Whenever executing a pipeline, analyzing gaps (e.g., Gap Matrix), or generating architectural plans:
+1. **Mandatory Physical Verification**: You MUST physically verify the existence of every file, tool, script, and database table mentioned in the AI-generated claims using `grep_search` or `run_command` BEFORE trusting it.
+2. **No Blind Trust**: Treat all AI-generated technical claims as potential hallucinations until proven by a valid `[filename](file:///...)` path or direct codebase reference.
+3. **Tabular Hallucination Report**: For any discrepancies found, output a Caveman-style Markdown table clearly marking the hallucinated items with ❌ and their true codebase state.
+</RULE>

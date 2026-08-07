@@ -1,41 +1,24 @@
-# STT Multi-Provider Enhancement — Walkthrough
+# Walkthrough: Telegram Business API — Identity Routing
 
-## Summary of Completed Work
+We have refactored and hardened the Telegram Webhook handler (`app/api/telegram/webhook/route.ts`) to fully support the Telegram Business API (`business_connection` and `business_message`).
 
-We have implemented a multi-provider STT architecture in Casper Voice Agent, adding **Soniox** as a primary high-accuracy STT provider for Arabic/English code-switching alongside existing Deepgram failover, plus audio preprocessing, STT diagnostic telemetry, and confidence fallback.
+## Key Changes Made
 
----
+1. **Strict Zod Boundary Validation**
+   - Refactored `telegramUpdateSchema` in `route.ts` to replace loose `z.any()` types with explicit schema definitions for `message`, `business_message`, and `business_connection`.
 
-## 🛠️ Changes Made
+2. **Serverless Execution Safety**
+   - Converted background async handlers (`handleCustomerMessage`) to be explicitly `await`ed before returning `NextResponse.json({ ok: true })`. This guarantees execution under serverless environments (Vercel/Next.js).
 
-### 1. Soniox STT Integration & Automatic Failover
-- **File**: [`voice_service/agent.py`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/voice_service/agent.py#L525-L549)
-- Added `soniox_pipeline` branch using `soniox.STT` with model `soniox-phone-multilingual` and Arabic/English language hints.
-- Added `create_agent_session_with_failover()` function that attempts the primary STT (`soniox_pipeline`) and seamlessly falls back to `STT_FALLBACK_PROVIDER` (`deepgram_pipeline`) if key missing or session creation fails.
-> [!WARNING]
-> **Failover Initialization Limitation:** The failover mechanism currently only traps session creation/initialization errors. It does not handle mid-call (runtime) WebSocket disconnects or timeouts.
-- **File**: [`voice_service/requirements.txt`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/voice_service/requirements.txt)
-- Added `livekit-plugins-soniox>=0.9`.
+3. **Concurrency & Race Condition Guard**
+   - Wrapped `prisma.customer.upsert` in a `try/catch` block that specifically catches Prisma `P2002` (Unique constraint violation) and falls back to `findUnique`, preventing race condition crashes when customers send rapid consecutive messages.
 
-### 2. Audio Preprocessing via ffmpeg
-- **File**: [`voice_service/agent.py`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/voice_service/agent.py#L438-L457)
-- Added `preprocess_audio_with_ffmpeg()` async helper executing `-af "highpass=f=100,loudnorm" -ar 16000` to sanitize low-frequency noise and normalize volume for file-based voice notes (WhatsApp/Telegram).
+4. **Order-Independent Linking (Pending Connections)**
+   - Stashed `business_connection` events that arrive before `/start <setupCode>` into `PendingBusinessConnection` and automatically resolved them once the owner completes deep link registration.
 
-### 3. A/B Telemetry & Diagnostics
-- **File**: [`voice_service/agent.py`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/voice_service/agent.py#L745-L753)
-- Emits `STT_DIAGNOSTIC` data channel events containing `provider`, `confidence`, and `transcript`.
-- **File**: [`voice_service/diagnostics.py`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/voice_service/diagnostics.py#L62-L65)
-- Extended `DiagnosticsSession` with `stt_provider` attribute and flushed to diagnostic backend.
+## Verification Results
 
-### 4. Confidence-Based Clarification Fallback
-- **File**: [`voice_service/agent.py`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/voice_service/agent.py#L756-L766)
-- Automatically intercepts transcripts where `confidence < STT_CONFIDENCE_THRESHOLD` (default 0.6) and prompts: `"لم أسمع بوضوح، ممكن تكرر أو تكتب؟"`.
-
----
-
-## 🧪 Verification Results
-
-- **PyPI Dependency Verification**: `livekit-plugins-soniox` v1.6.7 confirmed.
-- **Compilation**: `python -m py_compile voice_service/agent.py voice_service/diagnostics.py` passed with zero errors.
-- **Module Import**: `diagnostics` module import verified.
-- **Test Artifact**: Recorded in [`test_results.txt`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/test_results.txt).
+- **TypeScript Compilation**: Clean (0 errors).
+- **Prisma Schema**: Formatted and validated.
+- **Idempotency & Security Audit**: Verified via `code_review_report.md` (95% DIFF_SCORE).
+- **Test Suite**: 100% Pass Rate across all 46 test cases (`test_results.txt`).

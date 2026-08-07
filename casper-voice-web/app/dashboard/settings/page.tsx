@@ -3,6 +3,8 @@
 
 import { useEffect, useState } from "react";
 
+import TelegramSetupCard from "@/components/TelegramSetupCard";
+
 export default function SettingsPage() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -14,10 +16,32 @@ export default function SettingsPage() {
   const [generatingPin, setGeneratingPin] = useState(false);
   const [justLinked, setJustLinked] = useState(false);
 
+  // Tenant-specific Telegram Business Setup state
+  const [tenantSetup, setTenantSetup] = useState<{
+    setupCode: string | null;
+    businessConnectionActive: boolean;
+    botUsername: string;
+  }>({
+    setupCode: null,
+    businessConnectionActive: false,
+    botUsername: "Casperaibot",
+  });
+
   useEffect(() => {
-    fetch("/api/settings")
-      .then((r) => r.json())
-      .then((d) => setValues(d?.settings || {}))
+    Promise.all([
+      fetch("/api/settings").then((r) => r.json()),
+      fetch("/api/dashboard/settings/tenant-setup").then((r) => r.json()).catch(() => ({}))
+    ])
+      .then(([settingsData, tenantData]) => {
+        setValues(settingsData?.settings || {});
+        if (tenantData?.success) {
+          setTenantSetup({
+            setupCode: tenantData.setupCode,
+            businessConnectionActive: tenantData.businessConnectionActive,
+            botUsername: tenantData.botUsername || "Casperaibot",
+          });
+        }
+      })
       .catch(() => setValues({}))
       .finally(() => setLoading(false));
   }, []);
@@ -60,6 +84,19 @@ export default function SettingsPage() {
       console.error("Failed to generate Admin PIN", err);
     } finally {
       setGeneratingPin(false);
+    }
+  };
+
+  const handleGenerateTenantSetupCode = async () => {
+    try {
+      const res = await fetch("/api/dashboard/settings/tenant-setup", { method: "POST" });
+      const data = await res.json();
+      if (data.success && data.setupCode) {
+        setTenantSetup(prev => ({ ...prev, setupCode: data.setupCode }));
+        return data.setupCode;
+      }
+    } catch (err) {
+      console.error("Failed to generate tenant setup code", err);
     }
   };
 
@@ -112,6 +149,14 @@ export default function SettingsPage() {
       <h2 className="text-xl font-extrabold text-gray-800 dark:text-gray-100 flex items-center gap-2">
         ⚙️ إعدادات الأدمن والتليجرام
       </h2>
+
+      {/* ── Telegram Business Card ── */}
+      <TelegramSetupCard
+        initialSetupCode={tenantSetup.setupCode}
+        businessConnectionActive={tenantSetup.businessConnectionActive}
+        botUsername={tenantSetup.botUsername}
+        onGenerateCode={handleGenerateTenantSetupCode}
+      />
 
       {/* ── Telegram Admin Linking Card ── */}
       <div className="bento-card p-5 space-y-3 bg-pastel-blue border-0 shadow-sm">

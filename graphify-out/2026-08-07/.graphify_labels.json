@@ -409,13 +409,11 @@
   "407": "CLAUDE.md",
   "408": "next-env.d.ts",
   "409": "postcss.config.mjs",
-  "410": "route.ts",
   "411": "source-search.mjs",
   "412": "Adaptation Strategies",
   "413": "Best-Practice Research: Telegram Bot Integration (Next.js 16 + Webhook / Alerts)",
   "414": "task.md",
   "415": "page.tsx",
-  "416": "inline-ignores.mjs",
   "417": "CSP detection (first-time only)",
   "418": "query.js",
   "419": "Adaptation Strategies",
@@ -429,8 +427,6 @@
   "427": "test.js",
   "428": "test_gemini.js",
   "429": "test_gemini.py",
-  "430": "route.ts",
-  "431": "route.ts",
   "432": "checkColors",
   "433": "route.ts",
   "434": "test_edge_fallback.py",
@@ -438,9 +434,7 @@
   "436": "list_models.js",
   "437": "checkElementHeroEyebrow",
   "438": "rebuild_vps_dashboard.py",
-  "439": "surface-briefs.mjs",
   "440": "route.ts",
   "441": "list_groq_models.sh",
-  "442": "correctTranscriptWithLLM",
-  "443": "checkElementGptBorderShadowDOM"
+  "442": "correctTranscriptWithLLM"
 }

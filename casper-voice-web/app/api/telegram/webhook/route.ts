@@ -9,8 +9,11 @@ import {
   getAdminChatId,
   approveTenantRequest,
   rejectTenantRequest,
+  approveDirectTenant,
+  rejectDirectTenant,
   setTelegramBotCommands,
 } from "@/lib/telegram";
+import { z } from "zod";
 import { processTelegramMessageWithLLM } from "@/lib/telegram_llm";
 import {
   sendFallbackMainMenu,
@@ -34,11 +37,47 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const update = await req.json();
+    const rawUpdate = await req.json();
+
+    const telegramUpdateSchema = z.object({
+      update_id: z.number(),
+      message: z.object({
+        message_id: z.number().optional(),
+        from: z.object({ id: z.number(), first_name: z.string().optional(), last_name: z.string().optional() }).passthrough().optional(),
+        chat: z.object({ id: z.number() }).passthrough().optional(),
+        text: z.string().optional(),
+        voice: z.object({ file_id: z.string() }).passthrough().optional(),
+      }).passthrough().optional(),
+      business_message: z.object({
+        message_id: z.number().optional(),
+        business_connection_id: z.string(),
+        from: z.object({ id: z.number(), first_name: z.string().optional() }).passthrough(),
+        chat: z.object({ id: z.number() }).passthrough(),
+        text: z.string().optional(),
+        voice: z.any().optional(),
+      }).passthrough().optional(),
+      business_connection: z.object({
+        id: z.string(),
+        user: z.object({ id: z.number() }).passthrough(),
+        is_disabled: z.boolean().optional(),
+      }).passthrough().optional(),
+      callback_query: z.any().optional(),
+    }).passthrough();
+    
+    const update = telegramUpdateSchema.parse(rawUpdate);
 
     // 2. Update Deduplication Guard
-    if (update.update_id && isUpdateProcessed(update.update_id)) {
-      return NextResponse.json({ ok: true });
+    if (update.update_id) {
+      if (isUpdateProcessed(update.update_id)) {
+        return NextResponse.json({ ok: true });
+      }
+      try {
+        const updateId = BigInt(update.update_id);
+        await (prisma as any).processedUpdate.create({ data: { updateId } });
+      } catch {
+        // Unique constraint violation = already processed
+        return NextResponse.json({ ok: true });
+      }
     }
 
     // 3. Handle Admin & Onboarding Callback Queries
@@ -57,6 +96,15 @@ export async function POST(req: NextRequest) {
           }).catch(() => null);
         }
       };
+
+      const isTenantCommand = data.startsWith("menu:") || data.startsWith("sale:") || data.startsWith("cmd_");
+      if (isTenantCommand) {
+        const tenantCheck = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (tenantCheck && tenantCheck.state !== "active") {
+          await answerCallback("⚠️ حسابك غير مفعل حالياً.");
+          return NextResponse.json({ ok: true });
+        }
+      }
 
       if (data.startsWith("menu:")) {
         const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
@@ -220,14 +268,31 @@ export async function POST(req: NextRequest) {
 
             const updatedTenant = await (prisma as any).tenant.update({
               where: { id: tenant.id },
-              data: { workingHours: fullHoursStr, state: "active" },
+              data: { workingHours: fullHoursStr, state: "pending_approval" },
             });
 
             await sendTelegramAlert({
               chatId: callbackChatId,
-              text: `🎉 *تمام خالص!* البوت بقى جاهز يشتغل باسم *${updatedTenant.name}*.\n🏢 *النشاط:* ${updatedTenant.businessType || "عام"}\n⏰ *المواعيد:* ${fullHoursStr}\n\nابعتلي أي طلب أو سؤال عادي دلوقتي وهرد عليك/أنفذه.`,
-              idempotencyKey: `onboarding:active:${callbackChatId}`,
+              text: `📝 *تم تسجيل بيانات نشاطك بنجاح!*\n\n🏢 *الشركة:* ${updatedTenant.name}\n💼 *النشاط:* ${updatedTenant.businessType || "عام"}\n⏰ *المواعيد:* ${fullHoursStr}\n\n⏳ *طلبك الآن قيد مراجعة الإدارة.* سنرسل لك إشعاراً فور التفعيل والتأكيد.`,
+              idempotencyKey: `onboarding:pending:${callbackChatId}`,
             });
+
+            const adminChatId = await getAdminChatId();
+            if (adminChatId) {
+              await sendTelegramAlert({
+                chatId: adminChatId,
+                text: `📋 *طلب تفعيل شركة جديد عبر البوت!*\n\n🏢 *الشركة:* ${updatedTenant.name}\n💼 *النشاط:* ${updatedTenant.businessType || "عام"}\n⏰ *المواعيد:* ${fullHoursStr}\n🆔 *Chat ID:* \`${callbackChatId}\``,
+                idempotencyKey: `admin_approval_tenant:${updatedTenant.id}`,
+                replyMarkup: {
+                  inline_keyboard: [
+                    [
+                      { text: "✅ موافقة وتفعيل", callback_data: `approve_tenant:${updatedTenant.id}` },
+                      { text: "❌ رفض الطلب", callback_data: `reject_tenant:${updatedTenant.id}` },
+                    ],
+                  ],
+                },
+              });
+            }
           }
         }
         await answerCallback("تم الحفظ بنجاح!");
@@ -319,11 +384,17 @@ export async function POST(req: NextRequest) {
 
       const expectedAdminId = await getAdminChatId();
       // Auth Check: Admin Callback sender MUST equal ADMIN_CHAT_ID from DB or env
-      if (expectedAdminId && callbackChatId !== expectedAdminId) {
+      if (!expectedAdminId || callbackChatId !== expectedAdminId) {
         return NextResponse.json({ ok: true });
       }
 
-      if (data.startsWith("approve:")) {
+      if (data.startsWith("approve_tenant:")) {
+        const tenantId = data.replace("approve_tenant:", "");
+        await approveDirectTenant(tenantId, `telegram:${callbackChatId}`);
+      } else if (data.startsWith("reject_tenant:")) {
+        const tenantId = data.replace("reject_tenant:", "");
+        await rejectDirectTenant(tenantId, `telegram:${callbackChatId}`);
+      } else if (data.startsWith("approve:")) {
         const requestId = data.replace("approve:", "");
         await approveTenantRequest(requestId, `telegram:${callbackChatId}`);
       } else if (data.startsWith("reject:")) {
@@ -335,14 +406,191 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
+    // 3.5 Business connection lifecycle (link/unlink)
+    if (update.business_connection) {
+      const conn = update.business_connection;
+      const ownerUserId = String(conn.user.id);
+
+      const tenant = await (prisma as any).tenant.findUnique({
+        where: { ownerTelegramUserId: ownerUserId },
+      });
+
+      if (tenant) {
+        await (prisma as any).tenant.update({
+          where: { id: tenant.id },
+          data: {
+            businessConnectionId: conn.id,
+            businessConnectionActive: !conn.is_disabled,
+          },
+        });
+      } else {
+        await (prisma as any).pendingBusinessConnection.upsert({
+          where: { telegramUserId: ownerUserId },
+          create: {
+            telegramUserId: ownerUserId,
+            connectionId: conn.id,
+            isDisabled: conn.is_disabled ?? false,
+          },
+          update: {
+            connectionId: conn.id,
+            isDisabled: conn.is_disabled ?? false,
+          },
+        });
+      }
+
+      return NextResponse.json({ ok: true });
+    }
+
+    // 3.6 Customer message via Business connection
+    if (update.business_message) {
+      const msg = update.business_message;
+      const connectionId = msg.business_connection_id;
+
+      const tenant = await (prisma as any).tenant.findUnique({
+        where: { businessConnectionId: connectionId },
+      });
+
+      if (!tenant || !tenant.businessConnectionActive || tenant.state !== "active") {
+        return NextResponse.json({ ok: true }); // ignore stale/unknown/inactive connection
+      }
+
+      const customerTelegramId = String(msg.from.id);
+
+      let customer;
+      try {
+        customer = await (prisma as any).customer.upsert({
+          where: {
+            tenantId_telegramUserId: {
+              tenantId: tenant.id,
+              telegramUserId: customerTelegramId,
+            },
+          },
+          create: {
+            tenantId: tenant.id,
+            telegramUserId: customerTelegramId,
+            name: msg.from.first_name ?? null,
+          },
+          update: {},
+        });
+      } catch (e: any) {
+        if (e?.code === "P2002") {
+          customer = await (prisma as any).customer.findUnique({
+            where: {
+              tenantId_telegramUserId: {
+                tenantId: tenant.id,
+                telegramUserId: customerTelegramId,
+              },
+            },
+          });
+        } else {
+          throw e;
+        }
+      }
+
+      await handleCustomerMessage({
+        tenant,
+        customer,
+        text: msg.text,
+        voice: msg.voice,
+        sendVia: { businessConnectionId: connectionId, chatId: msg.chat.id },
+      });
+
+      return NextResponse.json({ ok: true });
+    }
+
     // 4. Handle Standard Incoming Messages
     const message = update?.message;
-    if (!message) {
+    if (!message || !message.chat || !message.from) {
       return NextResponse.json({ ok: true });
     }
 
     let text = (message.text || "").trim();
     const chatId = String(message.chat.id);
+    const senderId = String(message.from.id);
+
+    // Top-Level State Check Guard (Suspension / Pending Approval)
+    const existingDirectTenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: chatId } });
+    if (existingDirectTenant) {
+      if (existingDirectTenant.state === "suspended" || existingDirectTenant.state === "cancelled" || existingDirectTenant.state === "rejected") {
+        await sendTelegramAlert({
+          chatId,
+          text: "⚠️ *تنبيه:* حساب شركتك موقوف حالياً. يرجى التواصل مع الدعم الفني للإدارة لإعادة التفعيل.",
+          idempotencyKey: `suspended_notice:${chatId}:${Math.floor(Date.now() / 60000)}`,
+        });
+        return NextResponse.json({ ok: true });
+      }
+      if (existingDirectTenant.state === "pending_approval") {
+        await sendTelegramAlert({
+          chatId,
+          text: "⏳ *طلبك قيد المراجعة:* تم إرسال بيانات نشاطك للإدارة، وسنقوم بإشعارات فور الموافقة والتفعيل.",
+          idempotencyKey: `pending_notice:${chatId}:${Math.floor(Date.now() / 60000)}`,
+        });
+        return NextResponse.json({ ok: true });
+      }
+    }
+
+    // Ensure bot commands menu is up to date in Telegram
+    setTelegramBotCommands().catch(() => null);
+
+    // 4a-bis. Check for Telegram Business Setup Code linking (e.g. /start biz_xyz or /setup biz_xyz)
+    if (text.startsWith('/start ') || text.startsWith('/setup ')) {
+      const parts = text.split(' ');
+      const setupCode = parts[1];
+      if (setupCode && !/^\d{4}$/.test(setupCode)) {
+        const linkedTenant = await (prisma as any).tenant.updateMany({
+          where: { setupCode: setupCode },
+          data: {
+            ownerTelegramUserId: senderId,
+            ownerTelegramChatId: chatId,
+            setupCode: null,
+          },
+        });
+
+        if (linkedTenant.count > 0) {
+          const pending = await (prisma as any).pendingBusinessConnection.findUnique({
+            where: { telegramUserId: senderId },
+          });
+
+          if (pending) {
+            await (prisma as any).tenant.updateMany({
+              where: { ownerTelegramUserId: senderId },
+              data: {
+                businessConnectionId: pending.connectionId,
+                businessConnectionActive: !pending.isDisabled,
+              },
+            });
+            await (prisma as any).pendingBusinessConnection.delete({
+              where: { telegramUserId: senderId },
+            });
+          }
+          
+          await sendTelegramAlert({
+            chatId,
+            text: `✅ *تم ربط حسابك بـ Telegram Business بنجاح!*`,
+            idempotencyKey: `biz_link_success:${chatId}:${Date.now()}`,
+          });
+          return NextResponse.json({ ok: true });
+        }
+      }
+    }
+
+    if (text === '/setup') {
+      const tenant = await (prisma as any).tenant.findUnique({ where: { ownerTelegramUserId: senderId } });
+      if (tenant) {
+        await sendTelegramAlert({
+          chatId,
+          text: `📱 *حالة ربط Telegram Business:*\n\n🏢 *الشركة:* ${tenant.name}\n🔗 *حالة الربط:* ${tenant.businessConnectionActive ? "🟢 مفعل ونشط" : "🔴 غير مرتبط"}\n\nلإعادة ربط حسابك، قم بتوليد كود جديد من لوحة التحكم، واضغط على رابط التفعيل المباشر.`,
+          idempotencyKey: `setup_cmd_info:${chatId}:${Date.now()}`,
+        });
+      } else {
+        await sendTelegramAlert({
+          chatId,
+          text: `📱 *ربط حساب Telegram Business*\n\nلربط حسابك بشركتك على Casper POS:\n1️⃣ افتح لوحة التحكم وانتقل للإعدادات.\n2️⃣ اضغط على *إنشاء كود جديد*.\n3️⃣ اضغط على رابط التفعيل المباشر ليتم الربط تلقائياً!\n\nأو أرسل الكود هنا بالشكل: \`/setup YOUR_CODE\``,
+          idempotencyKey: `setup_cmd_instructions:${chatId}:${Date.now()}`,
+        });
+      }
+      return NextResponse.json({ ok: true });
+    }
 
     // 4a. Check if incoming text is a 4-digit linking PIN (e.g. "0417" or "/start 0417")
     const pinMatch = text.match(/^(?:\/start\s+)?(\d{4})$/);
@@ -358,7 +606,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
-      const token = await prisma.adminLinkToken.findFirst({
+      const token = await (prisma as any).adminLinkToken.findFirst({
         where: {
           code,
           used: false,
@@ -630,14 +878,31 @@ export async function POST(req: NextRequest) {
         const fullHoursStr = `${tenant.workingHours || "مخصص"}: ${text}`;
         tenant = await (prisma as any).tenant.update({
           where: { id: tenant.id },
-          data: { workingHours: fullHoursStr, state: "active" },
+          data: { workingHours: fullHoursStr, state: "pending_approval" },
         });
 
         await sendTelegramAlert({
           chatId,
-          text: `🎉 *تمام خالص!* البوت بقى جاهز يشتغل باسم *${tenant.name}*.\n🏢 *النشاط:* ${tenant.businessType || "عام"}\n⏰ *المواعيد:* ${fullHoursStr}\n\nابعتلي أي طلب أو سؤال عادي دلوقتي وهرد عليك/أنفذه.`,
+          text: `📝 *تم تسجيل بيانات نشاطك بنجاح!*\n\n🏢 *الشركة:* ${tenant.name}\n💼 *النشاط:* ${tenant.businessType || "عام"}\n⏰ *المواعيد:* ${fullHoursStr}\n\n⏳ *طلبك الآن قيد مراجعة الإدارة.* سنرسل لك إشعاراً فور التفعيل والتأكيد.`,
           idempotencyKey: `hours:custom_saved:${chatId}:${message.message_id}`,
         });
+
+        const adminChatId = await getAdminChatId();
+        if (adminChatId) {
+          await sendTelegramAlert({
+            chatId: adminChatId,
+            text: `📋 *طلب تفعيل شركة جديد عبر البوت!*\n\n🏢 *الشركة:* ${tenant.name}\n💼 *النشاط:* ${tenant.businessType || "عام"}\n⏰ *المواعيد:* ${fullHoursStr}\n🆔 *Chat ID:* \`${chatId}\``,
+            idempotencyKey: `admin_approval_tenant_custom:${tenant.id}`,
+            replyMarkup: {
+              inline_keyboard: [
+                [
+                  { text: "✅ موافقة وتفعيل", callback_data: `approve_tenant:${tenant.id}` },
+                  { text: "❌ رفض الطلب", callback_data: `reject_tenant:${tenant.id}` },
+                ],
+              ],
+            },
+          });
+        }
         return NextResponse.json({ ok: true });
       }
     }
@@ -828,5 +1093,64 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[Telegram Webhook Handler Error]", err);
     return NextResponse.json({ ok: true });
+  }
+}
+
+// ── Telegram Business Routing Helpers ──
+
+async function handleCustomerMessage(params: {
+  tenant: any;
+  customer: any;
+  text?: string;
+  voice?: any;
+  sendVia: { businessConnectionId: string; chatId: number };
+}) {
+  const { tenant, customer, text, voice, sendVia } = params;
+  
+  if (voice) {
+    // Handling voice notes in business connection is out of scope for the current snippet,
+    // but we can log it or fall back to a text reply.
+    console.log("Customer sent a voice note via Business Connection");
+  }
+
+  const messageText = (text || "").trim();
+  if (messageText) {
+    // Process via LLM
+    const llmResult = await processTelegramMessageWithLLM(
+      messageText,
+      tenant.id,
+      tenant.name,
+      tenant.businessType,
+      tenant.workingHours,
+      String(sendVia.chatId),
+      0 // No direct message id available easily here, passing 0
+    );
+
+    const replyText = (llmResult as any)?.text || "عذراً، لم أتمكن من فهم طلبك.";
+    
+    // Send response via the business connection on behalf of the owner
+    await sendAsBusinessOwner(sendVia.chatId, sendVia.businessConnectionId, replyText);
+  }
+}
+
+async function sendAsBusinessOwner(chatId: number, connectionId: string, text: string) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) {
+    console.error("TELEGRAM_BOT_TOKEN is missing");
+    return;
+  }
+  
+  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      business_connection_id: connectionId,
+      text,
+    }),
+  });
+  
+  if (!res.ok) {
+    console.error("Failed to send message as business owner:", await res.text());
   }
 }

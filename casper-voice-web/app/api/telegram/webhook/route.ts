@@ -341,7 +341,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    const text = (message.text || "").trim();
+    let text = (message.text || "").trim();
     const chatId = String(message.chat.id);
 
     // 4a. Check if incoming text is a 4-digit linking PIN (e.g. "0417" or "/start 0417")
@@ -386,7 +386,7 @@ export async function POST(req: NextRequest) {
           oldChatId = existingTenant?.telegramChatId || null;
         }
 
-        await prisma.$transaction(async (tx) => {
+        await (prisma as any).$transaction(async (tx: any) => {
           const claimed = await tx.adminLinkToken.updateMany({
             where: { id: token.id, used: false, expiresAt: { gt: new Date() } },
             data: { used: true },

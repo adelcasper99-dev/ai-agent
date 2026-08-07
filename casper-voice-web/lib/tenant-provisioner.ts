@@ -37,7 +37,7 @@ export class TenantProvisioner {
     options: VoiceTenantProvisionOptions
   ): Promise<ProvisionResult> {
     try {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await (prisma as any).$transaction(async (tx: any) => {
         // 1. Upsert Tenant record (idempotent on re-approval)
         const tenant = await (tx as any).tenant.upsert({
           where: options.telegramChatId

@@ -528,7 +528,7 @@ async function executeSaleFlow(tenantId: string, data: Record<string, any>): Pro
   const deferred = isCredit ? total : new Decimal(0);
   const custName = customer_name ? String(customer_name).trim() : "عميل نقدي";
 
-  const saleResult = await prisma.$transaction(async (tx) => {
+  const saleResult = await (prisma as any).$transaction(async (tx: any) => {
     let customerId = null;
 
     if (custName) {

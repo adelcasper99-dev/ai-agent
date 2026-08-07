@@ -369,7 +369,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       
       let saleResult;
       try {
-        saleResult = await prisma.$transaction(async (tx) => {
+        saleResult = await (prisma as any).$transaction(async (tx: any) => {
           // DB-level idempotency check
         if (effectiveIdempotencyKey) {
           const existing = await tx.sale.findUnique({ where: { idempotencyKey: effectiveIdempotencyKey } });
@@ -510,7 +510,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       if (!expAmount.isFinite() || expAmount.lte(0) || isPlaceholderDesc(description)) {
         return { success: false, resultText: "عشان أسجلك المصروف محتاج تقولي: المبلغ وبيان المصروف (مثال: كهرباء 500ج أو إيجار 2000ج) 💸" };
       }
-      const expenseResult = await prisma.$transaction(async (tx) => {
+      const expenseResult = await (prisma as any).$transaction(async (tx: any) => {
         const expense = await tx.expense.create({
           data: {
             amount: expAmount.toNumber(),
@@ -595,7 +595,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
        const custPhone = customer_phone ? String(customer_phone).trim() : null;
 
        try {
-         const paymentResult = await prisma.$transaction(async (tx) => {
+         const paymentResult = await (prisma as any).$transaction(async (tx: any) => {
             let customer = await findCustomerFuzzy(tx, tenantId || "", custName, custPhone);
             if (!customer) {
                throw new Error(`لم يتم العثور على العميل: ${custName}`);
@@ -722,7 +722,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       const remaining = total.sub(paid);
       const supplierNameStr = String(supplier_name).trim();
 
-      const purchaseResult = await prisma.$transaction(async (tx) => {
+      const purchaseResult = await (prisma as any).$transaction(async (tx: any) => {
         const supplier = await tx.supplier.upsert({
           where: { tenantId_name: { tenantId, name: supplierNameStr } },
           update: {},
@@ -771,7 +771,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       const supName = String(supplier_name).trim();
 
       try {
-        const { totalDebtResult, supplierFound } = await prisma.$transaction(async (tx) => {
+        const { totalDebtResult, supplierFound } = await (prisma as any).$transaction(async (tx: any) => {
           const supplier = await tx.supplier.findFirst({
             where: { name: { contains: supName }, ...(tenantId && { tenantId }) }
           });
@@ -894,7 +894,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       const qty = Number(quantity) || 1;
 
       try {
-        const customerFound = await prisma.$transaction(async (tx) => {
+        const customerFound = await (prisma as any).$transaction(async (tx: any) => {
           const customer = await findCustomerFuzzy(tx, tenantId || "", custName, null);
           if (!customer) {
             throw new Error(`لم يتم العثور على العميل: ${custName}`);
@@ -948,7 +948,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       const qty = Number(quantity) || 1;
 
       try {
-        const supplierFound = await prisma.$transaction(async (tx) => {
+        const supplierFound = await (prisma as any).$transaction(async (tx: any) => {
           const supplier = await tx.supplier.findFirst({
             where: { name: { contains: supName }, ...(tenantId && { tenantId }) }
           });

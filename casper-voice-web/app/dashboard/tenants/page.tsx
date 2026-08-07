@@ -70,14 +70,15 @@ export default function TenantsPage() {
     }
   };
 
-  const handleManageAction = async (action: string, extraData: any = {}) => {
-    if (!modal.tenant) return;
+  const handleManageAction = async (action: string, targetTenantId?: string, extraData: any = {}) => {
+    const tenantId = targetTenantId || modal.tenant?.id;
+    if (!tenantId) return;
     setModalLoading(true);
     try {
       await fetch("/api/tenants/manage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, tenantId: modal.tenant.id, ...extraData }),
+        body: JSON.stringify({ action, tenantId, ...extraData }),
       });
       setModal({ type: "", tenant: null });
       fetchData();
@@ -226,9 +227,14 @@ export default function TenantsPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
                       {d.type === "request" && d.status === "pending" && (
-                        <button onClick={() => openModal("approve", d)} className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded text-xs font-bold hover:bg-emerald-200">
-                          موافقة وتفعيل
-                        </button>
+                        <>
+                          <button onClick={() => openModal("approve", d)} className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded text-xs font-bold hover:bg-emerald-200">
+                            موافقة وتفعيل
+                          </button>
+                          <button onClick={() => handleManageAction("delete_request", d.id)} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700">
+                            🗑️ حذف
+                          </button>
+                        </>
                       )}
                       {d.type === "tenant" && (
                         <>
@@ -239,14 +245,21 @@ export default function TenantsPage() {
                             تمديد
                           </button>
                           {d.state === "active" || d.state === "trial" ? (
-                            <button onClick={() => handleManageAction("suspend", { tenantId: d.id })} className="bg-red-100 text-red-700 px-3 py-1 rounded text-xs font-bold hover:bg-red-200">
+                            <button onClick={() => handleManageAction("suspend", d.id)} className="bg-red-100 text-red-700 px-3 py-1 rounded text-xs font-bold hover:bg-red-200">
                               إيقاف
                             </button>
                           ) : (
-                            <button onClick={() => handleManageAction("reactivate", { tenantId: d.id })} className="bg-amber-100 text-amber-700 px-3 py-1 rounded text-xs font-bold hover:bg-amber-200">
+                            <button onClick={() => handleManageAction("reactivate", d.id)} className="bg-amber-100 text-amber-700 px-3 py-1 rounded text-xs font-bold hover:bg-amber-200">
                               إعادة تنشيط
                             </button>
                           )}
+                          <button onClick={() => {
+                            if (confirm("هل أنت تأكد من حذف هذه الشركة تماماً لإعادة تسجيلها من جديد؟")) {
+                              handleManageAction("delete", d.id);
+                            }
+                          }} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700">
+                            🗑️ حذف
+                          </button>
                         </>
                       )}
                     </div>

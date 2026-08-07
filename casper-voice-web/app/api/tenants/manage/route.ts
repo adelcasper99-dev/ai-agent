@@ -73,11 +73,22 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "delete") {
-      await prisma.tenant.update({
+      if (tenant.telegramChatId) {
+        await (prisma as any).pendingTenantRequest.deleteMany({
+          where: { telegramChatId: tenant.telegramChatId },
+        });
+      }
+      await prisma.tenant.delete({
         where: { id: tenantId },
-        data: { state: "deleted" },
       });
-      return NextResponse.json({ success: true, message: "Tenant marked as deleted" });
+      return NextResponse.json({ success: true, message: "Tenant deleted completely" });
+    }
+
+    if (action === "delete_request") {
+      await (prisma as any).pendingTenantRequest.delete({
+        where: { id: tenantId },
+      });
+      return NextResponse.json({ success: true, message: "Request deleted completely" });
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });

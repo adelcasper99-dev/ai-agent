@@ -13,6 +13,7 @@ export default function SettingsPage() {
   const [adminPin, setAdminPin] = useState<string | null>(null);
   const [adminPinExpiry, setAdminPinExpiry] = useState<string | null>(null);
   const [generatingPin, setGeneratingPin] = useState(false);
+  const [justLinked, setJustLinked] = useState(false);
 
   const [demoText, setDemoText] = useState("خلاص يا باشا، سجلتلك 50 جنيه بنزين في المصاريف وزي الفل!");
   const [demoVoice, setDemoVoice] = useState("salma");
@@ -26,6 +27,29 @@ export default function SettingsPage() {
       .catch(() => setValues({}))
       .finally(() => setLoading(false));
   }, []);
+
+  // Poll settings every 3 seconds while adminPin is active
+  useEffect(() => {
+    if (!adminPin) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/settings");
+        const data = await res.json();
+        const newSettings = data?.settings || {};
+        if (newSettings.ADMIN_TELEGRAM_CHAT_ID && newSettings.ADMIN_TELEGRAM_CHAT_ID !== values.ADMIN_TELEGRAM_CHAT_ID) {
+          setValues(newSettings);
+          setAdminPin(null);
+          setJustLinked(true);
+          setTimeout(() => setJustLinked(false), 8000);
+        }
+      } catch (err) {
+        console.error("Polling error", err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [adminPin, values.ADMIN_TELEGRAM_CHAT_ID]);
 
   const generateAdminPin = async () => {
     setGeneratingPin(true);
@@ -138,6 +162,28 @@ export default function SettingsPage() {
           </button>
         </div>
 
+        {justLinked && (
+          <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold flex items-center gap-2 animate-bounce">
+            <span>🎉</span>
+            <span>تم ربط حساب التليجرام الخاص بك كأدمن مباشر بنجاح! Chat ID: <strong>{safeValues["ADMIN_TELEGRAM_CHAT_ID"]}</strong></span>
+          </div>
+        )}
+
+        {/* Live Status Badge */}
+        <div className="p-3.5 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-blue-100 dark:border-gray-700 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className={`w-3 h-3 rounded-full ${safeValues["ADMIN_TELEGRAM_CHAT_ID"] ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
+            <span className="text-xs font-bold text-gray-700 dark:text-gray-200">
+              {safeValues["ADMIN_TELEGRAM_CHAT_ID"] ? "الحساب مرتبط ومفعل لاستقبال الطلبات والتنبيهات" : "لم يتم ربط حساب أدمن تليجرام بعد"}
+            </span>
+          </div>
+          {safeValues["ADMIN_TELEGRAM_CHAT_ID"] && (
+            <span className="text-xs font-mono font-bold bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-700">
+              Chat ID: {safeValues["ADMIN_TELEGRAM_CHAT_ID"]}
+            </span>
+          )}
+        </div>
+
         {adminPin ? (
           <div className="p-4 rounded-xl bg-white border border-blue-200 text-center space-y-2">
             <p className="text-xs text-gray-500 font-medium">افتح التليجرام وارسل هذا الكود للبوت المشترك قبل انتهاء الصلاحية (5 دقائق):</p>
@@ -145,6 +191,7 @@ export default function SettingsPage() {
               {adminPin}
             </div>
             <p className="text-xs text-blue-500">ينتهي الكود في: {new Date(adminPinExpiry || "").toLocaleTimeString("ar-EG")}</p>
+            <p className="text-xs text-emerald-600 font-bold animate-pulse">⚡ في انتظار إرسالك للكود من الهاتف... (سيتم الربط والتحديث تلقائياً بمجرد إرساله)</p>
           </div>
         ) : (
           <p className="text-xs text-gray-500">

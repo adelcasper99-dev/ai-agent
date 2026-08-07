@@ -70,15 +70,23 @@ export default function TenantsPage() {
     }
   };
 
-  const handleManageAction = async (action: string, targetTenantId?: string, extraData: any = {}) => {
-    const tenantId = targetTenantId || modal.tenant?.id;
+  const handleManageAction = async (action: string, targetTenantIdOrExtra?: string | any, extraData: any = {}) => {
+    let tenantId = modal.tenant?.id;
+    let payload = extraData;
+
+    if (typeof targetTenantIdOrExtra === "string") {
+      tenantId = targetTenantIdOrExtra;
+    } else if (typeof targetTenantIdOrExtra === "object" && targetTenantIdOrExtra !== null) {
+      payload = targetTenantIdOrExtra;
+    }
+
     if (!tenantId) return;
     setModalLoading(true);
     try {
       await fetch("/api/tenants/manage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, tenantId, ...extraData }),
+        body: JSON.stringify({ action, tenantId, ...payload }),
       });
       setModal({ type: "", tenant: null });
       fetchData();

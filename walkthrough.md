@@ -1,28 +1,24 @@
-# 🚀 Enterprise Tenant Management & Data Table UI — Walkthrough
+# 🚀 Enterprise Soft Delete & Telegram Identity Unlinking — Walkthrough
 
 ## Summary of Changes
-The Casper POS Tenant Management system has been upgraded to support enterprise-level lifecycle management, including 14-day trials, 1-month subscriptions, 1-year subscriptions, and custom extensions.
+Transformed Tenant deletion from physical database removal (`prisma.tenant.delete`) to **Enterprise SaaS Soft Delete & Identity Unlinking**:
 
-### 1. Database Changes
-- **`Tenant` / `PendingTenantRequest` Models**: Added nullable `expiresAt` (`DateTime`) and `subscriptionPlan` (`String` with a `@default("trial_14")` fallback for older records). This guarantees backwards compatibility while paving the way for subscription checks.
+### 1. Backend Management API (`/api/tenants/manage`)
+- When `action === "delete"`:
+  - Updates `Tenant`: `state = "deleted"`, `telegramChatId = null`, `ownerTelegramUserId = null`, `businessConnectionId = null`, `businessConnectionActive = false`.
+  - Clears associated unapproved `PendingTenantRequest` records for that Telegram Chat ID.
+- Preserves historical financial sales, invoices, and double-entry accounting ledgers in compliance with ERP guardrails.
 
-### 2. API Routes Hardening
-- **`/api/tenants/requests` (GET)**: Now returns both `pending` requests and *all* existing tenants for a unified overview.
-- **`/api/tenants/approve` (POST)**: Modified to accept the selected subscription plan, calculate the correct `expiresAt` dynamically, and provision the tenant correctly.
-- **`/api/tenants/manage` (POST) [NEW]**: A unified endpoint supporting the full lifecycle: `suspend`, `reactivate`, `extend_plan`, `edit_details`, and `delete`.
+### 2. Tenant Overview API (`/api/tenants/requests`)
+- Modified `findMany` query to exclude `state: "deleted"` tenants:
+  ```typescript
+  where: { state: { not: "deleted" } }
+  ```
+- Ensures soft-deleted organizations do not clutter the active Super Admin Data Table.
 
-### 3. Bento Data Table UI (`app/dashboard/tenants/page.tsx`)
-- Rebuilt from the ground up using the Bento UI design language.
-- **Top Metrics Bar**: Real-time counts of Total, Active, Trial, Pending, and Suspended tenants.
-- **Filter & Search**: Advanced inline search by Name, Phone, or Telegram ID, plus a status filter.
-- **Interactive Action Modals**: 
-  - **Approve**: Pick a plan (Trial/1 Mo/1 Yr) before provisioning.
-  - **Extend**: Easily append extra time to an existing subscription.
-  - **Edit/Suspend**: Swift modifications and kill-switches.
+### 3. Telegram Onboarding Webhook (`/api/telegram/webhook`)
+- Because soft-deleted tenants have `telegramChatId = null`, when a user sends `/start` on Telegram, the system treats them as an unlinked user and triggers a fresh onboarding flow.
 
 ## Verification
-- All TypeScript types checked and passed.
-- Prisma schema pushed to SQLite.
-- Safe idempotent updates on DB models using optimistic locking.
-
-The UI is now live on `/dashboard/tenants`.
+- `npx tsc --noEmit` passed with 0 errors.
+- AST knowledge graph updated via `graphify`.

@@ -1,7 +1,7 @@
 # Graph Report - casper-voice-web  (2026-08-07)
 
 ## Corpus Check
-- 106 files · ~54,457 words
+- 106 files · ~54,807 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3a190e34`
+- Built from commit: `abc02500`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

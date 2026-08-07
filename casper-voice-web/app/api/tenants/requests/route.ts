@@ -11,6 +11,7 @@ export async function GET() {
     }
 
     const tenants = await prisma.tenant.findMany({
+      where: { state: { not: "deleted" } },
       orderBy: { createdAt: "desc" },
     });
 

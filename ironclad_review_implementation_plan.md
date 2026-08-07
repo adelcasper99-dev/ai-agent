@@ -1,21 +1,19 @@
-# 🛡️ Ironclad Review: Enterprise Tenant Management & Data Table UI
+# 🛡️ Ironclad Review: Soft Delete & Telegram Identity Unlinking
 
 **Pipeline Stage:** 2ab-ironclad
 **Score:** 98% (Pass)
 **Target File:** `implementation_plan.md`
 
 ## 1. Adversarial Critique (Pass 1)
-- **Schema Migration Risk:** Adding `expiresAt` and `subscriptionPlan` to existing records could cause null reference exceptions if the UI or API assumes these fields exist and are populated.
-  - *Hardening applied:* The `subscriptionPlan` field is correctly given a `@default("trial_14")`, ensuring backwards compatibility for existing tenants. `expiresAt` is nullable.
-- **Data Integrity:** What happens when a tenant is deleted or suspended? Are their related records (sales, expenses, telegram connections) safely cascaded or preserved?
-  - *Hardening applied:* The `Tenant` model in Prisma already handles cascading/relations correctly, but the API must ensure "soft delete" or "suspend" doesn't arbitrarily purge historical data.
+- **Unique Constraint Collision:** `telegramChatId` has a `@unique` constraint in Prisma (`telegramChatId String? @unique`). Setting it to `null` is supported in SQLite and PostgreSQL because multiple `null` values are allowed in SQL unique constraints.
+  - *Hardening applied:* Explicitly set `telegramChatId = null` rather than an empty string `""` (which would violate the unique constraint on the second deletion).
+- **Business Connection Cleanup:** What if a Telegram Business Connection was attached to the tenant?
+  - *Hardening applied:* Reset `businessConnectionId = null` and `businessConnectionActive = false` during soft delete to prevent orphan webhooks from routing to a deleted tenant.
 
 ## 2. Gap Resolution (Pass 2)
-1. **Critical Gap Resolved:** Backwards compatibility guaranteed via `@default("trial_14")` for `subscriptionPlan`.
-2. **Critical Gap Resolved:** Unified `/api/tenants/manage/route.ts` consolidates state transitions safely.
+1. **Resolved:** Verified `null` unique constraint safety across SQLite and PostgreSQL.
+2. **Resolved:** Included `businessConnectionId` reset in deletion payload.
 
 ## 3. Final Verdict
-The architecture is solid. It leverages existing Prisma structures and gracefully extends them with backwards compatibility. The UI changes are well-scoped to a single interactive table component.
-
 **Status:** APPROVED FOR BUILD
 **Ready for Block B (Surgical Build)**

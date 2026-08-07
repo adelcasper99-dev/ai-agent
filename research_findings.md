@@ -1,25 +1,14 @@
-# Research Findings — STT Multi-Provider & Audio Quality Enhancement
+# 🔬 Research Findings: Soft Delete & Telegram Identity Unlinking in SaaS ERPs
 
-## 1. LiveKit Soniox STT Plugin (`livekit-plugins-soniox`)
-- **Package Status**: Verified available on PyPI (latest version `1.6.7`).
-- **Class Usage**: `from livekit.plugins import soniox` -> `soniox.STT(api_key=..., model="soniox-phone-multilingual", language_hints=["ar", "en"])`.
-- **Code-Switching**: `soniox-phone-multilingual` natively handles mixed Egyptian Arabic and English terminology (POS, ERP, invoice, client names).
+## 1. Industry Standard for Tenant Offboarding & Re-onboarding
+In enterprise ERP and SaaS systems (Odoo, Stripe, Shopify):
+- **Data Retention Guardrails:** Hard-deleting relational root records (like Tenants/Organizations) breaks historical accounting ledgers, invoices, and sales reports.
+- **Identity Unlinking Pattern:** Rather than physically purging the tenant row, the system sets `state = "deleted"` (or `deletedAt = now()`) and clears external channel identifiers (`telegramChatId = null`, `ownerTelegramUserId = null`).
+- **Instant Re-onboarding:** When a Telegram user sends `/start`, the system searches for an active or pending tenant with their `chatId`. Since their `chatId` was set to `null` during soft-deletion, the webhook treats them as a fresh customer and initiates a clean signup flow, while preserving the historical financial database intact.
 
-## 2. Dynamic Failover Strategy in LiveKit Agents
-- **Session-Level Resilience**: Wrapping `create_agent_session()` in a failover mechanism allows automatic fallback to `deepgram_pipeline` if Soniox API key is missing or initialization fails.
-- **Provider Identification**: Active STT provider name is passed into event emitters and captured in `DiagnosticsSession` to facilitate A/B evaluation.
+## 2. Hard Delete Fallback
+For spam requests (`PendingTenantRequest` before approval), hard-deleting the request record is completely safe because no financial transactions or sub-entities exist yet.
 
-## 3. Audio Preprocessing via ffmpeg
-- **Filter Chain**: `-af "highpass=f=100,loudnorm" -ar 16000`
-  - `highpass=f=100`: Removes low-frequency background hum (air conditioners, traffic).
-  - `loudnorm`: Standardizes audio volume across heterogeneous mobile recordings.
-  - `-ar 16000`: Matches native sample rate expected by Soniox & Deepgram.
-- **Scope Limit**: Applicable to file-based audio inputs (WhatsApp/Telegram voice notes). Live WebRTC audio relies on LiveKit WebRTC client-side noise suppression.
-
-## 4. Post-STT LLM Cleanup & Latency Guardrails
-- **Model Selection**: `gemini-2.5-flash-lite` for cost-effective spelling/grammar correction.
-- **Latency Protection**: Restrict LLM post-correction to asynchronous voice-note channels only. Live WebRTC voice sessions bypass LLM cleanup to maintain zero extra latency (<300ms turn time).
-
-## 5. Confidence-Based Fallback Rules
-- **Threshold**: Set default `STT_CONFIDENCE_THRESHOLD = 0.6`.
-- **Action**: When `confidence < threshold`, trigger spoken prompt: `"لم أسمع بوضوح، ممكن تكرر أو تكتب؟"` rather than attempting logic processing on distorted transcripts.
+## 3. Selected Strategy
+1. **Unapproved Requests (`PendingTenantRequest`)**: Physical deletion (`deleteMany`).
+2. **Provisioned Tenants (`Tenant`)**: Soft deletion (`state = "deleted"`, `telegramChatId = null`, `ownerTelegramUserId = null`, `businessConnectionId = null`).

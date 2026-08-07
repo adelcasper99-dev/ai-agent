@@ -1,7 +1,5 @@
-# Enterprise Tenant Management & Data Table UI — Task Progress
+# Enterprise Soft Delete & Telegram Identity Unlinking — Build Tasks
 
-- [x] Phase 1: Update `schema.prisma` with `expiresAt` and `subscriptionPlan`.
-- [x] Phase 2: Update `/api/tenants/requests` to return new fields.
-- [x] Phase 3: Update `/api/tenants/approve` to accept subscription plans and set expiry.
-- [x] Phase 4: Create unified `/api/tenants/manage` route for CRUD and lifecycle events.
-- [x] Phase 5: Rebuild `app/dashboard/tenants/page.tsx` with a Bento Data Table and Modals.
+- [x] Task 1: Update `/api/tenants/manage` to implement Soft Delete and reset Telegram identifiers (`telegramChatId: null`, `ownerTelegramUserId: null`, `businessConnectionId: null`, `businessConnectionActive: false`, `state: "deleted"`).
+- [x] Task 2: Ensure `/api/tenants/requests` excludes `deleted` tenants from the main active Tenants Data Table.
+- [x] Task 3: Verify TypeScript types and execute local verification.

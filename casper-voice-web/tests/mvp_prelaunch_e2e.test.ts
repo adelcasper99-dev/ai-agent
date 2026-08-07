@@ -1,3 +1,4 @@
+import { describe, it } from "vitest";
 import { prisma } from "../lib/prisma";
 import { approveTenantRequest } from "../lib/telegram";
 import { runWithTenant } from "../lib/prisma-tenant-extension";
@@ -97,4 +98,8 @@ async function runMvpPrelaunchAudit() {
   console.log("=================================================");
 }
 
-runMvpPrelaunchAudit().catch(console.error);
+describe("MVP Prelaunch Audit", () => {
+  it("executes full E2E audit flow", async () => {
+    await runMvpPrelaunchAudit();
+  });
+});

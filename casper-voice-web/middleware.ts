@@ -5,7 +5,8 @@ const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/telegram/webhook', '/te
 
 function isInternalSecretValid(headerSecret: string | null): boolean {
   if (!headerSecret) return false;
-  const expectedSecret = process.env.INTERNAL_SERVICE_SECRET || 'casper-voice-internal-secret-9988776655';
+  const expectedSecret = process.env.INTERNAL_SERVICE_SECRET;
+  if (!expectedSecret) return false;
   
   if (headerSecret.length !== expectedSecret.length) {
     return false;

@@ -6,6 +6,7 @@ import {
   isUpdateProcessed,
   isStartRateLimited,
   isChatAllowed,
+  getAdminChatId,
   approveTenantRequest,
   rejectTenantRequest,
   setTelegramBotCommands,
@@ -316,8 +317,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
-      const expectedAdminId = process.env.ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
-      // Auth Check: Admin Callback sender MUST equal ADMIN_CHAT_ID
+      const expectedAdminId = await getAdminChatId();
+      // Auth Check: Admin Callback sender MUST equal ADMIN_CHAT_ID from DB or env
       if (expectedAdminId && callbackChatId !== expectedAdminId) {
         return NextResponse.json({ ok: true });
       }
@@ -340,8 +341,109 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
+    const text = (message.text || "").trim();
     const chatId = String(message.chat.id);
-    let text = typeof message.text === "string" ? message.text.trim() : "";
+
+    // 4a. Check if incoming text is a 4-digit linking PIN (e.g. "0417" or "/start 0417")
+    const pinMatch = text.match(/^(?:\/start\s+)?(\d{4})$/);
+    if (pinMatch) {
+      const code = pinMatch[1];
+
+      if (isStartRateLimited(chatId)) {
+        await sendTelegramAlert({
+          chatId,
+          text: "⚠️ تم تجاوز عدد محاولات إدخال الرمز مسبقاً. يرجى الانتظار 15 دقيقة والتجربة لاحقاً.",
+          idempotencyKey: `link_rate_limit:${chatId}:${Math.floor(Date.now() / 900_000)}`,
+        });
+        return NextResponse.json({ ok: true });
+      }
+
+      const token = await prisma.adminLinkToken.findFirst({
+        where: {
+          code,
+          used: false,
+          expiresAt: { gt: new Date() },
+        },
+      });
+
+      if (!token) {
+        await sendTelegramAlert({
+          chatId,
+          text: "❌ رمز الربط خاطئ أو انتهت صلاحيته (الكود يدوم 5 دقائق فقط). يرجى توليد رمز جديد من لوحة التحكم.",
+          idempotencyKey: `link_invalid_code:${chatId}:${Date.now()}`,
+        });
+        return NextResponse.json({ ok: true });
+      }
+
+      try {
+        let oldChatId: string | null = null;
+
+        if (token.scope === "GLOBAL") {
+          const existingSetting = await prisma.setting.findUnique({ where: { key: "ADMIN_TELEGRAM_CHAT_ID" } });
+          oldChatId = existingSetting?.value || process.env.ADMIN_CHAT_ID || null;
+        } else if (token.tenantId) {
+          const existingTenant = await prisma.tenant.findUnique({ where: { id: token.tenantId } });
+          oldChatId = existingTenant?.telegramChatId || null;
+        }
+
+        await prisma.$transaction(async (tx) => {
+          const claimed = await tx.adminLinkToken.updateMany({
+            where: { id: token.id, used: false, expiresAt: { gt: new Date() } },
+            data: { used: true },
+          });
+
+          if (claimed.count !== 1) {
+            throw new Error("TOKEN_ALREADY_CLAIMED");
+          }
+
+          if (token.scope === "GLOBAL") {
+            await tx.setting.upsert({
+              where: { key: "ADMIN_TELEGRAM_CHAT_ID" },
+              update: { value: chatId },
+              create: { key: "ADMIN_TELEGRAM_CHAT_ID", value: chatId },
+            });
+          } else if (token.tenantId) {
+            await tx.tenant.update({
+              where: { id: token.tenantId },
+              data: { telegramChatId: chatId },
+            });
+          }
+
+          await tx.adminLinkAudit.create({
+            data: {
+              scope: token.scope,
+              tenantId: token.tenantId,
+              oldChatId,
+              newChatId: chatId,
+            },
+          });
+        });
+
+        const targetLabel = token.scope === "GLOBAL" ? "أدمن المنصة الرئيسي" : "أدمن الشركة";
+        await sendTelegramAlert({
+          chatId,
+          text: `✅ *تم ربط حسابك كـ ${targetLabel} بنجاح!*\n\nستصلك إشعارات وتنبيهات النظام والموافقات مباشرة هنا على هذا الحساب.`,
+          idempotencyKey: `link_success:${chatId}:${Date.now()}`,
+        });
+      } catch (err: any) {
+        if (err?.message === "TOKEN_ALREADY_CLAIMED") {
+          await sendTelegramAlert({
+            chatId,
+            text: "⚠️ تم استخدام رمز الربط هذا مسبقاً من جلسة أخرى.",
+            idempotencyKey: `link_claimed:${chatId}:${Date.now()}`,
+          });
+        } else {
+          console.error("[telegram-webhook] Error claiming admin token:", err);
+          await sendTelegramAlert({
+            chatId,
+            text: "❌ حدث خطأ أثناء ربط الحساب، يرجى المحاولة مرة أخرى.",
+            idempotencyKey: `link_error:${chatId}:${Date.now()}`,
+          });
+        }
+      }
+
+      return NextResponse.json({ ok: true });
+    }
 
     // Voice Note Handling (Transcription via Groq Whisper)
     if (message.voice) {

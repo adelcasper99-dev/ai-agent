@@ -6,11 +6,11 @@ export async function GET() {
   const diagnostics: Record<string, { status: "OK" | "FAIL"; detail: string }> = {};
 
   // 1. Check Internal Middleware Auth Header Secret
-  const secret = process.env.INTERNAL_SERVICE_SECRET || "casper-voice-internal-secret-9988776655";
+  const secret = process.env.INTERNAL_SERVICE_SECRET;
   if (secret) {
     diagnostics["INTERNAL_AUTH"] = { status: "OK", detail: "سري الخدمة الداخلية معرف بنجاح" };
   } else {
-    diagnostics["INTERNAL_AUTH"] = { status: "FAIL", detail: "سري الخدمة الداخلية mising" };
+    diagnostics["INTERNAL_AUTH"] = { status: "FAIL", detail: "سري الخدمة الداخلية غير معرف" };
   }
 
   // 2. Check Database & Settings Load

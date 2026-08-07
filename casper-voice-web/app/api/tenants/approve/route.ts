@@ -1,14 +1,14 @@
 // app/api/tenants/approve/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { approveTenantRequest } from "@/lib/telegram";
+import { isInternalAuthValid } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization") || req.headers.get("x-admin-session") || req.headers.get("x-internal-secret");
     const sessionCookie = req.cookies.get("admin_session")?.value;
-    const adminSecret = process.env.ADMIN_SESSION_SECRET || "casper-admin-secret-key";
+    const isAuthorized = Boolean(sessionCookie) || isInternalAuthValid(req);
 
-    if (!sessionCookie && (!authHeader || (authHeader !== adminSecret && authHeader !== "casper-voice-internal-secret-9988776655" && !authHeader.includes("Bearer")))) {
+    if (!isAuthorized) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

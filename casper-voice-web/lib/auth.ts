@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import crypto from "crypto";
-// Session token utils live in session.ts (zero Prisma imports — prevents circular dep)
-export { signTenantSession, verifyTenantSession } from "./session";
+import { signTenantSession, verifyTenantSession } from "./session";
+export { signTenantSession, verifyTenantSession };
 
 
 
@@ -41,11 +41,20 @@ export function isInternalAuthValid(req: NextRequest): boolean {
   if (!provided) return false;
 
   const validSecrets = [
-    process.env.INTERNAL_SERVICE_SECRET || "casper-voice-internal-secret-9988776655",
-    process.env.INTERNAL_API_KEY || "test-internal-secret-key-123",
-  ].filter(Boolean);
+    process.env.INTERNAL_SERVICE_SECRET,
+    process.env.INTERNAL_API_KEY,
+  ].filter((s): s is string => Boolean(s && s.trim()));
 
-  return validSecrets.includes(provided);
+  if (validSecrets.length === 0) {
+    return false; // Fail closed: no hardcoded fallbacks
+  }
+
+  const providedBuffer = Buffer.from(provided);
+  return validSecrets.some((secret) => {
+    const secretBuffer = Buffer.from(secret);
+    if (providedBuffer.length !== secretBuffer.length) return false;
+    return crypto.timingSafeEqual(providedBuffer, secretBuffer);
+  });
 }
 
 

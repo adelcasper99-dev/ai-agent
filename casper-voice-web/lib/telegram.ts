@@ -57,6 +57,20 @@ function validateEnv() {
   }
 }
 
+export async function getAdminChatId(): Promise<string | null> {
+  try {
+    const setting = await prisma.setting.findUnique({
+      where: { key: 'ADMIN_TELEGRAM_CHAT_ID' },
+    });
+    if (setting?.value && setting.value.trim()) {
+      return setting.value.trim();
+    }
+  } catch (err) {
+    console.warn('[telegram] getAdminChatId DB lookup failed, fallback to env:', err);
+  }
+  return process.env.ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID || process.env.ADMIN_TELEGRAM_CHAT_ID || null;
+}
+
 export async function setTelegramBotCommands() {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return;

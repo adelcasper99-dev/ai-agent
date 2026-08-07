@@ -29,6 +29,27 @@ export default function SettingsPage() {
   const [checking, setChecking] = useState<Record<string, boolean>>({});
   const [showKey, setShowKey] = useState<Record<string, boolean>>({});
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [adminPin, setAdminPin] = useState<string | null>(null);
+  const [adminPinExpiry, setAdminPinExpiry] = useState<string | null>(null);
+  const [generatingPin, setGeneratingPin] = useState(false);
+
+  const generateAdminPin = async () => {
+    setGeneratingPin(true);
+    try {
+      const res = await fetch("/api/dashboard/settings/admin-link/generate", {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (data.code) {
+        setAdminPin(data.code);
+        setAdminPinExpiry(data.expiresAt);
+      }
+    } catch (err) {
+      console.error("Failed to generate Admin PIN", err);
+    } finally {
+      setGeneratingPin(false);
+    }
+  };
 
   const copyToClipboard = (keyName: string, textValue: string) => {
     if (!textValue) return;
@@ -215,6 +236,38 @@ export default function SettingsPage() {
               يمكنك رفع تسجيل 10 ثواني بصوتك على fish.audio ونسخ الـ Reference ID ووضعه هنا ليتحول السيستم لصوتك فوراً!
             </p>
           </div>
+        )}
+      </div>
+
+      {/* ── Telegram Admin Linking Card ── */}
+      <div className="bento-card p-5 space-y-3 bg-pastel-blue border-0">
+        <div className="flex justify-between items-center">
+          <label className="block text-sm font-bold flex items-center gap-1.5" style={{ color: "var(--color-text-primary)" }}>
+            📲 ربط وتحديث حساب الأدمن المباشر للتليجرام (Telegram Admin OTP Link)
+          </label>
+          <button
+            type="button"
+            onClick={generateAdminPin}
+            disabled={generatingPin}
+            className="px-3 py-1.5 rounded-lg font-bold text-xs shadow-sm transition-all"
+            style={actionBtn("brand")}
+          >
+            {generatingPin ? "جاري التوليد..." : "⚡ توليد كود ربط جديد (PIN)"}
+          </button>
+        </div>
+
+        {adminPin ? (
+          <div className="p-4 rounded-xl bg-white border border-blue-200 text-center space-y-2">
+            <p className="text-xs text-gray-500 font-medium">افتح التليجرام وارسل هذا الكود للبوت المشترك قبل انتهاء الصلاحية (5 دقائق):</p>
+            <div className="text-3xl font-extrabold font-mono tracking-widest text-blue-600 select-all">
+              {adminPin}
+            </div>
+            <p className="text-xs text-blue-500">ينتهي الكود في: {new Date(adminPinExpiry || "").toLocaleTimeString("ar-EG")}</p>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-500">
+            انقر على "توليد كود ربط جديد" لإنشاء كود من 4 أرقام مدته 5 دقائق. بمجرد إرسال الكود للبوت في التليجرام يتم ربط حسابك كأدمن مباشر فورياً.
+          </p>
         )}
       </div>
 

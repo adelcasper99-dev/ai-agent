@@ -40,6 +40,8 @@ model Tenant {
   journalEntries JournalEntry[]
   conversationStates ConversationState[]
   chatMessages ChatMessage[]
+  adminLinkTokens AdminLinkToken[]
+  adminLinkAudits AdminLinkAudit[]
 }
 
 // ── طلبات التسجيل الذاتي للشركة ──────────────────────────────
@@ -340,5 +342,29 @@ model ChatMessage {
   @@index([createdAt])
 }
 
+// ── توثيق وربط التليجرام للأدمن (Admin Telegram Link & Audit) ──
+model AdminLinkToken {
+  id         String   @id @default(cuid())
+  scope      String   @default("GLOBAL") // GLOBAL | TENANT
+  tenantId   String?  // null للأدمن الرئيسي GLOBAL
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  code       String   // كود مكون من 4 أرقام مثل "0417"
+  used       Boolean  @default(false)
+  attempts   Int      @default(0)
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
 
+  @@index([code, used, expiresAt])
+  @@index([tenantId, used])
+}
+
+model AdminLinkAudit {
+  id             String   @id @default(cuid())
+  scope          String   @default("GLOBAL") // GLOBAL | TENANT
+  tenantId       String?  // null للأدمن الرئيسي GLOBAL
+  tenant         Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  oldChatId      String?
+  newChatId      String
+  linkedAt       DateTime @default(now())
+}
 

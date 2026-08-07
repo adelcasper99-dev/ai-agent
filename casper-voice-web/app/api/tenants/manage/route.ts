@@ -1,0 +1,88 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { isInternalAuthValid } from "@/lib/auth";
+
+export async function POST(req: NextRequest) {
+  try {
+    const sessionCookie = req.cookies.get("admin_session")?.value;
+    const isAuthorized = Boolean(sessionCookie) || isInternalAuthValid(req);
+
+    if (!isAuthorized) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { action, tenantId, ...data } = body;
+
+    if (!tenantId || !action) {
+      return NextResponse.json({ error: "tenantId and action are required" }, { status: 400 });
+    }
+
+    const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
+    if (!tenant) {
+      return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
+    }
+
+    if (action === "suspend") {
+      await prisma.tenant.update({
+        where: { id: tenantId },
+        data: { state: "suspended" },
+      });
+      return NextResponse.json({ success: true, message: "Tenant suspended" });
+    }
+
+    if (action === "reactivate") {
+      await prisma.tenant.update({
+        where: { id: tenantId },
+        data: { state: "active" },
+      });
+      return NextResponse.json({ success: true, message: "Tenant reactivated" });
+    }
+
+    if (action === "extend_plan") {
+      const { subscriptionPlan } = data;
+      let expiresAt = tenant.expiresAt;
+      
+      const now = Date.now();
+      const baseDate = (expiresAt && expiresAt.getTime() > now) ? expiresAt.getTime() : now;
+
+      if (subscriptionPlan === 'trial_14') {
+        expiresAt = new Date(baseDate + 14 * 24 * 60 * 60 * 1000);
+      } else if (subscriptionPlan === 'month_1') {
+        expiresAt = new Date(baseDate + 30 * 24 * 60 * 60 * 1000);
+      } else if (subscriptionPlan === 'year_1') {
+        expiresAt = new Date(baseDate + 365 * 24 * 60 * 60 * 1000);
+      } else if (subscriptionPlan === 'custom' && data.expiresAt) {
+        expiresAt = new Date(data.expiresAt);
+      }
+
+      await prisma.tenant.update({
+        where: { id: tenantId },
+        data: { subscriptionPlan, expiresAt, state: "active" },
+      });
+      return NextResponse.json({ success: true, message: "Plan extended", expiresAt });
+    }
+
+    if (action === "edit_details") {
+      const { name, phoneNumber } = data;
+      await prisma.tenant.update({
+        where: { id: tenantId },
+        data: { name, phoneNumber },
+      });
+      return NextResponse.json({ success: true, message: "Details updated" });
+    }
+
+    if (action === "delete") {
+      await prisma.tenant.update({
+        where: { id: tenantId },
+        data: { state: "deleted" },
+      });
+      return NextResponse.json({ success: true, message: "Tenant marked as deleted" });
+    }
+
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+  } catch (err: any) {
+    console.error("[POST /api/tenants/manage error]", err);
+    return NextResponse.json({ error: "Internal Server Error", detail: err.message }, { status: 500 });
+  }
+}

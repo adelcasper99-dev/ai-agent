@@ -23,6 +23,8 @@ model Tenant {
   phoneNumber    String?  @unique
   state          String   @default("trial") // trial | active | past_due_silent | suspended | cancelled | pending_deletion | deleted
   telegramChatId String?  @unique
+  subscriptionPlan String? @default("trial_14")
+  expiresAt      DateTime?
   businessType   String?
   workingHours   String?
   createdAt      DateTime @default(now())
@@ -59,6 +61,8 @@ model PendingTenantRequest {
   customerName   String
   phoneNumber    String?
   status         String    @default("pending") // pending | approved | rejected
+  subscriptionPlan String? @default("trial_14")
+  expiresAt      DateTime?
   requestedAt    DateTime  @default(now())
   decidedAt      DateTime?
   decidedBy      String?   // "telegram:<adminId>" | "dashboard:<userId>"

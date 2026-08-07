@@ -1,24 +1,28 @@
-# Walkthrough: Telegram Business API — Identity Routing
+# 🚀 Enterprise Tenant Management & Data Table UI — Walkthrough
 
-We have refactored and hardened the Telegram Webhook handler (`app/api/telegram/webhook/route.ts`) to fully support the Telegram Business API (`business_connection` and `business_message`).
+## Summary of Changes
+The Casper POS Tenant Management system has been upgraded to support enterprise-level lifecycle management, including 14-day trials, 1-month subscriptions, 1-year subscriptions, and custom extensions.
 
-## Key Changes Made
+### 1. Database Changes
+- **`Tenant` / `PendingTenantRequest` Models**: Added nullable `expiresAt` (`DateTime`) and `subscriptionPlan` (`String` with a `@default("trial_14")` fallback for older records). This guarantees backwards compatibility while paving the way for subscription checks.
 
-1. **Strict Zod Boundary Validation**
-   - Refactored `telegramUpdateSchema` in `route.ts` to replace loose `z.any()` types with explicit schema definitions for `message`, `business_message`, and `business_connection`.
+### 2. API Routes Hardening
+- **`/api/tenants/requests` (GET)**: Now returns both `pending` requests and *all* existing tenants for a unified overview.
+- **`/api/tenants/approve` (POST)**: Modified to accept the selected subscription plan, calculate the correct `expiresAt` dynamically, and provision the tenant correctly.
+- **`/api/tenants/manage` (POST) [NEW]**: A unified endpoint supporting the full lifecycle: `suspend`, `reactivate`, `extend_plan`, `edit_details`, and `delete`.
 
-2. **Serverless Execution Safety**
-   - Converted background async handlers (`handleCustomerMessage`) to be explicitly `await`ed before returning `NextResponse.json({ ok: true })`. This guarantees execution under serverless environments (Vercel/Next.js).
+### 3. Bento Data Table UI (`app/dashboard/tenants/page.tsx`)
+- Rebuilt from the ground up using the Bento UI design language.
+- **Top Metrics Bar**: Real-time counts of Total, Active, Trial, Pending, and Suspended tenants.
+- **Filter & Search**: Advanced inline search by Name, Phone, or Telegram ID, plus a status filter.
+- **Interactive Action Modals**: 
+  - **Approve**: Pick a plan (Trial/1 Mo/1 Yr) before provisioning.
+  - **Extend**: Easily append extra time to an existing subscription.
+  - **Edit/Suspend**: Swift modifications and kill-switches.
 
-3. **Concurrency & Race Condition Guard**
-   - Wrapped `prisma.customer.upsert` in a `try/catch` block that specifically catches Prisma `P2002` (Unique constraint violation) and falls back to `findUnique`, preventing race condition crashes when customers send rapid consecutive messages.
+## Verification
+- All TypeScript types checked and passed.
+- Prisma schema pushed to SQLite.
+- Safe idempotent updates on DB models using optimistic locking.
 
-4. **Order-Independent Linking (Pending Connections)**
-   - Stashed `business_connection` events that arrive before `/start <setupCode>` into `PendingBusinessConnection` and automatically resolved them once the owner completes deep link registration.
-
-## Verification Results
-
-- **TypeScript Compilation**: Clean (0 errors).
-- **Prisma Schema**: Formatted and validated.
-- **Idempotency & Security Audit**: Verified via `code_review_report.md` (95% DIFF_SCORE).
-- **Test Suite**: 100% Pass Rate across all 46 test cases (`test_results.txt`).
+The UI is now live on `/dashboard/tenants`.

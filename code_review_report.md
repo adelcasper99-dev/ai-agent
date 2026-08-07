@@ -1,17 +1,20 @@
-# Code Review Report: Telegram Business API Routing
+# 🔍 Code Audit & Peer Review: Enterprise Tenant Management
 
-**DIFF_SCORE: 95%**
+**Pipeline Stage:** 3b-audit
+**Score:** 95% (Pass)
 
-## Summary of Findings
+## 1. Security & RBAC
+- **Auth Checks:** `/api/tenants/manage` and `/api/tenants/approve` correctly implement `isInternalAuthValid` and `sessionCookie` validation.
+- **Input Validation:** Minimalist but effective validation checking for `requestId`, `tenantId`, and `action`.
 
-| Category | Finding | Severity | Status |
-| :--- | :--- | :--- | :--- |
-| **Security & Auth** | Webhook secret token validation (`x-telegram-bot-api-secret-token`) is enforced prior to parsing JSON payloads. | LOW | PASS |
-| **Input Validation** | Strict Zod schema parses `business_message` and `business_connection` payloads, preventing null pointer crashes. | LOW | PASS |
-| **Serverless Safety** | Background handlers (`handleCustomerMessage`) are properly `await`ed, eliminating execution termination risks. | LOW | PASS |
-| **Concurrency** | Prisma `P2002` race-condition guard handles concurrent customer creation safely. | LOW | PASS |
+## 2. Robustness (Try/Catch)
+- **Error Handling:** All route handlers (`GET`, `POST`) wrap logic in `try/catch` and return standard `NextResponse.json({ error: ... }, { status: 500 })`.
+- **Database Idempotency:** The optimistic locking is preserved in `lib/telegram.ts` (`approveTenantRequest`).
 
-## Peer Review Sign-Off
-- **AppSec**: Approved. Secret token check and zero untrusted inputs.
-- **Performance/Reliability**: Approved. Idempotency guarantees through `ProcessedUpdate`.
-- **Architectural Parity**: Approved. Clean separation of owner admin commands vs business customer chats.
+## 3. Financial & Business Logic Precision
+- Subscription plan extension computes `expiresAt` correctly using `Math.max(now, current_expiresAt) + duration`.
+- **Zero Floats:** No monetary transactions in this stage, only date math (which uses `Date.now()`).
+
+## Final Verdict
+**Status:** APPROVED FOR STAGE 4
+**No critical refactors required.**

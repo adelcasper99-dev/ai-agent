@@ -1,7 +1,7 @@
-# Telegram Business API Routing — Task Progress
+# Enterprise Tenant Management & Data Table UI — Task Progress
 
-- [x] Phase 1: Verify Prisma Schema for `PendingBusinessConnection` and `ProcessedUpdate` models.
-- [x] Phase 2: Refactor `app/api/telegram/webhook/route.ts` with strict Zod validation schemas.
-- [x] Phase 3: Add `await` safety guards to async message/admin command background handlers.
-- [x] Phase 4: Implement `try/catch` guard for Prisma `P2002` race conditions on `customer.upsert`.
-- [x] Phase 5: Verify idempotency locking via `ProcessedUpdate` model.
+- [x] Phase 1: Update `schema.prisma` with `expiresAt` and `subscriptionPlan`.
+- [x] Phase 2: Update `/api/tenants/requests` to return new fields.
+- [x] Phase 3: Update `/api/tenants/approve` to accept subscription plans and set expiry.
+- [x] Phase 4: Create unified `/api/tenants/manage` route for CRUD and lifecycle events.
+- [x] Phase 5: Rebuild `app/dashboard/tenants/page.tsx` with a Bento Data Table and Modals.

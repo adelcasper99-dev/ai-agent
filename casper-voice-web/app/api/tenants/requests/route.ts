@@ -8,14 +8,13 @@ export async function GET() {
       requests = await (prisma as any).pendingTenantRequest.findMany({
         orderBy: { requestedAt: "desc" },
       });
-    } else {
-      requests = await prisma.$queryRaw`
-        SELECT * FROM "PendingTenantRequest"
-        ORDER BY "requestedAt" DESC
-      `;
     }
 
-    return NextResponse.json({ success: true, requests });
+    const tenants = await prisma.tenant.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json({ success: true, requests, tenants });
   } catch (err: any) {
     console.error("[GET /api/tenants/requests error]", err);
     return NextResponse.json({ error: "فشل جلب طلبات التسجيل", detail: err.message }, { status: 500 });

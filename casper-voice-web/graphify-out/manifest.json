@@ -110,13 +110,13 @@
     "semantic_hash": ""
   },
   "app/api/telegram/webhook/route.ts": {
-    "mtime": 1786085428.9228125,
-    "ast_hash": "c6dda96ae2c966a2f707e4c84e86a7e1",
+    "mtime": 1786103759.2352278,
+    "ast_hash": "884d93b91a24ccd0c0616c28f02f61b7",
     "semantic_hash": ""
   },
   "app/api/tenants/approve/route.ts": {
-    "mtime": 1786071405.8630416,
-    "ast_hash": "8fc3c90e777a0def460eb4653c994b9c",
+    "mtime": 1786105112.6673899,
+    "ast_hash": "00eb49092266f0f745dd9290449ee238",
     "semantic_hash": ""
   },
   "app/api/tenants/by-phone/route.ts": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "app/api/tenants/requests/route.ts": {
-    "mtime": 1785432499.2061565,
-    "ast_hash": "65aeff2eb607dd97807f8cf00424edd8",
+    "mtime": 1786105074.8308108,
+    "ast_hash": "0debf79b7b14cd4a96c096f57049cde1",
     "semantic_hash": ""
   },
   "app/api/usage/route.ts": {
@@ -185,13 +185,13 @@
     "semantic_hash": ""
   },
   "app/dashboard/settings/page.tsx": {
-    "mtime": 1786075420.1241696,
-    "ast_hash": "86647825adef21b1ccfaca21371ce3d2",
+    "mtime": 1786103609.5380256,
+    "ast_hash": "66209f5ba24516b7155c1e0ec6f93e37",
     "semantic_hash": ""
   },
   "app/dashboard/tenants/page.tsx": {
-    "mtime": 1785823303.0358992,
-    "ast_hash": "7410dfaea002b44f2831485be9d0507f",
+    "mtime": 1786105169.0700803,
+    "ast_hash": "e1ace1ba5f3a43f676e351911be2148c",
     "semantic_hash": ""
   },
   "app/layout.tsx": {
@@ -290,8 +290,8 @@
     "semantic_hash": ""
   },
   "lib/telegram.ts": {
-    "mtime": 1786085396.4685063,
-    "ast_hash": "1bf2dff27e237f8c66d75384eb308e7a",
+    "mtime": 1786105110.6553774,
+    "ast_hash": "fcb820ef96dbbce7c427a3e10d015ea4",
     "semantic_hash": ""
   },
   "lib/telegram_fallback.ts": {
@@ -610,8 +610,23 @@
     "semantic_hash": ""
   },
   "tests/tsconfig.json": {
-    "mtime": 1786081881.8875377,
-    "ast_hash": "ff6650e3a304733578cb4a3d70a21064",
+    "mtime": 1786104007.1939788,
+    "ast_hash": "7094231d354e8e012b13a4119f723aed",
+    "semantic_hash": ""
+  },
+  "app/api/dashboard/settings/tenant-setup/route.ts": {
+    "mtime": 1786103620.0382044,
+    "ast_hash": "724631c7474730d8c668c7802e0293c2",
+    "semantic_hash": ""
+  },
+  "app/api/tenants/manage/route.ts": {
+    "mtime": 1786105128.0929945,
+    "ast_hash": "c5145d6aa5a0a088a4aab360a3730410",
+    "semantic_hash": ""
+  },
+  "components/TelegramSetupCard.tsx": {
+    "mtime": 1786103601.0029755,
+    "ast_hash": "161641b4f42de918132680e3d873a19f",
     "semantic_hash": ""
   }
 }

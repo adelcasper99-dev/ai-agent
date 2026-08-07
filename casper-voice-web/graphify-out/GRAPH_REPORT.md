@@ -1,16 +1,16 @@
 # Graph Report - casper-voice-web  (2026-08-07)
 
 ## Corpus Check
-- 103 files · ~52,015 words
+- 106 files · ~54,457 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 401 nodes · 551 edges · 50 communities (29 shown, 21 thin omitted)
+- 410 nodes · 567 edges · 50 communities (28 shown, 22 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 3 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `24e85f08`
+- Built from commit: `3a190e34`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -31,6 +31,7 @@
 - [[_COMMUNITY_route.ts|route.ts]]
 - [[_COMMUNITY_layout.tsx|layout.tsx]]
 - [[_COMMUNITY_middleware.ts|middleware.ts]]
+- [[_COMMUNITY_route.ts|route.ts]]
 - [[_COMMUNITY_route.ts|route.ts]]
 - [[_COMMUNITY_page.tsx|page.tsx]]
 - [[_COMMUNITY_check_settings.js|check_settings.js]]
@@ -55,11 +56,11 @@
 - [[_COMMUNITY_list_groq_models.sh|list_groq_models.sh]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `getResolvedTenantId()` - 29 edges
+1. `getResolvedTenantId()` - 32 edges
 2. `POST()` - 20 edges
 3. `compilerOptions` - 16 edges
-4. `sendTelegramAlert()` - 14 edges
-5. `isInternalAuthValid()` - 12 edges
+4. `isInternalAuthValid()` - 14 edges
+5. `sendTelegramAlert()` - 14 edges
 6. `approveTenantRequest()` - 10 edges
 7. `processTelegramMessageWithLLM()` - 9 edges
 8. `fireAndForgetTelegramAlert()` - 8 edges
@@ -75,17 +76,17 @@
   app/api/appointments/route.ts → lib/auth.ts
 - `POST()` --calls--> `signTenantSession()`  [EXTRACTED]
   app/api/auth/login/route.ts → lib/session.ts
-- `POST()` --calls--> `getResolvedTenantId()`  [EXTRACTED]
-  app/api/diagnostics/route.ts → lib/auth.ts
+- `GET()` --calls--> `getResolvedTenantId()`  [EXTRACTED]
+  app/api/dashboard/settings/tenant-setup/route.ts → lib/auth.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (50 total, 21 thin omitted)
+## Communities (50 total, 22 thin omitted)
 
 ### Community 0 - "telegram.ts"
-Cohesion: 0.13
-Nodes (33): handleCustomerMessage(), POST(), sendAsBusinessOwner(), POST(), approveDirectTenant(), approveTenantRequest(), callTelegramApi(), executeSaleFlow() (+25 more)
+Cohesion: 0.11
+Nodes (35): handleCustomerMessage(), POST(), sendAsBusinessOwner(), POST(), POST(), approveDirectTenant(), approveTenantRequest(), callTelegramApi() (+27 more)
 
 ### Community 1 - "telegram_llm.ts"
 Cohesion: 0.09
@@ -100,16 +101,16 @@ Cohesion: 0.06
 Nodes (8): POST(), GroupByOption, KNOWN_KEYS, POST(), POST(), correctTranscriptWithLLM(), globalForPrisma, buildWhisperPrompt()
 
 ### Community 4 - "route.ts"
-Cohesion: 0.08
-Nodes (35): genAI, POST(), appointmentIdempotencyMap, DELETE(), GET(), POST(), PUT(), POST() (+27 more)
+Cohesion: 0.07
+Nodes (37): genAI, POST(), appointmentIdempotencyMap, DELETE(), GET(), POST(), PUT(), POST() (+29 more)
 
 ### Community 5 - "compilerOptions"
 Cohesion: 0.10
 Nodes (19): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+11 more)
 
 ### Community 6 - "correctTranscriptWithLLM"
-Cohesion: 0.26
-Nodes (9): $allOperations(), asyncHooks, getTenantId(), runWithTenant(), TENANT_AWARE_MODELS, TenantContext, tenantStorage, runVerificationSuite() (+1 more)
+Cohesion: 0.29
+Nodes (8): $allOperations(), asyncHooks, getTenantId(), runWithTenant(), TENANT_AWARE_MODELS, TenantContext, tenantStorage, runVerificationSuite()
 
 ### Community 7 - "consolidated_utilities.test.ts"
 Cohesion: 0.24
@@ -132,8 +133,8 @@ Cohesion: 0.25
 Nodes (3): ProvisionResult, TenantProvisioner, VoiceTenantProvisionOptions
 
 ### Community 13 - "route.ts"
-Cohesion: 0.40
-Nodes (4): compilerOptions, types, extends, include
+Cohesion: 0.33
+Nodes (5): compilerOptions, types, exclude, extends, include
 
 ### Community 14 - "layout.tsx"
 Cohesion: 0.40
@@ -152,19 +153,19 @@ Cohesion: 0.50
 Nodes (3): Deploy on Vercel, Getting Started, Learn More
 
 ## Knowledge Gaps
-- **142 isolated node(s):** `genAI`, `appointmentIdempotencyMap`, `Message`, `THRESHOLDS`, `idempotencyMap` (+137 more)
+- **144 isolated node(s):** `genAI`, `appointmentIdempotencyMap`, `Message`, `THRESHOLDS`, `idempotencyMap` (+139 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **21 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **22 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `prisma` connect `dependencies` to `prisma.ts`?**
-  _High betweenness centrality (0.089) - this node is a cross-community bridge._
+  _High betweenness centrality (0.088) - this node is a cross-community bridge._
 - **What connects `genAI`, `appointmentIdempotencyMap`, `Message` to the rest of the system?**
-  _142 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _144 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `telegram.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.12564102564102564 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11205073995771671 - nodes in this community are weakly interconnected._
 - **Should `telegram_llm.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.08994708994708994 - nodes in this community are weakly interconnected._
 - **Should `dependencies` be split into smaller, more focused modules?**
@@ -172,4 +173,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `prisma.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.056025369978858354 - nodes in this community are weakly interconnected._
 - **Should `route.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.07547169811320754 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07142857142857142 - nodes in this community are weakly interconnected._

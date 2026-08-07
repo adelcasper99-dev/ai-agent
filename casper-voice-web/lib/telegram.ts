@@ -211,7 +211,7 @@ export function fireAndForgetTelegramAlert(payload: TelegramAlertPayload) {
 /**
  * Shared Approval Service with Optimistic Lock Idempotency (`updateMany` where `status: "pending"`).
  */
-export async function approveTenantRequest(requestId: string, decidedBy: string) {
+export async function approveTenantRequest(requestId: string, decidedBy: string, subscriptionPlan: string = 'trial_14', expiresAt?: Date) {
   // Optimistic locking: only 1 execution will succeed in updating row from 'pending' -> 'approved'
   const updatedCount = await (prisma as any).pendingTenantRequest.updateMany({
     where: { id: requestId, status: 'pending' },
@@ -219,6 +219,8 @@ export async function approveTenantRequest(requestId: string, decidedBy: string)
       status: 'approved',
       decidedAt: new Date(),
       decidedBy,
+      subscriptionPlan,
+      expiresAt: expiresAt || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
     },
   });
 
@@ -251,9 +253,20 @@ export async function approveTenantRequest(requestId: string, decidedBy: string)
     pendingRequestId: undefined, // already marked approved above
   });
 
-  const tenant = provisionResult.tenantId
+  let tenant = provisionResult.tenantId
     ? await (prisma as any).tenant.findUnique({ where: { id: provisionResult.tenantId } })
     : null;
+
+  if (tenant) {
+    tenant = await (prisma as any).tenant.update({
+      where: { id: tenant.id },
+      data: {
+        subscriptionPlan,
+        expiresAt: expiresAt || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // Default 14 days
+        state: 'active'
+      }
+    });
+  }
 
   // Non-blocking notification to customer
   fireAndForgetTelegramAlert({

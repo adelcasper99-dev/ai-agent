@@ -37,7 +37,9 @@ export default function TenantsPage() {
       const res = await fetch("/api/tenants/requests");
       const result = await res.json();
       if (result.success) {
-        const reqs = (result.requests || []).map((r: any) => ({ ...r, type: "request" }));
+        const reqs = (result.requests || [])
+          .filter((r: any) => r.status === "pending")
+          .map((r: any) => ({ ...r, type: "request" }));
         const tens = (result.tenants || []).map((t: any) => ({ ...t, type: "tenant" }));
         setData([...reqs, ...tens]);
       }

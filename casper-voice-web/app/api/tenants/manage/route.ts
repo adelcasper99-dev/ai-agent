@@ -18,28 +18,55 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "tenantId and action are required" }, { status: 400 });
     }
 
-    const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
+    // 1. Handle delete_request (for PendingTenantRequest records)
+    if (action === "delete_request") {
+      const pendingReq = await (prisma as any).pendingTenantRequest.findUnique({ where: { id: tenantId } });
+      const chatId = pendingReq?.telegramChatId;
+
+      await (prisma as any).pendingTenantRequest.deleteMany({
+        where: { id: tenantId }
+      });
+
+      if (chatId) {
+        await prisma.tenant.deleteMany({
+          where: { telegramChatId: chatId }
+        });
+      }
+      return NextResponse.json({ success: true, message: "Request and associated tenant deleted" });
+    }
+
+    // 2. Lookup Tenant record
+    let tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
+    
+    // Fallback: if tenantId is actually a PendingTenantRequest ID
     if (!tenant) {
+      const pendingReq = await (prisma as any).pendingTenantRequest.findUnique({ where: { id: tenantId } });
+      if (pendingReq?.telegramChatId) {
+        tenant = await prisma.tenant.findUnique({ where: { telegramChatId: pendingReq.telegramChatId } });
+      }
+    }
+
+    if (!tenant && action !== "delete") {
       return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
     }
 
-    if (action === "suspend") {
+    if (action === "suspend" && tenant) {
       await prisma.tenant.update({
-        where: { id: tenantId },
+        where: { id: tenant.id },
         data: { state: "suspended" },
       });
       return NextResponse.json({ success: true, message: "Tenant suspended" });
     }
 
-    if (action === "reactivate") {
+    if (action === "reactivate" && tenant) {
       await prisma.tenant.update({
-        where: { id: tenantId },
+        where: { id: tenant.id },
         data: { state: "active" },
       });
       return NextResponse.json({ success: true, message: "Tenant reactivated" });
     }
 
-    if (action === "extend_plan") {
+    if (action === "extend_plan" && tenant) {
       const { subscriptionPlan } = data;
       let expiresAt = tenant.expiresAt;
       
@@ -57,38 +84,38 @@ export async function POST(req: NextRequest) {
       }
 
       await prisma.tenant.update({
-        where: { id: tenantId },
+        where: { id: tenant.id },
         data: { subscriptionPlan, expiresAt, state: "active" },
       });
       return NextResponse.json({ success: true, message: "Plan extended", expiresAt });
     }
 
-    if (action === "edit_details") {
+    if (action === "edit_details" && tenant) {
       const { name, phoneNumber } = data;
       await prisma.tenant.update({
-        where: { id: tenantId },
+        where: { id: tenant.id },
         data: { name, phoneNumber },
       });
       return NextResponse.json({ success: true, message: "Details updated" });
     }
 
     if (action === "delete") {
-      if (tenant.telegramChatId) {
+      if (tenant) {
+        const chatId = tenant.telegramChatId;
+        await prisma.tenant.delete({
+          where: { id: tenant.id },
+        });
+        if (chatId) {
+          await (prisma as any).pendingTenantRequest.deleteMany({
+            where: { telegramChatId: chatId },
+          });
+        }
+      } else {
         await (prisma as any).pendingTenantRequest.deleteMany({
-          where: { telegramChatId: tenant.telegramChatId },
+          where: { id: tenantId },
         });
       }
-      await prisma.tenant.delete({
-        where: { id: tenantId },
-      });
       return NextResponse.json({ success: true, message: "Tenant deleted completely" });
-    }
-
-    if (action === "delete_request") {
-      await (prisma as any).pendingTenantRequest.delete({
-        where: { id: tenantId },
-      });
-      return NextResponse.json({ success: true, message: "Request deleted completely" });
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });

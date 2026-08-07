@@ -7,13 +7,14 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Key, Building2, Sparkles, Send, LayoutDashboard,
   MessageSquare, Database, BarChart3, LogOut,
-  Mic, Stethoscope, RefreshCw,
+  Mic, Stethoscope, RefreshCw, Settings,
 } from "lucide-react";
 import VoiceCallModal from "@/components/VoiceCallModal";
 
 // ── Tab routing — matches existing file-based routes exactly ──────────────────
 const TABS = [
-  { href: "/dashboard/settings",      label: "المفاتيح",                    Icon: Key },
+  { href: "/dashboard/keys",          label: "المفاتيح",                    Icon: Key },
+  { href: "/dashboard/settings",      label: "الإعدادات",                   Icon: Settings },
   { href: "/dashboard/tenants",       label: "طلبات الشركات والتفعيل",      Icon: Building2 },
   { href: "/dashboard/api-keys",      label: "مفاتيح Gemini",               Icon: Sparkles },
   { href: "/dashboard/chat",          label: "محاكي التليجرام",             Icon: Send },
@@ -25,7 +26,8 @@ const TABS = [
 
 // ── Page title map ────────────────────────────────────────────────────────────
 const PAGE_TITLES: Record<string, string> = {
-  "/dashboard/settings":      "المفاتيح والاستخدام",
+  "/dashboard/keys":          "المفاتيح والاستخدام",
+  "/dashboard/settings":      "الإعدادات وإدارات البوت",
   "/dashboard/tenants":       "طلبات الشركات والتفعيل",
   "/dashboard/api-keys":      "مفاتيح Gemini",
   "/dashboard/chat":          "محاكي التليجرام",

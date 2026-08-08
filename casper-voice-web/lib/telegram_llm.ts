@@ -460,9 +460,16 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
     const userNums = extractAllNumbersFromText(msg);
     const calculatedTotal = (p > 0 && q > 0) ? p * q : a;
     if (calculatedTotal > 0 && Math.abs(paidVal - calculatedTotal) > 0.05) {
-      const paidMatch = userNums.some((un) => Math.abs(paidVal - un) < 0.05);
-      if (!paidMatch) {
-        return { ok: false, reason: `المبلغ المدفوع المخصص (${paidVal}) غير موجود في رسالة المستخدم` };
+      const hasCustomPaymentKeywords = /(دفع|مقدم|عربون|آجل|اجل|باقي|متبقي|قسط|مسدد)/i.test(msg);
+      if (!hasCustomPaymentKeywords) {
+        console.log(`[Grounding Guard] Auto-normalizing hallucinated paid_amount (${paidVal}) -> calculatedTotal (${calculatedTotal}) for prompt: "${msg}"`);
+        args.paid_amount = calculatedTotal;
+        args.deferred_amount = 0;
+      } else {
+        const paidMatch = userNums.some((un) => Math.abs(paidVal - un) < 0.05);
+        if (!paidMatch) {
+          return { ok: false, reason: `المبلغ المدفوع المخصص (${paidVal}) غير موجود في رسالة المستخدم` };
+        }
       }
     }
   }
@@ -543,6 +550,14 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       
       const paid = (paid_amount !== undefined ? new Decimal(paid_amount) : totalAmount).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
       const deferred = (deferred_amount !== undefined ? new Decimal(deferred_amount) : totalAmount.minus(paid)).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+
+      if (paid.isNegative() || deferred.isNegative() || paid.gt(totalAmount)) {
+        return { success: false, resultText: "خطأ: المبلغ المدفوع لا يمكن أن يكون أكبر من الإجمالي أو سالباً." };
+      }
+
+      if (paid.add(deferred).equals(totalAmount) === false) {
+        return { success: false, resultText: "خطأ: المدفوع والمتبقي لا يتطابقان مع الإجمالي." };
+      }
       
       let saleResult;
       try {

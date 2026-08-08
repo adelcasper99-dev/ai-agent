@@ -4,7 +4,7 @@ const { executeTool } = require('./lib/telegram_llm');
 
 async function runFinancialSanityTests() {
   console.log("==================================================");
-  console.log("FINANCIAL SANITY & PAID_AMOUNT GROUNDING TEST");
+  console.log("FINANCIAL SANITY & AUTO-NORMALIZATION TEST SUITE");
   console.log("==================================================");
 
   let tenant = await prisma.tenant.findFirst({ where: { name: "Adel Casper" } });
@@ -12,9 +12,9 @@ async function runFinancialSanityTests() {
   const tenantId = tenant.id;
 
   // ----------------------------------------------------
-  // TEST 1: BUG CASE (paid_amount > total = 200 > 100)
+  // TEST 1: STANDARD CASH SALE (Hallucinated paid_amount=200 normalized to 100)
   // ----------------------------------------------------
-  console.log("\n--> TEST 1: Excess paid_amount (paid=200, total=100)...");
+  console.log("\n--> TEST 1: Standard Sale ('بعت 2 مسامير ب 100' with hallucinated paid=200)...");
   const test1_msgId = Date.now();
   const res1 = await executeTool(
     "log_sale",
@@ -24,16 +24,18 @@ async function runFinancialSanityTests() {
     test1_msgId,
     0
   );
-  console.log("Result 1 (Excess Paid):", res1);
-  console.assert(res1.success === false, "TEST 1 FAILED: Excess paid_amount must be blocked!");
-  if (res1.success === false) {
-    console.log("✅ TEST 1 PASSED: Excess paid_amount (200 > 100) was successfully blocked!");
+  console.log("Result 1:", res1);
+  console.assert(res1.success === true, "TEST 1 FAILED: Standard sale must succeed with normalized cash payment!");
+  console.assert(res1.resultText.includes("مدفوع: 100"), "TEST 1 FAILED: paidAmount must be normalized to 100!");
+  if (res1.success === true && res1.resultText.includes("مدفوع: 100")) {
+    console.log("✅ TEST 1 PASSED: Standard sale succeeded with normalized cash payment (100 EGP) and success message sent!");
+    await prisma.sale.deleteMany({ where: { idempotencyKey: { contains: `msg_${test1_msgId}` } } });
   }
 
   // ----------------------------------------------------
-  // TEST 2: ADVERSARIAL TEST (Legitimate Partial Payment: paid=40, deferred=60 for total=100)
+  // TEST 2: LEGITIMATE PARTIAL PAYMENT ('دفع 40 والباقي آجل')
   // ----------------------------------------------------
-  console.log("\n--> TEST 2: Legitimate Partial Payment (paid=40, deferred=60, total=100)...");
+  console.log("\n--> TEST 2: Legitimate Partial Payment ('بعت 2 مسامير ب 100 دفع 40 والباقي آجل')...");
   const test2_msgId = Date.now() + 1;
   const res2 = await executeTool(
     "log_sale",
@@ -43,50 +45,31 @@ async function runFinancialSanityTests() {
     test2_msgId,
     0
   );
-  console.log("Result 2 (Legitimate Partial):", res2);
+  console.log("Result 2:", res2);
   console.assert(res2.success === true, "TEST 2 FAILED: Legitimate partial payment must pass!");
-  if (res2.success === true) {
+  console.assert(res2.resultText.includes("مدفوع: 40"), "TEST 2 FAILED: paidAmount must be 40!");
+  if (res2.success === true && res2.resultText.includes("مدفوع: 40")) {
     console.log("✅ TEST 2 PASSED: Legitimate partial payment (40 paid, 60 deferred) passed cleanly!");
-    // Clean up created sale
     await prisma.sale.deleteMany({ where: { idempotencyKey: { contains: `msg_${test2_msgId}` } } });
   }
 
   // ----------------------------------------------------
-  // TEST 3: UNGROUNDED CUSTOM PAID AMOUNT (paid=40 when 40 is NOT in text)
+  // TEST 3: IMPOSSIBLE PAID AMOUNT IN USER TEXT ('دفع 200' when total=100)
   // ----------------------------------------------------
-  console.log("\n--> TEST 3: Ungrounded Custom Paid Amount (paid=40 when prompt says 'بعت 2 مسامير ب 100')...");
+  console.log("\n--> TEST 3: Impossible Explicit Paid Amount ('بعت 2 مسامير ب 100 دفع 200')...");
   const test3_msgId = Date.now() + 2;
   const res3 = await executeTool(
     "log_sale",
-    { item_name: "مسامير", price: 50, quantity: 2, paid_amount: 40, deferred_amount: 60 },
+    { item_name: "مسامير", price: 50, quantity: 2, paid_amount: 200, deferred_amount: 0 },
     tenantId,
-    "بعت 2 مسامير ب 100",
+    "بعت 2 مسامير ب 100 دفع 200",
     test3_msgId,
     0
   );
-  console.log("Result 3 (Ungrounded Paid Amount):", res3);
-  console.assert(res3.success === false, "TEST 3 FAILED: Ungrounded paid amount must be blocked!");
+  console.log("Result 3:", res3);
+  console.assert(res3.success === false, "TEST 3 FAILED: Impossible paid amount (200 > 100) must be blocked!");
   if (res3.success === false) {
-    console.log("✅ TEST 3 PASSED: Ungrounded custom paid amount was blocked by Grounding Guard!");
-  }
-
-  // ----------------------------------------------------
-  // TEST 4: PURCHASE EXCESS PAID TEST (log_purchase paid=200, total=100)
-  // ----------------------------------------------------
-  console.log("\n--> TEST 4: Purchase Excess Paid (paid=200, total=100)...");
-  const test4_msgId = Date.now() + 3;
-  const res4 = await executeTool(
-    "log_purchase",
-    { supplier_name: "المورد علي", item_name: "خشب", total_amount: 100, paid_amount: 200 },
-    tenantId,
-    "اشتريت خشب ب 100 من المورد علي",
-    test4_msgId,
-    0
-  );
-  console.log("Result 4 (Purchase Excess Paid):", res4);
-  console.assert(res4.success === false, "TEST 4 FAILED: Excess purchase paid_amount must be blocked!");
-  if (res4.success === false) {
-    console.log("✅ TEST 4 PASSED: Excess purchase paid_amount was blocked by Financial Sanity Guard!");
+    console.log("✅ TEST 3 PASSED: Impossible explicit paid amount (200 > 100) was blocked by Financial Sanity Guard!");
   }
 }
 

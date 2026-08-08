@@ -455,6 +455,18 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
     }
   }
 
+  const paidVal = Number(args?.paid_amount);
+  if (!isNaN(paidVal) && paidVal > 0) {
+    const userNums = extractAllNumbersFromText(msg);
+    const calculatedTotal = (p > 0 && q > 0) ? p * q : a;
+    if (calculatedTotal > 0 && Math.abs(paidVal - calculatedTotal) > 0.05) {
+      const paidMatch = userNums.some((un) => Math.abs(paidVal - un) < 0.05);
+      if (!paidMatch) {
+        return { ok: false, reason: `المبلغ المدفوع المخصص (${paidVal}) غير موجود في رسالة المستخدم` };
+      }
+    }
+  }
+
   return { ok: true };
 }
 
@@ -522,11 +534,13 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         return s === "المنتج" || s === "منتج" || s === "صنف" || s === "بيع" || s.includes("يحدد") || s.includes("محدد") || s.includes("unspecified");
       };
 
-      if (isPlaceholderItem(item_name) || typeof price !== "number" || price <= 0) {
-        return { success: false, resultText: "عشان أسجلك عملية البيع محتاج تقولي: اسم الصنف المباع، السعر الإجمالي، اسم العميل (اختياري) 💰" };
+      if (isPlaceholderItem(item_name)) {
+        return { success: false, resultText: "يرجى تحديد اسم الصنف المباع بوضوح حتى أتمكن من تسجيل البيع." };
       }
-      const priceDecimal = new Decimal(price).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-      const totalAmount = priceDecimal.mul(quantity).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+
+      const priceDecimal = new Decimal(price || 0);
+      const totalAmount = priceDecimal.mul(new Decimal(quantity || 1));
+      
       const paid = (paid_amount !== undefined ? new Decimal(paid_amount) : totalAmount).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
       const deferred = (deferred_amount !== undefined ? new Decimal(deferred_amount) : totalAmount.minus(paid)).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
       
@@ -888,6 +902,11 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       const total = calcTotal;
       const paid = paid_amount !== undefined ? new Decimal(paid_amount) : calcTotal;
       const remaining = total.sub(paid);
+      
+      if (paid.isNegative() || remaining.isNegative() || paid.gt(total)) {
+        return { success: false, resultText: "خطأ: المبلغ المدفوع للمشتريات لا يمكن أن يكون أكبر من الإجمالي أو سالباً." };
+      }
+      
       const supplierNameStr = String(supplier_name).trim();
 
       const purchaseResult = await (prisma as any).$transaction(async (tx: any) => {

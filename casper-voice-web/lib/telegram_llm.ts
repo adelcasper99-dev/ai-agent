@@ -345,6 +345,8 @@ const ARABIC_NUMBER_WORDS = ["صفر","واحد","اتنين","إتنين","تل
 
 function normalizeArabic(s: string): string {
   return String(s ?? "")
+    .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)))
+    .replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)))
     .replace(/[أإآ]/g, "ا")
     .replace(/ة/g, "ه")
     .replace(/ى/g, "ي")
@@ -359,10 +361,31 @@ function messageHasAnyNumber(msg: string): boolean {
   return ARABIC_NUMBER_WORDS.some((w) => normalized.includes(normalizeArabic(w)));
 }
 
+function isArabicFuzzyMatch(toolWord: string, msgWords: string[]): boolean {
+  const tw = toolWord.replace(/^(ال|و|ب|ك|ف)/, "");
+  if (tw.length <= 2) return false;
+  const set1 = new Set(tw);
+  return msgWords.some((mw) => {
+    const cleanMw = mw.replace(/^(ال|و|ب|ك|ف)/, "");
+    if (cleanMw === tw) return true;
+    if (cleanMw.includes(tw) || tw.includes(cleanMw)) return true;
+    
+    // Character overlap ratio (handles Arabic broken plurals like مسمار -> مسامير, قلم -> اقلام)
+    const set2 = new Set(cleanMw);
+    let match = 0;
+    for (const char of set1) {
+      if (set2.has(char)) match++;
+    }
+    const ratio = match / Math.max(set1.size, set2.size);
+    return ratio >= 0.7;
+  });
+}
+
 function groundingCheck(toolName: string, args: any, userMessageText?: string): { ok: boolean; reason?: string } {
   if (!FINANCIAL_TOOLS.has(toolName)) return { ok: true };
   const msg = userMessageText || "";
   const normalizedMsg = normalizeArabic(msg);
+  const msgWords = normalizedMsg.split(" ").filter((w) => w.length > 1);
 
   // A. Text-field grounding: item/supplier/description name must appear in the original message
   const textFields = GROUNDING_TEXT_FIELDS[toolName] || [];
@@ -371,7 +394,7 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
     if (val && String(val).trim().length > 1) {
       const normalizedVal = normalizeArabic(String(val));
       const words = normalizedVal.split(" ").filter((w) => w.length > 1);
-      const anyWordFound = words.length === 0 || words.some((w) => normalizedMsg.includes(w));
+      const anyWordFound = words.length === 0 || words.some((w) => normalizedMsg.includes(w) || isArabicFuzzyMatch(w, msgWords));
       if (!anyWordFound) {
         return { ok: false, reason: `القيمة "${val}" في الحقل ${field} مش موجودة في رسالة المستخدم الأصلية` };
       }

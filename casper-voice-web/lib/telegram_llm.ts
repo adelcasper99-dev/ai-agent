@@ -534,8 +534,8 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       try {
         saleResult = await (prisma as any).$transaction(async (tx: any) => {
           // DB-level idempotency check
-        if (effectiveIdempotencyKey) {
-          const existing = await tx.sale.findUnique({ where: { idempotencyKey: effectiveIdempotencyKey } });
+        if (effectiveIdempotencyKey && tenantId) {
+          const existing = await tx.sale.findFirst({ where: { tenantId, idempotencyKey: effectiveIdempotencyKey } });
           if (existing) {
             return existing;
           }

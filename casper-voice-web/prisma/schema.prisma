@@ -32,6 +32,7 @@ model Tenant {
   diagnostics    InteractionDiagnostics[]
   knowledgeItems KnowledgeItem[]
   expenses       Expense[]
+  products       Product[]
   sales          Sale[]
   purchases      Purchase[]
   suppliers      Supplier[]
@@ -101,6 +102,22 @@ model Expense {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
 
+  @@index([tenantId])
+}
+
+// ── الكتالوج والمخزون ──────────────────────────────────────
+model Product {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  name          String
+  isStockItem   Boolean  @default(true)   // false = service (consulting, delivery, etc.)
+  stockQuantity Int      @default(0)      // ignored when isStockItem = false
+  unitPrice     Float                     // using Float to match existing money convention in Sale.price
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  @@unique([tenantId, name])
   @@index([tenantId])
 }
 

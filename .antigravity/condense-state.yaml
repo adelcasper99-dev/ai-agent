@@ -1,30 +1,29 @@
-session_intent: "Implement Telegram Business routing agent, webhook endpoints, and UI dashboard card for Telegram setup & activation"
+session_intent: "Fix Telegram LLM monetary hallucination, per-tenant deterministic idempotency keys, composite unique Prisma schema, and financial sanity paid_amount auto-normalization guard"
 decisions:
-  - "Use Next.js 16 (App Router) + React 19 as core framework"
-  - "Order-independent linking via PendingBusinessConnection model"
-  - "Use Decimal.js for precise financial math"
-  - "Use Zod for payload and schema validation"
-  - "Glassmorphic aesthetic for TelegramSetupCard"
-  - "Setup code is treated as an OTP (One-Time Password) cleared immediately on use"
-  - "Separate admin PIN logic (4-digit, 5-min TTL) from business setup code logic (6-char alphanumeric OTP)"
+  - "Use server-generated deterministic idempotency key format `${tId}:${name}:${msgIdPart}:call_${callIndex}` without random UUIDs to enable true webhook retry protection"
+  - "Update Sale schema to @@unique([tenantId, idempotencyKey]) composite unique constraint instead of global unique"
+  - "Implement sanitizeNonToolReply to block LLM plain-text mutation confirmations when no tool was executed"
+  - "Enforce strict financial sanity guard paid <= totalAmount and non-negative balances across log_sale and log_purchase"
+  - "Implement intelligent auto-normalization in groundingCheck: if LLM hallucinates custom paid_amount for a standard prompt with no custom payment keywords (دفع, آجل, etc), auto-normalize paid_amount to totalAmount (full cash sale) so legitimate prompts succeed with confirmation"
 files_modified:
-  - path: "casper-voice-web/app/api/telegram/webhook/route.ts"
-    why: "Handled Telegram business_connection lifecycle, customer messaging, /start setupCode linking, and OTP single-use clearing"
-  - path: "casper-voice-web/components/TelegramSetupCard.tsx"
-    why: "Created full-throttle React component for Telegram setup card with live status and code generation UI"
-  - path: "casper-voice-web/app/dashboard/settings/page.tsx"
-    why: "Integrated TelegramSetupCard into the Settings dashboard page and wired to state/API"
-  - path: "casper-voice-web/app/api/dashboard/settings/tenant-setup/route.ts"
-    why: "Created endpoint to generate and fetch tenant setup codes"
-  - path: ".agents/stage_log.json"
-    why: "Updated stage execution log to reflect pipeline compliance and Stage 6 completion"
-active_goals: []
-next_steps: []
+  - path: casper-voice-web/lib/telegram_llm.ts
+    why: "added sanitizeNonToolReply guard, deterministic callIndex idempotency keys, paid_amount grounding check, log_sale & log_purchase financial sanity checks, and auto-normalization of hallucinated cash paid_amount"
+  - path: casper-voice-web/prisma/schema.prisma
+    why: "updated Sale model to @@unique([tenantId, idempotencyKey])"
+  - path: casper-voice-web/app/api/sales/route.ts
+    why: "updated DB query to findFirst with tenantId for composite unique compatibility"
+  - path: .agents/AGENTS.md
+    why: "appended Permanent Strict Evidence Discipline Protocol (Raw Evidence Mandatory)"
+active_goals:
+  - "Maintain zero financial corruption and zero false rejections across Telegram AI assistant"
+next_steps:
+  - "Monitor production Telegram bot logs for edge-case slang prompts"
 failed_approaches:
-  - "Initial updateMany checked ownerTelegramUserId: null which prevented re-linking existing tenants — fixed by making setupCode single-use OTP"
-  - "Single GET /api/settings route only returned global env settings — resolved by adding dedicated tenant-setup API route"
+  - "Relying on model to generate random idempotency keys — rejected, led to global collisions and hallucinated sales"
+  - "Using random UUID in idempotency key — rejected, broke webhook retry duplicate prevention"
+  - "Rejecting ungrounded paid_amount unconditionally on standard cash sales — rejected, blocked valid messages like 'بعت 2 مسامير ب 100'"
 last_condense:
-  timestamp: "2026-08-07T10:53:00Z"
+  timestamp: "2026-08-08T10:01:00Z"
   tokens_before: 175000
-  tokens_after: 1200
-  reduction_pct: 99
+  tokens_after: 35000
+  reduction_pct: 80

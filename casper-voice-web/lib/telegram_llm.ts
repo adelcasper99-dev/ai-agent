@@ -26,6 +26,21 @@ const logSaleTool: FunctionDeclaration = {
   }
 };
 
+const addProductTool: FunctionDeclaration = {
+  name: "add_product",
+  description: "إضافة صنف جديد أو خدمة للكتالوج (للمدير فقط). استخدم هذه الأداة لتعريف الأصناف في المخزون أو الخدمات التي لا تحتاج مخزون.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      name: { type: SchemaType.STRING, description: "اسم الصنف أو الخدمة (مثال: كرتونة شاي، خدمة توصيل)" },
+      is_stock_item: { type: SchemaType.BOOLEAN, description: "هل هو صنف ملموس يحتاج تتبع مخزون؟ (true للصنف، false للخدمات)" },
+      stock_quantity: { type: SchemaType.NUMBER, description: "الكمية الافتتاحية في المخزون (ضع 0 للخدمات)" },
+      unit_price: { type: SchemaType.NUMBER, description: "سعر الوحدة بالجنيه" }
+    },
+    required: ["name", "is_stock_item", "stock_quantity", "unit_price"]
+  }
+};
+
 const logExpenseTool: FunctionDeclaration = {
   name: "log_expense",
   description: "تسجيل مصروف جديد (مبلغ، بيان/سبب، فئة)",
@@ -330,7 +345,7 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
 // === NEW: Universal grounding guard for all financial mutation tools ===
 const FINANCIAL_TOOLS = new Set([
   "log_sale", "log_expense", "book_appointment", "log_purchase",
-  "log_customer_payment", "log_supplier_payment", "log_sales_return", "log_purchase_return"
+  "log_customer_payment", "log_supplier_payment", "log_sales_return", "log_purchase_return", "add_product"
 ]);
 
 const GROUNDING_TEXT_FIELDS: Record<string, string[]> = {
@@ -510,7 +525,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     }
 
     const isPureInquiry = userMessageText && /^(حساب|كشف\s*حساب|رصيد|ديون|كام\s*(على|له))\s+/i.test(userMessageText.trim());
-    const isMutationTool = ["log_customer_payment", "log_supplier_payment", "log_sale", "log_purchase", "log_sales_return", "log_purchase_return"].includes(name);
+    const isMutationTool = ["log_customer_payment", "log_supplier_payment", "log_sale", "log_purchase", "log_sales_return", "log_purchase_return", "add_product"].includes(name);
 
     if (isPureInquiry && isMutationTool) {
       console.warn(`[LLM Guardrail] Blocked illegal mutation tool '${name}' invoked during pure inquiry message: "${userMessageText}"`);
@@ -521,7 +536,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     const tId = tenantId || "global";
     const msgIdPart = telegramMessageId ? `msg_${telegramMessageId}` : `nomsg_${Date.now()}`;
     const effectiveIdempotencyKey = `${tId}:${name}:${msgIdPart}:call_${callIndex}`;
-    const isMutation = name.startsWith("log_") || name.startsWith("book_");
+    const isMutation = name.startsWith("log_") || name.startsWith("book_") || name === "add_product";
     
     if (isMutation) {
       const fullKey = `${name}:${effectiveIdempotencyKey}`;
@@ -530,6 +545,31 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       }
       executedKeys.add(fullKey);
       if (executedKeys.size > 5000) executedKeys.clear();
+    }
+
+    if (name === "add_product") {
+      const { name: productName, is_stock_item, stock_quantity, unit_price } = args;
+      if (!productName || String(productName).trim() === "") {
+        return { success: false, resultText: "يرجى تحديد اسم الصنف." };
+      }
+      
+      try {
+        await prisma.product.create({
+          data: {
+            name: String(productName).trim(),
+            isStockItem: Boolean(is_stock_item),
+            stockQuantity: Number(stock_quantity) || 0,
+            unitPrice: Number(unit_price) || 0,
+            ...(tenantId && { tenantId })
+          }
+        });
+        return { success: true, resultText: `تم إضافة ${productName} للكتالوج بنجاح.` };
+      } catch (err: any) {
+        if (err.code === "P2002") {
+          return { success: false, resultText: "الصنف ده متسجل في الكتالوج قبل كدا." };
+        }
+        throw err;
+      }
     }
 
     if (name === "log_sale") {
@@ -588,11 +628,35 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
           customerId = customer.id;
         }
 
+        const itemNameTrimmed = String(item_name).trim();
+        
+        // 1. Catalog Lookup
+        const product = await tx.product.findFirst({
+          where: { tenantId: tenantId || "", name: itemNameTrimmed }
+        });
+
+        if (!product) {
+          throw new Error("ITEM_NOT_IN_CATALOG");
+        }
+
+        const quantityNum = Number(quantity) || 1;
+
+        if (product.isStockItem) {
+          if (product.stockQuantity < quantityNum) {
+            throw new Error(`INSUFFICIENT_STOCK:${product.stockQuantity}`);
+          }
+          
+          await tx.product.update({
+            where: { id: product.id },
+            data: { stockQuantity: product.stockQuantity - quantityNum }
+          });
+        }
+
         const sale = await tx.sale.create({
           data: {
-            itemName: String(item_name).trim(),
+            itemName: itemNameTrimmed,
             price: priceDecimal.toNumber(),
-            quantity: Number(quantity) || 1,
+            quantity: quantityNum,
             total: totalAmount.toNumber(),
             paidAmount: paid.toNumber(),
             deferredAmount: deferred.toNumber(),
@@ -680,6 +744,13 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         return sale;
       });
       } catch (err: any) {
+        if (err.message === "ITEM_NOT_IN_CATALOG") {
+          return { success: false, resultText: "الصنف ده مش موجود في الكتالوج، تحب تضيفه الأول؟" };
+        }
+        if (err.message && err.message.startsWith("INSUFFICIENT_STOCK:")) {
+          const available = err.message.split(":")[1];
+          return { success: false, resultText: `المخزون لا يكفي — المتاح ${available} بس.` };
+        }
         if (err.code === "P2002" && effectiveIdempotencyKey) {
           const existingSale = await prisma.sale.findFirst({
             where: {
@@ -1409,7 +1480,10 @@ export async function processTelegramMessageWithLLM(
    - عند إرجاع بضاعة للمورد ("رجعت للمورد المتخصص 2 كرتونة بـ 100", "مرتجع مشتريات للمورد المتخصص بقيمة 100") -> استخدم أداة log_purchase_return!
 9. التمييز بين سداد العميل واسترداد العميل للكاش (log_customer_payment):
    - إذا كان العميل يسدد للمحل ("سدد أحمد 100", "قبضت من أحمد 100", "أحمد دفع 100") -> استخدم log_customer_payment بـ is_refund: false.
-   - إذا كان المحل هو من يدفع/يرد مبلغ كاش للعميل ("ادفع 100 لأحمد", "رديت 100 لأحمد", "اعطي أحمد 100") -> استخدم log_customer_payment بـ is_refund: true!`;
+10. إدارة المخزون وإضافة الأصناف (add_product):
+    - إذا حاولت تسجيل بيع وظهر خطأ بأن الصنف غير موجود بالكتالوج، اسأل العميل إذا كان يريد إضافته.
+    - إذا طلب إضافة صنف جديد، استخدم أداة add_product لتعريفه في الكتالوج (حدد ما إذا كان صنف ملموس له مخزون أم خدمة، وسعر الوحدة).
+    - لا تفترض أرقام مخزون وهمية، اسأل العميل عن الكمية الافتتاحية للمخزون إذا كان الصنف ملموساً.`;
 
   // Format history for Gemini SDK
   const geminiHistory = rawHistory.map(h => ({
@@ -1431,7 +1505,7 @@ export async function processTelegramMessageWithLLM(
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
           model: modelName,
-          tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool] }],
+          tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool, addProductTool] }],
           systemInstruction
         });
 
@@ -1495,7 +1569,7 @@ export async function processTelegramMessageWithLLM(
         logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool,
         getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool,
         logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool,
-        logSalesReturnTool, logPurchaseReturnTool
+        logSalesReturnTool, logPurchaseReturnTool, addProductTool
       ].map(t => ({
         type: "function" as const,
         function: {

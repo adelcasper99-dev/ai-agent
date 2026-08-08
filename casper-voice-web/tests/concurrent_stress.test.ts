@@ -38,6 +38,19 @@ describe("Concurrent Financial Stress Test", () => {
       create: { id: TENANT_ID, name: "Concurrent Test Tenant", phoneNumber: "01000000099" },
     });
 
+    // Delete existing products for this tenant
+    await prisma.product.deleteMany({ where: { tenantId: TENANT_ID } });
+
+    // Pre-create products
+    await prisma.product.createMany({
+      data: [
+        { name: "بضاعة أ", isStockItem: false, tenantId: TENANT_ID, unitPrice: 1000 },
+        { name: "بضاعة ب", isStockItem: false, tenantId: TENANT_ID, unitPrice: 500 },
+        { name: "بضاعة ج", isStockItem: false, tenantId: TENANT_ID, unitPrice: 250 },
+        { name: "بضاعة C3", isStockItem: false, tenantId: TENANT_ID, unitPrice: 500 },
+      ]
+    });
+
     // Pre-create customer so all concurrent calls target the same known record
     const customer = await prisma.customer.upsert({
       where: { tenantId_phone: { tenantId: TENANT_ID, phone: CUSTOMER_PHONE } },
@@ -80,7 +93,8 @@ describe("Concurrent Financial Stress Test", () => {
           deferred_amount: 1000,
           idempotency_key: `stress-sale-A-${RUN_ID}`,
         },
-        TENANT_ID
+        TENANT_ID,
+        "بضاعة أ رضا التجربة المتزامنة 1000"
       ),
       // Sale B: 500 EGP آجل
       executeTool(
@@ -95,7 +109,8 @@ describe("Concurrent Financial Stress Test", () => {
           deferred_amount: 500,
           idempotency_key: `stress-sale-B-${RUN_ID}`,
         },
-        TENANT_ID
+        TENANT_ID,
+        "بضاعة ب رضا التجربة المتزامنة 500"
       ),
       // Sale C: 250 EGP آجل
       executeTool(
@@ -110,7 +125,8 @@ describe("Concurrent Financial Stress Test", () => {
           deferred_amount: 250,
           idempotency_key: `stress-sale-C-${RUN_ID}`,
         },
-        TENANT_ID
+        TENANT_ID,
+        "بضاعة ج رضا التجربة المتزامنة 250"
       ),
       // Payment 1: 300 EGP
       executeTool(
@@ -122,7 +138,8 @@ describe("Concurrent Financial Stress Test", () => {
           is_refund: false,
           idempotency_key: `stress-pay-1-${RUN_ID}`,
         },
-        TENANT_ID
+        TENANT_ID,
+        "رضا 300"
       ),
       // Payment 2: 200 EGP
       executeTool(
@@ -134,7 +151,8 @@ describe("Concurrent Financial Stress Test", () => {
           is_refund: false,
           idempotency_key: `stress-pay-2-${RUN_ID}`,
         },
-        TENANT_ID
+        TENANT_ID,
+        "رضا 200"
       ),
     ]);
 
@@ -207,7 +225,8 @@ describe("Concurrent Financial Stress Test", () => {
           deferred_amount: 1000,
           idempotency_key: `stress-sale-A-${RUN_ID}`, // SAME KEY
         },
-        TENANT_ID
+        TENANT_ID,
+        "بضاعة أ رضا التجربة المتزامنة 1000"
       ),
       executeTool(
         "log_customer_payment",
@@ -218,7 +237,8 @@ describe("Concurrent Financial Stress Test", () => {
           is_refund: false,
           idempotency_key: `stress-pay-1-${RUN_ID}`, // SAME KEY
         },
-        TENANT_ID
+        TENANT_ID,
+        "رضا 300"
       ),
     ]);
 
@@ -252,8 +272,8 @@ describe("Concurrent Financial Stress Test", () => {
     
     // Fire identical requests concurrently (simulating network retry storm)
     const [req1, req2] = await Promise.all([
-      executeTool("log_sale", args, TENANT_ID),
-      executeTool("log_sale", args, TENANT_ID)
+      executeTool("log_sale", args, TENANT_ID, "بضاعة C3 رضا التجربة المتزامنة 500"),
+      executeTool("log_sale", args, TENANT_ID, "بضاعة C3 رضا التجربة المتزامنة 500")
     ]);
     
     // Both should report success

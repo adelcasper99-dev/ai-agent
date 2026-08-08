@@ -125,3 +125,17 @@ Whenever executing a pipeline, analyzing gaps (e.g., Gap Matrix), or generating 
 2. **No Blind Trust**: Treat all AI-generated technical claims as potential hallucinations until proven by a valid `[filename](file:///...)` path or direct codebase reference.
 3. **Tabular Hallucination Report**: For any discrepancies found, output a Caveman-style Markdown table clearly marking the hallucinated items with ❌ and their true codebase state.
 </RULE>
+
+<RULE>
+# Permanent Strict Evidence Discipline Protocol (Raw Evidence Mandatory)
+1. **Raw Output Mandatory**: Never state a fix, test, or deployment "succeeded", "passed", or "100%" without pasting the literal raw terminal command output/stdout directly beneath the claim in the same message.
+2. **No Paraphrasing "Ran command"**: Every tool or command run MUST be accompanied by its un-paraphrased literal stdout.
+3. **Mandatory Negative/Adversarial Test**: Every fix requires AT LEAST one positive test (bug case now passes) AND one adversarial/negative test (a nearby case that must still behave correctly).
+4. **Explicit Enumeration**: Never say "checked all X" — name each item/table/route X checked explicitly.
+5. **Separate Proof Levels**: Distinguish explicitly between:
+   - Code changed (`git diff`)
+   - Build succeeded (build command stdout)
+   - Server running new code (`pm2 status` + live query)
+   - User-visible effect (screenshot / live message test)
+6. **No Premature Deployment**: Never deploy to production before local test evidence has been displayed and explicitly approved by the user.
+</RULE>

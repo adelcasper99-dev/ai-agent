@@ -481,7 +481,7 @@ async function logRejectedToolCall(tenantId: string | undefined, toolName: strin
 }
 // === END grounding guard ===
 
-export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string): Promise<{ success: boolean; resultText: string }> {
+export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0): Promise<{ success: boolean; resultText: string }> {
   try {
     const grounding = groundingCheck(name, args, userMessageText);
     if (!grounding.ok) {
@@ -498,11 +498,13 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       return { success: true, resultText: "" };
     }
 
-    const { idempotency_key } = args;
-    const effectiveIdempotencyKey = String(idempotency_key || (telegramMessageId ? `msg:${telegramMessageId}` : "")).trim();
+    // Deterministic Server-Generated Idempotency Key (ignoring model hallucinated keys)
+    const tId = tenantId || "global";
+    const msgIdPart = telegramMessageId ? `msg_${telegramMessageId}` : `nomsg_${Date.now()}`;
+    const effectiveIdempotencyKey = `${tId}:${name}:${msgIdPart}:call_${callIndex}`;
     const isMutation = name.startsWith("log_") || name.startsWith("book_");
     
-    if (isMutation && effectiveIdempotencyKey && effectiveIdempotencyKey.length > 3) {
+    if (isMutation) {
       const fullKey = `${name}:${effectiveIdempotencyKey}`;
       if (executedKeys.has(fullKey)) {
         return { success: true, resultText: `تمت العملية بنجاح.` };
@@ -1402,8 +1404,9 @@ export async function processTelegramMessageWithLLM(
         let finalReply = "";
         if (functionCalls && functionCalls.length > 0) {
           const combinedResults = [];
-          for (const call of functionCalls) {
-            const toolRes = await executeTool(call.name, call.args, tenantId, text, telegramMessageId);
+          for (let idx = 0; idx < functionCalls.length; idx++) {
+            const call = functionCalls[idx];
+            const toolRes = await executeTool(call.name, call.args, tenantId, text, telegramMessageId, idx);
             combinedResults.push(toolRes.resultText);
           }
           finalReply = combinedResults.join('\n\n').trim();
@@ -1491,10 +1494,11 @@ export async function processTelegramMessageWithLLM(
 
       if (toolCalls && toolCalls.length > 0) {
         const results: string[] = [];
-        for (const call of toolCalls) {
+        for (let idx = 0; idx < toolCalls.length; idx++) {
+          const call = toolCalls[idx];
           let args: Record<string, any> = {};
           try { args = JSON.parse(call.function.arguments); } catch {}
-          const toolRes = await executeTool(call.function.name, args, tenantId, text, telegramMessageId);
+          const toolRes = await executeTool(call.function.name, args, tenantId, text, telegramMessageId, idx);
           results.push(toolRes.resultText);
         }
         finalReply = results.join('\n\n').trim();
@@ -1523,7 +1527,7 @@ export async function processTelegramMessageWithLLM(
                 console.error("[Groq Parser] JSON parse error:", jsonMatch[0], e);
               }
             }
-            const toolRes = await executeTool(funcName, args, tenantId, text, telegramMessageId);
+            const toolRes = await executeTool(funcName, args, tenantId, text, telegramMessageId, 0);
             void saveChatMessage(tenantId, telegramChatId, "assistant", toolRes.resultText);
             return { status: "success", text: toolRes.resultText };
           }

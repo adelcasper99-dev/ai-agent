@@ -118,12 +118,13 @@ model Sale {
   customerName   String   @default("")
   paidAmount     Float    @default(0)
   deferredAmount Float    @default(0)
-  idempotencyKey String?  @unique
+  idempotencyKey String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
 
   customerLedgers CustomerLedgerEntry[]
 
+  @@unique([tenantId, idempotencyKey])
   @@index([tenantId])
 }
 

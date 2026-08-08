@@ -552,15 +552,18 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       if (!productName || String(productName).trim() === "") {
         return { success: false, resultText: "يرجى تحديد اسم الصنف." };
       }
+      if (!tenantId) {
+        return { success: false, resultText: "عذراً، لم أتمكن من إضافة الصنف لوجود مشكلة في التعرف على حساب الشركة." };
+      }
       
       try {
         await prisma.product.create({
           data: {
+            tenantId,
             name: String(productName).trim(),
             isStockItem: Boolean(is_stock_item),
             stockQuantity: Number(stock_quantity) || 0,
-            unitPrice: Number(unit_price) || 0,
-            ...(tenantId && { tenantId })
+            unitPrice: Number(unit_price) || 0
           }
         });
         return { success: true, resultText: `تم إضافة ${productName} للكتالوج بنجاح.` };

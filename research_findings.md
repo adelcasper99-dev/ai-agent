@@ -1,14 +1,11 @@
-# 🔬 Research Findings: Soft Delete & Telegram Identity Unlinking in SaaS ERPs
+# 🔬 Research Findings: Slang Hallucination Prevention & Strict Grounding Guards
 
-## 1. Industry Standard for Tenant Offboarding & Re-onboarding
-In enterprise ERP and SaaS systems (Odoo, Stripe, Shopify):
-- **Data Retention Guardrails:** Hard-deleting relational root records (like Tenants/Organizations) breaks historical accounting ledgers, invoices, and sales reports.
-- **Identity Unlinking Pattern:** Rather than physically purging the tenant row, the system sets `state = "deleted"` (or `deletedAt = now()`) and clears external channel identifiers (`telegramChatId = null`, `ownerTelegramUserId = null`).
-- **Instant Re-onboarding:** When a Telegram user sends `/start`, the system searches for an active or pending tenant with their `chatId`. Since their `chatId` was set to `null` during soft-deletion, the webhook treats them as a fresh customer and initiates a clean signup flow, while preserving the historical financial database intact.
+## 1. LLM Tool-Calling Hallucination Vulnerability
+When LLMs (Groq Llama 3.3 / Gemini 2.0 Flash) process informal Egyptian Arabic slang (e.g. "ايه الدنيا", "ازيك", "صباح الخير"), ambiguous input triggers pattern completion against prompt examples ("2 كرتونة مسامير بـ 250").
 
-## 2. Hard Delete Fallback
-For spam requests (`PendingTenantRequest` before approval), hard-deleting the request record is completely safe because no financial transactions or sub-entities exist yet.
-
-## 3. Selected Strategy
-1. **Unapproved Requests (`PendingTenantRequest`)**: Physical deletion (`deleteMany`).
-2. **Provisioned Tenants (`Tenant`)**: Soft deletion (`state = "deleted"`, `telegramChatId = null`, `ownerTelegramUserId = null`, `businessConnectionId = null`).
+## 2. Industry Standard Mitigation Strategy
+- **Layer 1: Small-Talk Short-Circuit Router:** Intercept non-transactional greetings and informal slang before invoking LLM or tool execution pipelines.
+- **Layer 2: Universal Grounding Guard:** Enforce a strict text-matching check (`groundingCheck`) inside `executeTool`. Verify that the extracted `item_name`, `description`, or `supplier_name` actually appears within the user's original message text.
+- **Layer 3: System Prompt Sanitization:** Strip specific product examples ("مسامير 250") from System Instructions and replace them with abstract structural rules (`[كمية] [اسم صنف] بـ [مبلغ]`).
+- **Layer 4: Voice Transcript Instance State:** Store `last_user_transcript` in the LiveKit Voice `CasperAgent` class and apply substring grounding checks within Python `@function_tool` methods (`log_sale`, `log_expense`, `log_purchase`).
+- **Layer 5: Rejected Tool Audit Trail:** Persist rejected tool calls in Prisma (`RejectedToolCall` model) for continuous precision monitoring.

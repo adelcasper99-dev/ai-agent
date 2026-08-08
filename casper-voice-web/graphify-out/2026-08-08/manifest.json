@@ -300,8 +300,8 @@
     "semantic_hash": ""
   },
   "lib/telegram_llm.ts": {
-    "mtime": 1786173182.6810257,
-    "ast_hash": "2a94496af183cbcebd4c5dc97afb477b",
+    "mtime": 1786073592.9028559,
+    "ast_hash": "dd77d8b8721a0d2c095c518f769f20f8",
     "semantic_hash": ""
   },
   "lib/whisper_prompt.ts": {

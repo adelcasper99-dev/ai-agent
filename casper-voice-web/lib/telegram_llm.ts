@@ -327,8 +327,87 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
   return customer;
 }
 
+// === NEW: Universal grounding guard for all financial mutation tools ===
+const FINANCIAL_TOOLS = new Set([
+  "log_sale", "log_expense", "book_appointment", "log_purchase",
+  "log_customer_payment", "log_supplier_payment", "log_sales_return", "log_purchase_return"
+]);
+
+const GROUNDING_TEXT_FIELDS: Record<string, string[]> = {
+  log_sale: ["item_name"],
+  log_purchase: ["item_name", "supplier_name"],
+  log_expense: ["description"],
+  log_sales_return: ["item_name"],
+  log_purchase_return: ["item_name", "supplier_name"],
+};
+
+const ARABIC_NUMBER_WORDS = ["صفر","واحد","اتنين","إتنين","تلاتة","ثلاثة","اربعة","أربعة","خمسة","ستة","سبعة","تمنية","ثمانية","تسعة","عشرة","عشرين","تلاتين","اربعين","خمسين","ستين","سبعين","تمانين","تسعين","مية","ميه","مائة","الف","ألف"];
+
+function normalizeArabic(s: string): string {
+  return String(s ?? "")
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ة/g, "ه")
+    .replace(/ى/g, "ي")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function messageHasAnyNumber(msg: string): boolean {
+  const normalized = normalizeArabic(msg);
+  if (/\d/.test(normalized)) return true;
+  return ARABIC_NUMBER_WORDS.some((w) => normalized.includes(normalizeArabic(w)));
+}
+
+function groundingCheck(toolName: string, args: any, userMessageText?: string): { ok: boolean; reason?: string } {
+  if (!FINANCIAL_TOOLS.has(toolName)) return { ok: true };
+  const msg = userMessageText || "";
+  const normalizedMsg = normalizeArabic(msg);
+
+  // A. Text-field grounding: item/supplier/description name must appear in the original message
+  const textFields = GROUNDING_TEXT_FIELDS[toolName] || [];
+  for (const field of textFields) {
+    const val = args?.[field];
+    if (val && String(val).trim().length > 1) {
+      const normalizedVal = normalizeArabic(String(val));
+      const words = normalizedVal.split(" ").filter((w) => w.length > 1);
+      const anyWordFound = words.length === 0 || words.some((w) => normalizedMsg.includes(w));
+      if (!anyWordFound) {
+        return { ok: false, reason: `القيمة "${val}" في الحقل ${field} مش موجودة في رسالة المستخدم الأصلية` };
+      }
+    }
+  }
+
+  // B. Numeric grounding: if tool carries non-zero amount, user message must contain some number
+  const numericCandidates = [args?.price, args?.amount, args?.total_amount, args?.paid_amount];
+  const hasNonZeroNumeric = numericCandidates.some((v) => typeof v === "number" && v > 0);
+  if (hasNonZeroNumeric && !messageHasAnyNumber(msg)) {
+    return { ok: false, reason: "الأداة رجّعت مبلغ رقمي لكن رسالة المستخدم لا تحتوي على أي رقم" };
+  }
+
+  return { ok: true };
+}
+
+async function logRejectedToolCall(tenantId: string | undefined, toolName: string, args: any, msg: string | undefined, reason: string) {
+  try {
+    await (prisma as any).rejectedToolCall.create({
+      data: { tenantId, toolName, rejectedArgs: JSON.stringify(args), originalMessage: msg || "", reason }
+    });
+  } catch (e) {
+    console.error("[RejectedToolCall log error]", e);
+  }
+}
+// === END grounding guard ===
+
 export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string): Promise<{ success: boolean; resultText: string }> {
   try {
+    const grounding = groundingCheck(name, args, userMessageText);
+    if (!grounding.ok) {
+      console.warn(`[Grounding Guard] Rejected ${name}:`, grounding.reason, { args, userMessageText });
+      void logRejectedToolCall(tenantId, name, args, userMessageText, grounding.reason || "Grounding failure");
+      return { success: false, resultText: "معنديش تفاصيل كفاية عشان أسجل العملية دي، ممكن توضحلي الصنف/المبلغ تاني؟" };
+    }
+
     const isPureInquiry = userMessageText && /^(حساب|كشف\s*حساب|رصيد|ديون|كام\s*(على|له))\s+/i.test(userMessageText.trim());
     const isMutationTool = ["log_customer_payment", "log_supplier_payment", "log_sale", "log_purchase", "log_sales_return", "log_purchase_return"].includes(name);
 
@@ -1159,6 +1238,19 @@ export async function processTelegramMessageWithLLM(
   // Save incoming user message to history buffer (non-blocking)
   void saveChatMessage(tenantId, telegramChatId, "user", text);
 
+  // === NEW: Small-talk short-circuit — no LLM, no tools ===
+  const SMALL_TALK_PATTERNS = [
+    /^ايه\s*الدنيا/i, /^إيه\s*الدنيا/i, /^ازيك/i, /^إزيك/i, /^عامل\s*ايه/i, /^اخبارك/i, /^أخبارك/i,
+    /^صباح\s*الخير/i, /^مساء\s*الخير/i, /^سلام/i, /^اهلا/i, /^أهلا/i, /^هاي$/i, /^هلا/i
+  ];
+  const trimmedText = text.trim();
+  if (SMALL_TALK_PATTERNS.some((re) => re.test(trimmedText)) && trimmedText.length < 25) {
+    const reply = "أهلاً بيك يا فندم! 😊 قولّي محتاج تسجل بيع، مصروف، ولا تحجز ميعاد؟";
+    void saveChatMessage(tenantId, telegramChatId, "assistant", reply);
+    return { status: "success", text: reply };
+  }
+  // === END small-talk router ===
+
   // Try models in order - first available free-tier model wins
   const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro", "gemini-1.5-pro"];
   let lastError: any = null;
@@ -1172,10 +1264,10 @@ export async function processTelegramMessageWithLLM(
 
 قواعد استخراج وفهم المبيعات عند استخدام أداة log_sale:
 1. فصل اسم البضاعة عن اسم العميل:
-   - اسم البضاعة بييجي في البداية (مثال: "2 كرتونة مسامير", "زيت موتور", "شاشة 55").
+   - اسم البضاعة بييجي في البداية (مثال: "[اسم صنف]", "زيت موتور", "شاشة 55").
    - اسم العميل بييجي في نهاية الجملة أو بعد (لـ / حساب / عميل) مثل: "احمد محمد", "لـ أحمد", "حساب المهندس مدحت".
 2. استخراج الكميات والأسعار:
-   - الأرقام والوحدات: "2 كرتونة مسامير بـ 250" -> الكمية quantity = 2, اسم المنتج item_name = "كرتونة مسامير", سعر الوحدة price = 125 (أو قسمة 250 على 2).
+   - الأرقام والوحدات: "[كمية] [اسم صنف] بـ [مبلغ]" -> استخرج الكمية كرقم، اسم الصنف كنص، وسعر الوحدة = المبلغ ÷ الكمية إذا ذُكر الإجمالي فقط.
    - الصيغ والجموع: "كرتونتين مسامير" -> quantity = 2، "5 قطف" -> quantity = 5.
 3. التمييز الدقيق بين الكاش والآجل:
    - إذا ذكر كلمة "آجل" أو "على الحساب" -> paid_amount: 0, deferred_amount: الإجمالي.

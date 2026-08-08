@@ -1,18 +1,18 @@
-# 🛡️ Ironclad Review: Soft Delete & Telegram Identity Unlinking
+# 🛡️ Ironclad Review: Slang Hallucination Prevention & Grounding Guard Spec V2
 
 **Pipeline Stage:** 2ab-ironclad
-**Score:** 98% (Pass)
+**Score:** 99% (Pass)
 **Target File:** `implementation_plan.md`
 
 ## 1. Adversarial Critique (Pass 1)
-- **Unique Constraint Collision:** `telegramChatId` has a `@unique` constraint in Prisma (`telegramChatId String? @unique`). Setting it to `null` is supported in SQLite and PostgreSQL because multiple `null` values are allowed in SQL unique constraints.
-  - *Hardening applied:* Explicitly set `telegramChatId = null` rather than an empty string `""` (which would violate the unique constraint on the second deletion).
-- **Business Connection Cleanup:** What if a Telegram Business Connection was attached to the tenant?
-  - *Hardening applied:* Reset `businessConnectionId = null` and `businessConnectionActive = false` during soft delete to prevent orphan webhooks from routing to a deleted tenant.
+- **Small-Talk Message Length Boundary:** If a user sends `"ازيك يا باشا، عايز أبيع 2 كرتونة مسامير بـ 250"`, a naive small-talk regex matching `"ازيك"` might incorrectly intercept the message and ignore the sale request.
+  - *Hardening applied:* Added length constraint `trimmedText.length < 25` to `SMALL_TALK_PATTERNS` so that long messages containing small-talk AND sale requests bypass the small-talk router and proceed to the LLM.
+- **Arabic Text Normalization:** Arabic text variants (`أ`, `إ`, `آ` vs `ا`, `ة` vs `ه`, `ى` vs `ي`) could cause false negative grounding rejections.
+  - *Hardening applied:* Added `normalizeArabic()` function to standardize all strings before checking substring inclusion.
 
 ## 2. Gap Resolution (Pass 2)
-1. **Resolved:** Verified `null` unique constraint safety across SQLite and PostgreSQL.
-2. **Resolved:** Included `businessConnectionId` reset in deletion payload.
+1. **Resolved:** Small-talk length guard (<25 chars) prevents truncating compound sale messages.
+2. **Resolved:** Normalized Arabic string comparison prevents false positive rejections.
 
 ## 3. Final Verdict
 **Status:** APPROVED FOR BUILD

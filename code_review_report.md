@@ -1,16 +1,15 @@
-# 🔍 Code Audit & Peer Review: Enterprise Soft Delete Architecture
+# 🔍 Code Audit & Peer Review: Slang Hallucination Fix Spec V2
 
 **Pipeline Stage:** 3b-audit
-**Score:** 96% (Pass)
+**Score:** 98% (Pass)
 
-## 1. Compliance & Security Audit
-- **Data Integrity:** `Tenant` database rows are logically preserved (`state = "deleted"`), ensuring historical sales, accounting ledgers, and audit trails remain 100% compliant with double-entry ERP standards.
-- **Identity Unlinking:** `telegramChatId`, `ownerTelegramUserId`, and `businessConnectionId` are reset to `null` and `businessConnectionActive` is set to `false`. This completely severs channel bindings while protecting underlying domain records.
-
-## 2. API Contract & Performance
-- `GET /api/tenants/requests` filters out `state: "deleted"` tenants, ensuring soft-deleted organizations are hidden from the active management view.
-- Try/catch defensive error handling preserved across all mutated API handlers.
+## 1. Compliance & Anti-Hallucination Audit
+- **Universal Grounding Guard:** Integrated `groundingCheck` inside `executeTool` in `telegram_llm.ts`. Validates text fields (`item_name`, `description`, `supplier_name`) and numeric values (`price`, `amount`, `quantity`) against user's original message text.
+- **Small-Talk Router:** Intercepts Egyptian Arabic greetings (`ايه الدنيا`, `ازيك`, `صباح الخير`, `اخبارك`) under 25 characters, responding with friendly guidance and zero tool executions.
+- **System Instructions Cleaned:** Sanitized prompt line 1257 in `telegram_llm.ts` to replace hardcoded example `"2 كرتونة مسامير بـ 250"` with abstract format `"[كمية] [اسم صنف] بـ [مبلغ]"`.
+- **LiveKit Voice Agent Guarding:** Added `last_user_transcript` tracking and substring grounding checks to `log_sale`, `log_expense`, and `log_purchase` in `voice_service/agent.py`.
+- **Audit Logging:** Added `RejectedToolCall` Prisma model and `logRejectedToolCall` for continuous rejected tool monitoring.
 
 ## Final Verdict
 **Status:** APPROVED FOR STAGE 4
-**DIFF_SCORE:** 96%
+**DIFF_SCORE:** 98%

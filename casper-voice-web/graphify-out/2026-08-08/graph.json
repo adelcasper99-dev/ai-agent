@@ -870,7 +870,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_tenants_approve_route",
-      "community": 6,
+      "community": 0,
       "norm_label": "route.ts"
     },
     {
@@ -880,7 +880,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "app_api_tenants_approve_route_post",
-      "community": 6,
+      "community": 0,
       "norm_label": "post()"
     },
     {
@@ -2380,7 +2380,7 @@
       "source_location": "L205",
       "_origin": "ast",
       "id": "lib_telegram_fireandforgettelegramalert",
-      "community": 4,
+      "community": 0,
       "norm_label": "fireandforgettelegramalert()"
     },
     {
@@ -2390,7 +2390,7 @@
       "source_location": "L214",
       "_origin": "ast",
       "id": "lib_telegram_approvetenantrequest",
-      "community": 6,
+      "community": 0,
       "norm_label": "approvetenantrequest()"
     },
     {
@@ -2694,80 +2694,10 @@
       "norm_label": "findcustomerfuzzy()"
     },
     {
-      "label": "FINANCIAL_TOOLS",
-      "file_type": "code",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L331",
-      "_origin": "ast",
-      "id": "lib_telegram_llm_financial_tools",
-      "community": 1,
-      "norm_label": "financial_tools"
-    },
-    {
-      "label": "GROUNDING_TEXT_FIELDS",
-      "file_type": "code",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L336",
-      "_origin": "ast",
-      "id": "lib_telegram_llm_grounding_text_fields",
-      "community": 1,
-      "norm_label": "grounding_text_fields"
-    },
-    {
-      "label": "ARABIC_NUMBER_WORDS",
-      "file_type": "code",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L344",
-      "_origin": "ast",
-      "id": "lib_telegram_llm_arabic_number_words",
-      "community": 1,
-      "norm_label": "arabic_number_words"
-    },
-    {
-      "label": "normalizeArabic()",
-      "file_type": "code",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L346",
-      "_origin": "ast",
-      "id": "lib_telegram_llm_normalizearabic",
-      "community": 1,
-      "norm_label": "normalizearabic()"
-    },
-    {
-      "label": "messageHasAnyNumber()",
-      "file_type": "code",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L356",
-      "_origin": "ast",
-      "id": "lib_telegram_llm_messagehasanynumber",
-      "community": 1,
-      "norm_label": "messagehasanynumber()"
-    },
-    {
-      "label": "groundingCheck()",
-      "file_type": "code",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L362",
-      "_origin": "ast",
-      "id": "lib_telegram_llm_groundingcheck",
-      "community": 1,
-      "norm_label": "groundingcheck()"
-    },
-    {
-      "label": "logRejectedToolCall()",
-      "file_type": "code",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L391",
-      "_origin": "ast",
-      "id": "lib_telegram_llm_logrejectedtoolcall",
-      "community": 1,
-      "norm_label": "logrejectedtoolcall()"
-    },
-    {
       "label": "executeTool()",
       "file_type": "code",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L402",
+      "source_location": "L330",
       "_origin": "ast",
       "id": "lib_telegram_llm_executetool",
       "community": 1,
@@ -2777,7 +2707,7 @@
       "label": "LLMResult",
       "file_type": "code",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L1192",
+      "source_location": "L1113",
       "_origin": "ast",
       "id": "lib_telegram_llm_llmresult",
       "community": 1,
@@ -2787,7 +2717,7 @@
       "label": "saveChatMessage()",
       "file_type": "code",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L1196",
+      "source_location": "L1117",
       "_origin": "ast",
       "id": "lib_telegram_llm_savechatmessage",
       "community": 1,
@@ -2797,7 +2727,7 @@
       "label": "processTelegramMessageWithLLM()",
       "file_type": "code",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L1207",
+      "source_location": "L1128",
       "_origin": "ast",
       "id": "lib_telegram_llm_processtelegrammessagewithllm",
       "community": 1,
@@ -2810,7 +2740,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_tenant_provisioner",
-      "community": 6,
+      "community": 11,
       "norm_label": "tenant-provisioner.ts"
     },
     {
@@ -2820,7 +2750,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "lib_tenant_provisioner_voicetenantprovisionoptions",
-      "community": 6,
+      "community": 11,
       "norm_label": "voicetenantprovisionoptions"
     },
     {
@@ -2830,7 +2760,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "lib_tenant_provisioner_provisionresult",
-      "community": 6,
+      "community": 11,
       "norm_label": "provisionresult"
     },
     {
@@ -2840,7 +2770,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "lib_tenant_provisioner_tenantprovisioner",
-      "community": 6,
+      "community": 11,
       "norm_label": "tenantprovisioner"
     },
     {
@@ -2850,7 +2780,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "lib_tenant_provisioner_tenantprovisioner_provision",
-      "community": 6,
+      "community": 11,
       "norm_label": ".provision()"
     },
     {
@@ -2860,7 +2790,7 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "lib_tenant_provisioner_tenantprovisioner_suspend",
-      "community": 6,
+      "community": 11,
       "norm_label": ".suspend()"
     },
     {
@@ -2870,7 +2800,7 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "lib_tenant_provisioner_tenantprovisioner_reactivate",
-      "community": 6,
+      "community": 11,
       "norm_label": ".reactivate()"
     },
     {
@@ -2880,7 +2810,7 @@
       "source_location": "L149",
       "_origin": "ast",
       "id": "lib_tenant_provisioner_tenantprovisioner_softdelete",
-      "community": 6,
+      "community": 11,
       "norm_label": ".softdelete()"
     },
     {
@@ -3738,7 +3668,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_mvp_prelaunch_e2e_test",
-      "community": 6,
+      "community": 0,
       "norm_label": "mvp_prelaunch_e2e.test.ts"
     },
     {
@@ -3748,7 +3678,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "tests_mvp_prelaunch_e2e_test_runmvpprelaunchaudit",
-      "community": 6,
+      "community": 0,
       "norm_label": "runmvpprelaunchaudit()"
     },
     {
@@ -7391,7 +7321,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L1216",
+      "source_location": "L1137",
       "weight": 1.0,
       "source": "lib_telegram_llm_processtelegrammessagewithllm",
       "target": "lib_apikeymanager",
@@ -7403,7 +7333,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L1300",
+      "source_location": "L1208",
       "weight": 1.0,
       "source": "lib_telegram_llm_processtelegrammessagewithllm",
       "target": "lib_apikeymanager_getvalidapikey"
@@ -7414,7 +7344,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L1337",
+      "source_location": "L1245",
       "weight": 1.0,
       "source": "lib_telegram_llm_processtelegrammessagewithllm",
       "target": "lib_apikeymanager_markkeyexhausted"
@@ -8484,7 +8414,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L1173",
+      "source_location": "L1094",
       "weight": 1.0,
       "source": "lib_telegram_llm_executetool",
       "target": "lib_telegram_sendtelegramalert"
@@ -8770,16 +8700,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L344",
-      "weight": 1.0,
-      "source": "lib_telegram_llm",
-      "target": "lib_telegram_llm_arabic_number_words",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/telegram_llm.ts",
       "source_location": "L43",
       "weight": 1.0,
       "source": "lib_telegram_llm",
@@ -8800,20 +8720,10 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L402",
+      "source_location": "L330",
       "weight": 1.0,
       "source": "lib_telegram_llm",
       "target": "lib_telegram_llm_executetool",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L331",
-      "weight": 1.0,
-      "source": "lib_telegram_llm",
-      "target": "lib_telegram_llm_financial_tools",
       "confidence_score": 1.0
     },
     {
@@ -8870,27 +8780,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L336",
-      "weight": 1.0,
-      "source": "lib_telegram_llm",
-      "target": "lib_telegram_llm_grounding_text_fields",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L362",
-      "weight": 1.0,
-      "source": "lib_telegram_llm",
-      "target": "lib_telegram_llm_groundingcheck",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L1192",
+      "source_location": "L1113",
       "weight": 1.0,
       "source": "lib_telegram_llm",
       "target": "lib_telegram_llm_llmresult",
@@ -8940,16 +8830,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L391",
-      "weight": 1.0,
-      "source": "lib_telegram_llm",
-      "target": "lib_telegram_llm_logrejectedtoolcall",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/telegram_llm.ts",
       "source_location": "L187",
       "weight": 1.0,
       "source": "lib_telegram_llm",
@@ -8980,27 +8860,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L356",
-      "weight": 1.0,
-      "source": "lib_telegram_llm",
-      "target": "lib_telegram_llm_messagehasanynumber",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L346",
-      "weight": 1.0,
-      "source": "lib_telegram_llm",
-      "target": "lib_telegram_llm_normalizearabic",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L1207",
+      "source_location": "L1128",
       "weight": 1.0,
       "source": "lib_telegram_llm",
       "target": "lib_telegram_llm_processtelegrammessagewithllm",
@@ -9020,7 +8880,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L1196",
+      "source_location": "L1117",
       "weight": 1.0,
       "source": "lib_telegram_llm",
       "target": "lib_telegram_llm_savechatmessage",
@@ -9063,95 +8923,18 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L465",
+      "source_location": "L386",
       "weight": 1.0,
       "source": "lib_telegram_llm_executetool",
       "target": "lib_telegram_llm_findcustomerfuzzy",
       "confidence_score": 1.0
     },
     {
-      "relation": "references",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L363",
-      "weight": 1.0,
-      "source": "lib_telegram_llm_groundingcheck",
-      "target": "lib_telegram_llm_financial_tools"
-    },
-    {
-      "relation": "references",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L359",
-      "weight": 1.0,
-      "source": "lib_telegram_llm_messagehasanynumber",
-      "target": "lib_telegram_llm_arabic_number_words"
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L365",
-      "weight": 1.0,
-      "source": "lib_telegram_llm_groundingcheck",
-      "target": "lib_telegram_llm_normalizearabic",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L357",
-      "weight": 1.0,
-      "source": "lib_telegram_llm_messagehasanynumber",
-      "target": "lib_telegram_llm_normalizearabic",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L384",
-      "weight": 1.0,
-      "source": "lib_telegram_llm_groundingcheck",
-      "target": "lib_telegram_llm_messagehasanynumber",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L404",
-      "weight": 1.0,
-      "source": "lib_telegram_llm_executetool",
-      "target": "lib_telegram_llm_groundingcheck",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L407",
-      "weight": 1.0,
-      "source": "lib_telegram_llm_executetool",
-      "target": "lib_telegram_llm_logrejectedtoolcall",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "lib/telegram_llm.ts",
-      "source_location": "L1324",
+      "source_location": "L1232",
       "weight": 1.0,
       "source": "lib_telegram_llm_processtelegrammessagewithllm",
       "target": "lib_telegram_llm_executetool",
@@ -9173,7 +8956,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "lib/telegram_llm.ts",
-      "source_location": "L1239",
+      "source_location": "L1160",
       "weight": 1.0,
       "source": "lib_telegram_llm_processtelegrammessagewithllm",
       "target": "lib_telegram_llm_savechatmessage",
@@ -10263,5 +10046,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "6612b6775c16ffbfd8c7c8fecf24193948479819"
+  "built_at_commit": "abc02500382cbb7949dcc17d1e6e9f5ef685ca1a"
 }

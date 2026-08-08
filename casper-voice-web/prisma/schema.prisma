@@ -395,3 +395,15 @@ model PendingBusinessConnection {
   createdAt      DateTime @default(now())
 }
 
+model RejectedToolCall {
+  id              String   @id @default(cuid())
+  tenantId        String?
+  toolName        String
+  rejectedArgs    String
+  originalMessage String
+  reason          String
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+}
+

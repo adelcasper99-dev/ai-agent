@@ -109,6 +109,16 @@ class CasperAgent(Agent):
         if not description or description.strip() == "":
             return "المبلغ ده اتدفع في إيه أستاذنا؟"
 
+        # Transcript Grounding Check
+        transcript = getattr(self, "last_user_transcript", "") or ""
+        if transcript:
+            import re
+            norm_desc = re.sub(r'[أإآ]', 'ا', re.sub(r'[ة]', 'ه', re.sub(r'[ى]', 'ي', description.strip()))).lower()
+            norm_trans = re.sub(r'[أإآ]', 'ا', re.sub(r'[ة]', 'ه', re.sub(r'[ى]', 'ي', transcript.strip()))).lower()
+            words = [w for w in norm_desc.split() if len(w) > 1]
+            if words and not any(w in norm_trans for w in words):
+                return "معلش ماسمعتش سبب المصروف كويس في كلامك، ممكن تقوله تاني أستاذنا؟"
+
         async with self._get_client() as client:
             r = await client.post(
                 f"{API_BASE}/expenses",
@@ -128,6 +138,16 @@ class CasperAgent(Agent):
             return "بعنا صنف إيه يا فندم؟"
         if not price or price <= 0:
             return "السعر كام مسترنا؟"
+
+        # Transcript Grounding Check
+        transcript = getattr(self, "last_user_transcript", "") or ""
+        if transcript:
+            import re
+            norm_item = re.sub(r'[أإآ]', 'ا', re.sub(r'[ة]', 'ه', re.sub(r'[ى]', 'ي', item_name.strip()))).lower()
+            norm_trans = re.sub(r'[أإآ]', 'ا', re.sub(r'[ة]', 'ه', re.sub(r'[ى]', 'ي', transcript.strip()))).lower()
+            words = [w for w in norm_item.split() if len(w) > 1]
+            if words and not any(w in norm_trans for w in words):
+                return "معلش ماسمعتش اسم الصنف كويس في كلامك، ممكن تقوله تاني أستاذنا؟"
 
         payload = {
             "item_name": item_name,
@@ -731,6 +751,8 @@ async def entrypoint(ctx: JobContext):
             except Exception as err:
                 print(f"[DataChannel Emitter Warning] {err}")
 
+        casper_agent = CasperAgent(room=ctx.room, tenant_id=tenant_id)
+
         import time as _time
         last_user_speech_time = [_time.monotonic()]
         stt_conf_threshold = float(os.getenv("STT_CONFIDENCE_THRESHOLD", "0.6"))
@@ -748,6 +770,7 @@ async def entrypoint(ctx: JobContext):
                         pass
 
                 if text and is_final:
+                    casper_agent.last_user_transcript = text
                     last_user_speech_time[0] = _time.monotonic()
                     import asyncio
                     active_stt_provider = settings.get("ACTIVE_PROVIDER", settings.get("STT_PROVIDER", provider))
@@ -829,7 +852,7 @@ async def entrypoint(ctx: JobContext):
                     "message": "انتهت باقة نطق الصوت (OpenAI TTS Quota Exceeded). يرجى شحن الحساب أو اختار Gemini Realtime من الإعدادات."
                 }))
 
-        await session.start(agent=CasperAgent(room=ctx.room, tenant_id=tenant_id), room=ctx.room)
+        await session.start(agent=casper_agent, room=ctx.room)
         if getattr(session, "tts", None) is not None:
             try:
                 await session.say("أهلاً بحضرتك! معاك المساعد الذكي لسيستم كاسبر، أقدر أساعدك إزاي النهاردة؟", allow_interruptions=True)

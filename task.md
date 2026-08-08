@@ -1,5 +1,7 @@
-# Enterprise Soft Delete & Telegram Identity Unlinking — Build Tasks
+# Slang Hallucination Fix Spec V2 — Build Tasks
 
-- [x] Task 1: Update `/api/tenants/manage` to implement Soft Delete and reset Telegram identifiers (`telegramChatId: null`, `ownerTelegramUserId: null`, `businessConnectionId: null`, `businessConnectionActive: false`, `state: "deleted"`).
-- [x] Task 2: Ensure `/api/tenants/requests` excludes `deleted` tenants from the main active Tenants Data Table.
-- [x] Task 3: Verify TypeScript types and execute local verification.
+- [x] Task 1: Add `RejectedToolCall` model to `prisma/schema.prisma`.
+- [x] Task 2: Implement Small-Talk Short-Circuit Router in `lib/telegram_llm.ts`.
+- [x] Task 3: Implement Universal Grounding Guard & `logRejectedToolCall` in `lib/telegram_llm.ts`.
+- [x] Task 4: Sanitize System Instructions (replace literal "مسامير 250" example with abstract format) in `lib/telegram_llm.ts`.
+- [x] Task 5: Add transcript grounding checks to `voice_service/agent.py`.

@@ -458,6 +458,18 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
   return { ok: true };
 }
 
+function sanitizeNonToolReply(text: string): string {
+  const forbiddenPatterns = [
+    /تم\s*تسجيل\s*(بيع|مصروف|مشتريات|سداد|مرتجع)/i,
+    /تم\s*حجز\s*موعد/i
+  ];
+  if (forbiddenPatterns.some((p) => p.test(text))) {
+    console.warn(`[LLM Guardrail] Intercepted illegal text-simulated mutation response: "${text}"`);
+    return "عشان أسجلك العملية دي محتاج تفاصيل أكتر (اسم الصنف والسعر والكمية) 💰";
+  }
+  return text;
+}
+
 async function logRejectedToolCall(tenantId: string | undefined, toolName: string, args: any, msg: string | undefined, reason: string) {
   try {
     await (prisma as any).rejectedToolCall.create({
@@ -1396,7 +1408,7 @@ export async function processTelegramMessageWithLLM(
           }
           finalReply = combinedResults.join('\n\n').trim();
         } else {
-          finalReply = response.text().trim() || "تمام يا فندم، أنا معاك.";
+          finalReply = sanitizeNonToolReply(response.text().trim() || "تمام يا فندم، أنا معاك.");
         }
 
         void saveChatMessage(tenantId, telegramChatId, "assistant", finalReply);
@@ -1487,7 +1499,7 @@ export async function processTelegramMessageWithLLM(
         }
         finalReply = results.join('\n\n').trim();
       } else {
-        finalReply = choice?.message?.content?.trim() || "تمام يا فندم، أنا معاك.";
+        finalReply = sanitizeNonToolReply(choice?.message?.content?.trim() || "تمام يا فندم، أنا معاك.");
       }
 
       void saveChatMessage(tenantId, telegramChatId, "assistant", finalReply);

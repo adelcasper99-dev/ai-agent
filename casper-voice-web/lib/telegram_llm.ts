@@ -652,7 +652,12 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       });
       } catch (err: any) {
         if (err.code === "P2002" && effectiveIdempotencyKey) {
-          const existingSale = await prisma.sale.findUnique({ where: { idempotencyKey: effectiveIdempotencyKey } });
+          const existingSale = await prisma.sale.findFirst({
+            where: {
+              ...(tenantId && { tenantId }),
+              idempotencyKey: effectiveIdempotencyKey
+            }
+          });
           if (existingSale) {
             return { success: true, resultText: `تم تسجيل البيع مسبقاً. تفاصيل العملية: ${existingSale.quantity} ${existingSale.itemName} إجمالي ${existingSale.total} جنيه بنجاح!` };
           }

@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ...cached.response, cached: true });
       }
       
-      const existingSale = await prisma.sale.findUnique({ where: { idempotencyKey } });
+      const existingSale = await prisma.sale.findFirst({ where: { tenantId: resolvedTenantId, idempotencyKey } });
       if (existingSale) {
         const cachedRes = { success: true, sale: existingSale, deferredAmount: existingSale.deferredAmount, cached: true };
         salesIdempotencyMap.set(idempotencyKey, { timestamp: now, response: cachedRes });

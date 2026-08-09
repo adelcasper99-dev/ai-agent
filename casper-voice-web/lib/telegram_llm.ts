@@ -79,6 +79,7 @@ const logPurchaseTool: FunctionDeclaration = {
     properties: {
       supplier_name: { type: SchemaType.STRING, description: "اسم المورد المشترى منه (إجباري لمتابعة الحسابات والآجل)" },
       item_name: { type: SchemaType.STRING, description: "اسم الصنف أو البضاعة المششراة" },
+      unit: { type: SchemaType.STRING, description: "وحدة القياس المذكورة في الطلب إن وجدت (مثال: طن، كيلو، كرتونة، قطعة، متر، شكارة)" },
       quantity: { type: SchemaType.NUMBER, description: "الكمية المششراة كرقم (مثال: '5 كراتين' = 5)" },
       price_per_unit: { type: SchemaType.NUMBER, description: "سعر الكرتونة أو القطعة الواحدة بالجنيه" },
       total_amount: { type: SchemaType.NUMBER, description: "إجمالي قيمة الفاتورة بالجنيه (إذا ذكر سعر الوحدة والكمية قم بضربهما)" },
@@ -408,6 +409,9 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
     const val = args?.[field];
     if (val && String(val).trim().length > 1) {
       const normalizedVal = normalizeArabic(String(val));
+      if (normalizedVal.includes("مورد عام") || normalizedVal.includes("عميل عام") || normalizedVal.includes("صنف غير محدد")) {
+        continue; // Generic system placeholders are allowed
+      }
       const words = normalizedVal.split(" ").filter((w) => w.length > 1);
       const anyWordFound = words.length === 0 || words.some((w) => normalizedMsg.includes(w) || isArabicFuzzyMatch(w, msgWords));
       if (!anyWordFound) {
@@ -489,6 +493,21 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
     }
   }
 
+  // C. Ambiguous Numeric Clarification Protocol:
+  if (toolName === "log_purchase" || toolName === "log_sale") {
+    const rawNums = extractAllNumbersFromText(msg).filter((n) => n >= 100);
+    if (rawNums.length >= 2) {
+      const hasTotalAnchor = /(?:\s|^)(?:ب|بـ|سعر|إجمالي|اجمالي|بقيمة|ثمن)\s*\d+/i.test(msg);
+      const hasPaidAnchor = /(?:\s|^)(?:دفع|دفعت|مقدم|عربون|كاش|مسدد)\s*\d+/i.test(msg);
+      if (!hasTotalAnchor && !hasPaidAnchor) {
+        return { 
+          ok: false, 
+          reason: "عشان أسجلك الفاتورة بدقة، أنهي مبلغ هو إجمالي الفاتورة وأنهي مبلغ المدفوع كاش؟ 🧐" 
+        };
+      }
+    }
+  }
+
   return { ok: true };
 }
 
@@ -517,11 +536,81 @@ async function logRejectedToolCall(tenantId: string | undefined, toolName: strin
 
 export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0): Promise<{ success: boolean; resultText: string }> {
   try {
+    // Tool Router Correction: If smaller LLM called log_sale for a purchase prompt, redirect to log_purchase automatically
+    const isPurchasePrompt = userMessageText && (
+      userMessageText.includes("اشتريت") ||
+      userMessageText.includes("اشترينا") ||
+      userMessageText.includes("شراء") ||
+      userMessageText.includes("مشتريات") ||
+      userMessageText.includes("أخذت من") ||
+      userMessageText.includes("من المورد")
+    );
+
+    if (name === "log_sale" && (args.supplier_name || isPurchasePrompt)) {
+      console.log(`[Tool Router Correction] Redirecting erroneously called log_sale to log_purchase for text: "${userMessageText}"`);
+      name = "log_purchase";
+      
+      let extractedTotal = undefined;
+      const userNums = userMessageText.match(/\d+/g)?.map(Number) || [];
+      if (args.price && userNums.includes(Number(args.price))) {
+        extractedTotal = Number(args.price);
+      } else if (userMessageText) {
+        const paidVal = Number(args.paid_amount) || 0;
+        const qtyVal = Number(args.quantity) || 1;
+        const candidateTotals = userNums.filter(n => n !== paidVal && n !== qtyVal);
+        if (candidateTotals.length > 0) {
+          extractedTotal = Math.max(...candidateTotals);
+        }
+      }
+      if (!extractedTotal && args.price) {
+        extractedTotal = args.price * (args.quantity || 1);
+      }
+
+      let extractedSupplier = args.supplier_name || args.customer_name;
+      if (!extractedSupplier && userMessageText) {
+        const suppMatch = userMessageText.match(/من\s+([أ-ي\s]{2,20}?)(?=\s+ب|\s+بسعر|\s+إجمالي|\s+دفع|\s+\d|$)/i);
+        if (suppMatch && suppMatch[1]) {
+          extractedSupplier = suppMatch[1].trim();
+        }
+      }
+
+      args = {
+        supplier_name: extractedSupplier || "مورد عام",
+        item_name: args.item_name,
+        total_amount: args.total_amount || extractedTotal,
+        paid_amount: args.paid_amount,
+        quantity: args.quantity || 1,
+        unit: args.unit
+      };
+    }
+
+    if (name === "log_sale" && /(?:\s|^)دفعت\s+(?:ل|لـ|للمورد)?/i.test(userMessageText)) {
+      const extractedAmount = userMessageText.match(/\d+/g)?.map(Number).pop();
+      const suppMatch = userMessageText.match(/دفعت\s+(?:ل|لـ|للمورد)?\s*([أ-ي\s]{2,20}?)\s+\d+/i);
+      const supplierName = suppMatch ? suppMatch[1].trim() : (args.customer_name || "مورد");
+      console.log(`[Tool Router Correction] Redirecting erroneously called log_sale to log_supplier_payment for text: "${userMessageText}"`);
+      name = "log_supplier_payment";
+      args = { supplier_name: supplierName, amount: extractedAmount || args.paid_amount };
+    }
+
+    // Auto-resolve payment direction based on entity existence (Customer vs Supplier)
+    if (name === "log_customer_payment" && args.customer_name && tenantId) {
+      const rawName = String(args.customer_name).replace(/^(العميل|عميل|للعميل|المورد|مورد|للمورد|لـ|ل|من|عن)\s*/, '').trim();
+      const existingSupplier = await prisma.supplier.findFirst({
+        where: { tenantId, name: { contains: rawName } }
+      });
+      if (existingSupplier) {
+        console.log(`[Domain Resolver] Auto-redirecting log_customer_payment to log_supplier_payment for supplier: "${existingSupplier.name}"`);
+        name = "log_supplier_payment";
+        args = { supplier_name: existingSupplier.name, amount: args.amount };
+      }
+    }
+
     const grounding = groundingCheck(name, args, userMessageText);
     if (!grounding.ok) {
       console.warn(`[Grounding Guard] Rejected ${name}:`, grounding.reason, { args, userMessageText });
       void logRejectedToolCall(tenantId, name, args, userMessageText, grounding.reason || "Grounding failure");
-      return { success: false, resultText: "معنديش تفاصيل كفاية عشان أسجل العملية دي، ممكن توضحلي الصنف/المبلغ تاني؟" };
+      return { success: false, resultText: grounding.reason || "معنديش تفاصيل كفاية عشان أسجل العملية دي، ممكن توضحلي الصنف/المبلغ تاني؟" };
     }
 
     const isPureInquiry = userMessageText && /^(حساب|كشف\s*حساب|رصيد|ديون|كام\s*(على|له))\s+/i.test(userMessageText.trim());
@@ -767,7 +856,13 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         }
         throw err;
       }
-      return { success: true, resultText: `تم تسجيل بيع ${saleResult.quantity} ${saleResult.itemName} إجمالي ${saleResult.total} جنيه (مدفوع: ${saleResult.paidAmount}، متبقي: ${saleResult.deferredAmount}) بنجاح!` };
+      let detectedUnitSale = args?.unit && String(args.unit).trim() && !String(args.unit).includes("null") ? String(args.unit).trim() : "";
+      if (!detectedUnitSale && userMessageText) {
+        const unitMatch = userMessageText.match(/\b(طن|كيلو|شكارة|كرتونة|متر|علبة|قطعة|جرام)\b/i);
+        if (unitMatch) detectedUnitSale = unitMatch[1];
+      }
+      const saleUnitStr = detectedUnitSale ? `${detectedUnitSale} ` : "";
+      return { success: true, resultText: `تم تسجيل بيع ${saleResult.quantity} ${saleUnitStr}${saleResult.itemName} إجمالي ${saleResult.total} جنيه (مدفوع: ${saleResult.paidAmount}، متبقي: ${saleResult.deferredAmount}) بنجاح!` };
     }
 
     if (name === "log_expense") {
@@ -963,7 +1058,16 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     }
 
     if (name === "log_purchase") {
-      const { supplier_name, item_name, total_amount, paid_amount, quantity = 1, price_per_unit } = args;
+      const { supplier_name, item_name, total_amount, paid_amount, quantity = 1, price_per_unit, unit } = args;
+      
+      let detectedUnit = unit && String(unit).trim() && !String(unit).includes("null") && !String(unit).includes("undefined") ? String(unit).trim() : "";
+      if (!detectedUnit && userMessageText) {
+        const unitMatch = userMessageText.match(/\b(طن|طم|كيلو|كجم|شكارة|كرتونة|متر|علبة|قطعة|جرام)\b/i);
+        if (unitMatch) {
+          detectedUnit = unitMatch[1] === "طم" ? "طن" : unitMatch[1];
+        }
+      }
+      const unitStr = detectedUnit ? `${detectedUnit} ` : "";
       
       const isPlaceholder = (v: any) => {
         if (!v || String(v).trim() === "") return true;
@@ -971,13 +1075,43 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         return s === "مشتريات" || s === "شراء" || s === "صنف" || s === "مورد" || s.includes("يحدد") || s.includes("محدد") || s.includes("unspecified");
       };
 
+      let itemNameCleaned = isPlaceholder(item_name) ? "صنف غير محدد" : String(item_name).trim();
+      if (detectedUnit && itemNameCleaned.startsWith(detectedUnit)) {
+        itemNameCleaned = itemNameCleaned.substring(detectedUnit.length).trim();
+      }
+
       const qty = Number(quantity) || 1;
 
       let calcTotal = new Decimal(0);
-      if (typeof total_amount === "number" && total_amount > 0) {
-        calcTotal = new Decimal(total_amount);
-      } else if (typeof price_per_unit === "number" && price_per_unit > 0) {
-        calcTotal = new Decimal(price_per_unit).mul(qty);
+      const numTotal = Number(total_amount);
+      const numUnit = Number(price_per_unit);
+      
+      const userNums = userMessageText ? (userMessageText.match(/\d+/g)?.map(Number) || []) : [];
+      if (!isNaN(numTotal) && numTotal > 0) {
+        if (userNums.length > 0 && !userNums.includes(numTotal)) {
+          const paidVal = Number(paid_amount) || 0;
+          const candidateTotals = userNums.filter(n => n !== paidVal && n !== qty);
+          if (candidateTotals.length > 0) {
+            calcTotal = new Decimal(Math.max(...candidateTotals));
+          } else {
+            calcTotal = new Decimal(numTotal);
+          }
+        } else {
+          calcTotal = new Decimal(numTotal);
+        }
+      } else if (!isNaN(numUnit) && numUnit > 0) {
+        const mulTotal = numUnit * qty;
+        if (userNums.length > 0 && !userNums.includes(mulTotal)) {
+          const paidVal = Number(paid_amount) || 0;
+          const candidateTotals = userNums.filter(n => n !== paidVal && n !== qty);
+          if (candidateTotals.length > 0) {
+            calcTotal = new Decimal(Math.max(...candidateTotals));
+          } else {
+            calcTotal = new Decimal(mulTotal);
+          }
+        } else {
+          calcTotal = new Decimal(mulTotal);
+        }
       }
 
       if (isPlaceholder(supplier_name) || isPlaceholder(item_name) || calcTotal.lte(0)) {
@@ -1035,16 +1169,21 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         return { purchase, supplier };
       });
 
-      return { success: true, resultText: `تم تسجيل فاتورة مشتريات (${qty} ${purchaseResult.purchase.itemName}) من المورد (${purchaseResult.supplier.name}) بقيمة إجمالية ${purchaseResult.purchase.totalAmount} جنيه بنجاح! 📦` };
+      let displayItemName = purchaseResult.purchase.itemName;
+      if (detectedUnit && displayItemName.startsWith(detectedUnit)) {
+        displayItemName = displayItemName.substring(detectedUnit.length).trim();
+      }
+      return { success: true, resultText: `تم تسجيل فاتورة مشتريات (${qty} ${unitStr}${displayItemName}) من المورد (${purchaseResult.supplier.name}) بقيمة إجمالية ${purchaseResult.purchase.totalAmount} جنيه بنجاح! 📦` };
     }
 
     if (name === "log_supplier_payment") {
       const { supplier_name, amount } = args;
-      if (!supplier_name || typeof amount !== "number" || amount <= 0) {
-        return { success: false, resultText: "خطأ: اسم المورد والمبلغ مطلوبين." };
+      const numAmount = Number(amount);
+      if (!supplier_name || isNaN(numAmount) || numAmount <= 0) {
+        return { success: false, resultText: "عشان أسجلك سداد المورد محتاج تقولي: اسم المورد والمبلغ المدفوع 💵" };
       }
-      const payAmount = new Decimal(amount);
-      const supName = String(supplier_name).trim();
+      const payAmount = new Decimal(numAmount);
+      const supName = String(supplier_name).replace(/^(المورد|مورد|للمورد|لـ|ل|من|عن)\s+/, '').trim();
 
       try {
         const { totalDebtResult, supplierFound } = await (prisma as any).$transaction(async (tx: any) => {
@@ -1127,28 +1266,34 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       const { supplier_name } = args;
       const supName = String(supplier_name).trim();
 
-      const supplier = await prisma.supplier.findFirst({
+      const suppliers = await prisma.supplier.findMany({
         where: { name: { contains: supName }, ...(tenantId && { tenantId }) },
-        include: { purchases: true }
+        include: { purchases: true, payments: true }
       });
 
-      if (!supplier) {
+      if (!suppliers || suppliers.length === 0) {
         return { success: false, resultText: `لم يتم العثور على المورد: ${supName}` };
       }
 
       let totalPurchases = new Decimal(0);
       let totalPaidOnPurchases = new Decimal(0);
-      let totalDebt = new Decimal(0);
+      let totalDirectPayments = new Decimal(0);
       
-      for (const p of supplier.purchases || []) {
-        totalPurchases = totalPurchases.add(p.totalAmount);
-        totalPaidOnPurchases = totalPaidOnPurchases.add(p.paidAmount);
-        totalDebt = totalDebt.add(p.deferredAmount);
+      for (const supplier of suppliers) {
+        for (const p of supplier.purchases || []) {
+          totalPurchases = totalPurchases.add(p.totalAmount);
+          totalPaidOnPurchases = totalPaidOnPurchases.add(p.paidAmount);
+        }
+        for (const pym of supplier.payments || []) {
+          totalDirectPayments = totalDirectPayments.add(pym.amount);
+        }
       }
+
+      const netRemainingDebt = totalPurchases.sub(totalPaidOnPurchases);
 
       return {
         success: true,
-        resultText: `📊 *كشف حساب المورد (${supplier.name}):*\n\n📦 *إجمالي المشتريات منه:* ${totalPurchases.toNumber()} جنيه\n💵 *إجمالي المسدد له:* ${totalPaidOnPurchases.toNumber()} جنيه\n📝 *الديون المتبقية له (الآجل):* ${totalDebt.toNumber()} جنيه`
+        resultText: `📊 *كشف حساب المورد (${suppliers[0].name}):*\n\n📦 *إجمالي المشتريات منه:* ${totalPurchases.toNumber()} جنيه\n💵 *إجمالي المسدد له:* ${totalPaidOnPurchases.toNumber()} جنيه\n📝 *الديون المتبقية له (الآجل):* ${netRemainingDebt.toNumber()} جنيه`
       };
     }
 
@@ -1432,15 +1577,18 @@ export async function processTelegramMessageWithLLM(
     }
   }
 
+  // Normalize Eastern Arabic numerals (٠-٩) to English digits (0-9) and common unit typos (طم -> طن)
+  const normalizedText = text.replace(/[٠-٩]/g, (w) => String(['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'].indexOf(w))).replace(/(\d+)\s*طم\b/g, '$1 طن');
+
   // Save incoming user message to history buffer (non-blocking)
-  void saveChatMessage(tenantId, telegramChatId, "user", text);
+  void saveChatMessage(tenantId, telegramChatId, "user", normalizedText);
 
   // === NEW: Small-talk short-circuit — no LLM, no tools ===
   const SMALL_TALK_PATTERNS = [
     /^ايه\s*الدنيا/i, /^إيه\s*الدنيا/i, /^ازيك/i, /^إزيك/i, /^عامل\s*ايه/i, /^اخبارك/i, /^أخبارك/i,
     /^صباح\s*الخير/i, /^مساء\s*الخير/i, /^سلام/i, /^اهلا/i, /^أهلا/i, /^هاي$/i, /^هلا/i
   ];
-  const trimmedText = text.trim();
+  const trimmedText = normalizedText.trim();
   if (SMALL_TALK_PATTERNS.some((re) => re.test(trimmedText)) && trimmedText.length < 25) {
     const reply = "أهلاً بيك يا فندم! 😊 قولّي محتاج تسجل بيع، مصروف، ولا تحجز ميعاد؟";
     void saveChatMessage(tenantId, telegramChatId, "assistant", reply);
@@ -1593,16 +1741,57 @@ export async function processTelegramMessageWithLLM(
 
       const groqMessages = [
         { role: "system", content: systemInstruction + contextSummary },
-        { role: "user", content: text }
+        { role: "user", content: normalizedText }
       ];
 
-      const groqRes = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
-        messages: groqMessages as any,
-        tools: groqTools,
-        tool_choice: "auto",
-        max_tokens: 1024
-      });
+      const groqModels = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"];
+      let groqRes: any = null;
+      let capturedFailedGen: string | null = null;
+
+      for (const modelCandidate of groqModels) {
+        try {
+          groqRes = await groq.chat.completions.create({
+            model: modelCandidate,
+            messages: groqMessages as any,
+            tools: groqTools,
+            tool_choice: "auto",
+            max_tokens: 1024
+          });
+          if (groqRes) break;
+        } catch (gModelErr: any) {
+          console.warn(`[Groq Model ${modelCandidate} Error]:`, gModelErr?.message || gModelErr);
+          const fg = gModelErr?.error?.error?.failed_generation || gModelErr?.error?.failed_generation;
+          if (fg && typeof fg === 'string' && fg.includes('<function=')) {
+            capturedFailedGen = fg;
+            break;
+          }
+        }
+      }
+
+      if (!groqRes && !capturedFailedGen) throw new Error("All Groq models failed");
+
+      if (capturedFailedGen) {
+        const failedGen = capturedFailedGen;
+        const firstBlock = failedGen.split('</function>')[0] || failedGen;
+        const nameMatch = firstBlock.match(/<function=([a-zA-Z0-9_]+)/i);
+        if (nameMatch && nameMatch[1]) {
+          const funcName = nameMatch[1].trim();
+          let args = {};
+          const jsonMatch = firstBlock.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            try {
+              let cleanedJson = jsonMatch[0].replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+              cleanedJson = cleanedJson.replace(/:\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/g, (_, a, b) => `: ${Number(a) / Number(b)}`);
+              args = JSON.parse(cleanedJson);
+            } catch (e) {
+              console.error("[Groq Parser] JSON parse error:", jsonMatch[0], e);
+            }
+          }
+          const toolRes = await executeTool(funcName, args, tenantId, normalizedText, telegramMessageId, 0);
+          void saveChatMessage(tenantId, telegramChatId, "assistant", toolRes.resultText);
+          return { status: "success", text: toolRes.resultText };
+        }
+      }
 
       const choice = groqRes.choices[0];
       const toolCalls = choice?.message?.tool_calls;
@@ -1614,7 +1803,7 @@ export async function processTelegramMessageWithLLM(
           const call = toolCalls[idx];
           let args: Record<string, any> = {};
           try { args = JSON.parse(call.function.arguments); } catch {}
-          const toolRes = await executeTool(call.function.name, args, tenantId, text, telegramMessageId, idx);
+          const toolRes = await executeTool(call.function.name, args, tenantId, normalizedText, telegramMessageId, idx);
           results.push(toolRes.resultText);
         }
         finalReply = results.join('\n\n').trim();
@@ -1638,7 +1827,11 @@ export async function processTelegramMessageWithLLM(
             const jsonMatch = failedGen.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
               try {
-                args = JSON.parse(jsonMatch[0]);
+                const cleanedJson = jsonMatch[0]
+                  .replace(/\\"/g, '"')
+                  .replace(/\\\\/g, '\\')
+                  .replace(/:\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/g, (_, a, b) => `: ${Number(a) / Number(b)}`);
+                args = JSON.parse(cleanedJson);
               } catch (e) {
                 console.error("[Groq Parser] JSON parse error:", jsonMatch[0], e);
               }

@@ -30,5 +30,15 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "tests", "demo_*.ts", "test_*.ts"]
+  "exclude": [
+    "node_modules",
+    "tests",
+    "demo_*.ts",
+    "test_*.ts",
+    "simulate_*.ts",
+    "check_*.ts",
+    "query_*.ts",
+    "reset_*.ts",
+    "verify_*.ts"
+  ]
 }

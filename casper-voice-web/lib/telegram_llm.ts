@@ -600,7 +600,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
 
       let extractedSupplier = args.supplier_name || args.customer_name;
       if (!extractedSupplier && userMessageText) {
-        const suppMatch = userMessageText.match(/من\s+([أ-ي\s]{2,20}?)(?=\s+ب|\s+بسعر|\s+إجمالي|\s+دفع|\s+\d|$)/i);
+        const suppMatch = msgText.match(/من\s+([أ-ي\s]{2,20}?)(?=\s+ب|\s+بسعر|\s+إجمالي|\s+دفع|\s+\d|$)/i);
         if (suppMatch && suppMatch[1]) {
           extractedSupplier = suppMatch[1].trim();
         }
@@ -608,7 +608,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
 
       let extractedItem = args.item_name || args.item;
       if (!extractedItem && userMessageText) {
-        const itemMatch = userMessageText.match(/\d+\s*(?:طن|كيلو|كرتونة|شكارة|كيس)?\s+([أ-ي\s]{2,15}?)(?=\s+من|\s+ب|\s+\d|$)/i);
+        const itemMatch = msgText.match(/\d+\s*(?:طن|كيلو|كرتونة|شكارة|كيس)?\s+([أ-ي\s]{2,15}?)(?=\s+من|\s+ب|\s+\d|$)/i);
         if (itemMatch && itemMatch[1]) {
           extractedItem = itemMatch[1].trim();
         }
@@ -629,9 +629,9 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     }
 
     if (name === "log_sale" && /(?:\s|^)(?:حصلت|قبضت|استلمت)\s+(?:من)?/i.test(msgText)) {
-      const userNums = extractAllNumbersFromText(userMessageText);
+      const userNums = extractAllNumbersFromText(msgText);
       const extractedAmount = userNums.pop();
-      const custMatch = userMessageText.match(/(?:حصلت|قبضت|استلمت)\s+(?:من)?\s*([أ-ي\s]{2,20}?)(?=\s+كاش|\s+\d|$)/i);
+      const custMatch = msgText.match(/(?:حصلت|قبضت|استلمت)\s+(?:من)?\s*([أ-ي\s]{2,20}?)(?=\s+كاش|\s+\d|$)/i);
       const customerName = custMatch ? custMatch[1].trim() : (args.customer_name || "عميل");
       console.log(`[Tool Router Correction] Redirecting erroneously called log_sale to log_customer_payment for text: "${userMessageText}"`);
       name = "log_customer_payment";
@@ -639,9 +639,9 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     }
 
     if (name === "log_sale" && /(?:\s|^)دفعت\s+(?:ل|لـ|للمورد)?/i.test(msgText)) {
-      const userNums = extractAllNumbersFromText(userMessageText);
+      const userNums = extractAllNumbersFromText(msgText);
       const extractedAmount = userNums.pop();
-      const suppMatch = userMessageText.match(/دفعت\s+(?:ل|لـ|للمورد)?\s*([أ-ي\s]{2,20}?)\s+\d+/i);
+      const suppMatch = msgText.match(/دفعت\s+(?:ل|لـ|للمورد)?\s*([أ-ي\s]{2,20}?)\s+\d+/i);
       const supplierName = suppMatch ? suppMatch[1].trim() : (args.customer_name || "مورد");
       console.log(`[Tool Router Correction] Redirecting erroneously called log_sale to log_supplier_payment for text: "${userMessageText}"`);
       name = "log_supplier_payment";
@@ -649,11 +649,11 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     }
 
     if ((name === "log_customer_payment" || name === "log_sale" || name === "log_sales_return") && /(?:\s|^)رجعت\s+/i.test(msgText) && /(?:لـ|للمورد|مورد|احمد|عربى)/i.test(msgText)) {
-      const userNums = extractAllNumbersFromText(userMessageText);
+      const userNums = extractAllNumbersFromText(msgText);
       const amountVal = userNums.pop();
       const qtyVal = userNums.shift() || 1;
-      const itemMatch = userMessageText.match(/\d+\s*(?:طن|كيلو|كرتونة|شكارة|كيس)?\s+([أ-ي\s]{2,15}?)(?=\s+ل|\s+من|\s+\d|$)/i);
-      const suppMatch = userMessageText.match(/(?:لـ|للمورد|ل|من)\s*([أ-ي\s]{2,20}?)(?=\s+ثمن|\s+ب|\s+\d|$)/i);
+      const itemMatch = msgText.match(/\d+\s*(?:طن|كيلو|كرتونة|شكارة|كيس)?\s+([أ-ي\s]{2,15}?)(?=\s+ل|\s+من|\s+\d|$)/i);
+      const suppMatch = msgText.match(/(?:لـ|للمورد|ل|من)\s*([أ-ي\s]{2,20}?)(?=\s+ثمن|\s+ب|\s+\d|$)/i);
       console.log(`[Tool Router Correction] Redirecting erroneously called ${name} to log_purchase_return for text: "${userMessageText}"`);
       name = "log_purchase_return";
       args = {
@@ -677,10 +677,10 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       }
     }
 
-    const grounding = groundingCheck(name, args, userMessageText);
+    const grounding = groundingCheck(name, args, msgText);
     if (!grounding.ok) {
       console.warn(`[Grounding Guard] Rejected ${name}:`, grounding.reason, { args, userMessageText });
-      void logRejectedToolCall(tenantId, name, args, userMessageText, grounding.reason || "Grounding failure");
+      void logRejectedToolCall(tenantId, name, args, msgText, grounding.reason || "Grounding failure");
       return { success: false, resultText: grounding.reason || "معنديش تفاصيل كفاية عشان أسجل العملية دي، ممكن توضحلي الصنف/المبلغ تاني؟" };
     }
 
@@ -980,7 +980,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       }
       let detectedUnitSale = args?.unit && String(args.unit).trim() && !String(args.unit).includes("null") ? String(args.unit).trim() : "";
       if (!detectedUnitSale && userMessageText) {
-        const unitMatch = userMessageText.match(/\b(طن|كيلو|شكارة|كرتونة|متر|علبة|قطعة|جرام)\b/i);
+        const unitMatch = msgText.match(/\b(طن|كيلو|شكارة|كرتونة|متر|علبة|قطعة|جرام)\b/i);
         if (unitMatch) detectedUnitSale = unitMatch[1];
       }
       const saleUnitStr = detectedUnitSale ? `${detectedUnitSale} ` : "";
@@ -1184,7 +1184,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       
       let detectedUnit = unit && String(unit).trim() && !String(unit).includes("null") && !String(unit).includes("undefined") ? String(unit).trim() : "";
       if (!detectedUnit && userMessageText) {
-        const unitMatch = userMessageText.match(/\b(طن|طم|كيلو|كجم|شكارة|كرتونة|متر|علبة|قطعة|جرام)\b/i);
+        const unitMatch = msgText.match(/\b(طن|طم|كيلو|كجم|شكارة|كرتونة|متر|علبة|قطعة|جرام)\b/i);
         if (unitMatch) {
           detectedUnit = unitMatch[1] === "طم" ? "طن" : unitMatch[1];
         }
@@ -1208,7 +1208,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       const numTotal = Number(total_amount);
       const numUnit = Number(price_per_unit);
       
-      const userNums = userMessageText ? (userMessageText.match(/\d+/g)?.map(Number) || []) : [];
+      const userNums = userMessageText ? (msgText.match(/\d+/g)?.map(Number) || []) : [];
       if (!isNaN(numTotal) && numTotal > 0) {
         if (userNums.length > 0 && !userNums.includes(numTotal)) {
           const paidVal = Number(paid_amount) || 0;

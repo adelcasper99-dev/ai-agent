@@ -566,14 +566,16 @@ async function logRejectedToolCall(tenantId: string | undefined, toolName: strin
 
 export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0): Promise<{ success: boolean; resultText: string }> {
   try {
+    // Normalize userMessageText to avoid TS strict null errors
+    const msgText: string = userMessageText ?? "";
     // Tool Router Correction: If smaller LLM called log_sale for a purchase prompt, redirect to log_purchase automatically
-    const isPurchasePrompt = userMessageText && (
-      userMessageText.includes("اشتريت") ||
-      userMessageText.includes("اشترينا") ||
-      userMessageText.includes("شراء") ||
-      userMessageText.includes("مشتريات") ||
-      userMessageText.includes("أخذت من") ||
-      userMessageText.includes("من المورد")
+    const isPurchasePrompt = msgText && (
+      msgText.includes("اشتريت") ||
+      msgText.includes("اشترينا") ||
+      msgText.includes("شراء") ||
+      msgText.includes("مشتريات") ||
+      msgText.includes("أخذت من") ||
+      msgText.includes("من المورد")
     );
 
     if (name === "log_sale" && (args.supplier_name || isPurchasePrompt)) {
@@ -581,7 +583,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       name = "log_purchase";
       
       let extractedTotal = undefined;
-      const userNums = userMessageText.match(/\d+/g)?.map(Number) || [];
+      const userNums = msgText.match(/\d+/g)?.map(Number) || [];
       if (args.price && userNums.includes(Number(args.price))) {
         extractedTotal = Number(args.price);
       } else if (userMessageText) {
@@ -626,7 +628,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       };
     }
 
-    if (name === "log_sale" && /(?:\s|^)(?:حصلت|قبضت|استلمت)\s+(?:من)?/i.test(userMessageText)) {
+    if (name === "log_sale" && /(?:\s|^)(?:حصلت|قبضت|استلمت)\s+(?:من)?/i.test(msgText)) {
       const userNums = extractAllNumbersFromText(userMessageText);
       const extractedAmount = userNums.pop();
       const custMatch = userMessageText.match(/(?:حصلت|قبضت|استلمت)\s+(?:من)?\s*([أ-ي\s]{2,20}?)(?=\s+كاش|\s+\d|$)/i);
@@ -636,7 +638,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       args = { customer_name: customerName, amount: extractedAmount || args.paid_amount };
     }
 
-    if (name === "log_sale" && /(?:\s|^)دفعت\s+(?:ل|لـ|للمورد)?/i.test(userMessageText)) {
+    if (name === "log_sale" && /(?:\s|^)دفعت\s+(?:ل|لـ|للمورد)?/i.test(msgText)) {
       const userNums = extractAllNumbersFromText(userMessageText);
       const extractedAmount = userNums.pop();
       const suppMatch = userMessageText.match(/دفعت\s+(?:ل|لـ|للمورد)?\s*([أ-ي\s]{2,20}?)\s+\d+/i);
@@ -646,7 +648,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       args = { supplier_name: supplierName, amount: extractedAmount || args.paid_amount };
     }
 
-    if ((name === "log_customer_payment" || name === "log_sale" || name === "log_sales_return") && /(?:\s|^)رجعت\s+/i.test(userMessageText) && /(?:لـ|للمورد|مورد|احمد|عربى)/i.test(userMessageText)) {
+    if ((name === "log_customer_payment" || name === "log_sale" || name === "log_sales_return") && /(?:\s|^)رجعت\s+/i.test(msgText) && /(?:لـ|للمورد|مورد|احمد|عربى)/i.test(msgText)) {
       const userNums = extractAllNumbersFromText(userMessageText);
       const amountVal = userNums.pop();
       const qtyVal = userNums.shift() || 1;

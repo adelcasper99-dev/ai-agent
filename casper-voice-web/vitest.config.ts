@@ -6,4 +6,7 @@ export default {
       "@": path.resolve(__dirname, "./"),
     },
   },
+  test: {
+    setupFiles: ['dotenv/config'],
+  },
 };

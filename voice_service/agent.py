@@ -740,134 +740,158 @@ async def entrypoint(ctx: JobContext):
 
         diag = DiagnosticsSession(session_id=ctx.room.name, tenant_id=tenant_id, channel="voice_call")
 
-    try:
-        session = create_agent_session_with_failover(provider, settings)
-
-        async def emit_datachannel_event(payload_data: dict):
-            try:
-                import json as _json
-                payload_bytes = _json.dumps(payload_data, ensure_ascii=False).encode("utf-8")
-                await ctx.room.local_participant.publish_data(payload_bytes, reliable=True, topic="casper-voice-events")
-            except Exception as err:
-                print(f"[DataChannel Emitter Warning] {err}")
-
-        casper_agent = CasperAgent(room=ctx.room, tenant_id=tenant_id)
-
-        import time as _time
-        last_user_speech_time = [_time.monotonic()]
-        stt_conf_threshold = float(os.getenv("STT_CONFIDENCE_THRESHOLD", "0.6"))
-
-        @session.on("user_input_transcribed")
-        def on_user_input_transcribed(ev):
-            try:
-                text = getattr(ev, "transcript", None) or str(ev)
-                is_final = getattr(ev, "is_final", True)
-                conf = getattr(ev, "confidence", None) or getattr(ev, "score", None)
-                if conf is not None:
-                    try:
-                        diag.set_stt_confidence(float(conf))
-                    except (TypeError, ValueError):
-                        pass
-
-                if text and is_final:
-                    casper_agent.last_user_transcript = text
-                    last_user_speech_time[0] = _time.monotonic()
-                    import asyncio
-                    active_stt_provider = settings.get("ACTIVE_PROVIDER", settings.get("STT_PROVIDER", provider))
-                    diag.set_stt_provider(active_stt_provider)
-                    asyncio.ensure_future(emit_datachannel_event({
-                        "type": "STT_DIAGNOSTIC",
-                        "provider": active_stt_provider,
-                        "confidence": conf,
-                        "transcript": text
-                    }))
-                    asyncio.ensure_future(emit_datachannel_event({"type": "TRANSCRIPT", "role": "user", "text": text}))
-
-                    # Confidence-based clarification fallback
+    for llm_attempt in range(2):
+        try:
+            session = create_agent_session_with_failover(provider, settings)
+    
+            async def emit_datachannel_event(payload_data: dict):
+                try:
+                    import json as _json
+                    payload_bytes = _json.dumps(payload_data, ensure_ascii=False).encode("utf-8")
+                    await ctx.room.local_participant.publish_data(payload_bytes, reliable=True, topic="casper-voice-events")
+                except Exception as err:
+                    print(f"[DataChannel Emitter Warning] {err}")
+    
+            casper_agent = CasperAgent(room=ctx.room, tenant_id=tenant_id)
+    
+            import time as _time
+            last_user_speech_time = [_time.monotonic()]
+            stt_conf_threshold = float(os.getenv("STT_CONFIDENCE_THRESHOLD", "0.6"))
+    
+            @session.on("user_input_transcribed")
+            def on_user_input_transcribed(ev):
+                try:
+                    text = getattr(ev, "transcript", None) or str(ev)
+                    is_final = getattr(ev, "is_final", True)
+                    conf = getattr(ev, "confidence", None) or getattr(ev, "score", None)
                     if conf is not None:
                         try:
-                            numeric_conf = float(conf)
-                            if numeric_conf < stt_conf_threshold:
-                                print(f"[Low Confidence STT Triggered] Score {numeric_conf} < {stt_conf_threshold}")
-                                asyncio.ensure_future(session.say(
-                                    "لم أسمع بوضوح، ممكن تكرر أو تكتب؟",
-                                    allow_interruptions=True
-                                ))
+                            diag.set_stt_confidence(float(conf))
                         except (TypeError, ValueError):
                             pass
-            except Exception as e:
-                print(f"[user_input_transcribed] {e}")
+    
+                    if text and is_final:
+                        casper_agent.last_user_transcript = text
+                        last_user_speech_time[0] = _time.monotonic()
+                        import asyncio
+                        active_stt_provider = settings.get("ACTIVE_PROVIDER", settings.get("STT_PROVIDER", provider))
+                        diag.set_stt_provider(active_stt_provider)
+                        asyncio.ensure_future(emit_datachannel_event({
+                            "type": "STT_DIAGNOSTIC",
+                            "provider": active_stt_provider,
+                            "confidence": conf,
+                            "transcript": text
+                        }))
+                        asyncio.ensure_future(emit_datachannel_event({"type": "TRANSCRIPT", "role": "user", "text": text}))
+    
+                        # Confidence-based clarification fallback
+                        if conf is not None:
+                            try:
+                                numeric_conf = float(conf)
+                                if numeric_conf < stt_conf_threshold:
+                                    print(f"[Low Confidence STT Triggered] Score {numeric_conf} < {stt_conf_threshold}")
+                                    asyncio.ensure_future(session.say(
+                                        "لم أسمع بوضوح، ممكن تكرر أو تكتب؟",
+                                        allow_interruptions=True
+                                    ))
+                            except (TypeError, ValueError):
+                                pass
+                except Exception as e:
+                    print(f"[user_input_transcribed] {e}")
+    
+            @session.on("user_speech_interrupted")
+            def on_user_speech_interrupted(ev):
+                try:
+                    diag.record_vad_cutoff()
+                except Exception as e:
+                    print(f"[user_speech_interrupted] {e}")
+    
+            @session.on("agent_speech_interrupted")
+            def on_agent_speech_interrupted(ev):
+                try:
+                    diag.record_vad_cutoff()
+                except Exception as e:
+                    print(f"[agent_speech_interrupted] {e}")
+    
+            @session.on("agent_state_changed")
+            def on_agent_state_changed(ev):
+                try:
+                    new_state = getattr(ev, "new_state", None) or getattr(ev, "state", None) or ev
+                    state_name = str(new_state).upper().split(".")[-1]
+    
+                    detail_map = {
+                        "LISTENING": "🎙️ في انتظار حديثك...",
+                        "THINKING": "🧠 جاري معالجة طلبك...",
+                        "SPEAKING": "🔊 المساعد يتحدث الآن...",
+                    }
+                    detail = detail_map.get(state_name, state_name)
+                    import asyncio
+                    asyncio.ensure_future(emit_datachannel_event({"type": "EVENT_TICKER", "state": state_name, "detail": detail}))
+    
+                    if state_name == "SPEAKING":
+                        elapsed = int((_time.monotonic() - last_user_speech_time[0]) * 1000)
+                        diag.record_latency("llm", elapsed)
+                        try:
+                            cs = getattr(session, "current_speech", None)
+                            if cs:
+                                text = getattr(cs, "text", None) or getattr(cs, "transcript", None)
+                                if text:
+                                    asyncio.ensure_future(emit_datachannel_event({"type": "TRANSCRIPT", "role": "assistant", "text": text}))
+                        except Exception as speech_err:
+                            print(f"[SPEAKING text capture] {speech_err}")
+                except Exception as e:
+                    print(f"[agent_state_changed] {e}")
+    
+            @session.on("error")
+            def on_session_error(ev):
+                err_msg = str(ev)
+                print("SESSION ERROR DETECTED:", err_msg)
+                if "insufficient_quota" in err_msg or "429" in err_msg:
+                    import asyncio
+                    asyncio.ensure_future(emit_datachannel_event({
+                        "type": "error",
+                        "message": "انتهت باقة نطق الصوت (OpenAI TTS Quota Exceeded). يرجى شحن الحساب أو اختار Gemini Realtime من الإعدادات."
+                    }))
+    
+            await session.start(agent=casper_agent, room=ctx.room)
+            if getattr(session, "tts", None) is not None:
+                try:
+                    await session.say("أهلاً بحضرتك! معاك المساعد الذكي لسيستم كاسبر، أقدر أساعدك إزاي النهاردة؟", allow_interruptions=True)
+                except Exception as say_err:
+                    print(f"[session.say warning] {say_err}")
+            else:
+                # Trigger for Multimodal models (like Gemini) that don't have separate TTS
+                try:
+                    if hasattr(session, "generate_reply"):
+                        await session.generate_reply(
+                            instructions="قول 'أهلاً بحضرتك! معاك المساعد الذكي لسيستم كاسبر، أقدر أساعدك إزاي النهاردة؟'"
+                        )
+                except Exception as e:
+                    print(f"[Multimodal Trigger Error] {e}")
+            break
+        except Exception as e:
+            err_str = str(e).lower()
+            
+            # EMPIRICAL CAPTURE (Rule #4 check)
+            import traceback
+            raw_error_trace = traceback.format_exc()
+            print(f"\n[EMPIRICAL ERROR DATA] CRASH DURING INITIALIZATION:\n{raw_error_trace}\n[END EMPIRICAL DATA]\n")
 
-        @session.on("user_speech_interrupted")
-        def on_user_speech_interrupted(ev):
-            try:
-                diag.record_vad_cutoff()
-            except Exception as e:
-                print(f"[user_speech_interrupted] {e}")
+            if ("insufficient_quota" in err_str or "429" in err_str or "quota" in err_str) and llm_attempt < 1:
+                print(f"[LLM QUOTA EXCEEDED] Provider {provider} failed. Switching to OpenAI...")
+                provider = "openai"
+                try:
+                    import sqlite3, os
+                    db_path = os.path.join(os.path.dirname(__file__), "..", "casper-voice-web", "dev.db")
+                    if os.path.exists(db_path):
+                        conn = sqlite3.connect(db_path)
+                        conn.execute("UPDATE Setting SET value = 'openai' WHERE key = 'VOICE_PROVIDER'")
+                        conn.commit()
+                        conn.close()
+                except Exception as dbe:
+                    print("[DB Fallback Error]", dbe)
+                continue
 
-        @session.on("agent_speech_interrupted")
-        def on_agent_speech_interrupted(ev):
-            try:
-                diag.record_vad_cutoff()
-            except Exception as e:
-                print(f"[agent_speech_interrupted] {e}")
-
-        @session.on("agent_state_changed")
-        def on_agent_state_changed(ev):
-            try:
-                new_state = getattr(ev, "new_state", None) or getattr(ev, "state", None) or ev
-                state_name = str(new_state).upper().split(".")[-1]
-
-                detail_map = {
-                    "LISTENING": "🎙️ في انتظار حديثك...",
-                    "THINKING": "🧠 جاري معالجة طلبك...",
-                    "SPEAKING": "🔊 المساعد يتحدث الآن...",
-                }
-                detail = detail_map.get(state_name, state_name)
-                import asyncio
-                asyncio.ensure_future(emit_datachannel_event({"type": "EVENT_TICKER", "state": state_name, "detail": detail}))
-
-                if state_name == "SPEAKING":
-                    elapsed = int((_time.monotonic() - last_user_speech_time[0]) * 1000)
-                    diag.record_latency("llm", elapsed)
-                    try:
-                        cs = getattr(session, "current_speech", None)
-                        if cs:
-                            text = getattr(cs, "text", None) or getattr(cs, "transcript", None)
-                            if text:
-                                asyncio.ensure_future(emit_datachannel_event({"type": "TRANSCRIPT", "role": "assistant", "text": text}))
-                    except Exception as speech_err:
-                        print(f"[SPEAKING text capture] {speech_err}")
-            except Exception as e:
-                print(f"[agent_state_changed] {e}")
-
-        @session.on("error")
-        def on_session_error(ev):
-            err_msg = str(ev)
-            print("SESSION ERROR DETECTED:", err_msg)
-            if "insufficient_quota" in err_msg or "429" in err_msg:
-                import asyncio
-                asyncio.ensure_future(emit_datachannel_event({
-                    "type": "error",
-                    "message": "انتهت باقة نطق الصوت (OpenAI TTS Quota Exceeded). يرجى شحن الحساب أو اختار Gemini Realtime من الإعدادات."
-                }))
-
-        await session.start(agent=casper_agent, room=ctx.room)
-        if getattr(session, "tts", None) is not None:
-            try:
-                await session.say("أهلاً بحضرتك! معاك المساعد الذكي لسيستم كاسبر، أقدر أساعدك إزاي النهاردة؟", allow_interruptions=True)
-            except Exception as say_err:
-                print(f"[session.say warning] {say_err}")
-        else:
-            # Trigger for Multimodal models (like Gemini) that don't have separate TTS
-            try:
-                if hasattr(session, "generate_reply"):
-                    await session.generate_reply(
-                        instructions="قول 'أهلاً بحضرتك! معاك المساعد الذكي لسيستم كاسبر، أقدر أساعدك إزاي النهاردة؟'"
-                    )
-            except Exception as e:
-                print(f"[Multimodal Trigger Error] {e}")
-    except Exception as e:
         err_str = str(e)
         print("CRITICAL AGENT ERROR:", err_str)
         user_msg = f"حدث خطأ في خادم الصوت: {err_str}"

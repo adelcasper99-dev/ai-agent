@@ -1,16 +1,16 @@
 # Graph Report - casper-voice-web  (2026-08-09)
 
 ## Corpus Check
-- 137 files · ~62,781 words
+- 136 files · ~62,594 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 512 nodes · 712 edges · 78 communities (39 shown, 39 thin omitted)
+- 510 nodes · 708 edges · 78 communities (39 shown, 39 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 3 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `49f699d0`
+- Built from commit: `b5f205a5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -75,7 +75,7 @@
 - [[_COMMUNITY_route.ts|route.ts]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `processTelegramMessageWithLLM()` - 34 edges
+1. `processTelegramMessageWithLLM()` - 33 edges
 2. `getResolvedTenantId()` - 32 edges
 3. `POST()` - 20 edges
 4. `compilerOptions` - 16 edges
@@ -104,8 +104,8 @@
 ## Communities (78 total, 39 thin omitted)
 
 ### Community 0 - "telegram.ts"
-Cohesion: 0.11
-Nodes (35): handleCustomerMessage(), POST(), sendAsBusinessOwner(), POST(), POST(), approveDirectTenant(), approveTenantRequest(), callTelegramApi() (+27 more)
+Cohesion: 0.12
+Nodes (34): handleCustomerMessage(), POST(), sendAsBusinessOwner(), POST(), POST(), approveDirectTenant(), approveTenantRequest(), callTelegramApi() (+26 more)
 
 ### Community 1 - "telegram_llm.ts"
 Cohesion: 0.10
@@ -113,7 +113,7 @@ Nodes (25): addProductTool, ARABIC_NUMBER_WORDS, bookAppointmentTool, executedKe
 
 ### Community 2 - "dependencies"
 Cohesion: 0.05
-Nodes (38): dependencies, clsx, date-fns, decimal.js, flatpickr, @google/generative-ai, groq-sdk, livekit-client (+30 more)
+Nodes (37): dependencies, clsx, date-fns, decimal.js, flatpickr, @google/generative-ai, groq-sdk, livekit-client (+29 more)
 
 ### Community 4 - "route.ts"
 Cohesion: 0.07
@@ -124,8 +124,8 @@ Cohesion: 0.10
 Nodes (19): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+11 more)
 
 ### Community 6 - "correctTranscriptWithLLM"
-Cohesion: 0.27
-Nodes (8): $allOperations(), asyncHooks, getTenantId(), runWithTenant(), TENANT_AWARE_MODELS, TenantContext, tenantStorage, runVerificationSuite()
+Cohesion: 0.24
+Nodes (9): $allOperations(), asyncHooks, getTenantId(), runWithTenant(), TENANT_AWARE_MODELS, TenantContext, tenantStorage, runVerificationSuite() (+1 more)
 
 ### Community 7 - "consolidated_utilities.test.ts"
 Cohesion: 0.24
@@ -144,7 +144,7 @@ Cohesion: 0.33
 Nodes (4): fs, path, prisma, { PrismaClient }
 
 ### Community 11 - "processTelegramMessageWithLLM"
-Cohesion: 0.12
+Cohesion: 0.13
 Nodes (14): _exhaustedEnvKeys, getValidApiKey(), markKeyExhausted(), processTelegramMessageWithLLM(), sanitizeNonToolReply(), saveChatMessage(), main(), main() (+6 more)
 
 ### Community 13 - "route.ts"
@@ -180,7 +180,7 @@ Cohesion: 0.25
 Nodes (3): ProvisionResult, TenantProvisioner, VoiceTenantProvisionOptions
 
 ## Knowledge Gaps
-- **179 isolated node(s):** `genAI`, `appointmentIdempotencyMap`, `Message`, `THRESHOLDS`, `idempotencyMap` (+174 more)
+- **178 isolated node(s):** `genAI`, `appointmentIdempotencyMap`, `Message`, `THRESHOLDS`, `idempotencyMap` (+173 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **39 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -188,16 +188,16 @@ Nodes (3): ProvisionResult, TenantProvisioner, VoiceTenantProvisionOptions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `prisma` connect `dependencies` to `prisma.ts`?**
-  _High betweenness centrality (0.076) - this node is a cross-community bridge._
+  _High betweenness centrality (0.074) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `processTelegramMessageWithLLM()` (e.g. with `getValidApiKey()` and `markKeyExhausted()`) actually correct?**
   _`processTelegramMessageWithLLM()` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `genAI`, `appointmentIdempotencyMap`, `Message` to the rest of the system?**
-  _179 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _178 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `telegram.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.11205073995771671 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11846689895470383 - nodes in this community are weakly interconnected._
 - **Should `telegram_llm.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.09538461538461539 - nodes in this community are weakly interconnected._
 - **Should `dependencies` be split into smaller, more focused modules?**
-  _Cohesion score 0.05128205128205128 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05263157894736842 - nodes in this community are weakly interconnected._
 - **Should `prisma.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._

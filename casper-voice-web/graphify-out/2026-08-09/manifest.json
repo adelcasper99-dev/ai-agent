@@ -300,8 +300,8 @@
     "semantic_hash": ""
   },
   "lib/telegram_llm.ts": {
-    "mtime": 1786250287.6584983,
-    "ast_hash": "b8b566a54673c7db1e535c4e25aa52d6",
+    "mtime": 1786248833.9867773,
+    "ast_hash": "fe49154e16810c15b2a99361abc16368",
     "semantic_hash": ""
   },
   "lib/whisper_prompt.ts": {
@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1786250069.2182066,
-    "ast_hash": "00e07053d45588b0d6ce1ad2538f7c79",
+    "mtime": 1786235888.3833232,
+    "ast_hash": "2645c3cbd61c56b9ac1b9ac413a5f581",
     "semantic_hash": ""
   },
   "postcss.config.mjs": {
@@ -777,11 +777,6 @@
   "test_supplier_balance_and_customer_payment.ts": {
     "mtime": 1786248403.3172777,
     "ast_hash": "cbee981b63db617cab289c88500e0771",
-    "semantic_hash": ""
-  },
-  "tests/prevention_guardrails.test.ts": {
-    "mtime": 1786250074.8821518,
-    "ast_hash": "2781748f592f4be1d955bdcac5d3c5b6",
     "semantic_hash": ""
   }
 }

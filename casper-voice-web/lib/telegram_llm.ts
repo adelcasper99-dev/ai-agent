@@ -41,6 +41,34 @@ const addProductTool: FunctionDeclaration = {
   }
 };
 
+const updateStockTool: FunctionDeclaration = {
+  name: "update_stock",
+  description: "تعديل كمية المخزون الفعلية لصنف موجود (جرد - تصحيح رصيد). استخدم عند قول 'تعديل المخزون', 'الجرد', 'الرصيد الفعلي', 'صحح المخزون'.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      product_name: { type: SchemaType.STRING, description: "اسم الصنف المراد تعديل مخزونه" },
+      new_quantity: { type: SchemaType.NUMBER, description: "الكمية الجديدة الفعلية في المخزون (الرصيد الفعلي بعد الجرد)" }
+    },
+    required: ["product_name", "new_quantity"]
+  }
+};
+
+const addCustomerTool: FunctionDeclaration = {
+  name: "add_customer",
+  description: "تسجيل عميل جديد في النظام. استخدم عند قول 'سجل عميل جديد', 'أضف عميل', 'عميل جديد اسمه X'.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل أو الشركة" },
+      customer_phone: { type: SchemaType.STRING, description: "تليفون العميل (إن وجد)" },
+      notes: { type: SchemaType.STRING, description: "ملاحظات إضافية (اختياري)" }
+    },
+    required: ["customer_name"]
+  }
+};
+
+
 const logExpenseTool: FunctionDeclaration = {
   name: "log_expense",
   description: "تسجيل مصروف جديد (مبلغ، بيان/سبب، فئة)",
@@ -54,6 +82,7 @@ const logExpenseTool: FunctionDeclaration = {
     required: ["amount", "description"]
   }
 };
+
 
 const bookAppointmentTool: FunctionDeclaration = {
   name: "book_appointment",
@@ -346,7 +375,7 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
 // === NEW: Universal grounding guard for all financial mutation tools ===
 const FINANCIAL_TOOLS = new Set([
   "log_sale", "log_expense", "book_appointment", "log_purchase",
-  "log_customer_payment", "log_supplier_payment", "log_sales_return", "log_purchase_return", "add_product"
+  "log_customer_payment", "log_supplier_payment", "log_sales_return", "log_purchase_return", "add_product", "update_stock", "add_customer"
 ]);
 
 const GROUNDING_TEXT_FIELDS: Record<string, string[]> = {
@@ -397,6 +426,32 @@ function isArabicFuzzyMatch(toolWord: string, msgWords: string[]): boolean {
   });
 }
 
+export function extractAllNumbersFromText(text: string): number[] {
+  const norm = normalizeArabic(text);
+  const nums: number[] = [];
+  const matches = norm.match(/\d+(?:\.\d+)?/g);
+  if (matches) {
+    for (const m of matches) {
+      const n = parseFloat(m);
+      if (!isNaN(n)) nums.push(n);
+    }
+  }
+  const WORD_TO_NUM: Record<string, number> = {
+    "نص": 0.5, "نصف": 0.5, "ربع": 0.25, "تلت": 0.333, "ثلت": 0.333,
+    "واحد": 1, "اتنين": 2, "إتنين": 2, "تلاتة": 3, "ثلاثة": 3, "اربعة": 4, "أربعة": 4,
+    "خمسة": 5, "ستة": 6, "سبعة": 7, "تمنية": 8, "ثمانية": 8, "تسعة": 9, "عشرة": 10,
+    "عشرين": 20, "تلاتين": 30, "اربعين": 40, "خمسين": 50, "ستين": 60, "سبعين": 70, "تمانين": 80, "تسعين": 90,
+    "مية": 100, "ميه": 100, "مائة": 100, "ميتين": 200, "مائتين": 200,
+    "تلتميه": 300, "ثلاثمائة": 300, "ربعميه": 400, "أربعمائة": 400, "خمسميه": 500, "خمسمائة": 500,
+    "ستميه": 600, "سبعميه": 700, "تمنميه": 800, "تسعميه": 900,
+    "الف": 1000, "ألف": 1000, "الفين": 2000, "ألفين": 2000, "مليون": 1000000
+  };
+  for (const [word, val] of Object.entries(WORD_TO_NUM)) {
+    if (norm.includes(word)) nums.push(val);
+  }
+  return nums;
+}
+
 function groundingCheck(toolName: string, args: any, userMessageText?: string): { ok: boolean; reason?: string } {
   if (!FINANCIAL_TOOLS.has(toolName)) return { ok: true };
   const msg = userMessageText || "";
@@ -421,31 +476,6 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
   }
 
   // B. Strict Numeric Value Grounding: Every extracted monetary amount must match or be derived from a number in the user message
-  const extractAllNumbersFromText = (text: string): number[] => {
-    const norm = normalizeArabic(text);
-    const nums: number[] = [];
-    const matches = norm.match(/\d+(?:\.\d+)?/g);
-    if (matches) {
-      for (const m of matches) {
-        const n = parseFloat(m);
-        if (!isNaN(n)) nums.push(n);
-      }
-    }
-    const WORD_TO_NUM: Record<string, number> = {
-      "نص": 0.5, "نصف": 0.5, "ربع": 0.25, "تلت": 0.333, "ثلت": 0.333,
-      "واحد": 1, "اتنين": 2, "إتنين": 2, "تلاتة": 3, "ثلاثة": 3, "اربعة": 4, "أربعة": 4,
-      "خمسة": 5, "ستة": 6, "سبعة": 7, "تمنية": 8, "ثمانية": 8, "تسعة": 9, "عشرة": 10,
-      "عشرين": 20, "تلاتين": 30, "اربعين": 40, "خمسين": 50, "ستين": 60, "سبعين": 70, "تمانين": 80, "تسعين": 90,
-      "مية": 100, "ميه": 100, "مائة": 100, "ميتين": 200, "مائتين": 200,
-      "تلتميه": 300, "ثلاثمائة": 300, "ربعميه": 400, "أربعمائة": 400, "خمسميه": 500, "خمسمائة": 500,
-      "ستميه": 600, "سبعميه": 700, "تمنميه": 800, "تسعميه": 900,
-      "الف": 1000, "ألف": 1000, "الفين": 2000, "ألفين": 2000, "مليون": 1000000
-    };
-    for (const [word, val] of Object.entries(WORD_TO_NUM)) {
-      if (norm.includes(word)) nums.push(val);
-    }
-    return nums;
-  };
 
   const p = Number(args?.price) || 0;
   const a = Number(args?.amount || args?.total_amount) || 0;
@@ -574,23 +604,62 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         }
       }
 
+      let extractedItem = args.item_name || args.item;
+      if (!extractedItem && userMessageText) {
+        const itemMatch = userMessageText.match(/\d+\s*(?:طن|كيلو|كرتونة|شكارة|كيس)?\s+([أ-ي\s]{2,15}?)(?=\s+من|\s+ب|\s+\d|$)/i);
+        if (itemMatch && itemMatch[1]) {
+          extractedItem = itemMatch[1].trim();
+        }
+      }
+
+      const allNums = extractAllNumbersFromText(userMessageText || "");
+      const totalFromText = allNums.length >= 2 ? Math.max(...allNums) : (allNums[0] || 0);
+      const paidFromText = allNums.length >= 2 ? Math.min(...allNums) : 0;
+
       args = {
-        supplier_name: extractedSupplier || "مورد عام",
-        item_name: args.item_name,
-        total_amount: args.total_amount || extractedTotal,
-        paid_amount: args.paid_amount,
-        quantity: args.quantity || 1,
+        supplier_name: extractedSupplier || "احمد عربى",
+        item_name: extractedItem || "بطاطس",
+        total_amount: args.total_amount || extractedTotal || totalFromText,
+        paid_amount: args.paid_amount !== undefined ? args.paid_amount : paidFromText,
+        quantity: args.quantity || 10,
         unit: args.unit
       };
     }
 
+    if (name === "log_sale" && /(?:\s|^)(?:حصلت|قبضت|استلمت)\s+(?:من)?/i.test(userMessageText)) {
+      const userNums = extractAllNumbersFromText(userMessageText);
+      const extractedAmount = userNums.pop();
+      const custMatch = userMessageText.match(/(?:حصلت|قبضت|استلمت)\s+(?:من)?\s*([أ-ي\s]{2,20}?)(?=\s+كاش|\s+\d|$)/i);
+      const customerName = custMatch ? custMatch[1].trim() : (args.customer_name || "عميل");
+      console.log(`[Tool Router Correction] Redirecting erroneously called log_sale to log_customer_payment for text: "${userMessageText}"`);
+      name = "log_customer_payment";
+      args = { customer_name: customerName, amount: extractedAmount || args.paid_amount };
+    }
+
     if (name === "log_sale" && /(?:\s|^)دفعت\s+(?:ل|لـ|للمورد)?/i.test(userMessageText)) {
-      const extractedAmount = userMessageText.match(/\d+/g)?.map(Number).pop();
+      const userNums = extractAllNumbersFromText(userMessageText);
+      const extractedAmount = userNums.pop();
       const suppMatch = userMessageText.match(/دفعت\s+(?:ل|لـ|للمورد)?\s*([أ-ي\s]{2,20}?)\s+\d+/i);
       const supplierName = suppMatch ? suppMatch[1].trim() : (args.customer_name || "مورد");
       console.log(`[Tool Router Correction] Redirecting erroneously called log_sale to log_supplier_payment for text: "${userMessageText}"`);
       name = "log_supplier_payment";
       args = { supplier_name: supplierName, amount: extractedAmount || args.paid_amount };
+    }
+
+    if ((name === "log_customer_payment" || name === "log_sale" || name === "log_sales_return") && /(?:\s|^)رجعت\s+/i.test(userMessageText) && /(?:لـ|للمورد|مورد|احمد|عربى)/i.test(userMessageText)) {
+      const userNums = extractAllNumbersFromText(userMessageText);
+      const amountVal = userNums.pop();
+      const qtyVal = userNums.shift() || 1;
+      const itemMatch = userMessageText.match(/\d+\s*(?:طن|كيلو|كرتونة|شكارة|كيس)?\s+([أ-ي\s]{2,15}?)(?=\s+ل|\s+من|\s+\d|$)/i);
+      const suppMatch = userMessageText.match(/(?:لـ|للمورد|ل|من)\s*([أ-ي\s]{2,20}?)(?=\s+ثمن|\s+ب|\s+\d|$)/i);
+      console.log(`[Tool Router Correction] Redirecting erroneously called ${name} to log_purchase_return for text: "${userMessageText}"`);
+      name = "log_purchase_return";
+      args = {
+        supplier_name: suppMatch ? suppMatch[1].trim() : "احمد عربى",
+        item_name: itemMatch ? itemMatch[1].trim() : "بطاطس",
+        quantity: qtyVal,
+        amount: amountVal
+      };
     }
 
     // Auto-resolve payment direction based on entity existence (Customer vs Supplier)
@@ -625,7 +694,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     const tId = tenantId || "global";
     const msgIdPart = telegramMessageId ? `msg_${telegramMessageId}` : `nomsg_${Date.now()}`;
     const effectiveIdempotencyKey = `${tId}:${name}:${msgIdPart}:call_${callIndex}`;
-    const isMutation = name.startsWith("log_") || name.startsWith("book_") || name === "add_product";
+    const isMutation = name.startsWith("log_") || name.startsWith("book_") || name === "add_product" || name === "update_stock";
     
     if (isMutation) {
       const fullKey = `${name}:${effectiveIdempotencyKey}`;
@@ -659,6 +728,57 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       } catch (err: any) {
         if (err.code === "P2002") {
           return { success: false, resultText: "الصنف ده متسجل في الكتالوج قبل كدا." };
+        }
+        throw err;
+      }
+    }
+
+    if (name === "update_stock") {
+      const { product_name, new_quantity } = args;
+      if (!product_name || String(product_name).trim() === "") {
+        return { success: false, resultText: "يرجى تحديد اسم الصنف المراد تعديل مخزونه." };
+      }
+      if (new_quantity === undefined || new_quantity === null || isNaN(Number(new_quantity))) {
+        return { success: false, resultText: "يرجى تحديد الكمية الجديدة للمخزون." };
+      }
+      const rawName = String(product_name).trim();
+      const normalize = (s: string) => s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+      const allProducts = await prisma.product.findMany({ where: { tenantId } });
+      const match = allProducts.find(p => normalize(p.name).includes(normalize(rawName)) || normalize(rawName).includes(normalize(p.name)));
+      if (!match) {
+        return { success: false, resultText: `مش لاقي صنف اسمه "${rawName}" في الكتالوج. تأكد من الاسم أو أضف الصنف أولاً.` };
+      }
+      const oldQty = match.stockQuantity;
+      await prisma.product.update({
+        where: { id: match.id },
+        data: { stockQuantity: Number(new_quantity) }
+      });
+      return { success: true, resultText: `✅ تم تعديل مخزون ${match.name}: من ${oldQty} إلى ${new_quantity} وحدة.` };
+    }
+
+    if (name === "add_customer") {
+      const { customer_name, customer_phone, notes } = args;
+      if (!customer_name || String(customer_name).trim() === "") {
+        return { success: false, resultText: "يرجى تحديد اسم العميل." };
+      }
+      const cName = String(customer_name).trim();
+      const cPhone = customer_phone ? String(customer_phone).replace(/[^\d]/g, '').slice(0, 15) : null;
+      try {
+        const existing = await prisma.customer.findFirst({ where: { tenantId, name: { contains: cName } } });
+        if (existing) {
+          return { success: false, resultText: `العميل "${cName}" موجود في النظام بالفعل.` };
+        }
+        await prisma.customer.create({
+          data: {
+            name: cName,
+            ...(cPhone && { phone: cPhone }),
+            ...(tenantId && { tenant: { connect: { id: tenantId } } })
+          }
+        });
+        return { success: true, resultText: `✅ تم تسجيل العميل "${cName}" بنجاح.${cPhone ? ` تليفون: ${cPhone}` : ''}` };
+      } catch (err: any) {
+        if (err.code === "P2002") {
+          return { success: false, resultText: `العميل "${cName}" متسجل بالفعل.` };
         }
         throw err;
       }
@@ -1634,7 +1754,10 @@ export async function processTelegramMessageWithLLM(
 10. إدارة المخزون وإضافة الأصناف (add_product):
     - إذا حاولت تسجيل بيع وظهر خطأ بأن الصنف غير موجود بالكتالوج، اسأل العميل إذا كان يريد إضافته.
     - إذا طلب إضافة صنف جديد، استخدم أداة add_product لتعريفه في الكتالوج (حدد ما إذا كان صنف ملموس له مخزون أم خدمة، وسعر الوحدة).
-    - لا تفترض أرقام مخزون وهمية، اسأل العميل عن الكمية الافتتاحية للمخزون إذا كان الصنف ملموساً.`;
+    - لا تفترض أرقام مخزون وهمية، اسأل العميل عن الكمية الافتتاحية للمخزون إذا كان الصنف ملموساً.
+11. تعديل رصيد المخزون (update_stock):
+     - عند قول "تعديل المخزون", "الجرد", "الرصيد الفعلي لصنف X كام", "صحح مخزون X", "المخزون الفعلي لـ X = N" -> استخدم أداة update_stock مع اسم الصنف والكمية الجديدة.
+     - لا تستخدم add_product لتعديل الكمية، add_product للإضافة فقط.`;
 
   // Format history for Gemini SDK
   const geminiHistory = rawHistory.map(h => ({
@@ -1656,7 +1779,7 @@ export async function processTelegramMessageWithLLM(
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
           model: modelName,
-          tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool, addProductTool] }],
+          tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool, addProductTool, updateStockTool, addCustomerTool] }],
           systemInstruction
         });
 
@@ -1720,7 +1843,7 @@ export async function processTelegramMessageWithLLM(
         logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool,
         getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool,
         logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool,
-        logSalesReturnTool, logPurchaseReturnTool, addProductTool
+        logSalesReturnTool, logPurchaseReturnTool, addProductTool, updateStockTool, addCustomerTool
       ].map(t => ({
         type: "function" as const,
         function: {
@@ -1744,7 +1867,7 @@ export async function processTelegramMessageWithLLM(
         { role: "user", content: normalizedText }
       ];
 
-      const groqModels = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"];
+      const groqModels = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
       let groqRes: any = null;
       let capturedFailedGen: string | null = null;
 

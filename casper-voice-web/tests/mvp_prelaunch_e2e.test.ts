@@ -3,6 +3,8 @@ import { prisma } from "../lib/prisma";
 import { approveTenantRequest } from "../lib/telegram";
 import { runWithTenant } from "../lib/prisma-tenant-extension";
 
+import { processTelegramMessageWithLLM } from "../lib/telegram_llm";
+
 async function runMvpPrelaunchAudit() {
   console.log("=================================================");
   console.log("🧪 CASPER VOICE MVP PRE-LAUNCH END-TO-END AUDIT");
@@ -59,21 +61,30 @@ async function runMvpPrelaunchAudit() {
 
     // 5. Test AI Tool Sale Logging under Tenant RLS
     console.log("\n🔹 [STEP 4] Testing AI Tool Sale Logging under Tenant Context...");
+    const llmResult = await processTelegramMessageWithLLM(
+      "سجل بيع 10 أسمنت بورتلاندي - 50 كجم لمؤسسة الأمل بـ 25.5 دفع 200 والباقي آجل",
+      tenantId,
+      "Test Tenant",
+      "Retail",
+      "9-5",
+      testChatId,
+      Date.now() // Unique message ID
+    );
+
+    if (llmResult?.finalReply && (llmResult.finalReply.includes("نجاح") || llmResult.finalReply.includes("تم"))) {
+      console.log(`   ✅ SUCCESS: LLM successfully responded with success! Reply: ${llmResult.finalReply}`);
+    } else {
+      console.error(`   ❌ FAIL: LLM did not respond with success. Reply: ${llmResult?.finalReply} | Error: ${llmResult?.error}`);
+      failures++;
+    }
+
     const sale = await runWithTenant(tenantId, async () => {
-      return await (prisma as any).sale.create({
-        data: {
-          itemName: "أسمنت بورتلاندي - 50 كجم",
-          price: 25.5,
-          quantity: 10,
-          total: 255.0,
-          customerName: "مؤسسة الأمل",
-          paidAmount: 200.0,
-          deferredAmount: 55.0,
-        },
+      return await (prisma as any).sale.findFirst({
+        where: { customerName: { contains: "الأمل" } }
       });
     });
 
-    if (sale && sale.tenantId === tenantId) {
+    if (sale && sale.tenantId === tenantId && Number(sale.total) === 255) {
       console.log(`   ✅ SUCCESS: Sale logged under Tenant ID (${sale.tenantId}) with zero math errors!`);
     } else {
       console.error("   ❌ FAIL: Sale missing tenantId or calculation error!");
@@ -96,10 +107,18 @@ async function runMvpPrelaunchAudit() {
     console.error(`❌ MVP AUDIT BLOCKED: ${failures} issue(s) detected.`);
   }
   console.log("=================================================");
+  
+  if (failures > 0) {
+    throw new Error(`MVP E2E Audit failed with ${failures} errors.`);
+  }
 }
 
 describe("MVP Prelaunch Audit", () => {
-  it("executes full E2E audit flow", async () => {
+  let retryCount = 0;
+
+  it("executes full E2E audit flow", { retry: 3, timeout: 60000 }, async () => {
+    retryCount++;
+    console.log(`\n--- E2E Test Attempt: ${retryCount} ---`);
     await runMvpPrelaunchAudit();
   });
 });

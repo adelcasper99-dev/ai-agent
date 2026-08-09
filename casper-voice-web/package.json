@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test:prevention": "npx tsx reset_sim_tenant.ts && npx tsx test_ambiguous_numeric_clarification.ts && npx tsx test_supplier_balance_and_customer_payment.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -33,6 +34,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.5.4",
+    "dotenv": "^17.4.2",
     "postcss": "^8.5.24",
     "tailwindcss": "^4.3.3",
     "typescript": "^5",

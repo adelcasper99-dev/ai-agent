@@ -27,7 +27,9 @@ import {
 
 const ORIGINAL_ENV = process.env;
 
-beforeEach(() => {
+import { prisma } from '../lib/prisma';
+
+beforeEach(async () => {
   process.env = {
     ...ORIGINAL_ENV,
     TELEGRAM_BOT_TOKEN: 'test-token',
@@ -35,6 +37,7 @@ beforeEach(() => {
     TELEGRAM_WEBHOOK_SECRET: 'my-super-secret-token',
   };
   vi.restoreAllMocks();
+  await (prisma as any).processedUpdate.deleteMany({});
 });
 
 afterEach(() => {
@@ -92,7 +95,7 @@ describe('T1 - T3: Tenant Self-Registration Flow', () => {
           message_id: 1,
           text: '/start',
           chat: { id: 555666 },
-          from: { first_name: 'شركة', last_name: 'الأمل' },
+          from: { id: 555666, first_name: 'شركة', last_name: 'الأمل' },
         },
       },
       'my-super-secret-token'

@@ -303,6 +303,19 @@ export async function POST(req: NextRequest) {
 
       if (data.startsWith("csat:")) {
         const rating = data.replace("csat:", "");
+        const ratingInt = parseInt(rating, 10);
+        if (!isNaN(ratingInt) && ratingInt >= 1 && ratingInt <= 5) {
+          const csatTenant = await (prisma as any).tenant.findUnique({
+            where: { telegramChatId: callbackChatId },
+          });
+          await (prisma as any).csatRating.create({
+            data: {
+              telegramChatId: callbackChatId,
+              rating: ratingInt,
+              tenantId: csatTenant?.id ?? null,
+            },
+          }).catch(() => null);
+        }
         await answerCallback(`شكراً جزيلاً! تم تسجيل تقييمك (${rating}/5) بنجاح ⭐`);
         return NextResponse.json({ ok: true });
       }
@@ -338,7 +351,13 @@ export async function POST(req: NextRequest) {
       }
 
       if (data === "cmd_appointments") {
+        const apptTenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (!apptTenant) {
+          await answerCallback("⚠️ لم يتم العثور على شركتك.");
+          return NextResponse.json({ ok: true });
+        }
         const appointments = await prisma.appointment.findMany({
+          where: { tenantId: apptTenant.id },
           orderBy: { createdAt: "desc" },
           take: 10,
         });
@@ -968,7 +987,9 @@ export async function POST(req: NextRequest) {
     if (text === "/menu") {
       await sendFallbackMainMenu(chatId);
     } else if (text === "/appointments") {
+      const textApptTenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: chatId } });
       const appointments = await prisma.appointment.findMany({
+        where: textApptTenant ? { tenantId: textApptTenant.id } : { tenantId: "__NONE__" },
         orderBy: { createdAt: "desc" },
         take: 10,
       });

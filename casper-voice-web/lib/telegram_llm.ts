@@ -3,6 +3,7 @@ import { GoogleGenerativeAI, FunctionDeclaration, SchemaType } from "@google/gen
 import Groq from "groq-sdk";
 import Decimal from "decimal.js";
 import { sendTelegramAlert } from "./telegram";
+import { checkAndAlertTokenUsage } from "./usage-alert";
 
 Decimal.set({ rounding: Decimal.ROUND_HALF_UP });
 
@@ -859,7 +860,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
             : new Decimal(product.unitPrice);
 
           const totalAmount = unitPriceDecimal.mul(new Decimal(quantityNum));
-          let paid = (paid_amount !== undefined && Number(paid_amount) > 0 ? new Decimal(paid_amount) : totalAmount).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+          let paid = (paid_amount !== undefined && paid_amount !== null && !isNaN(Number(paid_amount)) ? new Decimal(paid_amount) : totalAmount).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
           if (paid.gt(totalAmount)) paid = totalAmount;
           if (paid.isNegative()) paid = new Decimal(0);
           let deferred = totalAmount.minus(paid).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
@@ -1818,6 +1819,26 @@ export async function processTelegramMessageWithLLM(
         }
 
         void saveChatMessage(tenantId, telegramChatId, "assistant", finalReply);
+
+        const usage = (response as any).usageMetadata;
+        if (tenantId && usage) {
+          const inT = usage.promptTokenCount || 0;
+          const outT = usage.candidatesTokenCount || 0;
+          const totalT = usage.totalTokenCount || (inT + outT);
+          await (prisma as any).tokenUsage.create({
+            data: {
+              tenantId,
+              provider: "gemini",
+              modelName: modelName || "gemini-2.0-flash",
+              inputTokens: inT,
+              outputTokens: outT,
+              totalTokens: totalT,
+              dateStr: new Date().toISOString().slice(0, 10),
+            },
+          }).catch(() => null);
+          void checkAndAlertTokenUsage(tenantId, "gemini");
+        }
+
         return { status: "success", text: finalReply };
       } catch (err: any) {
         lastError = err;
@@ -1920,7 +1941,10 @@ export async function processTelegramMessageWithLLM(
           if (jsonMatch) {
             try {
               let cleanedJson = jsonMatch[0].replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-              cleanedJson = cleanedJson.replace(/:\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/g, (_, a, b) => `: ${Number(a) / Number(b)}`);
+              cleanedJson = cleanedJson
+                .replace(/:\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/g, (_, a, b) => `: ${Number(a) / Number(b)}`)
+                .replace(/:\s*(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/g, (_, a, b) => `: ${Number(a) - Number(b)}`)
+                .replace(/:\s*(\d+(?:\.\d+)?)\s*\+\s*(\d+(?:\.\d+)?)/g, (_, a, b) => `: ${Number(a) + Number(b)}`);
               args = JSON.parse(cleanedJson);
             } catch (e) {
               console.error("[Groq Parser] JSON parse error:", jsonMatch[0], e);

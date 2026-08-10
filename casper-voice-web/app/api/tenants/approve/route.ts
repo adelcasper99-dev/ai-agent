@@ -2,11 +2,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { approveTenantRequest } from "@/lib/telegram";
 import { isInternalAuthValid } from "@/lib/auth";
+import { verifyAdminSession } from "@/lib/session";
 
 export async function POST(req: NextRequest) {
   try {
     const sessionCookie = req.cookies.get("admin_session")?.value;
-    const isAuthorized = Boolean(sessionCookie) || isInternalAuthValid(req);
+    const isAuthorized =
+      (Boolean(sessionCookie) && verifyAdminSession(sessionCookie!)) ||
+      isInternalAuthValid(req);
 
     if (!isAuthorized) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

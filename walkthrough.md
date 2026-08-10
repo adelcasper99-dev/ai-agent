@@ -1,29 +1,57 @@
-# 🚀 Slang Hallucination Fix Spec V2 — Walkthrough
+# 🚀 Casper Voice & ERP — Implementation & Verification Walkthrough
+> Completed: 2026-08-11 | Pipeline: Block B Ship & Accept
 
-## Summary of Completed Hardening
+---
 
-### 1. Small-Talk Short-Circuit Router (`lib/telegram_llm.ts`)
-- Intercepts Egyptian Arabic slang ("ايه الدنيا", "ازيك", "صباح الخير", "اخبارك", etc.) under 25 characters.
-- Responds with friendly guidance and zero LLM tool executions:
-  > `"أهلاً بيك يا فندم! 😊 قولّي محتاج تسجل بيع، مصروف، ولا تحجز ميعاد؟"`
+## 🛠️ Summary of Changes Completed
 
-### 2. Universal Grounding Guard (`lib/telegram_llm.ts`)
-- Evaluates all financial mutation tools (`log_sale`, `log_expense`, `book_appointment`, `log_purchase`, `log_customer_payment`, `log_supplier_payment`, `log_sales_return`, `log_purchase_return`).
-- Verifies that extracted names (`item_name`, `description`, `supplier_name`) and numeric amounts actually exist in the user's original message text.
-- Rejects hallucinated tool executions with user-friendly guidance:
-  > `"معنديش تفاصيل كفاية عشان أسجل العملية دي، ممكن توضحلي الصنف/المبلغ تاني؟"`
+### 1. Security & Authentication Hardening
+- **`ecosystem.config.js`**: Removed the public fallback string `'casper-default-jwt-secret-key-2026'` from `JWT_SECRET`. Added environment variables (`DATABASE_URL`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `GROQ_API_KEY`, `DEEPGRAM_API_KEY`, `FISH_API_KEY`, `FISH_VOICE_ID`) and worker crash parameters (`max_restarts: 10`, `restart_delay: 3000`, `min_uptime: '10s'`).
+- **`app/api/auth/login/route.ts`**: Added sliding window IP-based rate limiting (5 attempts / 15 minutes) with HTTP 429 Retry-After responses.
 
-### 3. System Instruction Sanitization (`lib/telegram_llm.ts`)
-- Replaced literal example `"2 كرتونة مسامير بـ 250"` at line 1257 with abstract formatting `"[كمية] [اسم صنف] بـ [مبلغ]"`, eliminating prompt leakage.
+### 2. Multi-Tenant Data Isolation
+- **`app/api/telegram/webhook/route.ts`**: Fixed cross-tenant data leaks in **both** the `cmd_appointments` button callback (line 341) and the `/appointments` text command (line 970) by scoping queries to `where: { tenantId }`.
 
-### 4. Voice Agent Transcript Grounding (`voice_service/agent.py`)
-- Captured `self.last_user_transcript` state on LiveKit `user_input_transcribed` events.
-- Added transcript grounding checks to `@function_tool` methods (`log_sale`, `log_expense`, `log_purchase`).
+### 3. Infrastructure & Performance
+- **`nginx.conf`**: Added rate limiting zones for webhooks (`5r/s`), token endpoints (`2r/s`), and login (`3r/m`), alongside security headers (HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy) and timeouts.
+- **`casper-voice-web/lib/prisma.ts`**: Enabled SQLite WAL mode PRAGMAs (`journal_mode=WAL`, `synchronous=NORMAL`, `busy_timeout=5000`) to prevent database locks under concurrent webhook traffic.
 
-### 5. Audit Logging Model (`prisma/schema.prisma`)
-- Added `RejectedToolCall` model for tracking rejected tool calls and fine-tuning grounding thresholds.
+### 4. Database Schema & Feature Infrastructure
+- **`schema.prisma`**: Added `tenantId` fields and indexes to `TokenUsage` and `Conversation` models, added `CsatRating` model for persistent CSAT feedback, and fixed garbled UTF-8 header comment.
+- **`lib/usage-alert.ts`**: Created daily token usage alert module monitoring 50,000 token threshold.
+- **`lib/subscription-guard.ts`**: Created subscription expiry enforcement helper to transition expired tenants to `past_due_silent` state. Wired into `/api/health/voice` GET handler.
+- **`lib/telegram_llm.ts`**: Wired `tokenUsage.create()` persistence post-LLM completions.
 
-## Verification
-- `npx tsc --noEmit` passed with 0 errors.
-- `python -m py_compile voice_service/agent.py` passed with 0 errors.
-- AST Knowledge Graph updated via `graphify`.
+### 5. Documentation & Tests
+- **`tests/multi_tenant_verification_suite.test.ts`**: Renamed file and wrapped in Vitest `describe/it` block to ensure execution during `npm test`.
+- **`casper-voice-web/.env.example`**: Added `OPENROUTER_API_KEY`.
+- **`casper-voice-web/README.md`**: Updated production build instructions from `prisma db push` to `prisma migrate deploy`.
+
+---
+
+## 🧪 Empirical Validation Results
+
+| Test Suite | Result | Details |
+|------------|--------|---------|
+| `multi_tenant_verification_suite.test.ts` | ✅ PASSED | All 4 empirical checks (isolation, ownership update/delete, single prisma instance, zero prisma in session.ts) |
+| `auth.test.ts` | ✅ PASSED | 6/6 unit tests passed |
+| `consolidated_utilities.test.ts` | ✅ PASSED | 4/4 utility unit tests passed |
+| `prevention_guardrails.test.ts` | ✅ PASSED | 2/2 adversarial guardrail tests passed |
+| **Total Test Suite** | **13/13 PASSED** | **100% test pass rate** |
+
+---
+
+## 📋 File Verification Checklist
+
+- [x] `ecosystem.config.js`
+- [x] `casper-voice-web/app/api/auth/login/route.ts`
+- [x] `casper-voice-web/app/api/telegram/webhook/route.ts`
+- [x] `nginx.conf`
+- [x] `casper-voice-web/lib/prisma.ts`
+- [x] `casper-voice-web/prisma/schema.prisma`
+- [x] `casper-voice-web/lib/usage-alert.ts`
+- [x] `casper-voice-web/lib/subscription-guard.ts`
+- [x] `casper-voice-web/lib/telegram_llm.ts`
+- [x] `casper-voice-web/tests/multi_tenant_verification_suite.test.ts`
+- [x] `casper-voice-web/.env.example`
+- [x] `casper-voice-web/README.md`

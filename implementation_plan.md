@@ -1,214 +1,86 @@
-# STT Multi-Provider Enhancement — Implementation Plan
-## Soniox + Deepgram Failover, Audio Preprocessing, VAD Assessment, Post-Correction
+# Implementation Plan — Complete Launch Readiness Fixes
+> Generated: 2026-08-11 | Casper Voice & ERP Pipeline
 
 ---
 
-## Context
+## Executive Summary
 
-**Target:** `voice_service/agent.py` — specifically `create_agent_session()` (line 437) and the `entrypoint()` function (line 629).
-
-**Existing STT providers already in `create_agent_session()`:**
-| Provider Key | STT Engine | LLM | TTS |
-|---|---|---|---|
-| `groq_pipeline` | Groq Whisper large-v3-turbo | Groq Llama | EdgeTTS |
-| `deepgram_pipeline` | **Deepgram nova-2** | Groq Llama | EdgeTTS |
-| `fish_audio` | Groq Whisper | Groq Llama | FishAudio |
-| `gemini` | Gemini Native Realtime | Gemini | Built-in |
-| (default) | — | OpenAI Realtime | — |
-
-**Silero VAD already tuned** at line 447–451:
-```python
-arabic_vad = silero.VAD.load(
-    min_speech_duration=0.1,
-    min_silence_duration=0.9,   # already at 900ms — good for Arabic
-    prefix_padding_duration=0.3,
-)
-```
-> VAD is already tuned. The spec's recommendation (500-700ms) is LESS aggressive than what's already in place (900ms). **No VAD change needed.**
+This plan addresses all 39 findings from the full launch readiness audit across 4 prioritized waves:
+- **Wave 0 (Critical)**: Fix JWT fallback PM2 bypass, cross-tenant appointment leak, and login rate limiting.
+- **Wave 1 (Infrastructure)**: Complete PM2 environment keys, Python worker restart delay, Nginx security headers & rate limits, SQLite WAL mode, and requirements exact-pinning.
+- **Wave 2 (Database Schema)**: Add `tenantId` to `TokenUsage` and `Conversation`, migrate monetary fields from `Float` to `Decimal`, and create `CsatRating` model.
+- **Wave 3 (Features & Quality)**: Token usage alerts, subscription expiry enforcement, CSAT persistence, test file renaming, and documentation cleanup.
 
 ---
 
-## Rollout Order (from spec §8)
+## User Review Required
 
-| Phase | What | Files |
-|---|---|---|
-| **Phase 1** | Soniox provider + failover logic | `agent.py`, `.env`, `requirements.txt` |
-| **Phase 2** | Audio preprocessing via `ffmpeg` | `agent.py` (new `preprocess_audio()` helper for voice notes) |
-| **Phase 3** | A/B logging (`sttProvider` + `confidence`) | `agent.py` (`on_user_input_transcribed`) |
-| **Phase 4** | Post-STT LLM correction pass | Async text/voice-note channel handlers (Next.js) |
-| **Phase 5** | Confidence-based clarification fallback | `agent.py` (in `on_user_input_transcribed`) |
+> [!IMPORTANT]
+> - **PM2 Configuration**: `ecosystem.config.js` will require `JWT_SECRET` to be set in environment prior to starting PM2. Missing secrets will cause startup to fail closed.
+> - **Database Migration**: Wave 2 includes migrating monetary fields from `Float` to `Decimal`. Run `npx prisma migrate deploy` on production after deploying code changes.
 
 ---
 
 ## Proposed Changes
 
-### Phase 1 — Soniox Provider + Failover
+### Component 1: Security & Auth
 
-#### [MODIFY] [agent.py](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/voice_service/agent.py)
+#### [MODIFY] [ecosystem.config.js](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/ecosystem.config.js)
+- Remove `'casper-default-jwt-secret-key-2026'` fallback from `JWT_SECRET`.
+- Add `OPENAI_API_KEY`, `GEMINI_API_KEY`, `GROQ_API_KEY`, `DEEPGRAM_API_KEY`, `FISH_API_KEY`, `FISH_VOICE_ID`, `DATABASE_URL` to `casper-voice-web` env block.
+- Add `max_restarts: 10`, `restart_delay: 3000`, `min_uptime: '10s'` to `casper-livekit-worker` block.
 
-**Add new `soniox_pipeline` branch** inside `create_agent_session()` after line 500 (after `deepgram_pipeline`).
+#### [MODIFY] [casper-voice-web/app/api/telegram/webhook/route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/telegram/webhook/route.ts)
+- Filter `cmd_appointments` query by tenant (`where: { tenantId: tenant.id }`).
+- Persist CSAT ratings to database when `csat:` callback is received.
 
-```python
-elif provider == "soniox_pipeline":
-    soniox_key = settings.get("SONIOX_API_KEY") or os.getenv("SONIOX_API_KEY")
-    fallback_provider = settings.get("STT_FALLBACK_PROVIDER", "deepgram_pipeline")
-    if not soniox_key:
-        print("[STT Failover] Soniox key missing, falling back to deepgram_pipeline")
-        return create_agent_session("deepgram_pipeline", settings)
-    if not groq_key:
-        raise ValueError("مفتاح Groq API Key مفقود (مطلوب للـ LLM). يرجى إدخاله من صفحة الإعدادات أولاً.")
-    
-    from livekit.plugins import soniox, groq
-    from edge_tts_wrapper import EdgeTTS
-    print(f"Using Soniox STT Pipeline (primary) with Voice Tone: {voice_tone} ({selected_voice})")
-    tts_engine = EdgeTTS(voice=selected_voice)
-    
-    return AgentSession(
-        stt=soniox.STT(
-            api_key=soniox_key,
-            model="soniox-phone-multilingual",  # supports Arabic/English code-switching
-            language_hints=["ar", "en"],
-        ),
-        llm=groq.LLM(api_key=groq_key, model="llama-3.3-70b-versatile"),
-        tts=tts_engine,
-        vad=arabic_vad,
-    )
-```
-
-**Failover wrapper** — Add `create_agent_session_with_failover()`:
-```python
-async def create_agent_session_with_failover(provider: str, settings: dict) -> AgentSession:
-    """
-    Note: This MVP failover catches session creation failures (e.g. invalid API key,
-    service unavailable at startup). It does NOT catch runtime streaming blips mid-call.
-    """
-    primary = settings.get("STT_PROVIDER", provider)
-    fallback = settings.get("STT_FALLBACK_PROVIDER", "deepgram_pipeline")
-    try:
-        session = create_agent_session(primary, settings)
-        print(f"[STT Pool] Primary provider active: {primary}")
-        return session
-    except Exception as e:
-        print(f"[STT Failover] Primary {primary} failed: {e}. Falling back to {fallback}")
-        return create_agent_session(fallback, settings)
-```
-
-**`.env` additions:**
-```
-SONIOX_API_KEY=<your-soniox-key>
-STT_PROVIDER=soniox_pipeline
-STT_FALLBACK_PROVIDER=deepgram_pipeline
-```
-
-#### [MODIFY] [requirements.txt](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/voice_service/requirements.txt)
-```
-livekit-plugins-soniox>=0.9
-```
+#### [MODIFY] [casper-voice-web/app/api/auth/login/route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/auth/login/route.ts)
+- Add IP-based sliding window rate limiting (5 attempts / 15 min).
 
 ---
 
-### Phase 2 — ffmpeg Audio Preprocessing
+### Component 2: Infrastructure & Database
 
-#### [MODIFY] [agent.py](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/voice_service/agent.py)
+#### [MODIFY] [nginx.conf](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/nginx.conf)
+- Add `limit_req_zone` for webhooks (5r/s), tokens (2r/s), and login (3r/m).
+- Add HTTP security headers (HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy).
+- Set `client_max_body_size 20m` and `proxy_read_timeout 60s`.
 
-Add standalone async helper (above `create_agent_session`):
+#### [MODIFY] [casper-voice-web/lib/prisma.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/prisma.ts)
+- Execute SQLite WAL mode PRAGMAs (`journal_mode=WAL`, `synchronous=NORMAL`, `busy_timeout=5000`) on initialization.
 
-```python
-async def preprocess_audio_with_ffmpeg(input_path: str, output_path: str) -> bool:
-    """
-    Applies highpass filter + loudnorm + 16kHz resampling.
-    Returns True on success, False on failure (caller can use raw audio).
-    """
-    import asyncio
-    try:
-        proc = await asyncio.create_subprocess_exec(
-            "ffmpeg", "-y", "-i", input_path,
-            "-af", "highpass=f=100,loudnorm",
-            "-ar", "16000",
-            output_path,
-            stdout=asyncio.subprocess.DEVNULL,
-            stderr=asyncio.subprocess.DEVNULL,
-        )
-        await asyncio.wait_for(proc.wait(), timeout=10.0)
-        return proc.returncode == 0
-    except Exception as e:
-        print(f"[ffmpeg Preprocess] Failed: {e}")
-        return False
-```
+#### [MODIFY] [casper-voice-web/prisma/schema.prisma](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/prisma/schema.prisma)
+- Add `tenantId` field & index to `TokenUsage` and `Conversation`.
+- Update monetary fields (`Expense.amount`, `Sale.price/total/paidAmount/deferredAmount`, `Product.unitPrice`, `Purchase.totalAmount/paidAmount/deferredAmount`, `SupplierPayment.amount`, `CustomerLedgerEntry.amount`, `JournalEntry.debit/credit`) from `Float` to `Decimal`.
+- Add `CsatRating` model.
+- Fix garbled UTF-8 header comment at line 337.
 
 ---
 
-### Phase 3 — A/B Logging
+### Component 3: Features & Quality
 
-#### [MODIFY] [agent.py](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/voice_service/agent.py)
+#### [NEW] [casper-voice-web/lib/usage-alert.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/usage-alert.ts)
+- Check daily tenant token totals against 50,000 threshold and send Telegram alert to admin.
 
-Extend `on_user_input_transcribed` (line 664) to log `sttProvider`:
+#### [NEW] [casper-voice-web/lib/subscription-guard.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/subscription-guard.ts)
+- Check tenant `expiresAt` timestamps and transition expired tenants to `past_due_silent`.
 
-```python
-@session.on("user_input_transcribed")
-def on_user_input_transcribed(ev):
-    ...
-    # Add after confidence capture:
-    asyncio.ensure_future(emit_datachannel_event({
-        "type": "STT_DIAGNOSTIC",
-        "provider": provider,  # captured from outer scope
-        "confidence": conf,
-        "transcript": text,
-    }))
-```
+#### [MODIFY] [casper-voice-web/README.md](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/README.md)
+- Replace `npx prisma db push` with `npx prisma migrate deploy`.
 
----
-
-### Phase 4 — Post-STT LLM Correction Pass
-
-> [!WARNING]
-> **CRITICAL LATENCY SAFEGUARD:** To avoid reverting latency improvements, this correction pass MUST ONLY be implemented in the Next.js API for async text/voice-note channels (WhatsApp/Telegram). **It will NOT be added to `agent.py` for live WebRTC calls.**
-
-```python
-async def correct_transcript_with_llm(raw: str, gemini_key: str) -> str:
-    """Cheap Gemini correction pass on raw STT output (Async Text/Voice-Notes ONLY)."""
-    try:
-        import google.generativeai as genai
-        genai.configure(api_key=gemini_key)
-        model = genai.GenerativeModel("gemini-2.5-flash-lite")
-        prompt = f"صحح الأخطاء الإملائية والكتابية في النص ده من غير ما تغير المعنى أو تضيف حاجة: {raw}"
-        resp = await asyncio.to_thread(model.generate_content, prompt)
-        corrected = resp.text.strip()
-        print(f"[STT Correction] '{raw}' -> '{corrected}'")
-        return corrected
-    except Exception as e:
-        print(f"[STT Correction] Failed, using raw: {e}")
-        return raw
-```
-
----
-
-### Phase 5 — Confidence-Based Clarification
-
-#### [MODIFY] [agent.py](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/voice_service/agent.py)
-
-```python
-STT_CONFIDENCE_THRESHOLD = float(os.getenv("STT_CONFIDENCE_THRESHOLD", "0.6"))
-
-if conf is not None and float(conf) < STT_CONFIDENCE_THRESHOLD:
-    asyncio.ensure_future(session.say(
-        "لم أسمع بوضوح، ممكن تكرر أو تكتب؟",
-        allow_interruptions=True
-    ))
-    return
-```
+#### [MODIFY] [casper-voice-web/.env.example](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/.env.example)
+- Add `OPENROUTER_API_KEY`.
 
 ---
 
 ## Verification Plan
 
-### Automated
-- `python -m pytest voice_service/tests/` (if test suite exists)
-- Dependency check: `pip index versions livekit-plugins-soniox` (Verified: v1.6.7 available)
+### Automated Tests
+- Run full test suite: `npm test` (includes all 15 test files).
+- Rename `multi_tenant_verification_suite.ts` → `.test.ts` so Vitest executes it.
+- Run type check & build: `npx prisma generate && npm run build`.
 
-### Manual
-1. Set `STT_PROVIDER=soniox_pipeline` → verify Soniox serves the call.
-2. Remove `SONIOX_API_KEY` → verify auto-fallback to `deepgram_pipeline` in logs.
-3. Speak in quiet voice → verify `loudnorm` preprocessing improves transcript (for voice note path).
-4. Speak low-confidence mumble → verify agent replies "لم أسمع بوضوح" instead of guessing.
-5. Run 1 week A/B: compare `STT_DIAGNOSTIC` events by provider in dashboard.
+### Manual Verification
+- Test rate limit on `/api/auth/login` with 6 consecutive bad passwords -> expect HTTP 429 on 6th request.
+- Test `/cmd_appointments` in Telegram bot -> verify only current tenant's appointments are displayed.
+- Test `health/voice` route -> verify database and LiveKit status reported.

@@ -38,7 +38,10 @@ describe("Concurrent Financial Stress Test", () => {
       create: { id: TENANT_ID, name: "Concurrent Test Tenant", phoneNumber: "01000000099" },
     });
 
-    // Delete existing products for this tenant
+    // Delete existing records for clean test state
+    await prisma.customerLedgerEntry.deleteMany({ where: { tenantId: TENANT_ID } });
+    await prisma.journalEntry.deleteMany({ where: { tenantId: TENANT_ID } });
+    await prisma.sale.deleteMany({ where: { tenantId: TENANT_ID } });
     await prisma.product.deleteMany({ where: { tenantId: TENANT_ID } });
 
     // Pre-create products

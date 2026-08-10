@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { RoomServiceClient } from "livekit-server-sdk";
+import { enforceSubscriptionExpiry } from "@/lib/subscription-guard";
 
 export async function GET() {
+  void enforceSubscriptionExpiry();
   const diagnostics: Record<string, { status: "OK" | "FAIL"; detail: string }> = {};
 
   // 1. Check Internal Middleware Auth Header Secret

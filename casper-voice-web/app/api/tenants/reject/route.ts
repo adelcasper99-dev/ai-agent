@@ -1,13 +1,16 @@
 // app/api/tenants/reject/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { rejectTenantRequest } from "@/lib/telegram";
+import { isInternalAuthValid } from "@/lib/auth";
+import { verifyAdminSession } from "@/lib/session";
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization") || req.headers.get("x-admin-session");
-    const adminSecret = process.env.ADMIN_SESSION_SECRET || "casper-admin-secret-key";
+    const sessionCookie = req.cookies.get("admin_session")?.value;
+    const isCookieAuthorized = Boolean(sessionCookie) && verifyAdminSession(sessionCookie!);
+    const isServiceAuthorized = isInternalAuthValid(req);
 
-    if (!authHeader || (authHeader !== adminSecret && !authHeader.includes("Bearer"))) {
+    if (!isCookieAuthorized && !isServiceAuthorized) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

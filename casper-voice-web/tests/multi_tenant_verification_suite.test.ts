@@ -1,9 +1,11 @@
+import { describe, it, expect } from "vitest";
 import { prisma } from "../lib/prisma";
 import { runWithTenant } from "../lib/prisma-tenant-extension";
 import * as fs from "fs";
 import * as path from "path";
 
-async function runVerificationSuite() {
+describe("Multi-Tenant Empirical Verification Suite", () => {
+  it("runs all 4 empirical checks", async () => {
   console.log("=================================================");
   console.log("🚀 CASPER MULTI-TENANT EMPIRICAL VERIFICATION SUITE");
   console.log("=================================================\n");
@@ -175,6 +177,7 @@ async function runVerificationSuite() {
     console.error(`❌ VERIFICATION FAILED: ${failures} check(s) failed.`);
   }
   console.log("=================================================");
-}
 
-runVerificationSuite().catch(console.error);
+    expect(failures).toBe(0);
+  });
+});

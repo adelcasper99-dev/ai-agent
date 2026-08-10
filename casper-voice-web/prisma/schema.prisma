@@ -72,10 +72,13 @@ model PendingTenantRequest {
 // ── المحادثات الصوتية ─────────────────────────────────────
 model Conversation {
   id         String   @id @default(cuid())
+  tenantId   String?
   channel    String   // "voice" | "whatsapp"
   transcript String
   summary    String?
   createdAt  DateTime @default(now())
+
+  @@index([tenantId])
 }
 
 // ── قاعدة المعرفة (RAG) ──────────────────────────────────
@@ -274,6 +277,7 @@ model JournalEntry {
 // ── تتبع استهلاك التوكنز والحدود ─────────────────────────────
 model TokenUsage {
   id           String   @id @default(cuid())
+  tenantId     String?
   provider     String   // "gemini" | "groq" | "openai"
   modelName    String   @default("default")
   inputTokens  Int      @default(0)
@@ -284,6 +288,7 @@ model TokenUsage {
   createdAt    DateTime @default(now())
 
   @@index([provider, dateStr])
+  @@index([tenantId, dateStr])
 }
 
 // ── سجل التدقيق والأنشطة ──────────────────────────────────
@@ -334,7 +339,7 @@ model InteractionDiagnostics {
 
 
 
-// ?? ����� ������ ��� API ?????????????????????????????????????
+// ── مجمع مفاتيح API (ApiKeyPool) ──────────────────────────
 model ApiKeyPool {
   id          String    @id @default(cuid())
   provider    String
@@ -343,6 +348,17 @@ model ApiKeyPool {
   isExhausted Boolean   @default(false)
   exhaustedAt DateTime?
   addedAt     DateTime  @default(now())
+}
+
+// ── تقييمات رضا العملاء (CSAT Ratings) ────────────────────
+model CsatRating {
+  id             String   @id @default(cuid())
+  tenantId       String?
+  telegramChatId String
+  rating         Int      // 1–5
+  createdAt      DateTime @default(now())
+
+  @@index([tenantId])
 }
 
 // ── حالة المحادثة والقوائم في وضع الطوارئ (Fallback State Machine) ──

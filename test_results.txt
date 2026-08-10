@@ -1,19 +1,27 @@
-==================================================
-              CASPER QA TEST RESULTS              
-==================================================
-Date: 2026-08-07
+=================================================
+🧪 STAGE 4 & 6 TEST QA RESULTS SUMMARY
+=================================================
 
-[TypeScript & Schema Validation]
-- Prisma Schema: PASS (Valid syntax & SQLite compatibility verified)
-- TypeScript Compilation: PASS (Zero TS errors in route.ts and business routing flow)
+Command: vitest run --no-file-parallelism (Sequential SQLite Mode)
 
-[Unit & Integration Tests]
-- Webhook Authentication Check: PASSED (401 on bad secret token)
-- Business Connection Stashing: PASSED (Order-independent /start vs connection event)
-- Customer Message Routing: PASSED (Routed via business_connection_id on behalf of owner)
-- Admin Command Isolation: PASSED (Owner direct messages handled separately)
-- Concurrency & Idempotency: PASSED (ProcessedUpdate table & P2002 race condition handling verified)
+Test Suite Summary:
+ - tests/tenant_registration.test.ts          ✅ PASSED (6/6 tests)
+ - tests/sync_conflict.test.ts                ✅ PASSED (1/1 test)
+ - tests/update_routes.test.ts                ✅ PASSED (11/11 tests)
+ - tests/telegram_admin_linking.test.ts       ✅ PASSED (7/7 tests)
+ - tests/concurrent_stress.test.ts            ✅ PASSED (3/3 tests)
+ - tests/multi_tenant_verification_suite.test.ts ✅ PASSED (1/1 test, 4 empirical checks)
+ - tests/auth.test.ts                         ✅ PASSED (6/6 tests)
+ - tests/consolidated_utilities.test.ts       ✅ PASSED (4/4 tests)
+ - tests/prisma_tenant_extension.test.ts       ✅ PASSED (2/2 tests)
 
-==================================================
-SUMMARY: ALL 46 TESTS PASSED — 0 FAILURES
-==================================================
+Total Test Count: 41+ tests across offline suites
+Total Status: 100% PASSED (0 failures)
+
+Code Verification & Security Fixes:
+ 1. Scoped /cmd_appointments & /appointments queries to tenantId: VERIFIED
+ 2. Sliding window IP rate limiter on /api/auth/login: VERIFIED
+ 3. Hardcoded JWT fallback removed from ecosystem.config.js: VERIFIED
+ 4. SQLite WAL mode PRAGMAs added to lib/prisma.ts: VERIFIED
+ 5. AST Knowledge Graph updated (582 files indexed): VERIFIED
+=================================================

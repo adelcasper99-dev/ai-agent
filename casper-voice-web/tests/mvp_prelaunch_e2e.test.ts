@@ -14,10 +14,24 @@ async function runMvpPrelaunchAudit() {
   const testCustomerName = "شركة النور للمقاولات (تريال تجريبي)";
   let failures = 0;
 
+  async function cleanupTestData(chatId: string) {
+    const tenants = await (prisma as any).tenant.findMany({ where: { telegramChatId: chatId }, select: { id: true } });
+    const tenantIds = tenants.map((t: any) => t.id);
+    if (tenantIds.length > 0) {
+      await (prisma as any).sale.deleteMany({ where: { tenantId: { in: tenantIds } } });
+      await (prisma as any).customerLedgerEntry.deleteMany({ where: { tenantId: { in: tenantIds } } });
+      await (prisma as any).customer.deleteMany({ where: { tenantId: { in: tenantIds } } });
+      await (prisma as any).product.deleteMany({ where: { tenantId: { in: tenantIds } } });
+      await (prisma as any).knowledgeItem.deleteMany({ where: { tenantId: { in: tenantIds } } });
+      await (prisma as any).chatMessage.deleteMany({ where: { tenantId: { in: tenantIds } } });
+    }
+    await (prisma as any).pendingTenantRequest.deleteMany({ where: { telegramChatId: chatId } });
+    await (prisma as any).tenant.deleteMany({ where: { telegramChatId: chatId } });
+  }
+
   try {
     // 1. Cleanup old test data
-    await (prisma as any).pendingTenantRequest.deleteMany({ where: { telegramChatId: testChatId } });
-    await (prisma as any).tenant.deleteMany({ where: { telegramChatId: testChatId } });
+    await cleanupTestData(testChatId);
 
     // 2. Customer self-signups via Telegram / Web
     console.log("🔹 [STEP 1] Simulating Customer Self-Signup Request...");
@@ -59,17 +73,32 @@ async function runMvpPrelaunchAudit() {
       failures++;
     }
 
+    // Seed product catalog for tenant
+    await runWithTenant(tenantId, async () => {
+      await (prisma as any).product.create({
+        data: {
+          name: "أسمنت بورتلاندي",
+          unitPrice: 25.5,
+          stockQuantity: 100,
+          isStockItem: true,
+          tenantId
+        }
+      });
+    });
+
     // 5. Test AI Tool Sale Logging under Tenant RLS
     console.log("\n🔹 [STEP 4] Testing AI Tool Sale Logging under Tenant Context...");
-    const llmResult = await processTelegramMessageWithLLM(
-      "سجل بيع 10 أسمنت بورتلاندي - 50 كجم لمؤسسة الأمل بـ 25.5 دفع 200 والباقي آجل",
-      tenantId,
-      "Test Tenant",
-      "Retail",
-      "9-5",
-      testChatId,
-      Date.now() // Unique message ID
-    );
+    const llmResult = await runWithTenant(tenantId, async () => {
+      return await processTelegramMessageWithLLM(
+        "سجل بيع 10 أسمنت بورتلاندي لمؤسسة الأمل بسعر 25.5 للواحدة دفع 200 والباقي آجل",
+        tenantId,
+        "Test Tenant",
+        "Retail",
+        "9-5",
+        testChatId,
+        Date.now() // Unique message ID
+      );
+    });
 
     const replyText = llmResult?.text || (llmResult as any)?.finalReply || "";
     if (replyText && (replyText.includes("نجاح") || replyText.includes("تم") || replyText.includes("البيع"))) {
@@ -93,8 +122,7 @@ async function runMvpPrelaunchAudit() {
     }
 
     // Clean up
-    await (prisma as any).pendingTenantRequest.deleteMany({ where: { telegramChatId: testChatId } });
-    await (prisma as any).tenant.deleteMany({ where: { telegramChatId: testChatId } });
+    await cleanupTestData(testChatId);
 
   } catch (err: any) {
     console.error("   ❌ CRITICAL FAILURE during MVP E2E Audit:", err);
@@ -117,7 +145,7 @@ async function runMvpPrelaunchAudit() {
 describe("MVP Prelaunch Audit", () => {
   let retryCount = 0;
 
-  it("executes full E2E audit flow", { retry: 3, timeout: 60000 }, async () => {
+  it("executes full E2E audit flow", { timeout: 60000 }, async () => {
     retryCount++;
     console.log(`\n--- E2E Test Attempt: ${retryCount} ---`);
     await runMvpPrelaunchAudit();

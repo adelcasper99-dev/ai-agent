@@ -22,7 +22,7 @@ const logSaleTool: FunctionDeclaration = {
       deferred_amount: { type: SchemaType.NUMBER, description: "المبلغ المتبقي آجل على العميل بالجنيه (الإجمالي minus المدفوع)" },
       idempotency_key: { type: SchemaType.STRING, description: "رقم فريد عشوائي لمنع تكرار العملية بالخطأ" }
     },
-    required: ["item_name", "price", "idempotency_key"]
+    required: ["item_name"]
   }
 };
 
@@ -799,87 +799,96 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         return { success: false, resultText: "يرجى تحديد اسم الصنف المباع بوضوح حتى أتمكن من تسجيل البيع." };
       }
 
-      const priceDecimal = new Decimal(price || 0);
-      const totalAmount = priceDecimal.mul(new Decimal(quantity || 1));
-      
-      const paid = (paid_amount !== undefined ? new Decimal(paid_amount) : totalAmount).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-      const deferred = (deferred_amount !== undefined ? new Decimal(deferred_amount) : totalAmount.minus(paid)).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-
-      if (paid.isNegative() || deferred.isNegative() || paid.gt(totalAmount)) {
-        return { success: false, resultText: "خطأ: المبلغ المدفوع لا يمكن أن يكون أكبر من الإجمالي أو سالباً." };
-      }
-
-      if (paid.add(deferred).equals(totalAmount) === false) {
-        return { success: false, resultText: "خطأ: المدفوع والمتبقي لا يتطابقان مع الإجمالي." };
-      }
-      
       let saleResult;
       try {
         saleResult = await (prisma as any).$transaction(async (tx: any) => {
           // DB-level idempotency check
-        if (effectiveIdempotencyKey && tenantId) {
-          const existing = await tx.sale.findFirst({ where: { tenantId, idempotencyKey: effectiveIdempotencyKey } });
-          if (existing) {
-            return existing;
+          if (effectiveIdempotencyKey && tenantId) {
+            const existing = await tx.sale.findFirst({ where: { tenantId, idempotencyKey: effectiveIdempotencyKey } });
+            if (existing) {
+              return existing;
+            }
           }
-        }
 
-        let customerId = null;
-        const custName = customer_name ? String(customer_name).trim() : "";
-        const custPhone = customer_phone ? String(customer_phone).trim() : null;
+          let customerId = null;
+          const custName = customer_name ? String(customer_name).trim() : "";
+          const custPhone = customer_phone ? String(customer_phone).trim() : null;
 
-        if (custName || custPhone) {
-          let customer = await findCustomerFuzzy(tx, tenantId || "", custName, custPhone);
-          if (!customer) {
-             customer = await tx.customer.create({
-                data: {
-                  name: custName || "عميل غير معروف",
-                  phone: custPhone,
-                  ...(tenantId && { tenantId })
-                }
-             });
+          if (custName || custPhone) {
+            let customer = await findCustomerFuzzy(tx, tenantId || "", custName, custPhone);
+            if (!customer) {
+               let validTenantId: string | undefined = undefined;
+               if (tenantId) {
+                 const tExists = await tx.tenant.findUnique({ where: { id: tenantId }, select: { id: true } });
+                 if (tExists) validTenantId = tenantId;
+               }
+               customer = await tx.customer.create({
+                  data: {
+                    name: custName || "عميل غير معروف",
+                    phone: custPhone,
+                    ...(validTenantId && { tenantId: validTenantId })
+                  }
+               });
+            }
+            customerId = customer.id;
           }
-          customerId = customer.id;
-        }
 
-        const itemNameTrimmed = String(item_name).trim();
-        
-        // 1. Catalog Lookup
-        const product = await tx.product.findFirst({
-          where: { tenantId: tenantId || "", name: itemNameTrimmed }
-        });
-
-        if (!product) {
-          throw new Error("ITEM_NOT_IN_CATALOG");
-        }
-
-        const quantityNum = Number(quantity) || 1;
-
-        if (product.isStockItem) {
-          if (product.stockQuantity < quantityNum) {
-            throw new Error(`INSUFFICIENT_STOCK:${product.stockQuantity}`);
-          }
+          const itemNameTrimmed = String(item_name).trim();
           
-          await tx.product.update({
-            where: { id: product.id },
-            data: { stockQuantity: product.stockQuantity - quantityNum }
+          // 1. Catalog Lookup (Exact or Fuzzy)
+          let product = await tx.product.findFirst({
+            where: { tenantId: tenantId || "", name: itemNameTrimmed }
           });
-        }
 
-        const sale = await tx.sale.create({
-          data: {
-            itemName: itemNameTrimmed,
-            price: priceDecimal.toNumber(),
-            quantity: quantityNum,
-            total: totalAmount.toNumber(),
-            paidAmount: paid.toNumber(),
-            deferredAmount: deferred.toNumber(),
-            customerName: custName,
-            ...(effectiveIdempotencyKey && { idempotencyKey: effectiveIdempotencyKey }),
-            ...(customerId && { customerId }),
-            ...(tenantId && { tenantId })
+          if (!product) {
+            product = await tx.product.findFirst({
+              where: {
+                tenantId: tenantId || "",
+                name: { contains: itemNameTrimmed }
+              }
+            });
           }
-        });
+
+          if (!product) {
+            throw new Error("ITEM_NOT_IN_CATALOG");
+          }
+
+          const quantityNum = Number(quantity) || 1;
+          const unitPriceDecimal = (price && Number(price) > 0)
+            ? new Decimal(price)
+            : new Decimal(product.unitPrice);
+
+          const totalAmount = unitPriceDecimal.mul(new Decimal(quantityNum));
+          let paid = (paid_amount !== undefined && Number(paid_amount) > 0 ? new Decimal(paid_amount) : totalAmount).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+          if (paid.gt(totalAmount)) paid = totalAmount;
+          if (paid.isNegative()) paid = new Decimal(0);
+          let deferred = totalAmount.minus(paid).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+
+          if (product.isStockItem) {
+            if (product.stockQuantity < quantityNum) {
+              throw new Error(`INSUFFICIENT_STOCK:${product.stockQuantity}`);
+            }
+            
+            await tx.product.update({
+              where: { id: product.id },
+              data: { stockQuantity: product.stockQuantity - quantityNum }
+            });
+          }
+
+          const sale = await tx.sale.create({
+            data: {
+              itemName: itemNameTrimmed,
+              price: unitPriceDecimal.toNumber(),
+              quantity: quantityNum,
+              total: totalAmount.toNumber(),
+              paidAmount: paid.toNumber(),
+              deferredAmount: deferred.toNumber(),
+              customerName: custName,
+              ...(effectiveIdempotencyKey && { idempotencyKey: effectiveIdempotencyKey }),
+              ...(customerId && { customerId }),
+              ...(tenantId && { tenantId })
+            }
+          });
 
         if (customerId) {
            const existingDebit = await tx.customerLedgerEntry.findFirst({
@@ -1660,6 +1669,8 @@ export type LLMResult =
 async function saveChatMessage(tenantId?: string, telegramChatId?: string, role?: string, text?: string) {
   if (!tenantId || !telegramChatId || !text) return;
   try {
+    const tExists = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { id: true } });
+    if (!tExists) return;
     await prisma.chatMessage.create({
       data: { tenantId, telegramChatId, role: role || "user", text }
     });
@@ -1872,7 +1883,7 @@ export async function processTelegramMessageWithLLM(
         { role: "user", content: normalizedText }
       ];
 
-      const groqModels = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+      const groqModels = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "deepseek-r1-distill-llama-70b", "qwen-2.5-coder-32b"];
       let groqRes: any = null;
       let capturedFailedGen: string | null = null;
 

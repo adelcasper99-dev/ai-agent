@@ -57,8 +57,7 @@ def main():
 
     # Step 2: Remote Pull & Clean Bytecode
     print("\nSTEP 2: Remote Pull & Bytecode Purge on VPS...")
-    run_remote("git reset --hard HEAD")
-    run_remote("git pull origin main")
+    run_remote("git fetch origin && git reset --hard origin/main")
     run_remote("python3 voice_service/clean_cache.py voice_service || true")
 
     # Step 3: Dependencies & Prisma Build

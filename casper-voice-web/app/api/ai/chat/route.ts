@@ -1,12 +1,22 @@
 import { prisma } from "@/lib/prisma";
 // app/api/ai/chat/route.ts
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getResolvedTenantId } from "@/lib/auth";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rl = rateLimit(ip, { limit: 20, windowMs: 60_000 });
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "لقد تجاوزت الحد المسموح به. حاول مجدداً بعد قليل." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+    );
+  }
+
   const resolvedTenantId = await getResolvedTenantId(req);
   if (!resolvedTenantId) {
     return new Response(JSON.stringify({ error: "غير مصرح" }), {

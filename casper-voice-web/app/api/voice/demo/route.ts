@@ -3,9 +3,18 @@ import { NextResponse } from 'next/server';
 import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  const rl = rateLimit(ip, { limit: 10, windowMs: 60_000 });
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "تجاوزت الحد المسموح. حاول بعد دقيقة." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+    );
+  }
   try {
     const { text, voice = 'salma' } = await req.json();
     const demoText = text || 'خلاص يا باشا، سجلتلك 50 جنيه بنزين في المصاريف وزي الفل!';

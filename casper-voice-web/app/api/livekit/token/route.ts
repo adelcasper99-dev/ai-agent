@@ -2,8 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AccessToken } from 'livekit-server-sdk';
 import { prisma } from "@/lib/prisma";
 import { getResolvedTenantId } from "@/lib/auth";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rl = rateLimit(ip, { limit: 10, windowMs: 60_000 });
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "تجاوزت الحد المسموح لطلبات التوكن." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+    );
+  }
   try {
     const tenantId = await getResolvedTenantId(req);
     if (!tenantId) {

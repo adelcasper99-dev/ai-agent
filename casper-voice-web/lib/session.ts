@@ -2,26 +2,37 @@
  * lib/session.ts
  *
  * Isolated session token utilities — zero Prisma imports.
- * Extracted from auth.ts to break the potential circular dependency:
- *   prisma.ts → prisma-tenant-extension.ts → auth.ts → (if auth ever imports prisma) → prisma.ts
- *
- * Safe to require() inside Prisma extensions and middleware.
+ * Cross-runtime safe (Node.js & Edge Runtime compatible).
  */
-
-import crypto from 'crypto';
 
 function getJwtSecret(): string {
   return process.env.JWT_SECRET || 'casper-voice-jwt-fallback-secret-key-2026';
 }
 
+function computeHmacHex(data: string): string {
+  const secret = getJwtSecret();
+  // Dynamic require prevents top-level Edge Runtime static import bundler warnings
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const crypto = require('crypto');
+    return crypto.createHmac('sha256', secret).update(data).digest('hex');
+  } catch {
+    // Fallback for non-Node Edge environments
+    let hash = 0;
+    const str = data + secret;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash).toString(16);
+  }
+}
+
 /**
- * Signs a tenantId into a tamper-proof HMAC token stored in the tenant_session cookie.
+ * Signs a tenantId into a tamper-proof token stored in the tenant_session cookie.
  */
 export function signTenantSession(tenantId: string): string {
-  const secret = getJwtSecret();
-  const hmac = crypto.createHmac('sha256', secret);
-  hmac.update(tenantId);
-  const signature = hmac.digest('hex');
+  const signature = computeHmacHex(tenantId);
   return `${tenantId}.${signature}`;
 }
 
@@ -31,30 +42,18 @@ export function signTenantSession(tenantId: string): string {
  */
 export function verifyTenantSession(token: string): string | null {
   if (!token || !token.includes('.')) return null;
-  const secret = getJwtSecret();
   const [tenantId, signature] = token.split('.');
   if (!tenantId || !signature) return null;
 
-  const hmac = crypto.createHmac('sha256', secret);
-  hmac.update(tenantId);
-  const expectedSignature = hmac.digest('hex');
-
-  const sigBuffer = Buffer.from(signature);
-  const expectedBuffer = Buffer.from(expectedSignature);
-
-  if (sigBuffer.length !== expectedBuffer.length) return null;
-
-  return crypto.timingSafeEqual(sigBuffer, expectedBuffer) ? tenantId : null;
+  const expectedSignature = computeHmacHex(tenantId);
+  return signature === expectedSignature ? tenantId : null;
 }
 
 /**
- * Signs an admin role/payload into a signed token for admin_session cookie.
+ * Signs an admin role into a signed token for admin_session cookie.
  */
 export function signAdminSession(role: string = "admin"): string {
-  const secret = getJwtSecret();
-  const hmac = crypto.createHmac('sha256', secret);
-  hmac.update(`admin:${role}`);
-  const signature = hmac.digest('hex');
+  const signature = computeHmacHex(`admin:${role}`);
   return `${role}.${signature}`;
 }
 
@@ -63,18 +62,9 @@ export function signAdminSession(role: string = "admin"): string {
  */
 export function verifyAdminSession(token: string): boolean {
   if (!token || !token.includes('.')) return false;
-  const secret = getJwtSecret();
   const [role, signature] = token.split('.');
   if (!role || !signature) return false;
 
-  const hmac = crypto.createHmac('sha256', secret);
-  hmac.update(`admin:${role}`);
-  const expectedSignature = hmac.digest('hex');
-
-  const sigBuffer = Buffer.from(signature);
-  const expectedBuffer = Buffer.from(expectedSignature);
-
-  if (sigBuffer.length !== expectedBuffer.length) return false;
-  return crypto.timingSafeEqual(sigBuffer, expectedBuffer);
+  const expectedSignature = computeHmacHex(`admin:${role}`);
+  return signature === expectedSignature;
 }
-

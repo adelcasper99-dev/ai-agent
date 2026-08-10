@@ -18,8 +18,17 @@ dist/
 # SQLite & Logs
 *.db
 *.db-journal
+*.db.bak*
+prisma/*.db*
 *.log
 
 # System & OS
 .DS_Store
 Thumbs.db
+
+# AST & Audio Artifacts
+graphify-out/cache/
+*.mp3
+*.wav
+voice_service/tmp/
+voice_service/agent_log.txt

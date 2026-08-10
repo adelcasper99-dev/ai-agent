@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyAdminSession } from '@/lib/session';
 
 // المسارات اللي لازم تفضل مفتوحة من غير login (تليجرام لازم يوصلها من برا)
 const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/telegram/webhook', '/telegram-voice', '/api/livekit/token', '/api/health/voice'];
@@ -30,8 +31,6 @@ function isInternalSecretValid(headerSecret: string | null): boolean {
     return result === 0;
   }
 }
-
-import { verifyAdminSession } from '@/lib/session';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

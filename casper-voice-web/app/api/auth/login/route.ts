@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
-import { signTenantSession } from "@/lib/auth";
+import { signTenantSession, signAdminSession } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   const { password } = await request.json();
@@ -29,9 +29,10 @@ export async function POST(request: NextRequest) {
     }
 
     const tenantToken = signTenantSession(tenant.id);
+    const adminToken = signAdminSession("admin");
 
     const response = NextResponse.json({ success: true });
-    response.cookies.set('admin_session', 'valid', {
+    response.cookies.set('admin_session', adminToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

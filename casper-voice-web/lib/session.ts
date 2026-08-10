@@ -46,3 +46,35 @@ export function verifyTenantSession(token: string): string | null {
 
   return crypto.timingSafeEqual(sigBuffer, expectedBuffer) ? tenantId : null;
 }
+
+/**
+ * Signs an admin role/payload into a signed token for admin_session cookie.
+ */
+export function signAdminSession(role: string = "admin"): string {
+  const secret = getJwtSecret();
+  const hmac = crypto.createHmac('sha256', secret);
+  hmac.update(`admin:${role}`);
+  const signature = hmac.digest('hex');
+  return `${role}.${signature}`;
+}
+
+/**
+ * Verifies the admin_session cookie value. Returns boolean.
+ */
+export function verifyAdminSession(token: string): boolean {
+  if (!token || !token.includes('.')) return false;
+  const secret = getJwtSecret();
+  const [role, signature] = token.split('.');
+  if (!role || !signature) return false;
+
+  const hmac = crypto.createHmac('sha256', secret);
+  hmac.update(`admin:${role}`);
+  const expectedSignature = hmac.digest('hex');
+
+  const sigBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expectedSignature);
+
+  if (sigBuffer.length !== expectedBuffer.length) return false;
+  return crypto.timingSafeEqual(sigBuffer, expectedBuffer);
+}
+

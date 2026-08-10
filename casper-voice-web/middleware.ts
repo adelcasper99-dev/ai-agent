@@ -31,6 +31,8 @@ function isInternalSecretValid(headerSecret: string | null): boolean {
   }
 }
 
+import { verifyAdminSession } from '@/lib/session';
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -47,7 +49,7 @@ export function middleware(request: NextRequest) {
 
   const session = request.cookies.get('admin_session');
 
-  if (!session || session.value !== 'valid') {
+  if (!session || (!verifyAdminSession(session.value) && session.value !== 'valid')) {
     // لو API request رجّع 401 بدل ما تعمل redirect
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

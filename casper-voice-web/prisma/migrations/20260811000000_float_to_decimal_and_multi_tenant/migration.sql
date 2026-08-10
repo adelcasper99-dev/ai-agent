@@ -1,80 +1,9 @@
-﻿-- CreateTable
-CREATE TABLE "Setting" (
-    "key" TEXT NOT NULL PRIMARY KEY,
-    "value" TEXT NOT NULL
-);
+-- Data-preserving Float to Decimal & Multi-tenant SQLite migration script
+PRAGMA foreign_keys=OFF;
+PRAGMA defer_foreign_keys=ON;
 
--- CreateTable
-CREATE TABLE "Tenant" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT NOT NULL,
-    "phoneNumber" TEXT,
-    "state" TEXT NOT NULL DEFAULT 'trial',
-    "telegramChatId" TEXT,
-    "subscriptionPlan" TEXT DEFAULT 'trial_14',
-    "expiresAt" DATETIME,
-    "businessType" TEXT,
-    "workingHours" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "setupCode" TEXT,
-    "businessConnectionId" TEXT,
-    "businessConnectionActive" BOOLEAN NOT NULL DEFAULT false,
-    "ownerTelegramUserId" TEXT,
-    "ownerTelegramChatId" TEXT,
-    "pendingBusinessConnectionId" TEXT,
-    "pendingBusinessConnectionUserId" TEXT
-);
-
--- CreateTable
-CREATE TABLE "PendingTenantRequest" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "telegramChatId" TEXT NOT NULL,
-    "customerName" TEXT NOT NULL,
-    "phoneNumber" TEXT,
-    "status" TEXT NOT NULL DEFAULT 'pending',
-    "subscriptionPlan" TEXT DEFAULT 'trial_14',
-    "expiresAt" DATETIME,
-    "requestedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "decidedAt" DATETIME,
-    "decidedBy" TEXT
-);
-
--- CreateTable
-CREATE TABLE "Conversation" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "tenantId" TEXT,
-    "channel" TEXT NOT NULL,
-    "transcript" TEXT NOT NULL,
-    "summary" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- CreateTable
-CREATE TABLE "KnowledgeItem" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "tenantId" TEXT,
-    "question" TEXT NOT NULL,
-    "answer" TEXT NOT NULL,
-    "keywords" TEXT NOT NULL DEFAULT '[]',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "KnowledgeItem_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE SET NULL ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "Expense" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "tenantId" TEXT,
-    "amount" DECIMAL NOT NULL,
-    "description" TEXT NOT NULL,
-    "category" TEXT NOT NULL DEFAULT 'عام',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "Expense_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE SET NULL ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "Product" (
+-- 1. Product (unitPrice: Float -> Decimal)
+CREATE TABLE IF NOT EXISTS "new_Product" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "tenantId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -85,9 +14,15 @@ CREATE TABLE "Product" (
     "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Product_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
+INSERT INTO "new_Product" ("id", "tenantId", "name", "isStockItem", "stockQuantity", "unitPrice", "createdAt", "updatedAt")
+SELECT "id", "tenantId", "name", "isStockItem", "stockQuantity", "unitPrice", "createdAt", "updatedAt" FROM "Product";
+DROP TABLE IF EXISTS "Product";
+ALTER TABLE "new_Product" RENAME TO "Product";
+CREATE UNIQUE INDEX IF NOT EXISTS "Product_tenantId_name_key" ON "Product"("tenantId", "name");
+CREATE INDEX IF NOT EXISTS "Product_tenantId_idx" ON "Product"("tenantId");
 
--- CreateTable
-CREATE TABLE "Sale" (
+-- 2. Sale (price, total, paidAmount, deferredAmount: Float -> Decimal)
+CREATE TABLE IF NOT EXISTS "new_Sale" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "tenantId" TEXT,
     "customerId" TEXT,
@@ -104,20 +39,15 @@ CREATE TABLE "Sale" (
     CONSTRAINT "Sale_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "Sale_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
+INSERT INTO "new_Sale" ("id", "tenantId", "customerId", "itemName", "price", "quantity", "total", "customerName", "paidAmount", "deferredAmount", "idempotencyKey", "createdAt", "updatedAt")
+SELECT "id", "tenantId", "customerId", "itemName", "price", "quantity", "total", "customerName", "paidAmount", "deferredAmount", "idempotencyKey", "createdAt", "updatedAt" FROM "Sale";
+DROP TABLE IF EXISTS "Sale";
+ALTER TABLE "new_Sale" RENAME TO "Sale";
+CREATE UNIQUE INDEX IF NOT EXISTS "Sale_tenantId_idempotencyKey_key" ON "Sale"("tenantId", "idempotencyKey");
+CREATE INDEX IF NOT EXISTS "Sale_tenantId_idx" ON "Sale"("tenantId");
 
--- CreateTable
-CREATE TABLE "Supplier" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "tenantId" TEXT,
-    "name" TEXT NOT NULL,
-    "phone" TEXT NOT NULL DEFAULT '',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "Supplier_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE SET NULL ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "Purchase" (
+-- 3. Purchase (totalAmount, paidAmount, deferredAmount: Float -> Decimal)
+CREATE TABLE IF NOT EXISTS "new_Purchase" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "tenantId" TEXT,
     "supplierId" TEXT NOT NULL,
@@ -131,9 +61,31 @@ CREATE TABLE "Purchase" (
     CONSTRAINT "Purchase_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "Purchase_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "Supplier" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
+INSERT INTO "new_Purchase" ("id", "tenantId", "supplierId", "itemName", "totalAmount", "paidAmount", "deferredAmount", "notes", "createdAt", "updatedAt")
+SELECT "id", "tenantId", "supplierId", "itemName", "totalAmount", "paidAmount", "deferredAmount", "notes", "createdAt", "updatedAt" FROM "Purchase";
+DROP TABLE IF EXISTS "Purchase";
+ALTER TABLE "new_Purchase" RENAME TO "Purchase";
+CREATE INDEX IF NOT EXISTS "Purchase_tenantId_idx" ON "Purchase"("tenantId");
 
--- CreateTable
-CREATE TABLE "SupplierPayment" (
+-- 4. Expense (amount: Float -> Decimal)
+CREATE TABLE IF NOT EXISTS "new_Expense" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "tenantId" TEXT,
+    "amount" DECIMAL NOT NULL,
+    "description" TEXT NOT NULL,
+    "category" TEXT NOT NULL DEFAULT 'عام',
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Expense_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+);
+INSERT INTO "new_Expense" ("id", "tenantId", "amount", "description", "category", "createdAt", "updatedAt")
+SELECT "id", "tenantId", "amount", "description", "category", "createdAt", "updatedAt" FROM "Expense";
+DROP TABLE IF EXISTS "Expense";
+ALTER TABLE "new_Expense" RENAME TO "Expense";
+CREATE INDEX IF NOT EXISTS "Expense_tenantId_idx" ON "Expense"("tenantId");
+
+-- 5. SupplierPayment (amount: Float -> Decimal)
+CREATE TABLE IF NOT EXISTS "new_SupplierPayment" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "tenantId" TEXT,
     "supplierId" TEXT NOT NULL,
@@ -143,37 +95,15 @@ CREATE TABLE "SupplierPayment" (
     CONSTRAINT "SupplierPayment_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "SupplierPayment_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "Supplier" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
+INSERT INTO "new_SupplierPayment" ("id", "tenantId", "supplierId", "amount", "notes", "createdAt")
+SELECT "id", "tenantId", "supplierId", "amount", "notes", "createdAt" FROM "SupplierPayment";
+DROP TABLE IF EXISTS "SupplierPayment";
+ALTER TABLE "new_SupplierPayment" RENAME TO "SupplierPayment";
+CREATE INDEX IF NOT EXISTS "SupplierPayment_tenantId_idx" ON "SupplierPayment"("tenantId");
+CREATE INDEX IF NOT EXISTS "SupplierPayment_supplierId_idx" ON "SupplierPayment"("supplierId");
 
--- CreateTable
-CREATE TABLE "Appointment" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "tenantId" TEXT,
-    "customerId" TEXT,
-    "customerName" TEXT NOT NULL,
-    "date" TEXT NOT NULL,
-    "time" TEXT NOT NULL,
-    "notes" TEXT NOT NULL DEFAULT '',
-    "status" TEXT NOT NULL DEFAULT 'scheduled',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "Appointment_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Appointment_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer" ("id") ON DELETE SET NULL ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "Customer" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "tenantId" TEXT,
-    "name" TEXT NOT NULL,
-    "phone" TEXT,
-    "telegramUserId" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "Customer_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE SET NULL ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "CustomerLedgerEntry" (
+-- 6. CustomerLedgerEntry (amount: Float -> Decimal)
+CREATE TABLE IF NOT EXISTS "new_CustomerLedgerEntry" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "tenantId" TEXT,
     "customerId" TEXT NOT NULL,
@@ -188,9 +118,17 @@ CREATE TABLE "CustomerLedgerEntry" (
     CONSTRAINT "CustomerLedgerEntry_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "CustomerLedgerEntry_saleId_fkey" FOREIGN KEY ("saleId") REFERENCES "Sale" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
+INSERT INTO "new_CustomerLedgerEntry" ("id", "tenantId", "customerId", "saleId", "entryType", "amount", "description", "idempotencyKey", "createdAt", "updatedAt")
+SELECT "id", "tenantId", "customerId", "saleId", "entryType", "amount", "description", "idempotencyKey", "createdAt", "updatedAt" FROM "CustomerLedgerEntry";
+DROP TABLE IF EXISTS "CustomerLedgerEntry";
+ALTER TABLE "new_CustomerLedgerEntry" RENAME TO "CustomerLedgerEntry";
+CREATE INDEX IF NOT EXISTS "CustomerLedgerEntry_tenantId_idx" ON "CustomerLedgerEntry"("tenantId");
+CREATE INDEX IF NOT EXISTS "CustomerLedgerEntry_customerId_idx" ON "CustomerLedgerEntry"("customerId");
+CREATE UNIQUE INDEX IF NOT EXISTS "CustomerLedgerEntry_idempotencyKey_key" ON "CustomerLedgerEntry"("idempotencyKey");
+CREATE UNIQUE INDEX IF NOT EXISTS "CustomerLedgerEntry_saleId_entryType_key" ON "CustomerLedgerEntry"("saleId", "entryType");
 
--- CreateTable
-CREATE TABLE "JournalEntry" (
+-- 7. JournalEntry (debit, credit: Float -> Decimal)
+CREATE TABLE IF NOT EXISTS "new_JournalEntry" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "tenantId" TEXT,
     "accountCode" TEXT NOT NULL,
@@ -201,266 +139,13 @@ CREATE TABLE "JournalEntry" (
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "JournalEntry_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
+INSERT INTO "new_JournalEntry" ("id", "tenantId", "accountCode", "debit", "credit", "referenceId", "description", "createdAt")
+SELECT "id", "tenantId", "accountCode", "debit", "credit", "referenceId", "description", "createdAt" FROM "JournalEntry";
+DROP TABLE IF EXISTS "JournalEntry";
+ALTER TABLE "new_JournalEntry" RENAME TO "JournalEntry";
+CREATE INDEX IF NOT EXISTS "JournalEntry_tenantId_idx" ON "JournalEntry"("tenantId");
+CREATE INDEX IF NOT EXISTS "JournalEntry_accountCode_idx" ON "JournalEntry"("accountCode");
+CREATE UNIQUE INDEX IF NOT EXISTS "JournalEntry_referenceId_accountCode_key" ON "JournalEntry"("referenceId", "accountCode");
 
--- CreateTable
-CREATE TABLE "TokenUsage" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "tenantId" TEXT,
-    "provider" TEXT NOT NULL,
-    "modelName" TEXT NOT NULL DEFAULT 'default',
-    "inputTokens" INTEGER NOT NULL DEFAULT 0,
-    "outputTokens" INTEGER NOT NULL DEFAULT 0,
-    "totalTokens" INTEGER NOT NULL DEFAULT 0,
-    "requestCount" INTEGER NOT NULL DEFAULT 1,
-    "dateStr" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- CreateTable
-CREATE TABLE "InteractionDiagnostics" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "channel" TEXT NOT NULL,
-    "sessionId" TEXT NOT NULL,
-    "tenantId" TEXT NOT NULL,
-    "audioSnrDb" REAL,
-    "audioClipping" BOOLEAN,
-    "vadCutoffs" INTEGER DEFAULT 0,
-    "silenceDurationMs" INTEGER,
-    "sttConfidence" REAL,
-    "rawTranscript" TEXT,
-    "correctedTranscript" TEXT,
-    "correctionApplied" BOOLEAN DEFAULT false,
-    "llmLatencyMs" INTEGER,
-    "ttsLatencyMs" INTEGER,
-    "hasIssue" BOOLEAN NOT NULL DEFAULT false,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "InteractionDiagnostics_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "ApiKeyPool" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "provider" TEXT NOT NULL,
-    "keyString" TEXT NOT NULL,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "isExhausted" BOOLEAN NOT NULL DEFAULT false,
-    "exhaustedAt" DATETIME,
-    "addedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- CreateTable
-CREATE TABLE "CsatRating" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "tenantId" TEXT,
-    "telegramChatId" TEXT NOT NULL,
-    "rating" INTEGER NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- CreateTable
-CREATE TABLE "AdminLinkToken" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "scope" TEXT NOT NULL DEFAULT 'GLOBAL',
-    "tenantId" TEXT,
-    "code" TEXT NOT NULL,
-    "used" BOOLEAN NOT NULL DEFAULT false,
-    "attempts" INTEGER NOT NULL DEFAULT 0,
-    "expiresAt" DATETIME NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "AdminLinkToken_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "AdminLinkAudit" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "scope" TEXT NOT NULL DEFAULT 'GLOBAL',
-    "tenantId" TEXT,
-    "oldChatId" TEXT,
-    "newChatId" TEXT NOT NULL,
-    "linkedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "AdminLinkAudit_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE SET NULL ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "ProcessedUpdate" (
-    "updateId" BIGINT NOT NULL PRIMARY KEY,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- CreateTable
-CREATE TABLE "PendingBusinessConnection" (
-    "telegramUserId" TEXT NOT NULL PRIMARY KEY,
-    "connectionId" TEXT NOT NULL,
-    "isDisabled" BOOLEAN NOT NULL DEFAULT false,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- CreateTable
-CREATE TABLE "RejectedToolCall" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "tenantId" TEXT,
-    "toolName" TEXT NOT NULL,
-    "rejectedArgs" TEXT NOT NULL,
-    "originalMessage" TEXT NOT NULL,
-    "reason" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- RedefineTables
-PRAGMA defer_foreign_keys=ON;
-PRAGMA foreign_keys=OFF;
-CREATE TABLE "new_ChatMessage" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "tenantId" TEXT NOT NULL,
-    "telegramChatId" TEXT NOT NULL,
-    "role" TEXT NOT NULL,
-    "text" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "ChatMessage_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-INSERT INTO "new_ChatMessage" ("createdAt", "id", "role", "telegramChatId", "tenantId", "text") SELECT "createdAt", "id", "role", "telegramChatId", "tenantId", "text" FROM "ChatMessage";
-DROP TABLE "ChatMessage";
-ALTER TABLE "new_ChatMessage" RENAME TO "ChatMessage";
-CREATE INDEX "ChatMessage_tenantId_telegramChatId_idx" ON "ChatMessage"("tenantId", "telegramChatId");
-CREATE INDEX "ChatMessage_createdAt_idx" ON "ChatMessage"("createdAt");
-CREATE TABLE "new_ConversationState" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "tenantId" TEXT NOT NULL,
-    "telegramChatId" TEXT NOT NULL,
-    "currentFlow" TEXT,
-    "currentStep" TEXT,
-    "collectedData" TEXT NOT NULL DEFAULT '{}',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "ConversationState_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-INSERT INTO "new_ConversationState" ("collectedData", "createdAt", "currentFlow", "currentStep", "id", "telegramChatId", "tenantId", "updatedAt") SELECT "collectedData", "createdAt", "currentFlow", "currentStep", "id", "telegramChatId", "tenantId", "updatedAt" FROM "ConversationState";
-DROP TABLE "ConversationState";
-ALTER TABLE "new_ConversationState" RENAME TO "ConversationState";
-CREATE UNIQUE INDEX "ConversationState_telegramChatId_key" ON "ConversationState"("telegramChatId");
-CREATE INDEX "ConversationState_tenantId_idx" ON "ConversationState"("tenantId");
 PRAGMA foreign_keys=ON;
 PRAGMA defer_foreign_keys=OFF;
-
--- CreateIndex
-CREATE UNIQUE INDEX "Tenant_phoneNumber_key" ON "Tenant"("phoneNumber");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Tenant_telegramChatId_key" ON "Tenant"("telegramChatId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Tenant_setupCode_key" ON "Tenant"("setupCode");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Tenant_businessConnectionId_key" ON "Tenant"("businessConnectionId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Tenant_ownerTelegramUserId_key" ON "Tenant"("ownerTelegramUserId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Tenant_ownerTelegramChatId_key" ON "Tenant"("ownerTelegramChatId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Tenant_pendingBusinessConnectionId_key" ON "Tenant"("pendingBusinessConnectionId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "PendingTenantRequest_telegramChatId_key" ON "PendingTenantRequest"("telegramChatId");
-
--- CreateIndex
-CREATE INDEX "Conversation_tenantId_idx" ON "Conversation"("tenantId");
-
--- CreateIndex
-CREATE INDEX "KnowledgeItem_tenantId_idx" ON "KnowledgeItem"("tenantId");
-
--- CreateIndex
-CREATE INDEX "Expense_tenantId_idx" ON "Expense"("tenantId");
-
--- CreateIndex
-CREATE INDEX "Product_tenantId_idx" ON "Product"("tenantId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Product_tenantId_name_key" ON "Product"("tenantId", "name");
-
--- CreateIndex
-CREATE INDEX "Sale_tenantId_idx" ON "Sale"("tenantId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Sale_tenantId_idempotencyKey_key" ON "Sale"("tenantId", "idempotencyKey");
-
--- CreateIndex
-CREATE INDEX "Supplier_tenantId_idx" ON "Supplier"("tenantId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Supplier_tenantId_name_key" ON "Supplier"("tenantId", "name");
-
--- CreateIndex
-CREATE INDEX "Purchase_tenantId_idx" ON "Purchase"("tenantId");
-
--- CreateIndex
-CREATE INDEX "SupplierPayment_tenantId_idx" ON "SupplierPayment"("tenantId");
-
--- CreateIndex
-CREATE INDEX "SupplierPayment_supplierId_idx" ON "SupplierPayment"("supplierId");
-
--- CreateIndex
-CREATE INDEX "Appointment_tenantId_idx" ON "Appointment"("tenantId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Customer_tenantId_phone_key" ON "Customer"("tenantId", "phone");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Customer_tenantId_name_key" ON "Customer"("tenantId", "name");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Customer_tenantId_telegramUserId_key" ON "Customer"("tenantId", "telegramUserId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "CustomerLedgerEntry_idempotencyKey_key" ON "CustomerLedgerEntry"("idempotencyKey");
-
--- CreateIndex
-CREATE INDEX "CustomerLedgerEntry_tenantId_idx" ON "CustomerLedgerEntry"("tenantId");
-
--- CreateIndex
-CREATE INDEX "CustomerLedgerEntry_customerId_idx" ON "CustomerLedgerEntry"("customerId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "CustomerLedgerEntry_saleId_entryType_key" ON "CustomerLedgerEntry"("saleId", "entryType");
-
--- CreateIndex
-CREATE INDEX "JournalEntry_tenantId_idx" ON "JournalEntry"("tenantId");
-
--- CreateIndex
-CREATE INDEX "JournalEntry_accountCode_idx" ON "JournalEntry"("accountCode");
-
--- CreateIndex
-CREATE UNIQUE INDEX "JournalEntry_referenceId_accountCode_key" ON "JournalEntry"("referenceId", "accountCode");
-
--- CreateIndex
-CREATE INDEX "TokenUsage_provider_dateStr_idx" ON "TokenUsage"("provider", "dateStr");
-
--- CreateIndex
-CREATE INDEX "TokenUsage_tenantId_dateStr_idx" ON "TokenUsage"("tenantId", "dateStr");
-
--- CreateIndex
-CREATE INDEX "InteractionDiagnostics_channel_hasIssue_idx" ON "InteractionDiagnostics"("channel", "hasIssue");
-
--- CreateIndex
-CREATE INDEX "InteractionDiagnostics_sessionId_idx" ON "InteractionDiagnostics"("sessionId");
-
--- CreateIndex
-CREATE INDEX "InteractionDiagnostics_tenantId_idx" ON "InteractionDiagnostics"("tenantId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "ApiKeyPool_keyString_key" ON "ApiKeyPool"("keyString");
-
--- CreateIndex
-CREATE INDEX "CsatRating_tenantId_idx" ON "CsatRating"("tenantId");
-
--- CreateIndex
-CREATE INDEX "AdminLinkToken_code_used_expiresAt_idx" ON "AdminLinkToken"("code", "used", "expiresAt");
-
--- CreateIndex
-CREATE INDEX "AdminLinkToken_tenantId_used_idx" ON "AdminLinkToken"("tenantId", "used");
-
--- CreateIndex
-CREATE INDEX "RejectedToolCall_tenantId_createdAt_idx" ON "RejectedToolCall"("tenantId", "createdAt");

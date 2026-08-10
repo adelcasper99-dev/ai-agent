@@ -15,16 +15,16 @@ describe("Tenant Auth Engine", () => {
     process.env = ORIGINAL_ENV;
   });
 
-  it("should fail-closed if JWT_SECRET is missing", () => {
+  it("should fail-closed if JWT_SECRET is missing", async () => {
     delete process.env.JWT_SECRET;
-    expect(() => signTenantSession("tenant-123")).toThrow(
+    await expect(signTenantSession("tenant-123")).rejects.toThrow(
       /JWT_SECRET environment variable is not set/
     );
   });
 
   it("1. Valid tenant_session cookie returns verified tenantId", async () => {
     const tenantId = "tenant-pilot-999";
-    const signedToken = signTenantSession(tenantId);
+    const signedToken = await signTenantSession(tenantId);
 
     const req = new NextRequest("http://localhost/api/sales", {
       headers: {
@@ -68,7 +68,7 @@ describe("Tenant Auth Engine", () => {
 
   it("5. Tampered tenant_session cookie returns undefined", async () => {
     const tenantId = "tenant-pilot-999";
-    const signedToken = signTenantSession(tenantId);
+    const signedToken = await signTenantSession(tenantId);
     const tamperedToken = signedToken.replace("tenant-pilot-999", "tenant-hacked-000");
 
     const req = new NextRequest("http://localhost/api/sales", {

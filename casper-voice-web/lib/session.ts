@@ -6,7 +6,13 @@
  */
 
 function getJwtSecret(): string {
-  return process.env.JWT_SECRET || 'casper-voice-jwt-fallback-secret-key-2026';
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error(
+      '[session.ts] JWT_SECRET environment variable is not set. Cannot sign or verify sessions.'
+    );
+  }
+  return secret;
 }
 
 function computeHmacHex(data: string): string {

@@ -28,13 +28,15 @@ import { buildWhisperPrompt } from "@/lib/whisper_prompt";
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Webhook Secret Token Verification
+    // 1. Webhook Secret Token Verification — fail closed if TELEGRAM_WEBHOOK_SECRET unset
     const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
-    if (expectedSecret) {
-      const secretHeader = req.headers.get("x-telegram-bot-api-secret-token");
-      if (secretHeader !== expectedSecret) {
-        return NextResponse.json({ error: "Unauthorized webhook caller" }, { status: 401 });
-      }
+    if (!expectedSecret) {
+      console.error('[telegram/webhook] TELEGRAM_WEBHOOK_SECRET is not set — rejecting all requests.');
+      return NextResponse.json({ error: 'Service misconfigured' }, { status: 503 });
+    }
+    const secretHeader = req.headers.get("x-telegram-bot-api-secret-token");
+    if (secretHeader !== expectedSecret) {
+      return NextResponse.json({ error: "Unauthorized webhook caller" }, { status: 401 });
     }
 
     const rawUpdate = await req.json();

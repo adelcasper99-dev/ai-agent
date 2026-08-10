@@ -39,3 +39,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# database backups — must not re-enter version control
+*.db.bak*
+prisma/*.db*
+
+# graphify AST cache — regenerated locally, never needed in git
+graphify-out/cache/
+
+# audio artifacts
+*.mp3
+*.wav
+
+# runtime logs
+*.log
+voice_service/tmp/
+voice_service/agent_log.txt

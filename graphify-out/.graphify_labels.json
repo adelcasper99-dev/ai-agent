@@ -448,15 +448,12 @@
   "446": "test_overlap.js",
   "447": "test_text_simulation_guard.js",
   "448": "inline-ignores.mjs",
-  "449": "Generate Report",
   "450": "test_auto_normalization.js",
   "451": "check_latest_rejection.js",
   "452": "cleanup_corrupted_ledger.js",
   "453": "investigate_sale_financial_anomaly.js",
   "454": "test_sales_api_route.js",
   "455": "expandScanTargets",
-  "456": "Adaptation Strategies",
-  "457": "middleware.ts",
   "458": "run_all_14_scenarios.ts",
   "459": "patch_agent.py"
 }

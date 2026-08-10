@@ -8,9 +8,9 @@ export { signTenantSession, verifyTenantSession, signAdminSession, verifyAdminSe
 export async function getResolvedTenantId(req: NextRequest): Promise<string | undefined> {
   // 1. Internal service authentication (e.g. Telegram webhook bot)
   const reqSecret = req.headers.get("x-internal-secret");
-  const expectedSecret = process.env.INTERNAL_SERVICE_SECRET || "casper-voice-internal-secret-9988776655";
+  const expectedSecret = process.env.INTERNAL_SERVICE_SECRET;
 
-  if (reqSecret) {
+  if (reqSecret && expectedSecret) {
     const reqBuffer = Buffer.from(reqSecret);
     const expectedBuffer = Buffer.from(expectedSecret);
     if (

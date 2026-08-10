@@ -52,7 +52,20 @@ LiveKit Room  ──►  voice_service/agent.py
 | `Sale` | `itemName`, `price`, `quantity`, `total`, `createdAt` | مبيعات |
 | `Appointment` | `customerName`, `date`, `time`, `notes`, `status` | مواعيد |
 
-كل الجداول دي **بدون tenant** — تصميم single-business مقصود بناءً على طلبك (مش عاوز تعقيد دلوقتي).
+كل الجداول تدعم **المستأجرين المتعددين (Multi-Tenancy)** عبر `tenantId` لضمان عزلة البيانات لكل عميل/مشروع.
+
+---
+
+## 3.1 نماذج Multi-Tenancy المضافة
+
+| الموديل | الحقول الأساسية | الاستخدام |
+|---|---|---|
+| `Tenant` | `id`, `name`, `phone`, `status`, `apiKey` | بيانات المنشأة/العميل ورابط التليجرام |
+| `PendingTenantRequest` | `phone`, `name`, `status`, `createdAt` | طلبات الاشتراك المعلقة |
+| `AuditLog` | `tenantId`, `action`, `details`, `timestamp` | سجل العمليات الحساسة |
+| `TokenUsage` | `tenantId`, `dateStr`, `provider`, `totalTokens` | تتبع استهلاك التوكنز وتحديد الحدود |
+| `Supplier` / `Purchase` | `tenantId`, `name`, `balance`, `amount` | إدارة الموردين والمشتريات |
+| `InteractionDiagnostics` | `tenantId`, `promptText`, `extractedEntities` | تشخيص وتتبع دقة الاستخراج الصوتي |
 
 ---
 

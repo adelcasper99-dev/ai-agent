@@ -15,7 +15,7 @@ export const tenantStorage = (asyncHooks.AsyncLocalStorage
   ? new asyncHooks.AsyncLocalStorage()
   : null) as unknown as AsyncLocalStorage<TenantContext>;
 
-export function getTenantId(): string | undefined {
+export async function getTenantId(): Promise<string | undefined> {
   if (!tenantStorage) return undefined;
   const stored = tenantStorage.getStore()?.tenantId;
   if (stored) return stored;
@@ -27,7 +27,7 @@ export function getTenantId(): string | undefined {
 
     // Check x-tenant-id header first (internal service fast-path with secret verification)
     try {
-      const reqHeaders = headers();
+      const reqHeaders = await headers();
       const raw = reqHeaders.get('x-tenant-id');
       const reqSecret = reqHeaders.get('x-internal-secret');
       const expectedSecret = process.env.INTERNAL_SERVICE_SECRET;
@@ -47,7 +47,7 @@ export function getTenantId(): string | undefined {
 
     // Fallback 2: tenant_session cookie (web dashboard routes)
     try {
-      const cookieStore = cookies();
+      const cookieStore = await cookies();
       const tenantCookie = cookieStore.get('tenant_session')?.value;
       if (tenantCookie) {
         // Use session.ts (no Prisma imports) to avoid circular dep: prisma → extension → auth → prisma
@@ -94,7 +94,7 @@ export const prismaTenantExtension =
           query: {
             $allModels: {
               async $allOperations({ model, operation, args, query }) {
-                const tenantId = getTenantId();
+                const tenantId = await getTenantId();
 
                 // No tenant context or SYSTEM (Super Admin bypass) — skip filters
                 if (!tenantId || tenantId === 'SYSTEM') {

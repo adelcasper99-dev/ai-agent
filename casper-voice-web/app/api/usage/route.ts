@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const today = new Date().toISOString().split('T')[0];
 
-    // Query TokenUsage from DB if available
+    // Query TokenUsage from DB for Gemini
     let geminiUsed = 0;
     try {
       const usageRows = await (prisma as any).tokenUsage.findMany({
@@ -19,6 +19,21 @@ export async function GET() {
     const geminiLimit = 1500000; // 1.5M free tier per day
     const geminiRemaining = Math.max(0, geminiLimit - geminiUsed);
     const geminiPct = Math.min(100, Math.round((geminiUsed / geminiLimit) * 100));
+
+    // Query TokenUsage from DB for Groq
+    let groqUsed = 0;
+    try {
+      const groqRows = await (prisma as any).tokenUsage.findMany({
+        where: { dateStr: today, provider: 'groq' },
+      });
+      groqUsed = groqRows.reduce((acc: number, r: any) => acc + (r.totalTokens || 0), 0);
+    } catch (e) {
+      // Fallback
+    }
+
+    const groqLimit = 14400;
+    const groqRemaining = Math.max(0, groqLimit - groqUsed);
+    const groqPct = Math.min(100, Math.round((groqUsed / groqLimit) * 100));
 
     const response = {
       dateStr: today,
@@ -34,18 +49,18 @@ export async function GET() {
         },
         groq: {
           name: 'Groq Cloud (Whisper + Llama 3.3)',
-          usedRequests: 12,
-          limitRequests: 14400,
-          remainingRequests: 14388,
-          percentage: 1,
+          usedRequests: groqUsed,
+          limitRequests: groqLimit,
+          remainingRequests: groqRemaining,
+          percentage: groqPct,
           dashboardUrl: 'https://console.groq.com/',
           badge: 'Groq Speed LLM',
         },
         livekit: {
           name: 'LiveKit Cloud Server',
-          bandwidthUsed: '1.2 GB',
+          bandwidthUsed: 'Livekit Agent Active',
           bandwidthLimit: '50 GB / mo',
-          percentage: 2,
+          percentage: 0,
           dashboardUrl: 'https://cloud.livekit.io/',
           badge: 'Realtime Voice Transport',
         },

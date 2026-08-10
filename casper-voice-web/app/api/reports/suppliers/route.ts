@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 // app/api/reports/suppliers/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 
 
 export async function GET(req: NextRequest) {
@@ -23,8 +24,8 @@ export async function GET(req: NextRequest) {
 
     // Compute live total debt per supplier via sum of deferredAmount
     const suppliersWithDebt = suppliers.map((supplier) => {
-      const totalDebt = supplier.purchases.reduce((acc, p) => acc + p.deferredAmount, 0);
-      const totalPurchasesAmount = supplier.purchases.reduce((acc, p) => acc + p.totalAmount, 0);
+      const totalDebt = supplier.purchases.reduce((acc, p) => acc.plus(p.deferredAmount), new Prisma.Decimal(0));
+      const totalPurchasesAmount = supplier.purchases.reduce((acc, p) => acc.plus(p.totalAmount), new Prisma.Decimal(0));
       return {
         ...supplier,
         totalDebt,

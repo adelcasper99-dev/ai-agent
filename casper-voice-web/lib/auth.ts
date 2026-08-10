@@ -27,7 +27,7 @@ export async function getResolvedTenantId(req: NextRequest): Promise<string | un
     return undefined;
   }
 
-  const verifiedTenantId = verifyTenantSession(tenantCookie.value);
+  const verifiedTenantId = await verifyTenantSession(tenantCookie.value);
   return verifiedTenantId || undefined;
 }
 

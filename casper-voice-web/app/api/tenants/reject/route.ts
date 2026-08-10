@@ -7,7 +7,7 @@ import { verifyAdminSession } from "@/lib/session";
 export async function POST(req: NextRequest) {
   try {
     const sessionCookie = req.cookies.get("admin_session")?.value;
-    const isCookieAuthorized = Boolean(sessionCookie) && verifyAdminSession(sessionCookie!);
+    const isCookieAuthorized = Boolean(sessionCookie) && (await verifyAdminSession(sessionCookie!));
     const isServiceAuthorized = isInternalAuthValid(req);
 
     if (!isCookieAuthorized && !isServiceAuthorized) {

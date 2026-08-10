@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getResolvedTenantId, isInternalAuthValid } from "@/lib/auth";
+import { verifyAdminSession } from "@/lib/session";
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,7 +9,7 @@ export async function POST(req: NextRequest) {
     const tenantIdFromSession = await getResolvedTenantId(req);
     const adminKey = process.env.ADMIN_KEY;
     const isSuperAdmin =
-      adminSessionCookie === "valid" ||
+      (Boolean(adminSessionCookie) && (await verifyAdminSession(adminSessionCookie!))) ||
       isInternalAuthValid(req) ||
       (Boolean(adminKey) && req.headers.get("x-admin-key") === adminKey);
 

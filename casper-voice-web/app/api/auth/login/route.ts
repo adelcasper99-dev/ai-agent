@@ -38,8 +38,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const tenantToken = signTenantSession(tenant.id);
-    const adminToken = signAdminSession("admin");
+    const tenantToken = await signTenantSession(tenant.id);
+    const adminToken = await signAdminSession("admin");
 
     const response = NextResponse.json({ success: true });
     response.cookies.set('admin_session', adminToken, {

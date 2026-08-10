@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   try {
     const sessionCookie = req.cookies.get("admin_session")?.value;
     const isAuthorized =
-      (Boolean(sessionCookie) && verifyAdminSession(sessionCookie!)) ||
+      (Boolean(sessionCookie) && (await verifyAdminSession(sessionCookie!))) ||
       isInternalAuthValid(req);
 
     if (!isAuthorized) {

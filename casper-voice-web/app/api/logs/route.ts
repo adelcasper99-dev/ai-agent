@@ -7,7 +7,7 @@ import path from 'path';
 async function requireAdmin() {
   const cookieStore = await cookies();
   const token = cookieStore.get('admin_session')?.value;
-  if (!token || !verifyAdminSession(token)) {
+  if (!token || !(await verifyAdminSession(token))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   return null;

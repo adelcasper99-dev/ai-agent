@@ -15,13 +15,13 @@ describe("Prisma Tenant Extension getTenantId", () => {
 
   it("1. runWithTenant correctly scopes tenant context", async () => {
     await runWithTenant("tenant-ctx-100", async () => {
-      const tenantId = getTenantId();
+      const tenantId = await getTenantId();
       expect(tenantId).toBe("tenant-ctx-100");
     });
   });
 
-  it("2. Returns undefined when outside AsyncLocalStorage and headers context", () => {
-    const tenantId = getTenantId();
+  it("2. Returns undefined when outside AsyncLocalStorage and headers context", async () => {
+    const tenantId = await getTenantId();
     expect(tenantId).toBeUndefined();
   });
 });

@@ -32,7 +32,7 @@ function isInternalSecretValid(headerSecret: string | null): boolean {
   }
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. سيب المسارات العامة تعدي من غير فحص
@@ -48,7 +48,7 @@ export function middleware(request: NextRequest) {
 
   const session = request.cookies.get('admin_session');
 
-  if (!session || !verifyAdminSession(session.value)) {
+  if (!session || !(await verifyAdminSession(session.value))) {
     // لو API request رجّع 401 بدل ما تعمل redirect
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

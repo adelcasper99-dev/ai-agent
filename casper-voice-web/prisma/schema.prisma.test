@@ -116,7 +116,7 @@ model Product {
   name          String
   isStockItem   Boolean  @default(true)   // false = service (consulting, delivery, etc.)
   stockQuantity Int      @default(0)      // ignored when isStockItem = false
-  unitPrice     Decimal
+  unitPrice     Float                     // using Float to match existing money convention in Sale.price
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
 
@@ -132,12 +132,12 @@ model Sale {
   customerId     String?
   customer       Customer? @relation(fields: [customerId], references: [id])
   itemName       String
-  price          Decimal
+  price          Float
   quantity       Int      @default(1)
-  total          Decimal
+  total          Float
   customerName   String   @default("")
-  paidAmount     Decimal    @default(0)
-  deferredAmount Decimal    @default(0)
+  paidAmount     Float    @default(0)
+  deferredAmount Float    @default(0)
   idempotencyKey String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
@@ -171,9 +171,9 @@ model Purchase {
   supplierId     String
   supplier       Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   itemName       String
-  totalAmount    Decimal
-  paidAmount     Decimal    @default(0)
-  deferredAmount Decimal    @default(0)
+  totalAmount    Float
+  paidAmount     Float    @default(0)
+  deferredAmount Float    @default(0)
   notes          String   @default("")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
@@ -187,7 +187,7 @@ model SupplierPayment {
   tenant     Tenant?  @relation(fields: [tenantId], references: [id])
   supplierId String
   supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  amount      Decimal
+  amount     Float
   notes      String   @default("")
   createdAt  DateTime @default(now())
 
@@ -262,8 +262,8 @@ model JournalEntry {
   tenant      Tenant?  @relation(fields: [tenantId], references: [id])
   
   accountCode String   // e.g. "CASH", "ACCOUNTS_RECEIVABLE", "SALES_REVENUE"
-  debit       Decimal    @default(0)
-  credit      Decimal    @default(0)
+  debit       Float    @default(0)
+  credit      Float    @default(0)
   referenceId String?  // ID of the related Sale or LedgerEntry
   description String   @default("")
   

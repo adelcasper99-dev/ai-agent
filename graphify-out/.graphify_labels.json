@@ -264,7 +264,6 @@
   "262": "🛸 ورك فلو عمليات المرتجع (Returns Workflow)",
   "263": "🗄️ Database Optimizer",
   "264": "Diagnostic Scan",
-  "265": "Android platform",
   "266": "caveman-SKILL.md",
   "267": "loc.test.js",
   "268": "Local model benchmark: llama3.2 via Ollama — 2026-06-15",
@@ -458,6 +457,5 @@
   "456": "Adaptation Strategies",
   "457": "route.ts",
   "458": "run_all_14_scenarios.ts",
-  "459": "patch_agent.py",
-  "461": "preflight_check.py"
+  "459": "patch_agent.py"
 }

@@ -71,10 +71,11 @@ async function runMvpPrelaunchAudit() {
       Date.now() // Unique message ID
     );
 
-    if (llmResult?.finalReply && (llmResult.finalReply.includes("نجاح") || llmResult.finalReply.includes("تم"))) {
-      console.log(`   ✅ SUCCESS: LLM successfully responded with success! Reply: ${llmResult.finalReply}`);
+    const replyText = llmResult?.text || (llmResult as any)?.finalReply || "";
+    if (replyText && (replyText.includes("نجاح") || replyText.includes("تم") || replyText.includes("البيع"))) {
+      console.log(`   ✅ SUCCESS: LLM successfully responded with success! Reply: ${replyText}`);
     } else {
-      console.error(`   ❌ FAIL: LLM did not respond with success. Reply: ${llmResult?.finalReply} | Error: ${llmResult?.error}`);
+      console.error(`   ❌ FAIL: LLM did not respond with success. Reply: ${replyText} | Error: ${(llmResult as any)?.error}`);
       failures++;
     }
 

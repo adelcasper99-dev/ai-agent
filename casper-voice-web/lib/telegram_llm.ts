@@ -1719,7 +1719,7 @@ export async function processTelegramMessageWithLLM(
   // === END small-talk router ===
 
   // Try models in order - first available free-tier model wins
-  const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro", "gemini-1.5-pro"];
+  const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro"];
   let lastError: any = null;
   const maxRetries = 3;
 
@@ -1761,11 +1761,14 @@ export async function processTelegramMessageWithLLM(
      - عند قول "تعديل المخزون", "الجرد", "الرصيد الفعلي لصنف X كام", "صحح مخزون X", "المخزون الفعلي لـ X = N" -> استخدم أداة update_stock مع اسم الصنف والكمية الجديدة.
      - لا تستخدم add_product لتعديل الكمية، add_product للإضافة فقط.`;
 
-  // Format history for Gemini SDK
+  // Format history for Gemini SDK & ensure history starts with user role
   const geminiHistory = rawHistory.map(h => ({
     role: h.role === "assistant" ? "model" : "user",
     parts: [{ text: h.text }]
   }));
+  while (geminiHistory.length > 0 && geminiHistory[0].role === "model") {
+    geminiHistory.shift();
+  }
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     let apiKey: string;

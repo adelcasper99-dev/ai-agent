@@ -1,29 +1,41 @@
-session_intent: "Fix Telegram LLM monetary hallucination, per-tenant deterministic idempotency keys, composite unique Prisma schema, and financial sanity paid_amount auto-normalization guard"
+session_intent: "Verify and audit 14 Telegram LLM functions end-to-end, implement missing stock adjustment (update_stock) and customer registration (add_customer) tools, resolve Groq fallback rotation issues, enforce TypeScript strict null checks, and deploy updated system to HQ VPS server (109.123.247.119)"
 decisions:
   - "Use server-generated deterministic idempotency key format `${tId}:${name}:${msgIdPart}:call_${callIndex}` without random UUIDs to enable true webhook retry protection"
   - "Update Sale schema to @@unique([tenantId, idempotencyKey]) composite unique constraint instead of global unique"
   - "Implement sanitizeNonToolReply to block LLM plain-text mutation confirmations when no tool was executed"
   - "Enforce strict financial sanity guard paid <= totalAmount and non-negative balances across log_sale and log_purchase"
-  - "Implement intelligent auto-normalization in groundingCheck: if LLM hallucinates custom paid_amount for a standard prompt with no custom payment keywords (دفع, آجل, etc), auto-normalize paid_amount to totalAmount (full cash sale) so legitimate prompts succeed with confirmation"
+  - "Implement intelligent auto-normalization in groundingCheck for standard cash sales"
+  - "Remove decommissioned models (mixtral-8x7b-32768, gemma2-9b-it) from Groq LLM rotation pool to prevent execution delays"
+  - "Implement dedicated update_stock tool with fuzzy product matching and Prisma stockQuantity updates for inventory audit requests"
+  - "Implement dedicated add_customer tool using tenant connect pattern and register across both Gemini and Groq tool definitions"
+  - "Exclude all root-level test, demo, and simulation script files (demo_*.ts, test_*.ts, simulate_*.ts, check_*.ts, query_*.ts, reset_*.ts, verify_*.ts) from tsconfig.json build targets"
+  - "Fix TypeScript strict null checks in telegram_llm.ts by normalizing userMessageText to msgText"
 files_modified:
   - path: casper-voice-web/lib/telegram_llm.ts
-    why: "added sanitizeNonToolReply guard, deterministic callIndex idempotency keys, paid_amount grounding check, log_sale & log_purchase financial sanity checks, and auto-normalization of hallucinated cash paid_amount"
-  - path: casper-voice-web/prisma/schema.prisma
-    why: "updated Sale model to @@unique([tenantId, idempotencyKey])"
-  - path: casper-voice-web/app/api/sales/route.ts
-    why: "updated DB query to findFirst with tenantId for composite unique compatibility"
-  - path: .agents/AGENTS.md
-    why: "appended Permanent Strict Evidence Discipline Protocol (Raw Evidence Mandatory)"
+    why: "added update_stock and add_customer tools, removed dead Groq models, fixed TS null errors on userMessageText"
+  - path: casper-voice-web/tsconfig.json
+    why: "added comprehensive exclude patterns for root-level test, demo, and utility scripts"
+  - path: casper-voice-web/test_stock_and_customer_statement.ts
+    why: "created test script for Functions #11 and #12"
+  - path: casper-voice-web/test_daily_summary_and_add_customer.ts
+    why: "created test script for Functions #13 and #14"
+  - path: demo_real_credit_purchase_return.ts
+    why: "verified credit-deferred purchase returns end-to-end with raw DB proof"
 active_goals:
-  - "Maintain zero financial corruption and zero false rejections across Telegram AI assistant"
+  - "Maintain 14/14 fully verified Telegram LLM voice/text business function tools"
+  - "Keep production deployment on HQ VPS server (109.123.247.119) healthy under PM2 monitoring"
 next_steps:
-  - "Monitor production Telegram bot logs for edge-case slang prompts"
+  - "Monitor real user Telegram voice prompts on HQ VPS server"
+  - "Gather edge-case audio transcriptions for continuous prompt tuning"
 failed_approaches:
   - "Relying on model to generate random idempotency keys — rejected, led to global collisions and hallucinated sales"
   - "Using random UUID in idempotency key — rejected, broke webhook retry duplicate prevention"
-  - "Rejecting ungrounded paid_amount unconditionally on standard cash sales — rejected, blocked valid messages like 'بعت 2 مسامير ب 100'"
+  - "Rejecting ungrounded paid_amount unconditionally on standard cash sales — rejected, blocked valid messages"
+  - "Relying on add_product for inventory adjustments — rejected, required dedicated update_stock tool"
+  - "Using direct tenantId property in prisma.customer.create — rejected, required tenant connect pattern"
+  - "Allowing root-level test/demo scripts to be type-checked by next build — rejected, caused build failures on script type mismatches"
 last_condense:
-  timestamp: "2026-08-08T10:01:00Z"
-  tokens_before: 175000
-  tokens_after: 35000
-  reduction_pct: 80
+  timestamp: "2026-08-09T09:02:40Z"
+  tokens_before: 185000
+  tokens_after: 28000
+  reduction_pct: 85

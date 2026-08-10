@@ -14,7 +14,7 @@ describe("Network Pressure & Races (Stock Constraints)", () => {
     await prisma.tenant.upsert({
       where: { id: TENANT_ID },
       update: {},
-      create: { id: TENANT_ID, name: "Stock Pressure Tenant", phoneNumber: "01000000099", state: "active" },
+      create: { id: TENANT_ID, name: "Stock Pressure Tenant", phoneNumber: `0100${Date.now().toString().slice(-7)}`, state: "active" },
     });
 
     await prisma.product.deleteMany({ where: { tenantId: TENANT_ID } });

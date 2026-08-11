@@ -360,6 +360,39 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
     }
   }
 
+  // Fallback: Check for existing Appointment records created prior to Customer model creation
+  if (!customer && name) {
+    try {
+      const normalize = (s: string) => s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+      const normalizedInput = normalize(name);
+      const appointments = await tx.appointment.findMany({
+        where: {
+          ...(tId && { tenantId: tId }),
+          customerName: { not: "" }
+        }
+      });
+      const matchingApps = appointments.filter((a: any) => a.customerName && normalize(a.customerName) === normalizedInput);
+      if (matchingApps.length > 0) {
+        const canonicalName = matchingApps[0].customerName;
+        customer = await tx.customer.create({
+          data: {
+            name: canonicalName,
+            phone: phone || null,
+            ...(tId && { tenantId: tId })
+          }
+        });
+        for (const app of matchingApps) {
+          await tx.appointment.update({
+            where: { id: app.id },
+            data: { customerId: customer.id }
+          });
+        }
+      }
+    } catch (e) {
+      console.error("[findCustomerFuzzy Appointment Backfill Error]:", e);
+    }
+  }
+
   if (customer) {
     await syncCustomerLedgers(tx, customer.id, tId);
     if (includeLedgers) {
@@ -1087,6 +1120,19 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       }
       const custPhone = customer_phone ? String(customer_phone).trim() : null;
       let customer = await findCustomerFuzzy(prisma, tenantId || "", custName, custPhone);
+      if (!customer && custName !== "عميل" && tenantId) {
+        try {
+          customer = await prisma.customer.create({
+            data: {
+              name: custName,
+              phone: custPhone,
+              tenantId
+            }
+          });
+        } catch (e) {
+          console.error("[book_appointment Customer Auto-Create Error]:", e);
+        }
+      }
 
       const app = await prisma.appointment.create({
         data: {

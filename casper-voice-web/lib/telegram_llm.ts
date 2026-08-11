@@ -1883,6 +1883,15 @@ export async function processTelegramMessageWithLLM(
   const cleanMerchant = merchantName ? merchantName.replace(/^(مستر|أستاذ|استاذ)\s+/, '').trim() : null;
   const merchantTitle = cleanMerchant ? `مستر ${cleanMerchant}` : "فندم";
 
+  // === NEW: Input Language Guardrail — Only Arabic & English allowed ===
+  const FOREIGN_INPUT_SCRIPTS_REGEX = /[\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fa5\u0400-\u04ff\u0900-\u097f\u0e00-\u0e7f\uac00-\ud7af]/gu;
+  if (FOREIGN_INPUT_SCRIPTS_REGEX.test(normalizedText)) {
+    console.warn(`[Input Language Guardrail] Rejected incoming foreign script message: "${normalizedText}"`);
+    const reply = `عفواً يا ${merchantTitle}، النظام يدعم اللغة العربية والإنجليزية فقط. يرجى كتابة طلبك بالعربي أو الإنجليزي. 😊`;
+    void saveChatMessage(tenantId, telegramChatId, "assistant", reply);
+    return { status: "success", text: reply };
+  }
+
   // === NEW: Small-talk short-circuit — no LLM, no tools ===
   const SMALL_TALK_PATTERNS = [
     /^ايه\s*الدنيا/i, /^إيه\s*الدنيا/i, /^ازيك/i, /^إزيك/i, /^عامل\s*ايه/i, /^اخبارك/i, /^أخبارك/i,

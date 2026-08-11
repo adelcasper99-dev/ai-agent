@@ -2405,8 +2405,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/telegram/webhook/route.ts": {
-    "mtime": 1786396529.1704905,
-    "ast_hash": "266af6b93deb7fba94691cb47d7e73a2",
+    "mtime": 1786439468.0532024,
+    "ast_hash": "1dcd20fd98306be3fa6fc87b5e45c8d0",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram.ts": {
@@ -2610,8 +2610,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram_llm.ts": {
-    "mtime": 1786436072.6128929,
-    "ast_hash": "270f9d7a7f447d287e59dc2e0936cbd7",
+    "mtime": 1786439716.4506845,
+    "ast_hash": "981d9b89a35277bddbffe9a4f574ac46",
     "semantic_hash": ""
   },
   "casper-voice-web/app/telegram-voice/page.tsx": {
@@ -3162,6 +3162,16 @@
   "casper-voice-web/write_test_all_tools.py": {
     "mtime": 1786435614.3030896,
     "ast_hash": "06df82d6dbcd1c40e5d983da586b0444",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/test_agent_db_loop.ts": {
+    "mtime": 1786438583.8970287,
+    "ast_hash": "2fd62e18e59f2ad6649bc6772fdac4f8",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/tests/onboarding_merchant_name.test.ts": {
+    "mtime": 1786439481.5819683,
+    "ast_hash": "de9ef0f1f066f75c86501028b469c19d",
     "semantic_hash": ""
   }
 }

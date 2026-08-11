@@ -52,15 +52,17 @@ export async function getValidApiKey(provider: string = "gemini"): Promise<strin
     return validKeyRecord.keyString;
   }
 
-  // 2. Scan ENV Variables pool (e.g. GROQ_API_KEY, GROQ_API_KEY_1, GROQ_API_KEY_2...)
-  const envPrefix = normProvider === "groq" ? "GROQ_API_KEY" : "GEMINI_API_KEY";
+  // 2. Scan ENV Variables pool (e.g. GROQ_API_KEY, GROQ_API_KEY_1, GROQ_API_KEYS="key1,key2"...)
+  const envPrefix = `${normProvider.toUpperCase()}_API_KEY`;
   const envKeys: string[] = [];
 
   for (const [envKey, envVal] of Object.entries(process.env)) {
     if (envKey.toUpperCase().startsWith(envPrefix) && envVal && typeof envVal === "string") {
-      const trimmed = envVal.trim();
-      if (trimmed && !_exhaustedEnvKeys.has(`${normProvider}:${trimmed}`)) {
-        envKeys.push(trimmed);
+      const parts = envVal.split(/[\n,]+/).map(p => p.trim()).filter(Boolean);
+      for (const trimmed of parts) {
+        if (trimmed && !_exhaustedEnvKeys.has(`${normProvider}:${trimmed}`)) {
+          envKeys.push(trimmed);
+        }
       }
     }
   }
@@ -97,4 +99,9 @@ export async function markKeyExhausted(keyString: string, provider: string = "ge
     console.error(`[ApiKeyManager] Failed to mark key as exhausted:`, err);
   }
 }
+
+export function _resetExhaustedKeysForTesting(): void {
+  _exhaustedEnvKeys.clear();
+}
+
 

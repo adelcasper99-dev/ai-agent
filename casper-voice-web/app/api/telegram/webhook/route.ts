@@ -131,12 +131,12 @@ export async function POST(req: NextRequest) {
         if (tenant && tenant.state === "pending_agreement") {
           await (prisma as any).tenant.update({
             where: { id: tenant.id },
-            data: { state: "onboarding_name" },
+            data: { state: "onboarding_merchant_name" },
           });
           await sendTelegramAlert({
             chatId: callbackChatId,
-            text: "تمام! قولي اسم بيزنسك ايه؟",
-            idempotencyKey: `onboarding:name_prompt:${callbackChatId}`,
+            text: "تمام! نتعرف بحضرتك الأول، اسمك إيه؟ (مثال: محمود)",
+            idempotencyKey: `onboarding:merchant_name_prompt:${callbackChatId}`,
           });
         }
         await answerCallback("تم القبول!");
@@ -792,6 +792,20 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
+      if (tenant.state === "onboarding_merchant_name") {
+        const cleanName = text.replace(/^(مستر|أستاذ|استاذ)\s+/, '').trim();
+        tenant = await (prisma as any).tenant.update({
+          where: { id: tenant.id },
+          data: { merchantName: cleanName, state: "onboarding_name" },
+        });
+        await sendTelegramAlert({
+          chatId,
+          text: `أهلاً بيك يا مستر ${cleanName}! 😊 قولي اسم بيزنسك ايه؟`,
+          idempotencyKey: `onboarding:name_prompt:${chatId}:${message.message_id}`,
+        });
+        return NextResponse.json({ ok: true });
+      }
+
       if (tenant.state === "onboarding_name") {
         tenant = await (prisma as any).tenant.update({
           where: { id: tenant.id },
@@ -945,9 +959,10 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ ok: true });
         }
 
+        const merchantGreeting = tenant.merchantName ? `مستر ${tenant.merchantName.replace(/^(مستر|أستاذ|استاذ)\s+/, '').trim()}` : `أستاذ/ة ${tenant.name}`;
         await sendTelegramAlert({
           chatId,
-          text: `👋 *أهلاً بك مجدداً أستاذ/ة ${tenant.name}!*\n\nحساب شركتك مفعل وجاهز لخدمتك.\n🏢 *نوع النشاط:* ${tenant.businessType || "غير محدد"}\n⏰ *مواعيد العمل:* ${tenant.workingHours || "غير محددة"}\n\nيمكنك استخدام الأوامر السريعة بالأسفل أو إرسال أي سؤال مباشرة:`,
+          text: `👋 *أهلاً بك مجدداً ${merchantGreeting}!*\n\nحساب شركتك مفعل وجاهز لخدمتك.\n🏢 *اسم الشركة:* ${tenant.name}\n🏢 *نوع النشاط:* ${tenant.businessType || "غير محدد"}\n⏰ *مواعيد العمل:* ${tenant.workingHours || "غير محددة"}\n\nيمكنك استخدام الأوامر السريعة بالأسفل أو إرسال أي سؤال مباشرة:`,
           idempotencyKey: `start:tenant:${chatId}:${message.message_id}`,
           replyMarkup: {
             inline_keyboard: [
@@ -1096,7 +1111,8 @@ export async function POST(req: NextRequest) {
         tenant?.businessType,
         tenant?.workingHours,
         chatId,
-        message.message_id
+        message.message_id,
+        tenant?.merchantName
       );
 
       if (llmResult.status === "all_providers_exhausted") {
@@ -1165,7 +1181,8 @@ async function handleCustomerMessage(params: {
       tenant.businessType,
       tenant.workingHours,
       String(sendVia.chatId),
-      0 // No direct message id available easily here, passing 0
+      0, // No direct message id available easily here, passing 0
+      tenant.merchantName
     );
 
     const replyText = (llmResult as any)?.text || "عذراً، لم أتمكن من فهم طلبك.";

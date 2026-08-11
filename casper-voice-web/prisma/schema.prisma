@@ -20,6 +20,7 @@ model Setting {
 model Tenant {
   id             String   @id @default(cuid())
   name           String
+  merchantName   String?
   phoneNumber    String?  @unique
   state          String   @default("trial") // trial | active | past_due_silent | suspended | cancelled | pending_deletion | deleted
   telegramChatId String?  @unique
@@ -139,6 +140,7 @@ model Sale {
   paidAmount     Decimal    @default(0)
   deferredAmount Decimal    @default(0)
   idempotencyKey String?
+  isNegativeStockSale Boolean @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
 

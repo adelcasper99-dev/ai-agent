@@ -1,41 +1,31 @@
-session_intent: "Verify and audit 14 Telegram LLM functions end-to-end, implement missing stock adjustment (update_stock) and customer registration (add_customer) tools, resolve Groq fallback rotation issues, enforce TypeScript strict null checks, and deploy updated system to HQ VPS server (109.123.247.119)"
+session_intent: "Add cancel_appointment & update_appointment LLM tools, harden ApiKeyManager with multi-key pool rotation, and execute 7-stage engineering pipeline."
 decisions:
-  - "Use server-generated deterministic idempotency key format `${tId}:${name}:${msgIdPart}:call_${callIndex}` without random UUIDs to enable true webhook retry protection"
-  - "Update Sale schema to @@unique([tenantId, idempotencyKey]) composite unique constraint instead of global unique"
-  - "Implement sanitizeNonToolReply to block LLM plain-text mutation confirmations when no tool was executed"
-  - "Enforce strict financial sanity guard paid <= totalAmount and non-negative balances across log_sale and log_purchase"
-  - "Implement intelligent auto-normalization in groundingCheck for standard cash sales"
-  - "Remove decommissioned models (mixtral-8x7b-32768, gemma2-9b-it) from Groq LLM rotation pool to prevent execution delays"
-  - "Implement dedicated update_stock tool with fuzzy product matching and Prisma stockQuantity updates for inventory audit requests"
-  - "Implement dedicated add_customer tool using tenant connect pattern and register across both Gemini and Groq tool definitions"
-  - "Exclude all root-level test, demo, and simulation script files (demo_*.ts, test_*.ts, simulate_*.ts, check_*.ts, query_*.ts, reset_*.ts, verify_*.ts) from tsconfig.json build targets"
-  - "Fix TypeScript strict null checks in telegram_llm.ts by normalizing userMessageText to msgText"
+  - "Use Groq llama-3.1-8b-instant fallback for appointment tools when llama-3.3-70b-versatile returns tool_use_failed"
+  - "Hardcode dynamic prefix resolution in ApiKeyManager as `${normProvider.toUpperCase()}_API_KEY`"
+  - "Support comma and newline separated composite key strings in ApiKeyManager (`GROQ_API_KEYS=\"k1,k2\"`)"
+  - "Maintain in-memory key exhaustion set with DB fallback and 24h automatic reset"
 files_modified:
-  - path: casper-voice-web/lib/telegram_llm.ts
-    why: "added update_stock and add_customer tools, removed dead Groq models, fixed TS null errors on userMessageText"
-  - path: casper-voice-web/tsconfig.json
-    why: "added comprehensive exclude patterns for root-level test, demo, and utility scripts"
-  - path: casper-voice-web/test_stock_and_customer_statement.ts
-    why: "created test script for Functions #11 and #12"
-  - path: casper-voice-web/test_daily_summary_and_add_customer.ts
-    why: "created test script for Functions #13 and #14"
-  - path: demo_real_credit_purchase_return.ts
-    why: "verified credit-deferred purchase returns end-to-end with raw DB proof"
+  - path: "casper-voice-web/lib/telegram_llm.ts"
+    why: "added cancel_appointment & update_appointment tools, fixed Groq fallback loop break->continue, updated model rotation array, fixed multi-function JSON parser"
+  - path: "casper-voice-web/lib/apiKeyManager.ts"
+    why: "generic provider prefix matching, comma/newline key splitting, exported _resetExhaustedKeysForTesting"
+  - path: "casper-voice-web/test_appointments.ts"
+    why: "created unit test suite for 4 appointment tools with raw DB evidence verification"
+  - path: "casper-voice-web/test_all_tools.ts"
+    why: "created 16-tool master integration runner"
+  - path: "casper-voice-web/test_api_key_manager.ts"
+    why: "created unit test suite for ApiKeyManager multi-key pool rotation"
+  - path: ".agents/stage_log.json"
+    why: "recorded pipeline execution stages 0a through 6"
 active_goals:
-  - "Maintain 14/14 fully verified Telegram LLM voice/text business function tools"
-  - "Keep production deployment on HQ VPS server (109.123.247.119) healthy under PM2 monitoring"
+  - "complete pipeline execution and context compaction"
 next_steps:
-  - "Monitor real user Telegram voice prompts on HQ VPS server"
-  - "Gather edge-case audio transcriptions for continuous prompt tuning"
+  - "deploy multi-key configuration to production .env"
+  - "monitor live Telegram bot tool execution"
 failed_approaches:
-  - "Relying on model to generate random idempotency keys — rejected, led to global collisions and hallucinated sales"
-  - "Using random UUID in idempotency key — rejected, broke webhook retry duplicate prevention"
-  - "Rejecting ungrounded paid_amount unconditionally on standard cash sales — rejected, blocked valid messages"
-  - "Relying on add_product for inventory adjustments — rejected, required dedicated update_stock tool"
-  - "Using direct tenantId property in prisma.customer.create — rejected, required tenant connect pattern"
-  - "Allowing root-level test/demo scripts to be type-checked by next build — rejected, caused build failures on script type mismatches"
+  - "attempted OpenAI SDK rewrite for all providers in telegram_llm.ts — rejected, native SDKs already handle Gemini FunctionDeclarations correctly"
 last_condense:
-  timestamp: "2026-08-09T09:02:40Z"
-  tokens_before: 185000
+  timestamp: "2026-08-11T06:57:45Z"
+  tokens_before: 145000
   tokens_after: 28000
-  reduction_pct: 85
+  reduction_pct: 81

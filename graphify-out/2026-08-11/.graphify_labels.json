@@ -264,7 +264,7 @@
   "262": "🛸 ورك فلو عمليات المرتجع (Returns Workflow)",
   "263": "🗄️ Database Optimizer",
   "264": "Diagnostic Scan",
-  "265": "Android platform",
+  "265": "source-lock.mjs",
   "266": "caveman-SKILL.md",
   "267": "loc.test.js",
   "268": "Local model benchmark: llama3.2 via Ollama — 2026-06-15",
@@ -455,9 +455,14 @@
   "453": "investigate_sale_financial_anomaly.js",
   "454": "test_sales_api_route.js",
   "455": "expandScanTargets",
-  "456": "Adaptation Strategies",
-  "457": "route.ts",
+  "456": "CSP detection (first-time only)",
+  "457": "resolveLiveInjectionAnchor",
   "458": "run_all_14_scenarios.ts",
   "459": "patch_agent.py",
-  "461": "preflight_check.py"
+  "460": "expandScanTargets",
+  "461": "middleware.ts",
+  "462": "test_advanced_edge_cases.ts",
+  "463": "test_live_interaction_demo.ts",
+  "464": "test_real_user_slang_scenarios.ts",
+  "465": "write_test_all_tools.py"
 }

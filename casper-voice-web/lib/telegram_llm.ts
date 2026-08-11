@@ -1687,7 +1687,8 @@ export async function processTelegramMessageWithLLM(
   businessType?: string,
   workingHours?: string,
   telegramChatId?: string,
-  telegramMessageId?: number | string
+  telegramMessageId?: number | string,
+  merchantName?: string
 ): Promise<LLMResult> {
   const { getValidApiKey, markKeyExhausted } = await import('./apiKeyManager');
   
@@ -1717,6 +1718,10 @@ export async function processTelegramMessageWithLLM(
   // Save incoming user message to history buffer (non-blocking)
   void saveChatMessage(tenantId, telegramChatId, "user", normalizedText);
 
+  // Clean merchant name if provided
+  const cleanMerchant = merchantName ? merchantName.replace(/^(مستر|أستاذ|استاذ)\s+/, '').trim() : null;
+  const merchantTitle = cleanMerchant ? `مستر ${cleanMerchant}` : "فندم";
+
   // === NEW: Small-talk short-circuit — no LLM, no tools ===
   const SMALL_TALK_PATTERNS = [
     /^ايه\s*الدنيا/i, /^إيه\s*الدنيا/i, /^ازيك/i, /^إزيك/i, /^عامل\s*ايه/i, /^اخبارك/i, /^أخبارك/i,
@@ -1724,7 +1729,7 @@ export async function processTelegramMessageWithLLM(
   ];
   const trimmedText = normalizedText.trim();
   if (SMALL_TALK_PATTERNS.some((re) => re.test(trimmedText)) && trimmedText.length < 25) {
-    const reply = "أهلاً بيك يا فندم! 😊 قولّي محتاج تسجل بيع، مصروف، ولا تحجز ميعاد؟";
+    const reply = `أهلاً بيك يا ${merchantTitle}! 😊 قولّي محتاج تسجل بيع، مصروف، ولا تحجز ميعاد؟`;
     void saveChatMessage(tenantId, telegramChatId, "assistant", reply);
     return { status: "success", text: reply };
   }

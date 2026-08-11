@@ -144,10 +144,14 @@ const getFinancialSummaryTool: FunctionDeclaration = {
 
 const getAppointmentsListTool: FunctionDeclaration = {
   name: "get_appointments_list",
-  description: "استرجاع قائمة المواعيد المحجوزة للعملاء (لمعرفة من لديه موعد ومتى).",
+  description: "استرجاع قائمة المواعيد المحجوزة للعملاء (لمعرفة موعد عميل محدد، أو المواعيد القادمة). استخدمها فوراً عندما يسأل التاجر عن 'ميعاد فلان', 'مواعيد بكرة', 'امتى معاد احمد'.",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
+      customer_name: {
+        type: SchemaType.STRING,
+        description: "اسم العميل المراد البحث عن موعده (مثال: أحمد محمود)"
+      },
       limit: { 
         type: SchemaType.NUMBER, 
         description: "عدد المواعيد المراد استرجاعها، افتراضيا 10" 
@@ -719,9 +723,9 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     }
 
     const isPureInquiry = userMessageText && (
-      /^(حساب|كشف\s*حساب|رصيد|ديون|كام\s*(على|له)|ممكن\s*تقول|تقولي|تليفون|رقم|ماهو|إيه|ايه|عايز\s*رقم)\s+/i.test(userMessageText.trim()) ||
-      /(رقم\s*تليفون|تليفون|كام\s*رقم|قولى\s*رقم|عايز\s*تليفون)/i.test(userMessageText)
-    ) && !/(احجز|حجز|سجل|أضف|اضف|تعديل|غير|ألف|الغي|إلغاء|بيع|اشتر|دفعت|قبضت)/i.test(userMessageText);
+      /^(حساب|كشف\s*حساب|رصيد|ديون|كام\s*(على|له)|ممكن\s*تقول|تقولي|تليفون|رقم|ماهو|إيه|ايه|عايز\s*رقم|ميعاد|معاد|مواعيد|حجوزات|امتى|متى)\s+/i.test(userMessageText.trim()) ||
+      /(رقم\s*تليفون|تليفون|كام\s*رقم|قولى\s*رقم|عايز\s*تليفون|ميعاد|معاد|مواعيد|حجوزات|امتى\s+ميعاد|امتى\s+معاد)/i.test(userMessageText)
+    ) && !/(احجز|حجز\s+موعد|حجز\s+معاد|حجز\s+ميعاد|سجل\s+بيع|أضف|اضف|تعديل|غير|ألف|الغي|إلغاء|بيع|اشتر|دفعت|قبضت)/i.test(userMessageText);
 
     const isMutationTool = [
       "log_customer_payment", "log_supplier_payment", "log_sale", "log_purchase", 
@@ -1077,8 +1081,10 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       // Detect placeholder/empty values that LLM inserts when user didn't provide info
       const isPlaceholder = (v: any) => {
         if (!v || String(v).trim() === "") return true;
-        const s = String(v).toLowerCase();
-        return s.includes("يحدد") || s.includes("محدد") || s.includes("معروف") || s.includes("unspecified") || s.includes("unknown") || s.includes("none") || s.includes("null");
+        const s = String(v).trim().toLowerCase();
+        const containsChinese = /[\u4e00-\u9fa5]/.test(s);
+        const isInvalidKeyword = s === "الجاي" || s === "القادم" || s === "غير" || s === "لا يوجد" || s === "غير محدد";
+        return containsChinese || isInvalidKeyword || s.includes("يحدد") || s.includes("محدد") || s.includes("معروف") || s.includes("unspecified") || s.includes("unknown") || s.includes("none") || s.includes("null");
       };
 
       // Past date check
@@ -1701,16 +1707,25 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     }
 
     if (name === "get_appointments_list") {
-      const limit = args.limit || 10;
+      const { customer_name, limit = 10 } = args;
+      const custName = customer_name ? String(customer_name).trim() : null;
+
+      const whereClause: any = { ...(tenantId && { tenantId }) };
+      if (custName) {
+        const norm = (s: string) => s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+        whereClause.customerName = { contains: norm(custName) };
+      }
+
       const apps = await prisma.appointment.findMany({
-        where: { ...(tenantId && { tenantId }) },
+        where: whereClause,
         orderBy: { createdAt: 'desc' },
         take: Number(limit)
       });
       if (apps.length === 0) {
-        return { success: true, resultText: "لا توجد أي مواعيد مسجلة حالياً." };
+        const nameStr = custName ? ` لـ (${custName})` : "";
+        return { success: true, resultText: `لا توجد أي مواعيد مسجلة${nameStr} حالياً. 📅` };
       }
-      const appsList = apps.map(a => `- ${a.customerName} (يوم ${a.date} الساعة ${a.time})`).join('\n');
+      const appsList = apps.map(a => `- ${a.customerName}: يوم ${a.date} الساعة ${a.time}`).join('\n');
       return { 
         success: true, 
         resultText: `📅 **قائمة المواعيد:**\n\n${appsList}`

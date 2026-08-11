@@ -33,6 +33,7 @@
   "exclude": [
     "node_modules",
     "tests",
+    "scripts",
     "demo_*.ts",
     "test_*.ts",
     "simulate_*.ts",

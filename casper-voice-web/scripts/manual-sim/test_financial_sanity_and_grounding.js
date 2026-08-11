@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const { executeTool } = require('./lib/telegram_llm');
+const { executeTool } = require('@/lib/telegram_llm');
 
 async function runFinancialSanityTests() {
   console.log("==================================================");

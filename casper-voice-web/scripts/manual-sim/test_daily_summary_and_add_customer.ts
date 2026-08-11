@@ -1,5 +1,5 @@
-import { processTelegramMessageWithLLM } from "./lib/telegram_llm";
-import { prisma } from "./lib/prisma";
+import { processTelegramMessageWithLLM } from "@/lib/telegram_llm";
+import { prisma } from "@/lib/prisma";
 
 async function main() {
   console.log("=== Testing Functions #13 (Daily Summary) & #14 (Add Customer) ===");

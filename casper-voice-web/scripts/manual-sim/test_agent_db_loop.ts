@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { executeTool } from './lib/telegram_llm';
+import { executeTool } from '@/lib/telegram_llm';
 
 const prisma = new PrismaClient();
 

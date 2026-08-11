@@ -1,8 +1,8 @@
 import os
 
-content = """import { processTelegramMessageWithLLM } from "./lib/telegram_llm";
-import { prisma } from "./lib/prisma";
-import { _resetExhaustedKeysForTesting } from "./lib/apiKeyManager";
+content = """import { processTelegramMessageWithLLM } from "@/lib/telegram_llm";
+import { prisma } from "@/lib/prisma";
+import { _resetExhaustedKeysForTesting } from "@/lib/apiKeyManager";
 
 const TENANT_ID = "sim_tenant_master_36";
 const TENANT_NAME = "محلات العربي لمواد البناء والتوريدات";

@@ -1,4 +1,4 @@
-import { getValidApiKey, markKeyExhausted, _resetExhaustedKeysForTesting } from "./lib/apiKeyManager";
+import { getValidApiKey, markKeyExhausted, _resetExhaustedKeysForTesting } from "@/lib/apiKeyManager";
 
 async function runTests() {
   console.log("=== Testing ApiKeyManager Hardening ===");

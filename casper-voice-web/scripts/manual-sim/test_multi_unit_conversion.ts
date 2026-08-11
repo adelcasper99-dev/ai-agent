@@ -1,5 +1,5 @@
-import { processTelegramMessageWithLLM } from "./lib/telegram_llm";
-import { prisma } from "./lib/prisma";
+import { processTelegramMessageWithLLM } from "@/lib/telegram_llm";
+import { prisma } from "@/lib/prisma";
 
 const TENANT_ID = "sim_tenant_multi_unit";
 const TENANT_NAME = "شركة الأمل للكابلات والرخام";

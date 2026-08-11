@@ -1,5 +1,5 @@
-import { processTelegramMessageWithLLM } from "./lib/telegram_llm";
-import { prisma } from "./lib/prisma";
+import { processTelegramMessageWithLLM } from "@/lib/telegram_llm";
+import { prisma } from "@/lib/prisma";
 
 const TENANT_ID = "sim_tenant_implicit_service";
 const TENANT_NAME = "ورشة الفارس للصيانة والتوريدات";

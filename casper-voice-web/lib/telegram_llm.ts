@@ -1053,7 +1053,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       }
 
       if (isPastDate) {
-        return { success: false, resultText: "عذراً، لا يمكن حجز موعد بتاريخ سابق (في الماضي). يرجى تحديد تاريخ ووقت في المستقبل. 📅" };
+        return { success: true, resultText: "عذراً، لا يمكن حجز موعد بتاريخ سابق (في الماضي). يرجى تحديد تاريخ ووقت في المستقبل. 📅" };
       }
 
       if (isPlaceholder(customer_name) || isPlaceholder(date) || isPlaceholder(time)) {
@@ -1665,6 +1665,23 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       const distinctChars = new Set(descClean).size;
       const hasLongRepetition = /(.)\1{3,}/u.test(descClean);
 
+      // Intercept validation error responses (e.g. past dates, missing data) incorrectly routed to report_missing_feature
+      const isValidationError = 
+        desc.includes("ماضي") || 
+        desc.includes("سابق") || 
+        desc.includes("قديم") || 
+        desc.includes("امبارح") || 
+        desc.includes("أمس") || 
+        desc.includes("تاريخ") || 
+        desc.includes("مستقبل");
+
+      if (isValidationError) {
+        return {
+          success: true,
+          resultText: "عذراً، لا يمكن حجز موعد بتاريخ سابق (في الماضي). يرجى تحديد تاريخ ووقت في المستقبل. 📅"
+        };
+      }
+
       // Defensive gibberish / nonsense filtering
       const isGibberish = 
         descClean.length < 3 ||
@@ -1819,9 +1836,9 @@ export async function processTelegramMessageWithLLM(
 12. حجز المواعيد وتواريخ الماضي (book_appointment):
      - تاريخ اليوم الحقيقي يُؤخذ من النظام. إذا طلب المستخدم حجز موعد في الماضي (مثل "امبارح"، "أمس"، "الماضي"، أو تاريخ سابق لليوم)، ارفض الطلب فوراً واطلب تاريخاً في المستقبل.
      - إذا لم يحدد التاجر اسم العميل في طلب الحجز، استخرج اسم العميل كـ "عميل" وتجنب استخدام ألقاب وهمية مثل "المشترك".
-13. حظر الإبلاغ عن الكلمات العشوائية والرموز (report_missing_feature):
+13. حظر الإبلاغ عن الكلمات العشوائية وتواريخ الماضي (report_missing_feature):
      - أداة report_missing_feature مخصصة فقط للميزات البرمجية الحقيقية غير المتاحة (مثل "طباعة باركود", "الفاتورة الإلكترونية").
-     - يُمنع منعاً باتاً استدعاء report_missing_feature عند تلقي أي نص عشوائي أو أحرف غير مفهومة (مثل "سسسسش"، "أأأأ"، "123"). رد مباشرة بدون استدعاء أدوات: "عفواً يا فندم، مش فاهم قصدك بالرسالة دي، ممكن توضح محتاج إيه؟ 😊".`;
+     - يُمنع منعاً باتاً استدعاء report_missing_feature عند رفض حجز موعد في الماضي ("امبارح", "أمس") أو تلقي كلام عشوائي (مثل "سسسسش"، "أأأأ"). إذا رُفض الموعد أو لم تفهم النص، رد مباشرة بدون استدعاء أداة الإبلاغ.`;
 
   // Format history for Gemini SDK & ensure history starts with user role
   const geminiHistory = rawHistory.map(h => ({

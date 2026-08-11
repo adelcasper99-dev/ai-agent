@@ -1041,10 +1041,25 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         return s.includes("يحدد") || s.includes("محدد") || s.includes("معروف") || s.includes("unspecified") || s.includes("unknown") || s.includes("none") || s.includes("null");
       };
 
+      // Past date check
+      const dStr = String(date || "").trim();
+      const msgNorm = userMessageText ? normalizeArabic(userMessageText) : "";
+      const isPastWord = /(امبارح|امس|أمس|الماضي)/i.test(msgNorm) || /(امبارح|امس|أمس|الماضي)/i.test(normalizeArabic(dStr));
+      
+      let isPastDate = isPastWord;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        if (dStr < todayStr) isPastDate = true;
+      }
+
+      if (isPastDate) {
+        return { success: false, resultText: "عذراً، لا يمكن حجز موعد بتاريخ سابق (في الماضي). يرجى تحديد تاريخ ووقت في المستقبل. 📅" };
+      }
+
       if (isPlaceholder(customer_name) || isPlaceholder(date) || isPlaceholder(time)) {
         const missing = [];
         if (isPlaceholder(customer_name)) missing.push("اسم العميل");
-        if (isPlaceholder(date)) missing.push("التاريخ (مثال: 2025-08-10)");
+        if (isPlaceholder(date)) missing.push("التاريخ (مثال: غداً أو 2026-08-15)");
         if (isPlaceholder(time)) missing.push("الوقت (مثال: 03:00 مساءً)");
         return { success: false, resultText: `عشان أحجزلك الموعد محتاج تقولي: ${missing.join("، ")} 📅` };
       }
@@ -1059,7 +1074,10 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       if (existing) {
         return { success: false, resultText: `تعارض: يوجد موعد محجوز بالفعل في نفس الوقت لـ (${existing.customerName}).` };
       }
-      const custName = String(customer_name).trim();
+      let custName = String(customer_name).trim();
+      if (custName === "المشترك" || custName === "عميل عام" || isPlaceholder(custName)) {
+        custName = "عميل";
+      }
       const custPhone = customer_phone ? String(customer_phone).trim() : null;
       let customer = await findCustomerFuzzy(prisma, tenantId || "", custName, custPhone);
 
@@ -1073,7 +1091,10 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
           ...(tenantId && { tenantId })
         }
       });
-      return { success: true, resultText: `تم حجز موعد لـ ${app.customerName} يوم ${app.date} الساعة ${app.time} بنجاح! ✅` };
+
+      const datePart = app.date.startsWith("يوم") ? app.date : `يوم ${app.date}`;
+      const namePart = app.customerName === "عميل" ? "" : ` لـ ${app.customerName}`;
+      return { success: true, resultText: `تم حجز موعد${namePart} ${datePart} الساعة ${app.time} بنجاح! ✅` };
     }
 
     if (name === "log_customer_payment") {
@@ -1639,14 +1660,32 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
 
     if (name === "report_missing_feature") {
       const { feature_description } = args;
+      const desc = String(feature_description || "").trim();
+      const descClean = desc.replace(/\s+/g, "");
+      const distinctChars = new Set(descClean).size;
+      const hasLongRepetition = /(.)\1{3,}/u.test(descClean);
+
+      // Defensive gibberish / nonsense filtering
+      const isGibberish = 
+        descClean.length < 3 ||
+        distinctChars <= 2 ||
+        hasLongRepetition ||
+        (/^[ا-ي]{1,4}$/i.test(descClean) && !["شحن", "دفع", "جرد", "فيزا", "خصم", "حجز"].includes(descClean));
+
+      if (isGibberish) {
+        return {
+          success: false,
+          resultText: "عفواً، لم أفهم قصدك بوضوح. يمكنك كتابة طلبك أو الاستفسار الذي تحتاجه بالتفصيل. 😊"
+        };
+      }
+
       const adminChatId = process.env.ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
-      
       let tenantInfo = tenantId ? `العميل رقم: ${tenantId}` : "عميل غير معروف";
 
       if (adminChatId) {
         await sendTelegramAlert({
           chatId: adminChatId,
-          text: `⚠️ **اقتراح ميزة جديدة من البوت!**\n\n${tenantInfo} طلب ميزة غير متاحة حالياً:\n\n💬 "${feature_description}"\n\nهل ترغب ببرمجتها؟`,
+          text: `⚠️ **اقتراح ميزة جديدة من البوت!**\n\n${tenantInfo} طلب ميزة غير متاحة حالياً:\n\n💬 "${desc}"\n\nهل ترغب ببرمجتها؟`,
           idempotencyKey: `feature-req-${Date.now()}`
         });
       }
@@ -1776,7 +1815,13 @@ export async function processTelegramMessageWithLLM(
     - لا تفترض أرقام مخزون وهمية، اسأل العميل عن الكمية الافتتاحية للمخزون إذا كان الصنف ملموساً.
 11. تعديل رصيد المخزون (update_stock):
      - عند قول "تعديل المخزون", "الجرد", "الرصيد الفعلي لصنف X كام", "صحح مخزون X", "المخزون الفعلي لـ X = N" -> استخدم أداة update_stock مع اسم الصنف والكمية الجديدة.
-     - لا تستخدم add_product لتعديل الكمية، add_product للإضافة فقط.`;
+     - لا تستخدم add_product لتعديل الكمية، add_product للإضافة فقط.
+12. حجز المواعيد وتواريخ الماضي (book_appointment):
+     - تاريخ اليوم الحقيقي يُؤخذ من النظام. إذا طلب المستخدم حجز موعد في الماضي (مثل "امبارح"، "أمس"، "الماضي"، أو تاريخ سابق لليوم)، ارفض الطلب فوراً واطلب تاريخاً في المستقبل.
+     - إذا لم يحدد التاجر اسم العميل في طلب الحجز، استخرج اسم العميل كـ "عميل" وتجنب استخدام ألقاب وهمية مثل "المشترك".
+13. حظر الإبلاغ عن الكلمات العشوائية والرموز (report_missing_feature):
+     - أداة report_missing_feature مخصصة فقط للميزات البرمجية الحقيقية غير المتاحة (مثل "طباعة باركود", "الفاتورة الإلكترونية").
+     - يُمنع منعاً باتاً استدعاء report_missing_feature عند تلقي أي نص عشوائي أو أحرف غير مفهومة (مثل "سسسسش"، "أأأأ"، "123"). رد مباشرة بدون استدعاء أدوات: "عفواً يا فندم، مش فاهم قصدك بالرسالة دي، ممكن توضح محتاج إيه؟ 😊".`;
 
   // Format history for Gemini SDK & ensure history starts with user role
   const geminiHistory = rawHistory.map(h => ({

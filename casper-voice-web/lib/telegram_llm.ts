@@ -439,6 +439,105 @@ export function sanitizeArgsLanguage(args: any): any {
   return args;
 }
 
+// === NEW: Smart Date & Time Resolution Engine ===
+export function resolveRelativeArabicDate(rawDateStr: string, createdAt?: Date): string {
+  if (!rawDateStr || typeof rawDateStr !== "string") return "غير موضح";
+  let s = rawDateStr.replace(/^يوم\s+/, '').trim();
+  
+  if (s.includes("لم يُحدد") || s === "غير محدد" || s === "الجاي" || s === "القادم" || s === "الماضي" || s === "") {
+    return "غير موضح";
+  }
+
+  const baseDate = createdAt ? new Date(createdAt) : new Date();
+  const DAYS_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+  const MONTHS_AR = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+
+  const formatCalDate = (d: Date, label?: string) => {
+    const dayName = DAYS_AR[d.getDay()];
+    const dayNum = d.getDate();
+    const monthName = MONTHS_AR[d.getMonth()];
+    return label ? `${label} (${dayName} ${dayNum} ${monthName})` : `${dayName} (${dayNum} ${monthName})`;
+  };
+
+  const norm = s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+
+  if (norm === "بكره" || norm === "غدا" || norm === "غد" || norm === "يوم غد") {
+    const tomorrow = new Date(baseDate);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return formatCalDate(tomorrow, "غداً");
+  }
+
+  if (norm === "امبارح" || norm === "امس") {
+    const yesterday = new Date(baseDate);
+    yesterday.setDate(yesterday.getDate() - 1);
+    return formatCalDate(yesterday, "أمس");
+  }
+
+  if (norm === "بعد بكره" || norm === "بعد غد") {
+    const dayAfter = new Date(baseDate);
+    dayAfter.setDate(dayAfter.getDate() + 2);
+    return formatCalDate(dayAfter, "بعد غد");
+  }
+
+  if (norm === "الانهارده" || norm === "النهاردة" || norm === "اليوم") {
+    return formatCalDate(baseDate, "اليوم");
+  }
+
+  const weekdayMap: Record<string, number> = {
+    "الاحد": 0, "الاثنين": 1, "الثلاثاء": 2, "الثلاثه": 2, "الاربعاء": 3, "الخميس": 4, "الجمعة": 5, "الجمعه": 5, "السبت": 6
+  };
+
+  for (const [wName, targetDayIdx] of Object.entries(weekdayMap)) {
+    if (norm.includes(wName)) {
+      const currentDayIdx = baseDate.getDay();
+      let diff = targetDayIdx - currentDayIdx;
+      if (diff <= 0) diff += 7;
+      const targetDate = new Date(baseDate);
+      targetDate.setDate(targetDate.getDate() + diff);
+      return formatCalDate(targetDate);
+    }
+  }
+
+  return s;
+}
+
+export function cleanArabicTimeStr(rawTimeStr: string): string {
+  if (!rawTimeStr || typeof rawTimeStr !== "string") return "غير موضح";
+  let s = rawTimeStr.trim();
+  s = s.replace(/^(الساعة|الساعه)\s+/i, '').replace(/^(الساعة|الساعه)\s+/i, '').trim();
+  
+  if (s.includes("لم يُحدد") || s === "غير محدد" || s === "未提及" || s === "-" || s === "") {
+    return "غير موضح";
+  }
+
+  const wordTimeMap: Record<string, string> = {
+    "واحده": "01:00", "واحدة": "01:00",
+    "اتنين": "02:00", "اثنان": "02:00",
+    "ثلاثه": "03:00", "ثلاثة": "03:00",
+    "اربعه": "04:00", "أربعة": "04:00",
+    "خمسه": "05:00", "خمسة": "05:00",
+    "سته": "06:00", "ستة": "06:00",
+    "سبعه": "07:00", "سبعة": "07:00",
+    "ثمانيه": "08:00", "ثمانية": "08:00",
+    "تسعه": "09:00", "تسعة": "09:00",
+    "عشره": "10:00", "عشرة": "10:00",
+    "حدعشر": "11:00", "أحد عشر": "11:00",
+    "اطنعشر": "12:00", "اثنا عشر": "12:00"
+  };
+
+  const sNorm = s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').toLowerCase();
+  for (const [w, tVal] of Object.entries(wordTimeMap)) {
+    if (sNorm.includes(w) && !/\d+/.test(s)) {
+      const isEvening = sNorm.includes("مساء") || sNorm.includes("بالليل") || sNorm.includes("العصر");
+      const isMorning = sNorm.includes("صباح") || sNorm.includes("الصبح");
+      const suffix = isEvening ? "مساءً" : (isMorning ? "صباحاً" : "");
+      return `${tVal} ${suffix}`.trim();
+    }
+  }
+
+  return s;
+}
+
 // === NEW: Universal grounding guard for all financial mutation tools ===
 const FINANCIAL_TOOLS = new Set([
   "log_sale", "log_expense", "book_appointment", "log_purchase",
@@ -1752,14 +1851,36 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         orderBy: { createdAt: 'desc' },
         take: Number(limit)
       });
-      if (apps.length === 0) {
+
+      // Filter out invalid/draft records where both customer name and date are missing/placeholder
+      const validApps = apps.filter(a => {
+        const nameStr = (a.customerName || "").trim();
+        const dateStr = (a.date || "").trim();
+        const isBadName = nameStr === "" || nameStr.includes("لم يُحدد") || nameStr === "الاسم لم يُحدد";
+        const isBadDate = dateStr === "" || dateStr.includes("لم يُحدد") || dateStr === "التاريخ لم يُحدد" || dateStr === "الجاي";
+        return !(isBadName && isBadDate);
+      });
+
+      if (validApps.length === 0) {
         const nameStr = custName ? ` لـ (${custName})` : "";
-        return { success: true, resultText: `لا توجد أي مواعيد مسجلة${nameStr} حالياً. 📅` };
+        return { success: true, resultText: `لا توجد أي مواعيد محجوزة${nameStr} حالياً. 📅` };
       }
-      const appsList = apps.map(a => `- ${a.customerName}: يوم ${a.date} الساعة ${a.time}`).join('\n');
+
+      const NUMBERS_EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+      const formattedItems = validApps.map((a, idx) => {
+        const numBadge = NUMBERS_EMOJI[idx] || `[${idx + 1}]`;
+        const rawName = (a.customerName || "").trim();
+        const cName = (rawName === "المشترك" || rawName === "الاسم لم يُحدد" || !rawName) ? "عميل" : rawName;
+        const cleanDate = resolveRelativeArabicDate(a.date, a.createdAt);
+        const cleanTime = cleanArabicTimeStr(a.time);
+        const notesStr = a.notes ? `\n   📝 **ملاحظات:** ${a.notes}` : "";
+
+        return `${numBadge} **${cName}**\n   📆 **الموعد:** ${cleanDate}\n   ⏰ **الوقت:** ${cleanTime}${notesStr}`;
+      });
+
       return { 
         success: true, 
-        resultText: `📅 **قائمة المواعيد:**\n\n${appsList}`
+        resultText: `📅 **جدول المواعيد المحجوزة (${validApps.length}):**\n\n${formattedItems.join('\n\n')}`
       };
     }
 

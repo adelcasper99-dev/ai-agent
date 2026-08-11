@@ -410,6 +410,35 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
   return customer;
 }
 
+// === NEW: Strict System-Wide Language Guardrail (Arabic & English Only) ===
+const FOREIGN_SCRIPTS_REGEX = /[\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fa5\u0400-\u04ff\u0900-\u097f\u0e00-\u0e7f\uac00-\ud7af]/gu;
+
+export function enforceArabicEnglishOnly(text: string): string {
+  if (!text) return "";
+  if (FOREIGN_SCRIPTS_REGEX.test(text)) {
+    console.warn(`[Language Guardrail] Intercepted non-Arabic/English text in output: "${text}"`);
+    const cleaned = text.replace(FOREIGN_SCRIPTS_REGEX, "").replace(/\s+/g, " ").trim();
+    if (cleaned.length < 2) {
+      return "عفواً يا فندم، النظام يدعم اللغة العربية والإنجليزية فقط. 😊";
+    }
+    return cleaned;
+  }
+  return text;
+}
+
+export function sanitizeArgsLanguage(args: any): any {
+  if (!args || typeof args !== "object") return args;
+  for (const key of Object.keys(args)) {
+    if (typeof args[key] === "string") {
+      if (FOREIGN_SCRIPTS_REGEX.test(args[key])) {
+        console.warn(`[Language Guardrail] Purged foreign script from tool arg '${key}': "${args[key]}"`);
+        args[key] = args[key].replace(FOREIGN_SCRIPTS_REGEX, "").trim();
+      }
+    }
+  }
+  return args;
+}
+
 // === NEW: Universal grounding guard for all financial mutation tools ===
 const FINANCIAL_TOOLS = new Set([
   "log_sale", "log_expense", "book_appointment", "log_purchase",
@@ -604,6 +633,8 @@ async function logRejectedToolCall(tenantId: string | undefined, toolName: strin
 
 export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0): Promise<{ success: boolean; resultText: string }> {
   try {
+    // Strict System-Wide Language Guardrail: Sanitize tool args
+    args = sanitizeArgsLanguage(args);
     // Normalize userMessageText to avoid TS strict null errors
     const msgText: string = userMessageText ?? "";
     // Tool Router Correction: If smaller LLM called log_sale for a purchase prompt, redirect to log_purchase automatically
@@ -1959,6 +1990,7 @@ export async function processTelegramMessageWithLLM(
           finalReply = sanitizeNonToolReply(response.text().trim() || "تمام يا فندم، أنا معاك.");
         }
 
+        finalReply = enforceArabicEnglishOnly(finalReply);
         void saveChatMessage(tenantId, telegramChatId, "assistant", finalReply);
 
         const usage = (response as any).usageMetadata;
@@ -2115,6 +2147,7 @@ export async function processTelegramMessageWithLLM(
         finalReply = sanitizeNonToolReply(choice?.message?.content?.trim() || "تمام يا فندم، أنا معاك.");
       }
 
+      finalReply = enforceArabicEnglishOnly(finalReply);
       void saveChatMessage(tenantId, telegramChatId, "assistant", finalReply);
       return { status: "success", text: finalReply };
     } catch (groqErr: any) {

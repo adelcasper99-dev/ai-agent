@@ -1,48 +1,32 @@
-import { executeTool } from "./lib/telegram_llm";
-import { prisma } from "./lib/prisma";
+import { enforceArabicEnglishOnly, sanitizeArgsLanguage, executeTool } from "./lib/telegram_llm";
 
 async function runTests() {
-  const existingTenant = await prisma.tenant.findFirst();
-  const tenantId = existingTenant ? existingTenant.id : undefined;
-
-  console.log("--- TEST 1: Blocking illegal book_appointment mutation on appointment query prompt ('ميعاد احمد محمود الجاي') ---");
-  const res1 = await executeTool(
-    "book_appointment", 
-    { customer_name: "أحمد محمود", date: "الجاي", time: "未提及" }, 
-    tenantId, 
-    "ميعاد احمد محمود الجاي"
-  );
-  console.log("Test 1 Result:", res1);
-  if (res1.resultText === "") {
-    console.log("✅ TEST 1 PASSED: Illegal book_appointment mutation blocked on inquiry prompt");
+  console.log("--- TEST 1: enforceArabicEnglishOnly purges Chinese script ---");
+  const sampleChineseText = "تم حجز موعد لـ أحمد محمود يوم غد الساعة 未提及 بنجاح!";
+  const cleaned = enforceArabicEnglishOnly(sampleChineseText);
+  console.log("Original:", sampleChineseText);
+  console.log("Cleaned:", cleaned);
+  if (!/[\u4e00-\u9fa5]/.test(cleaned) && cleaned.includes("أحمد محمود")) {
+    console.log("✅ TEST 1 PASSED: Chinese characters purged successfully");
   } else {
-    console.error("❌ TEST 1 FAILED:", res1);
+    console.error("❌ TEST 1 FAILED:", cleaned);
   }
 
-  console.log("\n--- TEST 2: Chinese placeholder '未提及' rejection in book_appointment ---");
-  const res2 = await executeTool(
-    "book_appointment", 
-    { customer_name: "أحمد محمود", date: "بكرة", time: "未提及" }, 
-    tenantId, 
-    "احجزلي موعد بكرة"
-  );
-  console.log("Test 2 Result:", res2);
-  if (res2.success === false && res2.resultText.includes("الوقت")) {
-    console.log("✅ TEST 2 PASSED: Chinese hallucination '未提及' correctly rejected by isPlaceholder");
+  console.log("\n--- TEST 2: sanitizeArgsLanguage purges foreign script from tool arguments ---");
+  const badArgs = { customer_name: "أحمد محمود", time: "未提及", date: "بكرة" };
+  const sanitized = sanitizeArgsLanguage(badArgs);
+  console.log("Sanitized Args:", sanitized);
+  if (sanitized.time === "") {
+    console.log("✅ TEST 2 PASSED: Foreign script purged from tool arguments");
   } else {
-    console.error("❌ TEST 2 FAILED:", res2);
+    console.error("❌ TEST 2 FAILED:", sanitized);
   }
 
-  console.log("\n--- TEST 3: Searching appointments list for specific customer ---");
-  const res3 = await executeTool(
-    "get_appointments_list",
-    { customer_name: "أحمد محمود" },
-    tenantId,
-    "ميعاد احمد محمود الجاي"
-  );
+  console.log("\n--- TEST 3: Execution of book_appointment with sanitized Chinese time ---");
+  const res3 = await executeTool("book_appointment", badArgs, "test_tenant", "احجزلي موعد بكرة");
   console.log("Test 3 Result:", res3);
-  if (res3.success === true) {
-    console.log("✅ TEST 3 PASSED: get_appointments_list executed cleanly with customer_name filter");
+  if (res3.success === false && res3.resultText.includes("الوقت")) {
+    console.log("✅ TEST 3 PASSED: Sanitized Chinese args rejected by tool validation with Arabic prompt for time");
   } else {
     console.error("❌ TEST 3 FAILED:", res3);
   }

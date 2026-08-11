@@ -685,8 +685,15 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       return { success: false, resultText: grounding.reason || "معنديش تفاصيل كفاية عشان أسجل العملية دي، ممكن توضحلي الصنف/المبلغ تاني؟" };
     }
 
-    const isPureInquiry = userMessageText && /^(حساب|كشف\s*حساب|رصيد|ديون|كام\s*(على|له))\s+/i.test(userMessageText.trim());
-    const isMutationTool = ["log_customer_payment", "log_supplier_payment", "log_sale", "log_purchase", "log_sales_return", "log_purchase_return", "add_product"].includes(name);
+    const isPureInquiry = userMessageText && (
+      /^(حساب|كشف\s*حساب|رصيد|ديون|كام\s*(على|له)|ممكن\s*تقول|تقولي|تليفون|رقم|ماهو|إيه|ايه|عايز\s*رقم)\s+/i.test(userMessageText.trim()) ||
+      /(رقم\s*تليفون|تليفون|كام\s*رقم|قولى\s*رقم|عايز\s*تليفون)/i.test(userMessageText)
+    ) && !/(احجز|حجز|سجل|أضف|اضف|تعديل|غير|ألف|الغي|إلغاء|بيع|اشتر|دفعت|قبضت)/i.test(userMessageText);
+
+    const isMutationTool = [
+      "log_customer_payment", "log_supplier_payment", "log_sale", "log_purchase", 
+      "log_sales_return", "log_purchase_return", "add_product", "book_appointment", "update_stock"
+    ].includes(name);
 
     if (isPureInquiry && isMutationTool) {
       console.warn(`[LLM Guardrail] Blocked illegal mutation tool '${name}' invoked during pure inquiry message: "${userMessageText}"`);
@@ -1092,9 +1099,14 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         }
       });
 
-      const datePart = app.date.startsWith("يوم") ? app.date : `يوم ${app.date}`;
+      const rawDate = app.date.trim();
+      const datePart = /^(بكرة|بكره|غداً|غدا|اليوم|النهاردة|النهاره|امبارح|امس|أمس|يوم)/i.test(rawDate) ? rawDate : `يوم ${rawDate}`;
+
+      const rawTime = app.time.trim();
+      const timePart = rawTime.startsWith("الساعة") ? rawTime : `الساعة ${rawTime}`;
+
       const namePart = app.customerName === "عميل" ? "" : ` لـ ${app.customerName}`;
-      return { success: true, resultText: `تم حجز موعد${namePart} ${datePart} الساعة ${app.time} بنجاح! ✅` };
+      return { success: true, resultText: `تم حجز موعد${namePart} ${datePart} ${timePart} بنجاح! ✅` };
     }
 
     if (name === "log_customer_payment") {
@@ -1204,9 +1216,10 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
          balanceStr = `0 جنيه (خالص)`;
        }
 
+       const phoneStr = customer.phone ? `\n📞 *رقم التليفون:* ${customer.phone}` : "";
        return { 
          success: true, 
-         resultText: `📊 *كشف حساب العميل (${customer.name}):*\n\n🛍️ *إجمالي المشتريات:* ${totalSales.toNumber()} جنيه\n🔄 *إجمالي المرتجعات:* ${totalSalesReturns.toNumber()} جنيه\n💵 *المسدد نقداً (الصافي):* ${netPaid.toNumber()} جنيه\n📝 *الرصيد النهائي:* ${balanceStr}` 
+         resultText: `📊 *بيانات وكشف حساب العميل (${customer.name}):*${phoneStr}\n\n🛍️ *إجمالي المشتريات:* ${totalSales.toNumber()} جنيه\n🔄 *إجمالي المرتجعات:* ${totalSalesReturns.toNumber()} جنيه\n💵 *المسدد نقداً (الصافي):* ${netPaid.toNumber()} جنيه\n📝 *الرصيد النهائي:* ${balanceStr}` 
        };
     }
 
@@ -1815,8 +1828,8 @@ export async function processTelegramMessageWithLLM(
    - إذا كان عربون/مقدم: "دفع 100 والباقي آجل" -> paid_amount: 100, deferred_amount: المتبقي.
 4. حظر الأوصاف والأسعار الوهمية:
    - إذا كتب العميل كلمة "بيع" فقط أو لم يحدد البضاعة والسعر، اسأله عن التفاصيل فوراً ولا تفترض أبداً صنفاً مثل "المنتج" أو سعراً افتراضياً.
-5. الاستعلام عن رصيد وحساب عميل (get_customer_balance):
-   - عندما يكتب العميل عبارات مثل: "حساب [اسم العميل]", "كشف حساب [اسم]", "رصيد [اسم]", "هو عليه كام؟" -> يجب استخدام أداة get_customer_balance فقط! يُمنع منعاً باتاً استدعاء أداة سداد log_customer_payment أو أداة log_sale عند الاستعلام عن الحسابات!
+5. الاستعلام عن رصيد، حساب، أو تليفون عميل (get_customer_balance):
+   - عندما يكتب التاجر عبارات استعلامية مثل: "ممكن تقولي رقم تليفون [اسم]", "رقم [اسم] كام", "تليفون [اسم]", "حساب [اسم]", "رصيد [اسم]", "هو عليه كام؟" -> يجب استخدام أداة get_customer_balance فوراً! يُمنع منعاً باتاً استدعاء أداة حجز المواعيد book_appointment أو أداة سداد log_customer_payment أو أداة log_sale عند الاستعلام عن الحسابات وأرقام التليفونات!
 7. سداد ديون واستعلام حسابات الموردين (log_supplier_payment / get_supplier_balance):
    - عند السداد للمورد ("دفعت للمورد المتخصص 500", "سددت للمورد احمد 200") -> استخدم فوراً أداة log_supplier_payment.
    - عند الاستعلام عن حساب ورصيد مورد ("حساب المورد المتخصص", "كشف حساب المورد علي", "ديون المورد احمد") -> استخدم فوراً أداة get_supplier_balance!

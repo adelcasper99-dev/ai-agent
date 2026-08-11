@@ -1852,13 +1852,20 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         take: Number(limit)
       });
 
-      // Filter out invalid/draft records where both customer name and date are missing/placeholder
+      // Filter out invalid/corrupted records where date or time is missing/corrupted
       const validApps = apps.filter(a => {
         const nameStr = (a.customerName || "").trim();
         const dateStr = (a.date || "").trim();
+        const timeStr = (a.time || "").trim();
+        
+        const cleanDate = resolveRelativeArabicDate(dateStr, a.createdAt);
+        const cleanTime = cleanArabicTimeStr(timeStr);
+        
         const isBadName = nameStr === "" || nameStr.includes("لم يُحدد") || nameStr === "الاسم لم يُحدد";
-        const isBadDate = dateStr === "" || dateStr.includes("لم يُحدد") || dateStr === "التاريخ لم يُحدد" || dateStr === "الجاي";
-        return !(isBadName && isBadDate);
+        const isBadDate = dateStr === "" || dateStr === "الجاي" || dateStr.includes("لم يُحدد") || cleanDate === "غير موضح";
+        const isBadTime = timeStr === "" || timeStr.includes("未提及") || timeStr.includes("لم يُحدد") || cleanTime === "غير موضح";
+        
+        return !(isBadName || isBadDate || isBadTime);
       });
 
       if (validApps.length === 0) {

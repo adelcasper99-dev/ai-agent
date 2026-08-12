@@ -6,5 +6,6 @@
   { "stage": "3-build", "status": "COMPLETED", "timestamp": "2026-08-12T16:02:20Z", "artifacts": ["task.md"] },
   { "stage": "3b-audit", "status": "COMPLETED", "timestamp": "2026-08-12T16:02:30Z", "artifacts": ["code_review_report.md"] },
   { "stage": "4-test", "status": "COMPLETED", "timestamp": "2026-08-12T16:03:35Z", "artifacts": [] },
-  { "stage": "5-accept", "status": "COMPLETED", "timestamp": "2026-08-12T16:03:40Z", "artifacts": ["walkthrough.md"] }
+  { "stage": "5-accept", "status": "COMPLETED", "timestamp": "2026-08-12T16:03:40Z", "artifacts": ["walkthrough.md"] },
+  { "stage": "6-compliance", "status": "COMPLETED", "timestamp": "2026-08-12T16:08:20Z", "artifacts": ["pipeline_completion_report.md"] }
 ]

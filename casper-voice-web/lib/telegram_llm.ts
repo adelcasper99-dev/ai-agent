@@ -806,7 +806,7 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
     const val = args?.[field];
     if (val && String(val).trim().length > 1) {
       const normalizedVal = normalizeArabic(String(val));
-      if (normalizedVal.includes("مورد عام") || normalizedVal.includes("عميل عام") || normalizedVal.includes("صنف غير محدد")) {
+      if (normalizedVal.includes("مورد عام") || normalizedVal.includes("عميل عام") || normalizedVal.includes("صنف غير محدد") || normalizedVal.includes("غير محدد") || normalizedVal.includes("غير موضح") || normalizedVal.includes("لم يحدد") || normalizedVal.includes("غير معروف") || normalizedVal.includes("غير مذكور")) {
         continue; // Generic system placeholders are allowed
       }
       const words = normalizedVal.split(" ").filter((w) => w.length > 1);
@@ -906,12 +906,13 @@ async function logRejectedToolCall(tenantId: string | undefined, toolName: strin
 }
 // === END grounding guard ===
 
-export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0): Promise<{ success: boolean; resultText: string }> {
+export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0, fullContextText?: string): Promise<{ success: boolean; resultText: string }> {
   try {
     // Strict System-Wide Language Guardrail: Sanitize tool args
     args = sanitizeArgsLanguage(args);
     // Normalize userMessageText to avoid TS strict null errors
     const msgText: string = userMessageText ?? "";
+    const groundingText: string = fullContextText || msgText;
     // Tool Router Correction: If smaller LLM called log_sale for a purchase prompt, redirect to log_purchase automatically
     const isPurchasePrompt = msgText && (
       msgText.includes("اشتريت") ||
@@ -982,22 +983,22 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       args = { customer_name: customerName, amount: extractedAmount || args.paid_amount };
     }
 
-    if (name === "log_sale" && /(?:\s|^)دفعت\s+(?:ل|لـ|للمورد)?/i.test(msgText)) {
+    if (name === "log_sale" && /(?:\s|^)دفعت\s+(?:ل|لـ|ل للمورد)?/i.test(msgText)) {
       const userNums = extractAllNumbersFromText(msgText);
       const extractedAmount = userNums.pop();
-      const suppMatch = msgText.match(/دفعت\s+(?:ل|لـ|للمورد)?\s*([أ-ي\s]{2,20}?)\s+\d+/i);
+      const suppMatch = msgText.match(/دفعت\s+(?:ل|لـ|ل للمورد)?\s*([أ-ي\s]{2,20}?)\s+\d+/i);
       const supplierName = suppMatch ? suppMatch[1].trim() : (args.customer_name || "مورد");
       console.log(`[Tool Router Correction] Redirecting erroneously called log_sale to log_supplier_payment for text: "${userMessageText}"`);
       name = "log_supplier_payment";
       args = { supplier_name: supplierName, amount: extractedAmount || args.paid_amount };
     }
 
-    if ((name === "log_customer_payment" || name === "log_sale" || name === "log_sales_return") && /(?:\s|^)رجعت\s+/i.test(msgText) && /(?:لـ|للمورد|مورد|احمد|عربى)/i.test(msgText)) {
+    if ((name === "log_customer_payment" || name === "log_sale" || name === "log_sales_return") && /(?:\s|^)رجعت\s+/i.test(msgText) && /(?:لـ|ل للمورد|مورد|احمد|عربى)/i.test(msgText)) {
       const userNums = extractAllNumbersFromText(msgText);
       const amountVal = userNums.pop();
       const qtyVal = userNums.shift() || 1;
       const itemMatch = msgText.match(/\d+\s*(?:طن|كيلو|كرتونة|شكارة|كيس)?\s+([أ-ي\s]{2,15}?)(?=\s+ل|\s+من|\s+\d|$)/i);
-      const suppMatch = msgText.match(/(?:لـ|للمورد|ل|من)\s*([أ-ي\s]{2,20}?)(?=\s+ثمن|\s+ب|\s+\d|$)/i);
+      const suppMatch = msgText.match(/(?:لـ|ل للمورد|ل|من)\s*([أ-ي\s]{2,20}?)(?=\s+ثمن|\s+ب|\s+\d|$)/i);
       console.log(`[Tool Router Correction] Redirecting erroneously called ${name} to log_purchase_return for text: "${userMessageText}"`);
       name = "log_purchase_return";
       args = {
@@ -1021,7 +1022,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       }
     }
 
-    const grounding = groundingCheck(name, args, msgText);
+    const grounding = groundingCheck(name, args, groundingText);
     if (!grounding.ok) {
       console.warn(`[Grounding Guard] Rejected ${name}:`, grounding.reason, { args, userMessageText });
       void logRejectedToolCall(tenantId, name, args, msgText, grounding.reason || "Grounding failure");
@@ -2307,6 +2308,7 @@ export async function processTelegramMessageWithLLM(
 
   // Dynamic Tool Routing & Context Prompt Building
   const lastHistoryText = rawHistory.length > 0 ? rawHistory[rawHistory.length - 1].text : undefined;
+  const fullContextText = [...rawHistory.map(h => h.text), normalizedText].join(" ");
   const { activeTools, activeClusters } = resolveActiveTools(normalizedText, lastHistoryText);
   const activePrompt = buildActivePrompt(activeClusters, companyStr, typeStr, hoursStr);
 
@@ -2349,7 +2351,7 @@ export async function processTelegramMessageWithLLM(
           const combinedResults = [];
           for (let idx = 0; idx < functionCalls.length; idx++) {
             const call = functionCalls[idx];
-            const toolRes = await executeTool(call.name, call.args, tenantId, text, telegramMessageId, idx);
+            const toolRes = await executeTool(call.name, call.args, tenantId, text, telegramMessageId, idx, fullContextText);
             combinedResults.push(toolRes.resultText);
           }
           finalReply = combinedResults.join('\n\n').trim();
@@ -2487,7 +2489,7 @@ export async function processTelegramMessageWithLLM(
               console.error("[Groq Parser] JSON parse error:", jsonMatch[0], e);
             }
           }
-          const toolRes = await executeTool(funcName, args, tenantId, normalizedText, telegramMessageId, 0);
+          const toolRes = await executeTool(funcName, args, tenantId, normalizedText, telegramMessageId, 0, fullContextText);
           void saveChatMessage(tenantId, telegramChatId, "assistant", toolRes.resultText);
           return { status: "success", text: toolRes.resultText };
         }
@@ -2503,7 +2505,7 @@ export async function processTelegramMessageWithLLM(
           const call = toolCalls[idx];
           let args: Record<string, any> = {};
           try { args = JSON.parse(call.function.arguments); } catch {}
-          const toolRes = await executeTool(call.function.name, args, tenantId, normalizedText, telegramMessageId, idx);
+          const toolRes = await executeTool(call.function.name, args, tenantId, normalizedText, telegramMessageId, idx, fullContextText);
           results.push(toolRes.resultText);
         }
         finalReply = results.join('\n\n').trim();
@@ -2537,7 +2539,7 @@ export async function processTelegramMessageWithLLM(
                 console.error("[Groq Parser] JSON parse error:", jsonMatch[0], e);
               }
             }
-            const toolRes = await executeTool(funcName, args, tenantId, text, telegramMessageId, 0);
+            const toolRes = await executeTool(funcName, args, tenantId, text, telegramMessageId, 0, fullContextText);
             void saveChatMessage(tenantId, telegramChatId, "assistant", toolRes.resultText);
             return { status: "success", text: toolRes.resultText };
           }

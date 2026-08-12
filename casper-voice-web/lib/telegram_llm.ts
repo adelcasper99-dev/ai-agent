@@ -294,6 +294,41 @@ const logPurchaseReturnTool: FunctionDeclaration = {
   }
 };
 
+const saveMerchantMemoryTool: FunctionDeclaration = {
+  name: "save_merchant_memory",
+  description: "حفظ حقيقة أو alias أو تفضيل ثابت عن التاجر أو العملاء أو الموردين أو وحدات القياس لاستخدامه في الذاكرة مستقبلاً",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      category: {
+        type: SchemaType.STRING,
+        description: "فئة الذاكرة: 'customer_alias' (لقب عميل) أو 'supplier_alias' (لقب مورد) أو 'product_alias' (لقب منتج) أو 'unit_preference' (وحدة قياس) أو 'general_preference' (تفضيل عام)"
+      },
+      key: {
+        type: SchemaType.STRING,
+        description: "الاسم الإشاري/اللقب/الوحدة التي يستخدمها التاجر (مثال: 'الرئيس صابر' أو 'أبو صلاح' أو 'الكرتونة')"
+      },
+      value: {
+        type: SchemaType.STRING,
+        description: "القيمة أو الاسم الرسمي الفعلي المرتبط في النظام (مثال: 'صابر المحلاوي' أو 'أحمد محمد')"
+      }
+    },
+    required: ["category", "key", "value"]
+  }
+};
+
+const getMerchantMemoryTool: FunctionDeclaration = {
+  name: "get_merchant_memory",
+  description: "الاستعلام عن ذاكرة التاجر لمعرفة ألقاب العملاء/الموردين أو تفضيلات العمل المسجلة سابقا",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      key: { type: SchemaType.STRING, description: "الكلمة أو اللقب المراد البحث عنه (اختياري)" },
+      category: { type: SchemaType.STRING, description: "فئة الذاكرة المراد تصفيتها (اختياري)" }
+    }
+  }
+};
+
 // ==================== DYNAMIC TOOL ROUTING & CLUSTERS ====================
 
 export const ALL_TOOLS: FunctionDeclaration[] = [
@@ -301,7 +336,7 @@ export const ALL_TOOLS: FunctionDeclaration[] = [
   getFinancialSummaryTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool,
   reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool,
   getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool, addProductTool,
-  updateStockTool, addCustomerTool
+  updateStockTool, addCustomerTool, saveMerchantMemoryTool, getMerchantMemoryTool
 ];
 
 export type ClusterKey = 'SALES' | 'PURCHASES' | 'APPOINTMENTS' | 'INVENTORY' | 'FINANCE_META';
@@ -310,7 +345,7 @@ const SALES_TOOLS: FunctionDeclaration[] = [logSaleTool, addCustomerTool, logSal
 const PURCHASE_TOOLS: FunctionDeclaration[] = [logPurchaseTool, logSupplierPaymentTool, getSupplierBalanceTool, logPurchaseReturnTool];
 const APPOINTMENT_TOOLS: FunctionDeclaration[] = [bookAppointmentTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool];
 const INVENTORY_TOOLS: FunctionDeclaration[] = [addProductTool, updateStockTool];
-const FINANCE_META_TOOLS: FunctionDeclaration[] = [logExpenseTool, getFinancialSummaryTool, reportMissingFeatureTool];
+const FINANCE_META_TOOLS: FunctionDeclaration[] = [logExpenseTool, getFinancialSummaryTool, reportMissingFeatureTool, saveMerchantMemoryTool, getMerchantMemoryTool];
 
 const CLUSTER_KEYWORDS: Record<ClusterKey, string[]> = {
   SALES: ["بيع", "بعت", "اشترى", "كاش", "آجل", "عميل", "حساب عميل", "رصيد عميل", "قبضت", "سدد", "مرتجع مبيعات", "رجع من", "تليفون عميل", "ديون عميل"],
@@ -1069,6 +1104,96 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       if (executedKeys.size > 5000) executedKeys.clear();
     }
 
+    if (tenantId && (args.supplier_name || args.customer_name || args.item_name)) {
+      try {
+        const rawTarget = String(args.supplier_name || args.customer_name || args.item_name).trim();
+        const memoryMatch = await (prisma as any).merchantMemory.findFirst({
+          where: { tenantId, key: rawTarget }
+        });
+        if (memoryMatch) {
+          console.log(`[Merchant Memory Pre-Resolver] Resolved alias "${rawTarget}" -> "${memoryMatch.value}" (${memoryMatch.category})`);
+          if (args.supplier_name && (memoryMatch.category === "supplier_alias" || memoryMatch.category === "general_preference")) {
+            args.supplier_name = memoryMatch.value;
+          }
+          if (args.customer_name && (memoryMatch.category === "customer_alias" || memoryMatch.category === "general_preference")) {
+            args.customer_name = memoryMatch.value;
+          }
+          if (args.item_name && memoryMatch.category === "product_alias") {
+            args.item_name = memoryMatch.value;
+          }
+        }
+      } catch (memErr) {
+        console.error("[Merchant Memory Pre-Resolver Error]:", memErr);
+      }
+    }
+
+    if (name === "save_merchant_memory") {
+      const { category, key, value } = args;
+      if (!key || !value || String(key).trim() === "" || String(value).trim() === "") {
+        return { success: false, resultText: "عشان أحفظلك المعلومة محتاج الاسم والبديل الفعلي 🧠" };
+      }
+      if (!tenantId) {
+        return { success: false, resultText: "عذراً، لم أتمكن من حفظ الذاكرة لوجود مشكلة في التعرف على حساب الشركة." };
+      }
+      const catStr = category ? String(category).trim() : "general_preference";
+      const keyStr = String(key).trim();
+      const valStr = String(value).trim();
+
+      try {
+        await (prisma as any).merchantMemory.upsert({
+          where: {
+            tenantId_category_key: {
+              tenantId,
+              category: catStr,
+              key: keyStr
+            }
+          },
+          update: {
+            value: valStr,
+            confidence: 1.0,
+            source: "explicit_statement"
+          },
+          create: {
+            tenantId,
+            category: catStr,
+            key: keyStr,
+            value: valStr,
+            confidence: 1.0,
+            source: "explicit_statement"
+          }
+        });
+        return { success: true, resultText: `تمام يا ريس، سجلت عندي إن (${keyStr}) هو (${valStr}) 🧠` };
+      } catch (memErr: any) {
+        console.error("[save_merchant_memory Error]:", memErr);
+        return { success: false, resultText: "حدث خطأ أثناء حفظ الذاكرة في النظام." };
+      }
+    }
+
+    if (name === "get_merchant_memory") {
+      const { key, category } = args;
+      if (!tenantId) {
+        return { success: false, resultText: "عذراً، لم أتمكن من استرجاع الذاكرة." };
+      }
+      try {
+        const memories = await (prisma as any).merchantMemory.findMany({
+          where: {
+            tenantId,
+            ...(category && { category: String(category).trim() }),
+            ...(key && { key: { contains: String(key).trim() } })
+          },
+          take: 10
+        });
+        if (memories.length === 0) {
+          return { success: true, resultText: "لم يتم العثور على أي معلومات محفوظة تناسب هذا البحث." };
+        }
+        const formatted = memories.map((m: any) => `• *${m.key}* ⬅️ ${m.value} (${m.category})`).join("\n");
+        return { success: true, resultText: `🧠 *ذاكرة التاجر المحفوظة:*\n${formatted}` };
+      } catch (memErr: any) {
+        console.error("[get_merchant_memory Error]:", memErr);
+        return { success: false, resultText: "حدث خطأ أثناء استرجاع الذاكرة." };
+      }
+    }
+
     if (name === "add_product") {
       const { name: productName, is_stock_item, stock_quantity, unit_price } = args;
       if (!productName || String(productName).trim() === "") {
@@ -1736,11 +1861,28 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
 
       try {
         const { totalDebtResult, supplierFound } = await (prisma as any).$transaction(async (tx: any) => {
-          const supplier = await tx.supplier.findFirst({
+          let supplier = await tx.supplier.findFirst({
             where: { name: { contains: supName }, ...(tenantId && { tenantId }) }
           });
+
+          if (!supplier && tenantId) {
+            const memoryMatch = await tx.merchantMemory.findFirst({
+              where: { tenantId, key: supName }
+            });
+            if (memoryMatch) {
+              supplier = await tx.supplier.findFirst({
+                where: { tenantId, name: { contains: memoryMatch.value } }
+              });
+            }
+          }
+
           if (!supplier) {
-            throw new Error(` لم يتم العثور على المورد: ${supName}`);
+            supplier = await tx.supplier.create({
+              data: {
+                name: supName,
+                ...(tenantId && { tenantId })
+              }
+            });
           }
 
           // 1. Record SupplierPayment

@@ -13,7 +13,7 @@ export interface MemoryEntry {
 }
 
 export interface SaveMemoryParams {
-  category: 'customer_alias' | 'unit_preference' | 'product_alias' | 'general_preference';
+  category: 'customer_alias' | 'supplier_alias' | 'unit_preference' | 'product_alias' | 'general_preference';
   key: string;
   value: string;
   confidence?: number;
@@ -34,7 +34,7 @@ function containsForbiddenFinancialData(value: string): boolean {
 
 
 /**
- * Resolves up to 3 relevant merchant memories based on input text keywords.
+ * Resolves up to 5 relevant merchant memories based on input text keywords.
  */
 export async function resolveMerchantMemories(tenantId: string, text: string): Promise<MemoryEntry[]> {
   if (!tenantId || !text || text.trim().length === 0) {
@@ -42,13 +42,13 @@ export async function resolveMerchantMemories(tenantId: string, text: string): P
   }
 
   try {
-    const memories = await prisma.merchantMemory.findMany({
+    const memories = await (prisma as any).merchantMemory.findMany({
       where: { tenantId },
       orderBy: [
         { confidence: 'desc' },
         { updatedAt: 'desc' }
       ],
-      take: 20
+      take: 50
     });
 
     if (memories.length === 0) {
@@ -57,9 +57,9 @@ export async function resolveMerchantMemories(tenantId: string, text: string): P
 
     const lowerText = text.toLowerCase();
     // Key must appear as a substring inside the user's message text only (not the reverse)
-    const matched = memories.filter(m => lowerText.includes(m.key.toLowerCase()));
+    const matched = memories.filter((m: any) => lowerText.includes(m.key.toLowerCase()));
 
-    return matched.slice(0, 3);
+    return matched.slice(0, 5);
   } catch (error) {
     console.error('[MerchantMemory] Error resolving memories:', error);
     return [];
@@ -92,7 +92,7 @@ export async function saveMerchantMemory(
   }
 
   try {
-    const result = await prisma.merchantMemory.upsert({
+    const result = await (prisma as any).merchantMemory.upsert({
       where: {
         tenantId_category_key: {
           tenantId,
@@ -125,7 +125,7 @@ export async function saveMerchantMemory(
 
 /**
  * Asynchronously extracts explicit alias declarations from merchant messages.
- * e.g. "أبو صلاح ده أحمد محمد" -> key: "أبو صلاح", value: "أحمد محمد"
+ * e.g. "الرئيس صابر ده المورد صابر المحلاوي" -> key: "الرئيس صابر", value: "صابر المحلاوي", category: "supplier_alias"
  */
 export async function extractAndPersistMemory(
   tenantId: string,
@@ -140,21 +140,33 @@ export async function extractAndPersistMemory(
     const match = sanitizedText.match(aliasRegex);
 
     if (match) {
-      const rawKey = stripQuotes(match[1].replace(/^(هو|ده|سجل|خزن|افتكر|احفظ)\s+/i, ''));
-      const rawVal = stripQuotes(match[3]);
+      let rawKey = stripQuotes(match[1].replace(/^(هو|ده|سجل|خزن|افتكر|احفظ)\s+/i, ''));
+      let rawVal = stripQuotes(match[3]);
+
+      let category: 'customer_alias' | 'supplier_alias' | 'product_alias' | 'unit_preference' | 'general_preference' = 'customer_alias';
+
+      if (/مورد/i.test(rawKey) || /مورد/i.test(rawVal)) {
+        category = 'supplier_alias';
+        rawVal = rawVal.replace(/^(المورد|مورد)\s+/, '').trim();
+      } else if (/عميل/i.test(rawKey) || /عميل/i.test(rawVal)) {
+        category = 'customer_alias';
+        rawVal = rawVal.replace(/^(العميل|عميل)\s+/, '').trim();
+      }
 
       if (rawKey.length >= 2 && rawVal.length >= 2) {
         await saveMerchantMemory(tenantId, {
-          category: 'customer_alias',
+          category,
           key: rawKey,
           value: rawVal,
           confidence: 1.0,
           source: 'explicit_statement'
         });
+        console.log(`[MerchantMemory Extractor] Persisted alias: "${rawKey}" -> "${rawVal}" (${category})`);
       }
     }
   } catch (err) {
     console.error('[MerchantMemory] Async extraction failed:', err);
   }
 }
+
 

@@ -795,8 +795,8 @@
     "semantic_hash": ""
   },
   ".agents/stage_log.json": {
-    "mtime": 1786431239.7804847,
-    "ast_hash": "903bbaa0b9cb80f8ee1345e3eaabf38e",
+    "mtime": 1786525397.5877824,
+    "ast_hash": "b2724ba229fb60e24585476f9226ae82",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -1010,8 +1010,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/tsconfig.json": {
-    "mtime": 1786255177.7582202,
-    "ast_hash": "8f3415311cfcf77381e2f7deb67c7ca0",
+    "mtime": 1786441389.7584112,
+    "ast_hash": "78fa8ee7c4e71e954eee682eca551df1",
     "semantic_hash": ""
   },
   "voice_service/agent.py": {
@@ -2420,33 +2420,33 @@
     "semantic_hash": ""
   },
   "code_review_report.md": {
-    "mtime": 1786402811.6623497,
-    "ast_hash": "5dde5a7f567cbffb4386f2ad5ad4e72c",
+    "mtime": 1786524846.9518812,
+    "ast_hash": "4ae80bd2035e90e3a7ebf87332f2219e",
     "semantic_hash": ""
   },
   "ironclad_review_implementation_plan.md": {
-    "mtime": 1786402550.8378315,
-    "ast_hash": "c9c4ee3765897393a1f3f3710fa34bc6",
+    "mtime": 1786524697.8464224,
+    "ast_hash": "589e5933b2902f66de800757ff94340d",
     "semantic_hash": ""
   },
   "research_findings.md": {
-    "mtime": 1786402545.2793212,
-    "ast_hash": "e89f663bae0bdb43a5b3872537cabe15",
+    "mtime": 1786524661.2798357,
+    "ast_hash": "c884a26bdabdc9f0de014acd9bddad0d",
     "semantic_hash": ""
   },
   "task.md": {
-    "mtime": 1786402804.6538308,
-    "ast_hash": "055e51cfdb2badee714cb8a511ae6590",
+    "mtime": 1786524828.3500285,
+    "ast_hash": "95881e7fad220f29b9d384e5746b6ab2",
     "semantic_hash": ""
   },
   "test_results.txt": {
-    "mtime": 1786402827.371035,
-    "ast_hash": "f2dc759f54938e4d87e8e398db31e066",
+    "mtime": 1786525348.1520472,
+    "ast_hash": "6c76f1f72c1a72d711ced6c92d97b11f",
     "semantic_hash": ""
   },
   "walkthrough.md": {
-    "mtime": 1786402835.1245222,
-    "ast_hash": "895086b9e4228dea9bc049bbc113dd83",
+    "mtime": 1786525368.8933773,
+    "ast_hash": "9d05939898e786859ff29595282a8910",
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/tenants/approve/route.ts": {
@@ -2600,8 +2600,8 @@
     "semantic_hash": ""
   },
   "implementation_plan.md": {
-    "mtime": 1786402548.0233006,
-    "ast_hash": "53c643b08a7a3919906cc1d5d25d8d15",
+    "mtime": 1786524679.6212792,
+    "ast_hash": "5341d397d2e99ed50f7a47e0a87ba56a",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/auth.ts": {
@@ -2610,8 +2610,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram_llm.ts": {
-    "mtime": 1786439716.4506845,
-    "ast_hash": "981d9b89a35277bddbffe9a4f574ac46",
+    "mtime": 1786525301.1422153,
+    "ast_hash": "b40e23d4f6f716e269835c9b4d7e595c",
     "semantic_hash": ""
   },
   "casper-voice-web/app/telegram-voice/page.tsx": {
@@ -2995,183 +2995,203 @@
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_advanced_edge_cases.ts": {
-    "mtime": 1786433891.1189852,
-    "ast_hash": "81a7eba3f348c8591e9cdc11e8540cb9",
+    "mtime": 1786441395.6422415,
+    "ast_hash": "2d2b062c8946c1074b2c4db0b07bb5c7",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_agent_db_loop.ts": {
-    "mtime": 1786438583.8970287,
-    "ast_hash": "2fd62e18e59f2ad6649bc6772fdac4f8",
+    "mtime": 1786441395.645301,
+    "ast_hash": "457c5417fd240c02d829b60fe59a647d",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_all_tools.ts": {
-    "mtime": 1786435620.3023615,
-    "ast_hash": "79fdc49357906d2e895580e2fb36f572",
+    "mtime": 1786441395.6502993,
+    "ast_hash": "ceb63658ba9ce250761cf5cd87534458",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_ambiguity_and_arabic_numerals.ts": {
-    "mtime": 1786241505.010961,
-    "ast_hash": "65414bf03de65d93052856a6b709ee6d",
+    "mtime": 1786441395.653299,
+    "ast_hash": "5e79c04a565cd8220b8e291b4cd61158",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_ambiguous_numeric_clarification.ts": {
-    "mtime": 1786247341.1727655,
-    "ast_hash": "ef456339fded93207cddd9e553a7136c",
+    "mtime": 1786441395.6562996,
+    "ast_hash": "c8c0a32e5a5c1a1154e211f856b8093b",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_api_key_manager.ts": {
-    "mtime": 1786431185.643065,
-    "ast_hash": "e0c5ec2e5709cbfc0d6c6e8c8adb991b",
+    "mtime": 1786441395.6592977,
+    "ast_hash": "1239d72050d0d9a938ea2386dd17e8cc",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_appointments.ts": {
-    "mtime": 1786429125.0524127,
-    "ast_hash": "ea63366edaa39f7a585d4521486c3b78",
+    "mtime": 1786441395.6643193,
+    "ast_hash": "7dd8d0cc8e234722283f8fb9dbff8bff",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_arabi_clean_ledger_verification.ts": {
-    "mtime": 1786248757.8395886,
-    "ast_hash": "48f1654cf68bc08b63e0a4d7b92922e6",
+    "mtime": 1786441395.6682994,
+    "ast_hash": "7e52507845ca8a6a97d0ebac74e04af4",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_daily_summary_and_add_customer.ts": {
-    "mtime": 1786253834.0996952,
-    "ast_hash": "fccef93454800c02d42219262c8460cc",
+    "mtime": 1786441395.672299,
+    "ast_hash": "22b52523e41ec057615d68fd8ce7d51d",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_e2e_retry_and_null.js": {
-    "mtime": 1786178229.6934278,
-    "ast_hash": "62fca3ecd640cc61bb6b3144b4dceadf",
+    "mtime": 1786441395.6782992,
+    "ast_hash": "5d0ed9bf675233a3de0a170c051a56c1",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_expense.ts": {
-    "mtime": 1786241394.9700062,
-    "ast_hash": "dc74705634d8bfc3afade5a160799529",
+    "mtime": 1786441395.6823237,
+    "ast_hash": "b44f2156ad57fbf299a5a4b183299e22",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_financial_sanity_and_grounding.js": {
-    "mtime": 1786181301.8634353,
-    "ast_hash": "5732a2d3b3b518ed419748239914074e",
+    "mtime": 1786441395.6873608,
+    "ast_hash": "ba7e0d6487852e5aa06ca7e2ed991d2a",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_gemini.js": {
-    "mtime": 1785588258.2649293,
-    "ast_hash": "417e42523540d25acb64eede16ca20a2",
+    "mtime": 1786441395.6903605,
+    "ast_hash": "1351a1f4b9ea31a8f3a2d7864fd63ca6",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_gemini.py": {
-    "mtime": 1785588240.792252,
-    "ast_hash": "06db16d6b282f8ed7cf00d69e67b8284",
+    "mtime": 1786441395.6923606,
+    "ast_hash": "f9e07c9561f6d9ffdd3959c2cbdf8cbf",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_gibberish_input.ts": {
-    "mtime": 1786432804.4297316,
-    "ast_hash": "1d0fabe4559e4c881572c85bba640d16",
+    "mtime": 1786441395.6964638,
+    "ast_hash": "e9cdfb3c49d7b986d138084703a31144",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_implicit_service_prompts.ts": {
-    "mtime": 1786435361.4666824,
-    "ast_hash": "a6471b3414260952242fb91094bc93f9",
+    "mtime": 1786441395.7004654,
+    "ast_hash": "d5a205321930099c8b239b76b079bbc8",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_live_interaction_demo.ts": {
-    "mtime": 1786432114.246318,
-    "ast_hash": "3c6a9cf5892080868d0c5090c063a5f8",
+    "mtime": 1786441395.7064645,
+    "ast_hash": "1b90256663de2face05bc931a60e7d77",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_merchant_personalization.ts": {
-    "mtime": 1786435498.6594906,
-    "ast_hash": "f51085ca5ccd7e5feb0053f068876b41",
+    "mtime": 1786441395.7114646,
+    "ast_hash": "62c46c077e2fa2eab9a8315ebc0723e9",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_multi_unit_conversion.ts": {
-    "mtime": 1786434473.489054,
-    "ast_hash": "ba43b8af4a51c3662d236d6a0e6d12e8",
+    "mtime": 1786441395.716464,
+    "ast_hash": "7b482b7eef94392675339120d4f0a739",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_onboarding_name_persistence.ts": {
-    "mtime": 1786435963.5739226,
-    "ast_hash": "9e6c924d79eb2926296489d5d874d016",
+    "mtime": 1786441395.721494,
+    "ast_hash": "267339de9f2a798d24b52231f27fcf88",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_payload.json": {
-    "mtime": 1786403698.3124745,
-    "ast_hash": "7686a5c2b656459d3f3894e7be961f42",
+    "mtime": 1786441395.7244666,
+    "ast_hash": "c57cd6a44da3496057fcde4d37161084",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_product_variant_ambiguity.ts": {
-    "mtime": 1786434635.133258,
-    "ast_hash": "8d4c8bba99a5be6000159ce5eb42ddcd",
+    "mtime": 1786441395.7274683,
+    "ast_hash": "e718127c6a5956f577b726c80784d10a",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_purchase_messy_arabic.ts": {
-    "mtime": 1786243897.512315,
-    "ast_hash": "3c04975a167fedeab5f7fce0d811ddcf",
+    "mtime": 1786441395.7314658,
+    "ast_hash": "b97b6cf70e986d881141b2bf04e65ee4",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_purchase_return_and_add_product.ts": {
-    "mtime": 1786250860.3363607,
-    "ast_hash": "5ac9b1aeacd6c264dea8b1121615f274",
+    "mtime": 1786441395.7344663,
+    "ast_hash": "8d4e865e324bc85d0f482f83c3cfea42",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_purchase_return_cash_vs_credit.ts": {
-    "mtime": 1786252860.6668024,
-    "ast_hash": "a9e482bf4b78e08c11a1732b7cdd8486",
+    "mtime": 1786441395.7384658,
+    "ast_hash": "489b9cefcb2459fefff6508174767118",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_raw_user_slang_purchase.ts": {
-    "mtime": 1786244395.0804062,
-    "ast_hash": "76994de1c1e3d708bcc928d44290c687",
+    "mtime": 1786441395.7414656,
+    "ast_hash": "71698ed777dfb602773d86f036b5698c",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_real_user_slang_scenarios.ts": {
-    "mtime": 1786432399.9593935,
-    "ast_hash": "1f914bf9df2a1da479f6e7536506c869",
+    "mtime": 1786441395.747465,
+    "ast_hash": "8c34afe34dde6165d6b934d8bf713be4",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_sales_api_route.js": {
-    "mtime": 1786179695.906073,
-    "ast_hash": "26a64955b05914b4cabba5ebc29b5cd0",
+    "mtime": 1786441395.751465,
+    "ast_hash": "aceb41204298f2f2ac9d36d3b75cdabb",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_service_edge_cases.ts": {
-    "mtime": 1786435106.2225487,
-    "ast_hash": "2cf356a07830e76bc8b3a1abc76392e4",
+    "mtime": 1786441395.7594643,
+    "ast_hash": "a90251fb06b61d42df86dac3d4fa2f3a",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_service_vs_product.ts": {
-    "mtime": 1786434892.4017527,
-    "ast_hash": "e49b2c8f398ab8c4ee0eb2ac756eddab",
+    "mtime": 1786441395.764466,
+    "ast_hash": "1cb1ca2a49db9fc62c04189be887af92",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_stock_and_customer_statement.ts": {
-    "mtime": 1786253423.0495203,
-    "ast_hash": "bbd8cecf4026bbbc96de61a835f97b2a",
+    "mtime": 1786441395.7684643,
+    "ast_hash": "b049abb1fc9d813d5fa7933f9e2fc0d2",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_supplier_balance_and_customer_payment.ts": {
-    "mtime": 1786248403.3172777,
-    "ast_hash": "cbee981b63db617cab289c88500e0771",
+    "mtime": 1786441395.7734666,
+    "ast_hash": "bbb9f3116a6b53819cd291a5879ce896",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_supplier_payment.ts": {
-    "mtime": 1786242610.948977,
-    "ast_hash": "e9b0876574bcae587de8eb3f1d041d6e",
+    "mtime": 1786441395.777466,
+    "ast_hash": "b420b7cda4c6d3e8cfae7b939164c969",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_uncataloged_case.ts": {
-    "mtime": 1786432657.3859904,
-    "ast_hash": "ed53d8d3086fb83b0b0af3234dd36e29",
+    "mtime": 1786441395.782466,
+    "ast_hash": "3698077c3dd8a8fb7ec8e3b5058af9cc",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/test_user_supplier_payment_slang.ts": {
-    "mtime": 1786245080.1084778,
-    "ast_hash": "f8d26a0643a474fe9b0ad31fcafa4336",
+    "mtime": 1786441395.7864654,
+    "ast_hash": "b2642abc9a7774b4663de2d644a478ae",
     "semantic_hash": ""
   },
   "casper-voice-web/scripts/manual-sim/write_test_all_tools.py": {
-    "mtime": 1786435614.3030896,
-    "ast_hash": "06df82d6dbcd1c40e5d983da586b0444",
+    "mtime": 1786441395.7944653,
+    "ast_hash": "6896efd421f1145ca2d7830b81a9c778",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/cleanup_corrupted_appointments.ts": {
+    "mtime": 1786471977.5126243,
+    "ast_hash": "df91ddb6bd70606d66c4a6234dc42444",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/scripts/test_direct_tool_flow.ts": {
+    "mtime": 1786525329.1379268,
+    "ast_hash": "e00f8ac00b5c2fe547ea2b112535f860",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/scripts/test_product_purchase_sale_flow.ts": {
+    "mtime": 1786525185.9084392,
+    "ast_hash": "89bcb5f56ce21c2e26c155eb96e8174a",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/test_llm_fixes.ts": {
+    "mtime": 1786471776.5590594,
+    "ast_hash": "7432b49ff2acd7bc567c7d7210658e2d",
     "semantic_hash": ""
   }
 }

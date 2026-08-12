@@ -30,11 +30,22 @@ beforeEach(async () => {
         tenantId: TENANT_ID,
       }
     });
+
+    await prisma.appointment.create({
+      data: {
+        customerName: 'احمد مكش',
+        date: '2026-08-20',
+        time: '03:00 مساءً',
+        status: 'scheduled',
+        tenantId: TENANT_ID,
+      }
+    });
   });
 });
 
 afterEach(async () => {
   await prisma.product.deleteMany({ where: { tenantId: TENANT_ID } });
+  await prisma.appointment.deleteMany({ where: { tenantId: TENANT_ID } });
   await prisma.tenant.deleteMany({ where: { id: TENANT_ID } });
 });
 
@@ -92,5 +103,41 @@ describe("AI Guardrails & Adversarial Prompts", () => {
     );
     // Should trigger Small-Talk Short-Circuit
     expect(result.text || (result as any).finalReply).toMatch(/مساعد|مبيعات|لا أستطيع|أهلاً|قولّي/i);
+  }, 30000);
+
+  it("G5: Cancels an existing appointment (الغي موعد احمد مكش)", async () => {
+    const result = await processTelegramMessageWithLLM(
+      "الغي موعد احمد مكش",
+      TENANT_ID,
+      "Test Tenant",
+      "Retail",
+      "9-5",
+      CHAT_ID,
+      Date.now()
+    );
+    expect(result.text || (result as any).finalReply).toMatch(/إلغاء|الغي|حذف|بنجاح/i);
+
+    const cancelledApp = await prisma.appointment.findFirst({
+      where: { tenantId: TENANT_ID, customerName: 'احمد مكش' }
+    });
+    expect(cancelledApp?.status).toBe('cancelled');
+  }, 30000);
+
+  it("G6: Reschedules an existing appointment (أجل موعد احمد مكش لبكرة الساعة 5)", async () => {
+    const result = await processTelegramMessageWithLLM(
+      "أجل موعد احمد مكش لبكرة الساعة 5",
+      TENANT_ID,
+      "Test Tenant",
+      "Retail",
+      "9-5",
+      CHAT_ID,
+      Date.now()
+    );
+    expect(result.text || (result as any).finalReply).toMatch(/تأجيل|تعديل|تغير|بنجاح/i);
+
+    const rescheduledApp = await prisma.appointment.findFirst({
+      where: { tenantId: TENANT_ID, customerName: 'احمد مكش' }
+    });
+    expect(rescheduledApp?.status).toBe('rescheduled');
   }, 30000);
 });

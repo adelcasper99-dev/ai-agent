@@ -1974,6 +1974,79 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       };
     }
 
+    if (name === "cancel_appointment") {
+      const { customer_name, date } = args;
+      const custName = customer_name ? String(customer_name).trim() : "";
+      if (!custName) {
+        return { success: false, resultText: "من فضلك حدد اسم العميل لإلغاء الموعد. 📅" };
+      }
+
+      const norm = (s: string) => s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+      const searchNorm = norm(custName);
+
+      const apps = await prisma.appointment.findMany({
+        where: {
+          ...(tenantId && { tenantId }),
+          status: { not: "cancelled" }
+        }
+      });
+
+      const matched = apps.filter(a => norm(a.customerName).includes(searchNorm) || searchNorm.includes(norm(a.customerName)));
+
+      if (matched.length === 0) {
+        return { success: false, resultText: `لم نجد أي موعد محجوز باسم (${custName}) حالياً. 📅` };
+      }
+
+      await prisma.appointment.updateMany({
+        where: {
+          id: { in: matched.map(m => m.id) }
+        },
+        data: {
+          status: "cancelled"
+        }
+      });
+
+      return { success: true, resultText: `تم إلغاء موعد العميل (${custName}) بنجاح! ❌📅` };
+    }
+
+    if (name === "reschedule_appointment") {
+      const { customer_name, new_date, new_time } = args;
+      const custName = customer_name ? String(customer_name).trim() : "";
+      const nDate = new_date ? String(new_date).trim() : "";
+      const nTime = new_time ? String(new_time).trim() : "";
+
+      if (!custName || !nDate || !nTime) {
+        return { success: false, resultText: "لتأجيل الموعد، يرجى توضيح اسم العميل، التاريخ الجديد، والوقت الجديد. 📅" };
+      }
+
+      const norm = (s: string) => s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+      const searchNorm = norm(custName);
+
+      const apps = await prisma.appointment.findMany({
+        where: {
+          ...(tenantId && { tenantId }),
+          status: { not: "cancelled" }
+        }
+      });
+
+      const matched = apps.find(a => norm(a.customerName).includes(searchNorm) || searchNorm.includes(norm(a.customerName)));
+
+      if (!matched) {
+        return { success: false, resultText: `لم نجد أي موعد محجوز باسم (${custName}) لتعديله. 📅` };
+      }
+
+      await prisma.appointment.update({
+        where: { id: matched.id },
+        data: {
+          date: nDate,
+          time: nTime,
+          status: "rescheduled"
+        }
+      });
+
+      return { success: true, resultText: `تم تأجيل/تعديل موعد العميل (${custName}) إلى يوم (${nDate}) الساعة (${nTime}) بنجاح! 📅🔄` };
+    }
+
     if (name === "report_missing_feature") {
       const { feature_description } = args;
       const desc = String(feature_description || "").trim();

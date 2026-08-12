@@ -36,7 +36,7 @@ export async function transcribeVoiceNote(audioBuffer: Buffer, tenantId?: string
           {
             parts: [
               {
-                text: "Please transcribe this audio accurately. Output only the transcription text, nothing else."
+                text: "أنت متخصص في تفريغ الصوت باللغة العربية بما فيها العامية المصرية. فرّغ هذا الصوت بدقة. اكتب النص المُفرَّغ فقط بدون أي تعليق إضافي."
               },
               {
                 inlineData: {
@@ -72,11 +72,11 @@ export async function transcribeVoiceNote(audioBuffer: Buffer, tenantId?: string
 
     return text.trim();
   } catch (error) {
-    clearTimeout(timeoutId);
     console.error("Gemini primary transcription failed:", error);
-    
     // Fallback to Deepgram
     return await deepgramSTT(audioBuffer);
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -115,9 +115,10 @@ async function deepgramSTT(audioBuffer: Buffer): Promise<string> {
 
     return text.trim();
   } catch (error) {
-    clearTimeout(timeoutId);
     console.error("Deepgram fallback transcription failed:", error);
     throw new TranscriptionFailedError();
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -189,8 +190,9 @@ export async function processImage(imageBuffer: Buffer, mimeType: string, prompt
 
     return text;
   } catch (error) {
-    clearTimeout(timeoutId);
     console.error("Gemini Vision processing failed:", error);
     throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }

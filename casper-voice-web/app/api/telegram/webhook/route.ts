@@ -777,7 +777,7 @@ export async function POST(req: NextRequest) {
           
           const extractedJsonStr = await processImage(
             imageBuffer, 
-            "image/jpeg", 
+            "image/jpeg", // Telegram photo[] is always JPEG-compressed
             "استخرج بيانات الفاتورة بدقة (المنتج، السعر، التاريخ، الكمية). أرجع النتيجة بصيغة JSON."
           );
           
@@ -792,6 +792,48 @@ export async function POST(req: NextRequest) {
           idempotencyKey: `photo_err:${chatId}:${message.message_id}`,
         });
         return NextResponse.json({ ok: true });
+      }
+    }
+
+    // Document Image Handling (PNG/WEBP invoices sent as files)
+    if (message.document && message.document.mime_type) {
+      const supportedDocMimes = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+      if (supportedDocMimes.includes(message.document.mime_type)) {
+        try {
+          const botToken = process.env.TELEGRAM_BOT_TOKEN;
+          const [alertRes, fileRes] = await Promise.all([
+            sendTelegramAlert({
+              chatId,
+              text: "جاري قراءة الفاتورة... ⏳",
+              idempotencyKey: `doc_ack:${chatId}:${message.message_id}`,
+            }),
+            fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${message.document.file_id}`)
+          ]);
+          const fileData = await fileRes.json();
+
+          if (fileData.ok && fileData.result.file_path) {
+            const filePath = fileData.result.file_path;
+            const docRes = await fetch(`https://api.telegram.org/file/bot${botToken}/${filePath}`);
+            const docBuffer = Buffer.from(await docRes.arrayBuffer());
+
+            const extractedJsonStr = await processImage(
+              docBuffer,
+              message.document.mime_type as string,
+              "استخرج بيانات الفاتورة بدقة (المنتج، السعر، التاريخ، الكمية). أرجع النتيجة بصيغة JSON."
+            );
+
+            console.log(`\n[Vision Doc Webhook] Extracted JSON: ${extractedJsonStr}\n`);
+            text = `[بيانات مستخرجة من مستند]:\n${extractedJsonStr}\n\nيرجى تأكيد تسجيل هذه البيانات أو إلغائها.`;
+          }
+        } catch (err: any) {
+          console.error("Document Image Processing Error:", err);
+          await sendTelegramAlert({
+            chatId,
+            text: "❌ عذراً، حدث خطأ أثناء قراءة المستند.",
+            idempotencyKey: `doc_err:${chatId}:${message.message_id}`,
+          });
+          return NextResponse.json({ ok: true });
+        }
       }
     }
 

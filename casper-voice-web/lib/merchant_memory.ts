@@ -67,6 +67,10 @@ export async function resolveMerchantMemories(tenantId: string, text: string): P
 }
 
 
+function stripQuotes(str: string): string {
+  return str.replace(/^["'«»“”\s]+|["'«»“”\s]+$/g, '').trim();
+}
+
 /**
  * Upserts a merchant memory entry with financial sanitization guardrails.
  */
@@ -78,8 +82,8 @@ export async function saveMerchantMemory(
     return null;
   }
 
-  const cleanKey = params.key.trim();
-  const cleanValue = params.value.trim();
+  const cleanKey = stripQuotes(params.key);
+  const cleanValue = stripQuotes(params.value);
 
   // Guardrail: Block financial figures in memory
   if (containsForbiddenFinancialData(cleanValue)) {
@@ -130,13 +134,14 @@ export async function extractAndPersistMemory(
   if (!tenantId || !userText) return;
 
   try {
+    const sanitizedText = stripQuotes(userText);
     // Check for explicit alias statement patterns: "X ده Y" or "X هو Y" or "X يعني Y"
     const aliasRegex = /^\s*(.+?)\s+(ده|هو|يعني)\s+(.+?)\s*$/i;
-    const match = userText.match(aliasRegex);
+    const match = sanitizedText.match(aliasRegex);
 
     if (match) {
-      const rawKey = match[1].replace(/^(هو|ده|سجل|خزن|افتكر|احفظ)\s+/i, '').trim();
-      const rawVal = match[3].trim();
+      const rawKey = stripQuotes(match[1].replace(/^(هو|ده|سجل|خزن|افتكر|احفظ)\s+/i, ''));
+      const rawVal = stripQuotes(match[3]);
 
       if (rawKey.length >= 2 && rawVal.length >= 2) {
         await saveMerchantMemory(tenantId, {
@@ -152,3 +157,4 @@ export async function extractAndPersistMemory(
     console.error('[MerchantMemory] Async extraction failed:', err);
   }
 }
+

@@ -74,4 +74,14 @@ describe('MerchantMemory System Safeguards & Resolution', () => {
     expect(resolved).toHaveLength(1);
     expect(resolved[0].value).toBe('محمد الجديد');
   });
+
+  it('G5: Strips surrounding quotation marks from user messages and alias keys/values', async () => {
+    await extractAndPersistMemory(testTenantId, '"أبو صلاح ده أحمد محمد المانسترلي"');
+
+    const resolved = await resolveMerchantMemories(testTenantId, 'سدد أبو صلاح 50');
+    expect(resolved).toHaveLength(1);
+    expect(resolved[0].key).toBe('أبو صلاح');
+    expect(resolved[0].value).toBe('أحمد محمد المانسترلي');
+  });
 });
+

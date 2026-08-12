@@ -458,14 +458,21 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
   if (!customer && name) {
     customer = await tx.customer.findUnique({ where: { tenantId_name: { tenantId: tId, name } }, include });
     if (!customer) {
-      const normalize = (s: string) => s.replace(/^(لـ|ل|من|عن|حساب|عميل)\s+/, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+      const normalize = (s: string) => s.replace(/^["'«»“”\s]+|["'«»“”\s]+$/g, '').replace(/^(لـ|ل|من|عن|حساب|عميل)\s+/, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
       const normalizedInput = normalize(name);
       const allCustomers = await tx.customer.findMany({ where: { tenantId: tId }, select: { id: true, name: true } });
-      const match = allCustomers.find((c: any) => normalize(c.name) === normalizedInput);
+      let match = allCustomers.find((c: any) => normalize(c.name) === normalizedInput);
+      if (!match) {
+        match = allCustomers.find((c: any) => {
+          const normC = normalize(c.name);
+          return normC.length >= 2 && normalizedInput.length >= 2 && (normC.includes(normalizedInput) || normalizedInput.includes(normC));
+        });
+      }
       if (match) {
          customer = await tx.customer.findUnique({ where: { id: match.id }, include });
       }
     }
+
   }
 
   // Fallback: Check for existing Sale records created prior to Customer model creation

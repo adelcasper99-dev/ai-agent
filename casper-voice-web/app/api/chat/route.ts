@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
       try {
         const { GoogleGenerativeAI } = await import("@google/generative-ai");
         const genai = new GoogleGenerativeAI(geminiKey);
-        const model = genai.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genai.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
         const chat = model.startChat({
           history: messages.slice(1, -1).map((m) => ({
             role: m.role === "assistant" ? "model" : "user",

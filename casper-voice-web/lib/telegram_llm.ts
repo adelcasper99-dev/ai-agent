@@ -2090,7 +2090,7 @@ export async function processTelegramMessageWithLLM(
   // === END small-talk router ===
 
   // Try models in order - first available free-tier model wins
-  const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro"];
+  const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
   let lastError: any = null;
   const maxRetries = 3;
 
@@ -2201,7 +2201,7 @@ export async function processTelegramMessageWithLLM(
             data: {
               tenantId,
               provider: "gemini",
-              modelName: modelName || "gemini-2.0-flash",
+              modelName: modelName || "gemini-3.1-flash-lite",
               inputTokens: inT,
               outputTokens: outT,
               totalTokens: totalT,

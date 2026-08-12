@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 ${context || "(لا يوجد سياق مطابق - رد بمعلوماتك العامة عن الخدمة)"}`;
 
   // 2) Gemini 1.5 Flash - Streaming
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
 
   const result = await model.generateContentStream({
     contents: [

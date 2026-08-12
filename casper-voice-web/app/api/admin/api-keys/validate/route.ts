@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     // Use Gemini SDK for Google keys (Groq code untouched!)
     const genAI = new GoogleGenerativeAI(keyString.trim());
-    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-pro"];
+    const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
 
     let lastGeminiError = "";
     for (const modelName of modelsToTry) {

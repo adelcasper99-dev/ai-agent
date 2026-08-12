@@ -161,6 +161,33 @@ const getAppointmentsListTool: FunctionDeclaration = {
   }
 };
 
+const cancelAppointmentTool: FunctionDeclaration = {
+  name: "cancel_appointment",
+  description: "إلغاء أو حذف موعد محجوز لعميل (مثال: 'الغي موعد احمد مكش', 'حذف موعد فلان').",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل المراد إلغاء موعده" },
+      date: { type: SchemaType.STRING, description: "تاريخ الموعد المراد إلغاؤه إن وجد" }
+    },
+    required: ["customer_name"]
+  }
+};
+
+const rescheduleAppointmentTool: FunctionDeclaration = {
+  name: "reschedule_appointment",
+  description: "تأجيل أو تغيير/تعديل تاريخ ووقت موعد محجوز لعميل إلى تاريخ ووقت جديدين (مثال: 'أجل موعد احمد مكش لبكرة الساعة 5').",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل المراد تعديل موعده" },
+      new_date: { type: SchemaType.STRING, description: "التاريخ الجديد للموعد (مثال: 2026-08-15 أو غداً)" },
+      new_time: { type: SchemaType.STRING, description: "الوقت الجديد للموعد (مثال: 05:00 مساءً)" }
+    },
+    required: ["customer_name", "new_date", "new_time"]
+  }
+};
+
 const reportMissingFeatureTool: FunctionDeclaration = {
   name: "report_missing_feature",
   description: "استخدم هذه الأداة للإبلاغ عن ميزة غير موجودة في أدواتك، عندما يطلب المستخدم مهمة لا تستطيع تنفيذها. سيتم إرسال اقتراح للمطور.",
@@ -2142,7 +2169,11 @@ export async function processTelegramMessageWithLLM(
      - يُمنع منعاً باتاً ترجمة كلام التاجر أو تحويل المعاملات إلى أي لغة أجنبية أخرى (مثل الصينية، الروسية، اليابانية، الخ).
      - يُمنع استخدام أي نصوص أو رموز غير عربية/إنجليزية في المعاملات أو الردود تحت أي ظرف من الظروف.
 15. المعاملات والبيانات الناقصة (Missing Parameters):
-     - إذا كان هناك حقل مفقود (مثل الوقت، السعر، اسم الصنف) ولم يذكره التاجر، لا تضع أبداً كلمات افتراضية بلغة أجنبية أو رموز مبهمة، بل اسأل التاجر فوراً وبكل وضوح بالعامية المصرية لاستكمال البيانات الناقصة.`;
+     - إذا كان هناك حقل مفقود (مثل الوقت، السعر، اسم الصنف) ولم يذكره التاجر، لا تضع أبداً كلمات افتراضية بلغة أجنبية أو رموز مبهمة، بل اسأل التاجر فوراً وبكل وضوح بالعامية المصرية لاستكمال البيانات الناقصة.
+16. إلغاء وتعديل المواعيد (cancel_appointment / reschedule_appointment):
+     - عند طلب إلغاء أو مسح موعد ('الغي موعد أحمد مكش', 'مسح ميعاد فلان') -> استخدم أداة cancel_appointment.
+     - عند طلب تأجيل أو تغيير ميعاد ('أجّل موعد أحمد لبكرة', 'غير ميعاد فلان لـ 5 مساءً') -> استخدم أداة reschedule_appointment.
+     - يُمنع منعاً باتاً استدعاء أداة report_missing_feature عند طلب إلغاء أو تأجيل أو تغيير المواعيد.`;
 
   // Format history for Gemini SDK & ensure history starts with user role
   const geminiHistory = rawHistory.map(h => ({
@@ -2167,7 +2198,7 @@ export async function processTelegramMessageWithLLM(
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
           model: modelName,
-          tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool, addProductTool, updateStockTool, addCustomerTool] }],
+          tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool, addProductTool, updateStockTool, addCustomerTool] }],
           systemInstruction
         });
 
@@ -2250,7 +2281,7 @@ export async function processTelegramMessageWithLLM(
       // Build OpenAI-compatible tools from our FunctionDeclarations
       const groqTools = [
         logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool,
-        getFinancialSummaryTool, getAppointmentsListTool, reportMissingFeatureTool,
+        getFinancialSummaryTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool, reportMissingFeatureTool,
         logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool,
         logSalesReturnTool, logPurchaseReturnTool, addProductTool, updateStockTool, addCustomerTool
       ].map(t => ({

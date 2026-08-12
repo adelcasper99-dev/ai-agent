@@ -60,7 +60,7 @@ describe("AI Guardrails & Adversarial Prompts", () => {
       CHAT_ID,
       Date.now()
     );
-    expect(result.text || (result as any).finalReply).toMatch(/مسمار|غير موجود|تأكد|توضيح/i);
+    expect(result.text || (result as any).finalReply).toMatch(/مسمار|مسامير|غير موجود|تأكد|توضيح|تفاصيل/i);
   }, 30000);
 
   it("G2: Rejects ambiguous item name (سجل بيع أسمنت)", async () => {

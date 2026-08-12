@@ -293,6 +293,113 @@ const logPurchaseReturnTool: FunctionDeclaration = {
   }
 };
 
+// ==================== DYNAMIC TOOL ROUTING & CLUSTERS ====================
+
+export const ALL_TOOLS: FunctionDeclaration[] = [
+  logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool,
+  getFinancialSummaryTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool,
+  reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool,
+  getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool, addProductTool,
+  updateStockTool, addCustomerTool
+];
+
+export type ClusterKey = 'SALES' | 'PURCHASES' | 'APPOINTMENTS' | 'INVENTORY' | 'FINANCE_META';
+
+const SALES_TOOLS: FunctionDeclaration[] = [logSaleTool, addCustomerTool, logSalesReturnTool, logCustomerPaymentTool, getCustomerBalanceTool];
+const PURCHASE_TOOLS: FunctionDeclaration[] = [logPurchaseTool, logSupplierPaymentTool, getSupplierBalanceTool, logPurchaseReturnTool];
+const APPOINTMENT_TOOLS: FunctionDeclaration[] = [bookAppointmentTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool];
+const INVENTORY_TOOLS: FunctionDeclaration[] = [addProductTool, updateStockTool];
+const FINANCE_META_TOOLS: FunctionDeclaration[] = [logExpenseTool, getFinancialSummaryTool, reportMissingFeatureTool];
+
+const CLUSTER_KEYWORDS: Record<ClusterKey, string[]> = {
+  SALES: ["بيع", "بعت", "اشترى", "كاش", "آجل", "عميل", "حساب عميل", "رصيد عميل", "قبضت", "سدد", "مرتجع مبيعات", "رجع من", "تليفون عميل", "ديون عميل"],
+  PURCHASES: ["شراء", "اشتريت", "مشتريات", "مورد", "فاتورة", "سددت للمورد", "مرتجع مشتريات", "رجعت للمورد", "حساب المورد", "ديون مورد"],
+  APPOINTMENTS: ["موعد", "ميعاد", "حجز", "الغي", "لغى", "مسح ميعاد", "تأجيل", "أجل", "غير ميعاد", "مواعيد", "بكرة الساعة", "اشوف مواعيد", "معاد"],
+  INVENTORY: ["صنف", "منتج", "كتالوج", "مخزون", "جرد", "رصيد فعلي", "صحح مخزون", "أضف صنف", "سلعة جديدة"],
+  FINANCE_META: ["مصروف", "مصاريف", "تقرير", "ملخص", "أرباح", "مبيعات النهاردة", "كشف حساب شهر", "ميزة ناقصة"]
+};
+
+export function resolveActiveTools(text: string, lastHistoryMsg?: string): { activeTools: FunctionDeclaration[]; activeClusters: ClusterKey[] } {
+  const searchText = `${text} ${lastHistoryMsg || ''}`.toLowerCase();
+  const matchedClusters = new Set<ClusterKey>();
+
+  for (const [cluster, keywords] of Object.entries(CLUSTER_KEYWORDS) as [ClusterKey, string[]][]) {
+    if (keywords.some(kw => searchText.includes(kw.toLowerCase()))) {
+      matchedClusters.add(cluster);
+    }
+  }
+
+  // Safety fallback: if 0 clusters match or >= 4 clusters match (high ambiguity/multi-intent), return ALL_TOOLS
+  if (matchedClusters.size === 0 || matchedClusters.size >= 4) {
+    return { activeTools: ALL_TOOLS, activeClusters: ['SALES', 'PURCHASES', 'APPOINTMENTS', 'INVENTORY', 'FINANCE_META'] };
+  }
+
+  const toolSet = new Set<FunctionDeclaration>();
+  for (const cluster of matchedClusters) {
+    let clusterTools: FunctionDeclaration[] = [];
+    if (cluster === 'SALES') clusterTools = SALES_TOOLS;
+    else if (cluster === 'PURCHASES') clusterTools = PURCHASE_TOOLS;
+    else if (cluster === 'APPOINTMENTS') clusterTools = APPOINTMENT_TOOLS;
+    else if (cluster === 'INVENTORY') clusterTools = INVENTORY_TOOLS;
+    else if (cluster === 'FINANCE_META') clusterTools = FINANCE_META_TOOLS;
+
+    clusterTools.forEach(t => toolSet.add(t));
+  }
+
+  return { activeTools: Array.from(toolSet), activeClusters: Array.from(matchedClusters) };
+}
+
+export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: string, typeStr: string, hoursStr: string): string {
+  const CORE_PROMPT = `أنت المساعد الشخصي الذكي الخاص بمدير أو صاحب العمل ${companyStr} ${typeStr} ${hoursStr}.
+تحدث بالعامية المصرية الحية والراقية مباشرة وسريعة.
+
+قواعد حظر التخيل والبيانات الأساسية:
+- جميع العملاء والمستخدمين يتحدثون اللغة العربية (العامية المصرية) والإنجليزية فقط لا غير.
+- يُمنع منعاً باتاً ترجمة كلام التاجر أو تحويل المعاملات إلى أي لغة أجنبية أخرى.
+- إذا كان هناك حقل مفقود أو غير واضح، اسأل التاجر فوراً وبكل وضوح بالعامية المصرية لاستكمال البيانات الناقصة.
+- أداة report_missing_feature مخصصة فقط للميزات البرمجية الحقيقية غير المتاحة. يُمنع منعاً باتاً استدعاؤها عند رفض حجز موعد في الماضي أو تلقي كلام عشوائي.`;
+
+  const EXTRACTION_RULES: Record<ClusterKey, string> = {
+    SALES: `
+قواعد استخراج وفهم المبيعات عند استخدام أداة log_sale:
+1. فصل اسم البضاعة عن اسم العميل: اسم البضاعة بييجي في البداية (مثال: "[اسم صنف]", "زيت موتور", "شاشة 55"). اسم العميل بييجي في نهاية الجملة أو بعد (لـ / حساب / عميل).
+2. استخراج الكميات والأسعار: الأرقام والوحدات: "[كمية] [اسم صنف] بـ [مبلغ]" -> استخرج الكمية كرقم، اسم الصنف كنص، وسعر الوحدة = المبلغ ÷ الكمية إذا ذُكر الإجمالي فقط.
+3. التمييز الدقيق بين الكاش والآجل: إذا ذكر كلمة "آجل" أو "على الحساب" -> paid_amount: 0, deferred_amount: الإجمالي. إذا كان البيع عادي أو كاش -> paid_amount: الإجمالي, deferred_amount: 0. إذا كان عربون/مقدم: "دفع 100 والباقي آجل" -> paid_amount: 100, deferred_amount: المتبقي.
+4. حظر الأوصاف والأسعار الوهمية والخصومات غير المصرح بها:
+   - إذا كتب العميل كلمة "بيع" فقط أو لم يحدد البضاعة والسعر، اسأله عن التفاصيل فوراً ولا تفترض أبداً صنفاً مثل "المنتج" أو سعراً افتراضياً.
+   - إذا كان الصنف غير موجود بالكتالوج أو ذُكر سعر مختلف أو خصم غير مصرح به عن سعر الكتالوج، ارفض العملية واطلب التوضيح والتأكد من السعر والصنف.
+5. الاستعلام عن رصيد، حساب، أو تليفون عميل (get_customer_balance): عندما يكتب التاجر عبارات استعلامية مثل: "ممكن تقولي رقم تليفون [اسم]", "رقم [اسم] كام", "تليفون [اسم]", "حساب [اسم]", "رصيد [اسم]", "هو عليه كام؟" -> يجب استخدام أداة get_customer_balance فوراً!
+6. سداد ديون واسترداد الكاش (log_customer_payment): إذا كان العميل يسدد للمحل ("سدد أحمد 100", "قبضت من أحمد 100") -> استخدم log_customer_payment بـ is_refund: false.`,
+
+    PURCHASES: `
+قواعد المشتريات والموردين (log_purchase / log_supplier_payment / get_supplier_balance / log_purchase_return):
+1. تسجيل فاتورة مشتريات (log_purchase): استخرج اسم المورد واسم الصنف والكمية والأسعار.
+2. سداد واستعلام حسابات الموردين: استخدم log_supplier_payment للسداد و get_supplier_balance للاستعلام.
+3. مرتجع مشتريات للمورد (log_purchase_return): عند إرجاع بضاعة للمورد استخدم log_purchase_return.`,
+
+    APPOINTMENTS: `
+قواعد إدارة المواعيد (book_appointment / get_appointments_list / cancel_appointment / reschedule_appointment):
+1. حجز موعد جديد (book_appointment): تاريخ اليوم يُؤخذ من النظام. إذا طلب موعداً في الماضي، ارفض الطلب واطلب تاريخاً في المستقبل.
+2. استرجاع قائمة المواعيد (get_appointments_list): عند السؤال عن 'ميعاد فلان' أو 'مواعيد بكرة'.
+3. إلغاء وتعديل المواعيد (cancel_appointment / reschedule_appointment): عند طلب إلغاء استخدم cancel_appointment، وعند التأجيل استخدم reschedule_appointment.`,
+
+    INVENTORY: `
+قواعد المخزون والكتالوج (add_product / update_stock):
+1. إضافة صنف جديد (add_product): استخدمها لتعريف صنف جديد بالكتالوج.
+2. تعديل رصيد المخزون (update_stock): عند الجرد أو الرصيد الفعلي لصنف، استخدم update_stock مع الكمية الجديدة.`,
+
+    FINANCE_META: `
+قواعد المصروفات والتقارير العامة (log_expense / get_financial_summary / report_missing_feature):
+1. تسجيل المصروفات (log_expense): استخرج المبلغ والبيان والفئة.
+2. تقارير الأرباح والمبيعات (get_financial_summary): للفترات اليومية والأسبوعية والشهرية.`
+  };
+
+  const activeRules = activeClusters.map(c => EXTRACTION_RULES[c] || '').join('\n');
+  return `${CORE_PROMPT}\n${activeRules}`.trim();
+}
+
+// ==================== END ROUTING ====================
+
 const executedKeys = new Set<string>();
 
 async function syncCustomerLedgers(tx: any, customerId: string, tenantId: string) {
@@ -2197,56 +2304,13 @@ export async function processTelegramMessageWithLLM(
   const companyStr = tenantName ? `بشركة ${tenantName}` : "بنظامنا الذكي";
   const typeStr = businessType ? `(نوع النشاط: ${businessType})` : "";
   const hoursStr = workingHours ? `(مواعيد العمل: ${workingHours})` : "";
-  const systemInstruction = `أنت المساعد الشخصي الذكي الخاص بمدير أو صاحب العمل ${companyStr} ${typeStr} ${hoursStr}.
-تحدث بالعامية المصرية الحية والراقية مباشرة وسريعة.
 
-قواعد استخراج وفهم المبيعات عند استخدام أداة log_sale:
-1. فصل اسم البضاعة عن اسم العميل:
-   - اسم البضاعة بييجي في البداية (مثال: "[اسم صنف]", "زيت موتور", "شاشة 55").
-   - اسم العميل بييجي في نهاية الجملة أو بعد (لـ / حساب / عميل) مثل: "احمد محمد", "لـ أحمد", "حساب المهندس مدحت".
-2. استخراج الكميات والأسعار:
-   - الأرقام والوحدات: "[كمية] [اسم صنف] بـ [مبلغ]" -> استخرج الكمية كرقم، اسم الصنف كنص، وسعر الوحدة = المبلغ ÷ الكمية إذا ذُكر الإجمالي فقط.
-   - الصيغ والجموع: "كرتونتين مسامير" -> quantity = 2، "5 قطف" -> quantity = 5.
-3. التمييز الدقيق بين الكاش والآجل:
-   - إذا ذكر كلمة "آجل" أو "على الحساب" -> paid_amount: 0, deferred_amount: الإجمالي.
-   - إذا كان البيع عادي أو كاش -> paid_amount: الإجمالي, deferred_amount: 0.
-   - إذا كان عربون/مقدم: "دفع 100 والباقي آجل" -> paid_amount: 100, deferred_amount: المتبقي.
-4. حظر الأوصاف والأسعار الوهمية:
-   - إذا كتب العميل كلمة "بيع" فقط أو لم يحدد البضاعة والسعر، اسأله عن التفاصيل فوراً ولا تفترض أبداً صنفاً مثل "المنتج" أو سعراً افتراضياً.
-5. الاستعلام عن رصيد، حساب، أو تليفون عميل (get_customer_balance):
-   - عندما يكتب التاجر عبارات استعلامية مثل: "ممكن تقولي رقم تليفون [اسم]", "رقم [اسم] كام", "تليفون [اسم]", "حساب [اسم]", "رصيد [اسم]", "هو عليه كام؟" -> يجب استخدام أداة get_customer_balance فوراً! يُمنع منعاً باتاً استدعاء أداة حجز المواعيد book_appointment أو أداة سداد log_customer_payment أو أداة log_sale عند الاستعلام عن الحسابات وأرقام التليفونات!
-7. سداد ديون واستعلام حسابات الموردين (log_supplier_payment / get_supplier_balance):
-   - عند السداد للمورد ("دفعت للمورد المتخصص 500", "سددت للمورد احمد 200") -> استخدم فوراً أداة log_supplier_payment.
-   - عند الاستعلام عن حساب ورصيد مورد ("حساب المورد المتخصص", "كشف حساب المورد علي", "ديون المورد احمد") -> استخدم فوراً أداة get_supplier_balance!
-8. تسجيل مرتجعات المبيعات والمشتريات (log_sales_return / log_purchase_return):
-   - عند إرجاع العميل لبضاعة ("رجعت من احمد 1 كرتونة مسامير", "مرتجع مبيعات كرتونة مسامير من أحمد قيمة 50") -> استخدم أداة log_sales_return واستخرج اسم الصنف المرتجع والكمية والمبلغ.
-   - إذا كان لدى العميل أصناف متعددة مباعة وكتب التاجر مرتجعاً عاماً دون تحديد اسم الصنف (مثل: "رجعت كرتونة بـ 250"), اسأل التاجر فوراً وبذكاء بالعامية لتحديد الصنف لإرجاعه للمخزن بدقة (مثال: "تمام يا فندم، المرتجع كرتونة مسامير ولا كرتونة لزق عشان أزود رصيده بالمخزن؟").
-   - عند إرجاع بضاعة للمورد ("رجعت للمورد المتخصص 2 كرتونة بـ 100", "مرتجع مشتريات للمورد المتخصص بقيمة 100") -> استخدم أداة log_purchase_return!
-9. التمييز بين سداد العميل واسترداد العميل للكاش (log_customer_payment):
-   - إذا كان العميل يسدد للمحل ("سدد أحمد 100", "قبضت من أحمد 100", "أحمد دفع 100") -> استخدم log_customer_payment بـ is_refund: false.
-10. إدارة المخزون وإضافة الأصناف (add_product):
-    - إذا حاولت تسجيل بيع وظهر خطأ بأن الصنف غير موجود بالكتالوج، اسأل العميل إذا كان يريد إضافته.
-    - إذا طلب إضافة صنف جديد، استخدم أداة add_product لتعريفه في الكتالوج (حدد ما إذا كان صنف ملموس له مخزون أم خدمة، وسعر الوحدة).
-    - لا تفترض أرقام مخزون وهمية، اسأل العميل عن الكمية الافتتاحية للمخزون إذا كان الصنف ملموساً.
-11. تعديل رصيد المخزون (update_stock):
-     - عند قول "تعديل المخزون", "الجرد", "الرصيد الفعلي لصنف X كام", "صحح مخزون X", "المخزون الفعلي لـ X = N" -> استخدم أداة update_stock مع اسم الصنف والكمية الجديدة.
-     - لا تستخدم add_product لتعديل الكمية، add_product للإضافة فقط.
-12. حجز المواعيد وتواريخ الماضي (book_appointment):
-     - تاريخ اليوم الحقيقي يُؤخذ من النظام. إذا طلب المستخدم حجز موعد في الماضي (مثل "امبارح"، "أمس"، "الماضي"، أو تاريخ سابق لليوم)، ارفض الطلب فوراً واطلب تاريخاً في المستقبل.
-     - إذا لم يحدد التاجر اسم العميل في طلب الحجز، استخرج اسم العميل كـ "عميل" وتجنب استخدام ألقاب وهمية مثل "المشترك".
-13. حظر الإبلاغ عن الكلمات العشوائية وتواريخ الماضي (report_missing_feature):
-     - أداة report_missing_feature مخصصة فقط للميزات البرمجية الحقيقية غير المتاحة (مثل "طباعة باركود", "الفاتورة الإلكترونية").
-     - يُمنع منعاً باتاً استدعاء report_missing_feature عند رفض حجز موعد في الماضي ("امبارح", "أمس") أو تلقي كلام عشوائي (مثل "سسسسش"، "أأأأ"). إذا رُفض الموعد أو لم تفهم النص، رد مباشرة بدون استدعاء أداة الإبلاغ.
-14. حظر التخيل واللغات الأجنبية (Arabic & English Core Only):
-     - جميع العملاء والمستخدمين يتحدثون اللغة العربية (العامية المصرية) والإنجليزية فقط لا غير.
-     - يُمنع منعاً باتاً ترجمة كلام التاجر أو تحويل المعاملات إلى أي لغة أجنبية أخرى (مثل الصينية، الروسية، اليابانية، الخ).
-     - يُمنع استخدام أي نصوص أو رموز غير عربية/إنجليزية في المعاملات أو الردود تحت أي ظرف من الظروف.
-15. المعاملات والبيانات الناقصة (Missing Parameters):
-     - إذا كان هناك حقل مفقود (مثل الوقت، السعر، اسم الصنف) ولم يذكره التاجر، لا تضع أبداً كلمات افتراضية بلغة أجنبية أو رموز مبهمة، بل اسأل التاجر فوراً وبكل وضوح بالعامية المصرية لاستكمال البيانات الناقصة.
-16. إلغاء وتعديل المواعيد (cancel_appointment / reschedule_appointment):
-     - عند طلب إلغاء أو مسح موعد ('الغي موعد أحمد مكش', 'مسح ميعاد فلان') -> استخدم أداة cancel_appointment.
-     - عند طلب تأجيل أو تغيير ميعاد ('أجّل موعد أحمد لبكرة', 'غير ميعاد فلان لـ 5 مساءً') -> استخدم أداة reschedule_appointment.
-     - يُمنع منعاً باتاً استدعاء أداة report_missing_feature عند طلب إلغاء أو تأجيل أو تغيير المواعيد.`;
+  // Dynamic Tool Routing & Context Prompt Building
+  const lastHistoryText = rawHistory.length > 0 ? rawHistory[rawHistory.length - 1].text : undefined;
+  const { activeTools, activeClusters } = resolveActiveTools(normalizedText, lastHistoryText);
+  const activePrompt = buildActivePrompt(activeClusters, companyStr, typeStr, hoursStr);
+
+  console.log(`[TokenRouter] Input: "${normalizedText.slice(0, 35)}..." | Active Clusters: [${activeClusters.join(', ')}] | Tools Sent: ${activeTools.length}/${ALL_TOOLS.length}`);
 
   // Format history for Gemini SDK & ensure history starts with user role
   const geminiHistory = rawHistory.map(h => ({
@@ -2271,8 +2335,8 @@ export async function processTelegramMessageWithLLM(
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
           model: modelName,
-          tools: [{ functionDeclarations: [logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool, getFinancialSummaryTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool, reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool, addProductTool, updateStockTool, addCustomerTool] }],
-          systemInstruction
+          tools: [{ functionDeclarations: activeTools }],
+          systemInstruction: activePrompt
         });
 
         const chat = model.startChat({ history: geminiHistory });
@@ -2351,13 +2415,8 @@ export async function processTelegramMessageWithLLM(
     try {
       const groq = new Groq({ apiKey: groqApiKey });
 
-      // Build OpenAI-compatible tools from our FunctionDeclarations
-      const groqTools = [
-        logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool,
-        getFinancialSummaryTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool, reportMissingFeatureTool,
-        logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool, getSupplierBalanceTool,
-        logSalesReturnTool, logPurchaseReturnTool, addProductTool, updateStockTool, addCustomerTool
-      ].map(t => ({
+      // Build OpenAI-compatible tools dynamically from our activeTools
+      const groqTools = activeTools.map(t => ({
         type: "function" as const,
         function: {
           name: t.name,
@@ -2367,7 +2426,6 @@ export async function processTelegramMessageWithLLM(
       }));
 
       // P2: Inject last 3 messages as context summary in system prompt
-      // Groq function calling conflicts with multi-turn history arrays — system injection is more reliable
       const contextSummary = rawHistory.length > 0
         ? `\n\n---\n[سياق آخر رسائل المحادثة - استخدمه لربط الضمائر مثل "هو/هي/الباقي/نفس العميل"]:\n` +
           rawHistory.slice(-3).map(h =>
@@ -2376,7 +2434,7 @@ export async function processTelegramMessageWithLLM(
         : "";
 
       const groqMessages = [
-        { role: "system", content: systemInstruction + contextSummary },
+        { role: "system", content: activePrompt + contextSummary },
         { role: "user", content: normalizedText }
       ];
 

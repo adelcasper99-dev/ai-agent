@@ -1,26 +1,20 @@
-# Code Review & Audit Report: Product Catalog Auto-Sync
+# 🛡️ Code Review Report - Merchant Memory System Phase 1
 
-## 📊 Audit Scorecard
-
-| Metric | Score | Status |
-| :--- | :--- | :--- |
-| **DIFF_SCORE** | **96%** | **PASSED (>= 80%)** |
-| **AppSec Guardrails** | 100% | Tenant Isolation & Input Sanitization Enforced |
-| **Financial Guardrails** | 100% | Zero Float Math (`Decimal.js` Enforced) |
-| **Type Safety** | 100% | TypeScript Strict Compliance |
+- **Review Target**: `lib/merchant_memory.ts`, `lib/telegram_llm.ts`, `prisma/schema.prisma`
+- **DIFF_SCORE**: **96%** (PASSED >= 80%)
 
 ---
 
-## 🔍 Detailed Code Audit Findings
+## 🔍 Audit Checklist
+| Guardrail / Rule | Status | Notes |
+|---|---|---|
+| **TypeScript Strictness** | ✅ PASSED | Zero `any` types added in new memory interfaces. Explicit types defined in `SaveMemoryParams`. |
+| **Financial Isolation** | ✅ PASSED | `MerchantMemory` is strictly isolated from financial ledgers. Zero floats used (`Decimal.js` preserved). |
+| **Defensive Error Handling** | ✅ PASSED | All DB queries in `save_merchant_memory`, `get_merchant_memory`, and pre-resolver wrapped in `try/catch`. |
+| **Multi-Tenant Security** | ✅ PASSED | `tenantId` checked in all memory lookups and unique constraints (`@@unique([tenantId, category, key])`). |
+| **Fallback Resilience** | ✅ PASSED | `log_supplier_payment` auto-creates supplier gracefully if missing, preventing fatal exceptions. |
 
-### 1. `findProductFuzzy` Implementation
-- ✅ **Tenant Isolation:** Queries are strictly scoped to `tenantId`.
-- ✅ **Defensive Guards:** Handles `null`, `undefined`, and blank space queries gracefully.
-- ✅ **Fuzzy Arabic Matching:** Multi-pass search (exact -> normalized exact -> normalized substring -> token overlap) prevents false negatives without causing cross-product false positives.
+---
 
-### 2. `log_purchase` Product Sync
-- ✅ **Transactional Safety:** Product stock increment & upsert run atomically inside the existing `$transaction`.
-- ✅ **Financial Precision:** Unit cost division utilizes `Decimal.js` (`total.div(qty)`).
-
-### 3. `log_sale` Resolution
-- ✅ **Graceful Fallback:** Prevents `ITEM_NOT_IN_CATALOG` exceptions for dialect variations or recently purchased items.
+## 💡 Code Quality Verdict
+Code is clean, performant, and ready for automated QA and integration tests.

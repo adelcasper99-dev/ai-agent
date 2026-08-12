@@ -8,76 +8,90 @@ export class TranscriptionFailedError extends Error {
 }
 
 /**
- * Transcribes a voice note using Gemini 3.1 Flash Lite with Deepgram fallback.
+ * Transcribes a voice note using Gemini 3.1 Flash Lite with API Key rotation and Deepgram fallback.
  */
 export async function transcribeVoiceNote(audioBuffer: Buffer, tenantId?: string): Promise<string> {
-  const geminiKey = await getValidApiKey("gemini");
-  
-  if (!geminiKey) {
-    console.warn("No Gemini key available, falling back to Deepgram immediately.");
-    return await deepgramSTT(audioBuffer);
-  }
+  const maxRetries = 3;
+  let lastError: any = null;
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    let geminiKey: string;
+    try {
+      geminiKey = await getValidApiKey("gemini");
+    } catch {
+      break; // No more Gemini keys available — fall back to Deepgram
+    }
 
-  try {
-    const base64Audio = audioBuffer.toString('base64');
-    const model = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+    if (!geminiKey) {
+      break;
+    }
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: "أنت متخصص في تفريغ الصوت باللغة العربية بما فيها العامية المصرية. فرّغ هذا الصوت بدقة. اكتب النص المُفرَّغ فقط بدون أي تعليق إضافي."
-              },
-              {
-                inlineData: {
-                  mimeType: "audio/ogg",
-                  data: base64Audio
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+    try {
+      const base64Audio = audioBuffer.toString('base64');
+      const model = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: "أنت متخصص في تفريغ الصوت باللغة العربية بما فيها العامية المصرية. فرّغ هذا الصوت بدقة. اكتب النص المُفرَّغ فقط بدون أي تعليق إضافي."
+                },
+                {
+                  inlineData: {
+                    mimeType: "audio/ogg",
+                    data: base64Audio
+                  }
                 }
-              }
-            ]
-          }
-        ]
-      }),
-      signal: controller.signal
-    });
+              ]
+            }
+          ]
+        }),
+        signal: controller.signal
+      });
 
-    clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
 
-    if (response.status === 429) {
-      console.warn("Gemini 429 Rate Limit hit. Marking key exhausted.");
-      await markKeyExhausted(geminiKey, "gemini");
-      throw new Error("Gemini 429 Rate Limit");
+      if (response.status === 429) {
+        console.warn(`[STT Retry] Gemini 429 Rate Limit hit on key. Marking exhausted (Attempt ${attempt}/${maxRetries}).`);
+        await markKeyExhausted(geminiKey, "gemini");
+        continue; // Try next key
+      }
+
+      if (!response.ok) {
+        throw new Error(`Gemini API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!text) {
+        throw new Error("Empty transcript returned from Gemini");
+      }
+
+      return text.trim();
+    } catch (error: any) {
+      lastError = error;
+      console.error(`Gemini STT attempt ${attempt} failed:`, error?.message || error);
+      if (error?.name === "AbortError") {
+        continue; // Timeout occurred, attempt with next key
+      }
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!text) {
-      throw new Error("Empty transcript returned from Gemini");
-    }
-
-    return text.trim();
-  } catch (error) {
-    console.error("Gemini primary transcription failed:", error);
-    // Fallback to Deepgram
-    return await deepgramSTT(audioBuffer);
-  } finally {
-    clearTimeout(timeoutId);
   }
+
+  console.warn("All Gemini STT attempts exhausted. Falling back to Deepgram.");
+  return await deepgramSTT(audioBuffer);
 }
 
 async function deepgramSTT(audioBuffer: Buffer): Promise<string> {
@@ -123,7 +137,7 @@ async function deepgramSTT(audioBuffer: Buffer): Promise<string> {
 }
 
 /**
- * Processes an image using Gemini 3.1 Flash Lite Vision to extract data.
+ * Processes an image using Gemini 3.1 Flash Lite Vision to extract data with API Key rotation.
  */
 export async function processImage(imageBuffer: Buffer, mimeType: string, prompt: string): Promise<string> {
   const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
@@ -131,68 +145,85 @@ export async function processImage(imageBuffer: Buffer, mimeType: string, prompt
     throw new Error(`Unsupported image MIME type: ${mimeType}`);
   }
 
-  const geminiKey = await getValidApiKey("gemini");
-  if (!geminiKey) {
-    throw new Error("No valid Gemini API key available for vision processing.");
-  }
+  const maxRetries = 3;
+  let lastError: any = null;
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    let geminiKey: string;
+    try {
+      geminiKey = await getValidApiKey("gemini");
+    } catch {
+      break;
+    }
 
-  try {
-    const base64Image = imageBuffer.toString('base64');
-    const model = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+    if (!geminiKey) {
+      break;
+    }
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt },
-              {
-                inlineData: {
-                  mimeType,
-                  data: base64Image
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    try {
+      const base64Image = imageBuffer.toString('base64');
+      const model = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: prompt },
+                {
+                  inlineData: {
+                    mimeType,
+                    data: base64Image
+                  }
                 }
-              }
-            ]
+              ]
+            }
+          ],
+          generationConfig: {
+            responseMimeType: "application/json",
           }
-        ],
-        generationConfig: {
-          responseMimeType: "application/json",
-        }
-      }),
-      signal: controller.signal
-    });
+        }),
+        signal: controller.signal
+      });
 
-    clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
 
-    if (response.status === 429) {
-      await markKeyExhausted(geminiKey, "gemini");
-      throw new Error("Gemini 429 Rate Limit");
+      if (response.status === 429) {
+        console.warn(`[Vision Retry] Gemini 429 Rate Limit hit on key. Marking exhausted (Attempt ${attempt}/${maxRetries}).`);
+        await markKeyExhausted(geminiKey, "gemini");
+        continue; // Try next key
+      }
+
+      if (!response.ok) {
+        throw new Error(`Gemini Vision API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!text) {
+        throw new Error("Empty response from Gemini Vision");
+      }
+
+      return text;
+    } catch (error: any) {
+      lastError = error;
+      console.error(`Gemini Vision processing attempt ${attempt} failed:`, error?.message || error);
+      if (error?.name === "AbortError") {
+        continue;
+      }
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    if (!response.ok) {
-      throw new Error(`Gemini Vision API error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!text) {
-      throw new Error("Empty response from Gemini Vision");
-    }
-
-    return text;
-  } catch (error) {
-    console.error("Gemini Vision processing failed:", error);
-    throw error;
-  } finally {
-    clearTimeout(timeoutId);
   }
+
+  throw lastError || new Error("No valid Gemini API key available for vision processing after retries.");
 }

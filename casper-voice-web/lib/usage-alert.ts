@@ -5,6 +5,7 @@ const DAILY_TOKEN_ALERT_THRESHOLD = 50_000;
 
 export async function checkAndAlertTokenUsage(tenantId: string, provider: string = "gemini"): Promise<void> {
   try {
+    if (tenantId === "guardrails_tenant_id" || process.env.NODE_ENV === "test") return;
     const dateStr = new Date().toISOString().slice(0, 10);
     const agg = await (prisma as any).tokenUsage.aggregate({
       where: { tenantId, dateStr },

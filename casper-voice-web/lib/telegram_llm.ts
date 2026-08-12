@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { resolveMerchantMemories, extractAndPersistMemory } from "./merchant_memory";
 import { GoogleGenerativeAI, FunctionDeclaration, SchemaType } from "@google/generative-ai";
 import Groq from "groq-sdk";
 import Decimal from "decimal.js";
@@ -349,7 +350,7 @@ export function resolveActiveTools(text: string, lastHistoryMsg?: string): { act
   return { activeTools: Array.from(toolSet), activeClusters: Array.from(matchedClusters) };
 }
 
-export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: string, typeStr: string, hoursStr: string): string {
+export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: string, typeStr: string, hoursStr: string, memoryContext?: string): string {
   const CORE_PROMPT = `أنت المساعد الشخصي الذكي الخاص بمدير أو صاحب العمل ${companyStr} ${typeStr} ${hoursStr}.
 تحدث بالعامية المصرية الحية والراقية مباشرة وسريعة.
 
@@ -395,8 +396,10 @@ export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: stri
   };
 
   const activeRules = activeClusters.map(c => EXTRACTION_RULES[c] || '').join('\n');
-  return `${CORE_PROMPT}\n${activeRules}`.trim();
+  const memoryBlock = memoryContext ? `\n\n[ذاكرة التاجر المحفوظة (سياق فقط)]:\n${memoryContext}` : '';
+  return `${CORE_PROMPT}\n${activeRules}${memoryBlock}`.trim();
 }
+
 
 // ==================== END ROUTING ====================
 
@@ -2310,7 +2313,15 @@ export async function processTelegramMessageWithLLM(
   const lastHistoryText = rawHistory.length > 0 ? rawHistory[rawHistory.length - 1].text : undefined;
   const fullContextText = [...rawHistory.map(h => h.text), normalizedText].join(" ");
   const { activeTools, activeClusters } = resolveActiveTools(normalizedText, lastHistoryText);
-  const activePrompt = buildActivePrompt(activeClusters, companyStr, typeStr, hoursStr);
+
+  // Merchant Memory: resolve relevant aliases/units for this message (~2-5ms)
+  const resolvedMemories = tenantId
+    ? await resolveMerchantMemories(tenantId, normalizedText)
+    : [];
+  const memoryContext = resolvedMemories.length > 0
+    ? resolvedMemories.map(m => `${m.key} = ${m.value}`).join('\n')
+    : undefined;
+  const activePrompt = buildActivePrompt(activeClusters, companyStr, typeStr, hoursStr, memoryContext);
 
   console.log(`[TokenRouter] Input: "${normalizedText.slice(0, 35)}..." | Active Clusters: [${activeClusters.join(', ')}] | Tools Sent: ${activeTools.length}/${ALL_TOOLS.length}`);
 
@@ -2361,6 +2372,9 @@ export async function processTelegramMessageWithLLM(
 
         finalReply = enforceArabicEnglishOnly(finalReply);
         void saveChatMessage(tenantId, telegramChatId, "assistant", finalReply);
+
+        // Fire-and-forget: learn new aliases from this message asynchronously (0ms user wait)
+        if (tenantId) void extractAndPersistMemory(tenantId, normalizedText);
 
         const usage = (response as any).usageMetadata;
         if (tenantId && usage) {

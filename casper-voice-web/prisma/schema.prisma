@@ -443,3 +443,20 @@ model RejectedToolCall {
   @@index([tenantId, createdAt])
 }
 
+// ── ذاكرة التاجر الذكية (Merchant Memory System) ─────────
+model MerchantMemory {
+  id          String   @id @default(cuid())
+  tenantId    String
+  category    String   // "customer_alias" | "unit_preference" | "product_alias" | "general_preference"
+  key         String   // "أبو صلاح"
+  value       String   // "أحمد محمد | customer_id=42"
+  confidence  Float    @default(1.0)
+  source      String   @default("explicit_statement") // "explicit_statement" | "confirmed_correction"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId, category])
+  @@unique([tenantId, category, key])
+}
+
+

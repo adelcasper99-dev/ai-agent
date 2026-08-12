@@ -1,9 +1,6 @@
-# 📋 Task Log - Merchant Memory System (Phase 1)
+# 📋 Task Log - Credit Sale Grounding & Clarification Fix
 
-- [x] Schema update: Added `MerchantMemory` model to `prisma/schema.prisma` and ran `npx prisma db push`
-- [x] Memory Module: Enhanced `lib/merchant_memory.ts` with `supplier_alias` category, string cleanup, and extraction rules
-- [x] LLM Tools: Added `save_merchant_memory` and `get_merchant_memory` function declarations in `lib/telegram_llm.ts`
-- [x] Tool Router: Registered tools in `ALL_TOOLS` and `FINANCE_META_TOOLS`
-- [x] Alias Pre-Resolver: Implemented pre-execution alias resolution hook in `executeTool`
-- [x] Hardened Payment: Added `MerchantMemory` lookup and auto-creation fallback to `log_supplier_payment`
-- [x] Selective Context: Verified context injection of active merchant memories in system prompt
+- [x] Grounding Guard: Updated `groundingCheck` in `lib/telegram_llm.ts` to recognize credit keywords (`آجل`, `على الحساب`, `مفيش كاش`)
+- [x] Infinite Loop Prevention: Bypassed ambiguous cash/credit clarification check when payment mode is explicitly credit
+- [x] Payment Normalization: Enforced `paid_amount = 0` and `deferred_amount = totalAmount` for credit sales in `log_sale`
+- [x] Catalog Price Exemption: Bypassed text-literal grounding checks for catalog products with pre-set unit prices

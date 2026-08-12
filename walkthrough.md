@@ -1,26 +1,17 @@
-# 🚀 Walkthrough - Merchant Memory System (Phase 1)
+# 🚀 Walkthrough - Hardened Grounding Guard & Credit Sale Clarification
 
 ## Summary of Completed Work
-We successfully implemented and verified Phase 1 of the **Merchant Memory System** for Casper Agent, completely resolving the supplier alias bug shown in the screenshot (`الرئيس صابر` ⬅️ `صابر المحلاوي`).
+We successfully resolved the credit sale clarification loop bug shown in the screenshot when users submit credit sales (`آجل` / `على الحساب`) or reply `"الفاتوره كلها اجل مفيش كاش"`.
 
 ---
 
 ## 🛠️ Changes Implemented
 
-### 1. Database Schema
-- **Prisma Model**: `MerchantMemory` model added to [prisma/schema.prisma](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/prisma/schema.prisma#L447-L460) with `@@unique([tenantId, category, key])`.
-- **Sync**: Schema synchronized with local SQLite DB (`npx prisma db push`).
-
-### 2. Merchant Memory Module
-- **Updated [lib/merchant_memory.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/merchant_memory.ts)**:
-  - Added `supplier_alias` category to `SaveMemoryParams`.
-  - Enhanced `extractAndPersistMemory` to detect supplier keywords (`المورد`/`مورد`) and auto-categorize as `supplier_alias`.
-
-### 3. LLM Function Calling & Alias Pre-Resolver
+### 1. LLM Core & Grounding Guard
 - **Updated [lib/telegram_llm.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)**:
-  - Added `saveMerchantMemoryTool` & `getMerchantMemoryTool` declarations and registered them in `ALL_TOOLS` and `FINANCE_META_TOOLS`.
-  - Implemented **Alias Pre-Resolution Engine**: resolves raw nicknames (`الرئيس صابر`) to canonical DB names (`صابر المحلاوي`) before DB execution.
-  - Hardened `log_supplier_payment`: added `MerchantMemory` fallback and auto-creation fallback to eliminate `لم يتم العثور على المورد` runtime errors.
+  - Added `isExplicitCredit` pre-parser in `groundingCheck`: automatically sets `paid_amount = 0` and `deferred_amount = total` when phrases like `"آجل"`, `"على الحساب"`, `"كله آجل"`, `"مفيش كاش"` appear.
+  - Bypassed the ambiguous numeric clarification protocol (`"أنهي مبلغ هو الإجمالي وأنهي كاش؟"`) when payment mode is explicitly credit, resolving the infinite clarification loop.
+  - In `log_sale` execution handler: guaranteed that explicit credit sales enforce `paid = 0` and `deferred = totalAmount`.
 
 ---
 
@@ -29,20 +20,16 @@ We successfully implemented and verified Phase 1 of the **Merchant Memory System
 ### Raw Test Execution Log
 ```text
 =========================================
-🧪 Running Merchant Memory System Unit Tests
+🧪 Running Credit Sale & Grounding Unit Tests
 =========================================
 
-✅ 1. Created test tenant: test_tenant_mem_1786561731320
-[MerchantMemory Extractor] Persisted alias: "الرئيس صابر" -> "صابر المحلاوي" (supplier_alias)
-✅ 2. extractAndPersistMemory persisted supplier alias successfully: الرئيس صابر -> صابر المحلاوي
-✅ 3. save_merchant_memory tool executed successfully: تمام يا ريس، سجلت عندي إن (أبو صلاح) هو (أحمد محمد) 🧠
-[Merchant Memory Pre-Resolver] Resolved alias "الرئيس صابر" -> "صابر المحلاوي" (supplier_alias)
-✅ 4. log_supplier_payment executed with alias pre-resolution: تم تسجيل سداد مبلغ 1000 جنيه للمورد (صابر المحلاوي) بنجاح! 💸
-المتبقي له (الديون): 0 جنيه.
-✅ 4.1. Verified supplier record in DB: صابر المحلاوي (ID: cmsqgq6jf0004bjb2t4sodtoh )
-✅ 5. get_merchant_memory tool retrieved memory successfully!
+✅ 1. Created test tenant: test_tenant_sale_1786562621693
+✅ 2. Created catalog product 'لزق' with unitPrice = 100: cmsqh99is000180jlthhtxomz
+✅ 3. Credit sale executed successfully: تم تسجيل بيع 5 لزق إجمالي 500 جنيه (مدفوع: 0، متبقي: 500) بنجاح!
+✅ 3.1. DB Sale verified: Total = 500 | Paid = 0 | Deferred = 500
+✅ 4. Clarification turn 'الفاتوره كلها اجل مفيش كاش' executed without loop!
 
 =========================================
-🎉 ALL TESTS PASSED WITH 100% EVIDENCE!
+🎉 ALL GROUNDING TESTS PASSED WITH 100% EVIDENCE!
 =========================================
 ```

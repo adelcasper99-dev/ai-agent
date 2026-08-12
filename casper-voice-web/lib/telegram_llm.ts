@@ -867,32 +867,40 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
   const p = Number(args?.price) || 0;
   const a = Number(args?.amount || args?.total_amount) || 0;
   const q = Number(args?.quantity) || 1;
+  const isExplicitCredit = /(آجل|اجل|على\s*الحساب|كله\s*آجل|كله\s*اجل|مفيش\s*كاش|بدون\s*كاش)/i.test(msg);
+
+  if (isExplicitCredit) {
+    args.paid_amount = 0;
+  }
 
   if (p > 0 || a > 0) {
     const userNums = extractAllNumbersFromText(msg);
     if (userNums.length === 0) {
-      return { ok: false, reason: "الأداة رجّعت مبالغ رقمية لكن رسالة المستخدم لا تحتوي على أي رقم" };
-    }
-    const candidateToolValues = [
-      p,
-      a,
-      p * q,
-      a * q,
-      q > 0 && p > 0 ? p / q : 0,
-      q > 0 && a > 0 ? a / q : 0
-    ].filter((v) => typeof v === "number" && v > 0);
+      if (!isExplicitCredit) {
+        return { ok: false, reason: "الأداة رجّعت مبالغ رقمية لكن رسالة المستخدم لا تحتوي على أي رقم" };
+      }
+    } else {
+      const candidateToolValues = [
+        p,
+        a,
+        p * q,
+        a * q,
+        q > 0 && p > 0 ? p / q : 0,
+        q > 0 && a > 0 ? a / q : 0
+      ].filter((v) => typeof v === "number" && v > 0);
 
-    const isMatch = candidateToolValues.some((tv) =>
-      userNums.some((un) => Math.abs(tv - un) < 0.05 || (un > 0 && Math.abs((tv - un) / un) < 0.05))
-    );
+      const isMatch = candidateToolValues.some((tv) =>
+        userNums.some((un) => Math.abs(tv - un) < 0.05 || (un > 0 && Math.abs((tv - un) / un) < 0.05))
+      );
 
-    if (!isMatch) {
-      return { ok: false, reason: `المبلغ الاستخراجي (${p || a}) غير متطابق مع أي رقم في رسالة المستخدم (${userNums.join(", ")})` };
+      if (!isMatch && !isExplicitCredit) {
+        return { ok: false, reason: `المبلغ الاستخراجي (${p || a}) غير متطابق مع أي رقم في رسالة المستخدم (${userNums.join(", ")})` };
+      }
     }
   }
 
   const paidVal = Number(args?.paid_amount);
-  if (!isNaN(paidVal) && paidVal > 0) {
+  if (!isNaN(paidVal) && paidVal > 0 && !isExplicitCredit) {
     const userNums = extractAllNumbersFromText(msg);
     const calculatedTotal = (p > 0 && q > 0) ? p * q : a;
     if (calculatedTotal > 0 && Math.abs(paidVal - calculatedTotal) > 0.05) {
@@ -911,7 +919,7 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
   }
 
   // C. Ambiguous Numeric Clarification Protocol:
-  if (toolName === "log_purchase" || toolName === "log_sale") {
+  if ((toolName === "log_purchase" || toolName === "log_sale") && !isExplicitCredit) {
     const rawNums = extractAllNumbersFromText(msg).filter((n) => n >= 100);
     if (rawNums.length >= 2) {
       const hasTotalAnchor = /(?:\s|^)(?:ب|بـ|سعر|إجمالي|اجمالي|بقيمة|ثمن)\s*\d+/i.test(msg);
@@ -1335,7 +1343,12 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
             : new Decimal(product.unitPrice);
 
           const totalAmount = unitPriceDecimal.mul(new Decimal(quantityNum));
-          let paid = (paid_amount !== undefined && paid_amount !== null && !isNaN(Number(paid_amount)) ? new Decimal(paid_amount) : totalAmount).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+          const isCreditSale = /(آجل|اجل|على\s*الحساب|كله\s*آجل|كله\s*اجل|مفيش\s*كاش|بدون\s*كاش)/i.test(userMessageText || "") || Number(paid_amount) === 0;
+
+          let paid = isCreditSale 
+            ? new Decimal(0) 
+            : (paid_amount !== undefined && paid_amount !== null && !isNaN(Number(paid_amount)) ? new Decimal(paid_amount) : totalAmount).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+          
           if (paid.gt(totalAmount)) paid = totalAmount;
           if (paid.isNegative()) paid = new Decimal(0);
           let deferred = totalAmount.minus(paid).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);

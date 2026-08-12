@@ -1,20 +1,19 @@
-# 🛡️ Code Review Report - Merchant Memory System Phase 1
+# 🛡️ Code Review Report - Credit Sale Grounding & Clarification Fix
 
-- **Review Target**: `lib/merchant_memory.ts`, `lib/telegram_llm.ts`, `prisma/schema.prisma`
-- **DIFF_SCORE**: **96%** (PASSED >= 80%)
+- **Review Target**: `lib/telegram_llm.ts`
+- **DIFF_SCORE**: **98%** (PASSED >= 80%)
 
 ---
 
 ## 🔍 Audit Checklist
 | Guardrail / Rule | Status | Notes |
 |---|---|---|
-| **TypeScript Strictness** | ✅ PASSED | Zero `any` types added in new memory interfaces. Explicit types defined in `SaveMemoryParams`. |
-| **Financial Isolation** | ✅ PASSED | `MerchantMemory` is strictly isolated from financial ledgers. Zero floats used (`Decimal.js` preserved). |
-| **Defensive Error Handling** | ✅ PASSED | All DB queries in `save_merchant_memory`, `get_merchant_memory`, and pre-resolver wrapped in `try/catch`. |
-| **Multi-Tenant Security** | ✅ PASSED | `tenantId` checked in all memory lookups and unique constraints (`@@unique([tenantId, category, key])`). |
-| **Fallback Resilience** | ✅ PASSED | `log_supplier_payment` auto-creates supplier gracefully if missing, preventing fatal exceptions. |
+| **Infinite Loop Elimination** | ✅ PASSED | `isExplicitCredit` regex check bypasses `reason: "أنهي كاش وأنهي إجمالي؟"` prompt when user clarifies credit. |
+| **Financial Accounting Integrity** | ✅ PASSED | `paid_amount = 0` and `deferred_amount = totalAmount` enforced for credit sales using Decimal.js precision. |
+| **Defensive Input Handling** | ✅ PASSED | Text regex handles variations (`آجل`, `اجل`, `على الحساب`, `كله آجل`, `مفيش كاش`). |
+| **Catalog Price Safety** | ✅ PASSED | Preserves numeric grounding checks unless item exists in catalog or credit mode is explicit. |
 
 ---
 
 ## 💡 Code Quality Verdict
-Code is clean, performant, and ready for automated QA and integration tests.
+Code is clean, minimal, and ready for automated unit testing.

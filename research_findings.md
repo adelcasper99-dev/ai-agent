@@ -1,16 +1,12 @@
-# 📚 Best-Practice Research: LLM Merchant Memory & Entity Alias Resolution
+# 📚 Best-Practice Research: Grounding Guardrails & Multi-Turn Clarification
 
-## 1. Selective Memory Injection (Context Budget Optimization)
-- **Problem**: Injecting the entire memory payload into system prompts consumes context tokens and degrades LLM reasoning.
-- **Pattern**: Perform keyword / exact token matching on incoming user messages. Only inject matching memory records (`category: customer_alias | supplier_alias | product_alias | unit_preference`) into the prompt system context.
+## 1. Catalog Price Exemption in Grounding Guard
+- **Problem**: Grounding rules that reject tool calls if monetary amounts aren't in single-turn user text break automated catalog pricing lookups.
+- **Pattern**: Exempt product catalog price fallbacks from text-literal grounding checks if `item_name` resolves to a valid `Product` record in the database with a pre-set `unitPrice > 0`.
 
-## 2. Deterministic Alias Resolution Pre-Hook
-- **Problem**: Allowing the LLM to dynamically guess or hallucinate aliases during financial transactions causes wrong-entity ledger mutations.
-- **Pattern**: Intercept tool execution in `executeTool`. Look up `supplier_name` or `customer_name` in `MerchantMemory`. If an alias exists (e.g. `key = "الرئيس صابر"`), replace the argument with `value = "صابر المحلاوي"` prior to database execution.
+## 2. Intent-Specific Clarification Prompts
+- **Problem**: Returning a static, generic question (*"أنهي كاش وأنهي إجمالي؟"*) when a tool is rejected causes infinite loops if the missing field is actually `price` or `quantity`.
+- **Pattern**: Dynamically inspect the missing field in `groundingCheck`. If price/amount is missing, ask: *"كام سعر [الصنف] أو إجمالي الفاتورة؟"*. If payment distribution is clear (`"كله آجل"`), bypass cash/credit prompts entirely.
 
-## 3. Financial Isolation & Confidence Thresholding
-- **Rule**: `MerchantMemory` NEVER stores financial balances, monetary amounts, or transactional state. Financial facts remain 100% strictly in PostgreSQL/SQLite core tables (`Supplier`, `Customer`, `Sale`, `Purchase`, `Ledger`).
-- **Confidence**: Only explicit merchant statements (`source: "explicit_statement"`, `confidence: 1.0`) trigger automated alias replacements.
-
-## 4. Resilient Fallback for Missing Master Data Entities
-- **Pattern**: If `log_supplier_payment` receives a supplier name not currently registered in `prisma.supplier`, auto-create/upsert the supplier with zero initial debt rather than throwing a hard unhandled exception, ensuring payment execution is preserved.
+## 3. Explicit Credit Terms Recognition
+- **Pattern**: Pre-parse Arabic credit keywords (`"آجل"`, `"على الحساب"`, `"كله آجل"`, `"مفيش كاش"`). Automatically set `paid_amount = 0` and `deferred_amount = total` without triggering ambiguous payment distribution checks.

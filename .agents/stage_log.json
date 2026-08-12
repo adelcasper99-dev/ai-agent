@@ -1,11 +1,10 @@
 [
-  { "stage": "0a-grill-me", "status": "COMPLETED", "timestamp": "2026-08-12T15:12:10Z", "artifacts": [] },
-  { "stage": "0b-research", "status": "COMPLETED", "timestamp": "2026-08-12T15:12:16Z", "artifacts": ["research_findings.md"] },
-  { "stage": "1-spec", "status": "COMPLETED", "timestamp": "2026-08-12T15:12:27Z", "artifacts": ["implementation_plan.md"] },
-  { "stage": "2ab-ironclad", "status": "COMPLETED", "timestamp": "2026-08-12T15:12:36Z", "artifacts": ["ironclad_review_implementation_plan.md"] },
-  { "stage": "3-build", "status": "COMPLETED", "timestamp": "2026-08-12T15:13:50Z", "artifacts": ["task.md"] },
-  { "stage": "3b-audit", "status": "COMPLETED", "timestamp": "2026-08-12T15:14:00Z", "artifacts": ["code_review_report.md"] },
-  { "stage": "4-test", "status": "COMPLETED", "timestamp": "2026-08-12T15:14:35Z", "artifacts": [] },
-  { "stage": "5-accept", "status": "COMPLETED", "timestamp": "2026-08-12T15:14:45Z", "artifacts": ["walkthrough.md"] },
-  { "stage": "6-compliance", "status": "COMPLETED", "timestamp": "2026-08-12T15:21:35Z", "artifacts": ["pipeline_completion_report.md"] }
+  { "stage": "0a-grill-me", "status": "COMPLETED", "timestamp": "2026-08-12T16:01:00Z", "artifacts": [] },
+  { "stage": "0b-research", "status": "COMPLETED", "timestamp": "2026-08-12T16:01:05Z", "artifacts": ["research_findings.md"] },
+  { "stage": "1-spec", "status": "COMPLETED", "timestamp": "2026-08-12T16:01:10Z", "artifacts": ["implementation_plan.md"] },
+  { "stage": "2ab-ironclad", "status": "COMPLETED", "timestamp": "2026-08-12T16:01:15Z", "artifacts": ["ironclad_review_implementation_plan.md"] },
+  { "stage": "3-build", "status": "COMPLETED", "timestamp": "2026-08-12T16:02:20Z", "artifacts": ["task.md"] },
+  { "stage": "3b-audit", "status": "COMPLETED", "timestamp": "2026-08-12T16:02:30Z", "artifacts": ["code_review_report.md"] },
+  { "stage": "4-test", "status": "COMPLETED", "timestamp": "2026-08-12T16:03:35Z", "artifacts": [] },
+  { "stage": "5-accept", "status": "COMPLETED", "timestamp": "2026-08-12T16:03:40Z", "artifacts": ["walkthrough.md"] }
 ]

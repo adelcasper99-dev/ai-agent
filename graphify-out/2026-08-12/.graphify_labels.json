@@ -461,6 +461,8 @@
   "459": "patch_agent.py",
   "460": "expandScanTargets",
   "461": "middleware.ts",
+  "462": "test_uncataloged_case.ts",
   "463": "test_live_interaction_demo.ts",
-  "464": "test_real_user_slang_scenarios.ts"
+  "464": "test_real_user_slang_scenarios.ts",
+  "465": "resolveLiveTemplateExtensions"
 }

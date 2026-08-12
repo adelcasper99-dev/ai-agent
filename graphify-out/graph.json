@@ -1050,7 +1050,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_loadcontext",
-      "community": 71,
+      "community": 2,
       "norm_label": "loadcontext()"
     },
     {
@@ -1570,7 +1570,7 @@
       "source_location": "L943",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_extractplatform",
-      "community": 71,
+      "community": 2,
       "norm_label": "extractplatform()"
     },
     {
@@ -3650,7 +3650,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_isbrandfontonowndomain",
-      "community": 254,
+      "community": 432,
       "norm_label": "isbrandfontonowndomain()"
     },
     {
@@ -3660,7 +3660,7 @@
       "source_location": "L684",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_isneutralcolor",
-      "community": 442,
+      "community": 254,
       "norm_label": "isneutralcolor()"
     },
     {
@@ -3760,7 +3760,7 @@
       "source_location": "L831",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkborders",
-      "community": 442,
+      "community": 254,
       "norm_label": "checkborders()"
     },
     {
@@ -3810,7 +3810,7 @@
       "source_location": "L1048",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkicontile",
-      "community": 307,
+      "community": 65,
       "norm_label": "checkicontile()"
     },
     {
@@ -3820,7 +3820,7 @@
       "source_location": "L1098",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_resolveserif",
-      "community": 432,
+      "community": 7,
       "norm_label": "resolveserif()"
     },
     {
@@ -3840,7 +3840,7 @@
       "source_location": "L1130",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_isaccentcolor",
-      "community": 437,
+      "community": 7,
       "norm_label": "isaccentcolor()"
     },
     {
@@ -3850,7 +3850,7 @@
       "source_location": "L1174",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_resolveheroheadingsizepx",
-      "community": 437,
+      "community": 7,
       "norm_label": "resolveheroheadingsizepx()"
     },
     {
@@ -3860,7 +3860,7 @@
       "source_location": "L1209",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkheroeyebrow",
-      "community": 437,
+      "community": 7,
       "norm_label": "checkheroeyebrow()"
     },
     {
@@ -3880,7 +3880,7 @@
       "source_location": "L1277",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkmotion",
-      "community": 7,
+      "community": 65,
       "norm_label": "checkmotion()"
     },
     {
@@ -4200,7 +4200,7 @@
       "source_location": "L2575",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_istabcontextelement",
-      "community": 442,
+      "community": 254,
       "norm_label": "istabcontextelement()"
     },
     {
@@ -4210,7 +4210,7 @@
       "source_location": "L2596",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_isstatuscontextelement",
-      "community": 442,
+      "community": 254,
       "norm_label": "isstatuscontextelement()"
     },
     {
@@ -4220,7 +4220,7 @@
       "source_location": "L2604",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementbordersdom",
-      "community": 442,
+      "community": 254,
       "norm_label": "checkelementbordersdom()"
     },
     {
@@ -4230,7 +4230,7 @@
       "source_location": "L2634",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementpseudostripedom",
-      "community": 65,
+      "community": 254,
       "norm_label": "checkelementpseudostripedom()"
     },
     {
@@ -4280,7 +4280,7 @@
       "source_location": "L2805",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_domaccentdashpseudo",
-      "community": 437,
+      "community": 7,
       "norm_label": "domaccentdashpseudo()"
     },
     {
@@ -4290,7 +4290,7 @@
       "source_location": "L2820",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementheroeyebrowdom",
-      "community": 437,
+      "community": 7,
       "norm_label": "checkelementheroeyebrowdom()"
     },
     {
@@ -4320,7 +4320,7 @@
       "source_location": "L2902",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_oklchtorgb",
-      "community": 65,
+      "community": 49,
       "norm_label": "oklchtorgb()"
     },
     {
@@ -4330,7 +4330,7 @@
       "source_location": "L2907",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_oklabtorgb",
-      "community": 65,
+      "community": 49,
       "norm_label": "oklabtorgb()"
     },
     {
@@ -4340,7 +4340,7 @@
       "source_location": "L2927",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_hsltorgb",
-      "community": 65,
+      "community": 49,
       "norm_label": "hsltorgb()"
     },
     {
@@ -4350,7 +4350,7 @@
       "source_location": "L2946",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_hwbtorgb",
-      "community": 65,
+      "community": 49,
       "norm_label": "hwbtorgb()"
     },
     {
@@ -4390,7 +4390,7 @@
       "source_location": "L3094",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_parseanycolor",
-      "community": 65,
+      "community": 49,
       "norm_label": "parseanycolor()"
     },
     {
@@ -4400,7 +4400,7 @@
       "source_location": "L3177",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_parsecolorresolved",
-      "community": 65,
+      "community": 49,
       "norm_label": "parsecolorresolved()"
     },
     {
@@ -4470,7 +4470,7 @@
       "source_location": "L3324",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_isnumberedsectionlabelcandidate",
-      "community": 437,
+      "community": 7,
       "norm_label": "isnumberedsectionlabelcandidate()"
     },
     {
@@ -4540,7 +4540,7 @@
       "source_location": "L3465",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementmotiondom",
-      "community": 7,
+      "community": 65,
       "norm_label": "checkelementmotiondom()"
     },
     {
@@ -4550,7 +4550,7 @@
       "source_location": "L3478",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementglowdom",
-      "community": 254,
+      "community": 65,
       "norm_label": "checkelementglowdom()"
     },
     {
@@ -4590,7 +4590,7 @@
       "source_location": "L3651",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_elementgradientvalue",
-      "community": 49,
+      "community": 442,
       "norm_label": "elementgradientvalue()"
     },
     {
@@ -4600,7 +4600,7 @@
       "source_location": "L3662",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_spotlightlabel",
-      "community": 49,
+      "community": 442,
       "norm_label": "spotlightlabel()"
     },
     {
@@ -4610,7 +4610,7 @@
       "source_location": "L3671",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementradialspotlightdom",
-      "community": 49,
+      "community": 442,
       "norm_label": "checkelementradialspotlightdom()"
     },
     {
@@ -4620,7 +4620,7 @@
       "source_location": "L3684",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementradialspotlight",
-      "community": 49,
+      "community": 442,
       "norm_label": "checkelementradialspotlight()"
     },
     {
@@ -4630,7 +4630,7 @@
       "source_location": "L3701",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_resolvefontsizepx",
-      "community": 230,
+      "community": 7,
       "norm_label": "resolvefontsizepx()"
     },
     {
@@ -4650,7 +4650,7 @@
       "source_location": "L3739",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_csscoloristransparent",
-      "community": 230,
+      "community": 437,
       "norm_label": "csscoloristransparent()"
     },
     {
@@ -4660,7 +4660,7 @@
       "source_location": "L3748",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_colorsnearlymatch",
-      "community": 230,
+      "community": 437,
       "norm_label": "colorsnearlymatch()"
     },
     {
@@ -4670,7 +4670,7 @@
       "source_location": "L3761",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_getcomputedstylefor",
-      "community": 230,
+      "community": 437,
       "norm_label": "getcomputedstylefor()"
     },
     {
@@ -4680,7 +4680,7 @@
       "source_location": "L3771",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_hasvisiblebackgroundboundary",
-      "community": 230,
+      "community": 437,
       "norm_label": "hasvisiblebackgroundboundary()"
     },
     {
@@ -4690,7 +4690,7 @@
       "source_location": "L3790",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_hasmeaningfuldirecttext",
-      "community": 230,
+      "community": 437,
       "norm_label": "hasmeaningfuldirecttext()"
     },
     {
@@ -4700,7 +4700,7 @@
       "source_location": "L3798",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_textdescendantsflushsides",
-      "community": 230,
+      "community": 437,
       "norm_label": "textdescendantsflushsides()"
     },
     {
@@ -4710,7 +4710,7 @@
       "source_location": "L3823",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_isvisuallyhidden",
-      "community": 230,
+      "community": 437,
       "norm_label": "isvisuallyhidden()"
     },
     {
@@ -4720,7 +4720,7 @@
       "source_location": "L3852",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_isnonrenderedtext",
-      "community": 230,
+      "community": 437,
       "norm_label": "isnonrenderedtext()"
     },
     {
@@ -4730,7 +4730,7 @@
       "source_location": "L3873",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkquality",
-      "community": 230,
+      "community": 437,
       "norm_label": "checkquality()"
     },
     {
@@ -4740,7 +4740,7 @@
       "source_location": "L4245",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementqualitydom",
-      "community": 230,
+      "community": 437,
       "norm_label": "checkelementqualitydom()"
     },
     {
@@ -4750,7 +4750,7 @@
       "source_location": "L4263",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkpagequalityfromdoc",
-      "community": 254,
+      "community": 7,
       "norm_label": "checkpagequalityfromdoc()"
     },
     {
@@ -4760,7 +4760,7 @@
       "source_location": "L4284",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkpagequalitydom",
-      "community": 254,
+      "community": 7,
       "norm_label": "checkpagequalitydom()"
     },
     {
@@ -4770,7 +4770,7 @@
       "source_location": "L4294",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementquality",
-      "community": 230,
+      "community": 437,
       "norm_label": "checkelementquality()"
     },
     {
@@ -4780,7 +4780,7 @@
       "source_location": "L4303",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementborders",
-      "community": 442,
+      "community": 254,
       "norm_label": "checkelementborders()"
     },
     {
@@ -4810,7 +4810,7 @@
       "source_location": "L4456",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementicontile",
-      "community": 307,
+      "community": 65,
       "norm_label": "checkelementicontile()"
     },
     {
@@ -4830,7 +4830,7 @@
       "source_location": "L4504",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementheroeyebrow",
-      "community": 437,
+      "community": 7,
       "norm_label": "checkelementheroeyebrow()"
     },
     {
@@ -4850,7 +4850,7 @@
       "source_location": "L4550",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementmotion",
-      "community": 7,
+      "community": 65,
       "norm_label": "checkelementmotion()"
     },
     {
@@ -4870,7 +4870,7 @@
       "source_location": "L4571",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checktypography",
-      "community": 254,
+      "community": 432,
       "norm_label": "checktypography()"
     },
     {
@@ -5010,7 +5010,7 @@
       "source_location": "L5172",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkoversizedh1",
-      "community": 230,
+      "community": 7,
       "norm_label": "checkoversizedh1()"
     },
     {
@@ -5020,7 +5020,7 @@
       "source_location": "L5190",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementoversizedh1",
-      "community": 230,
+      "community": 7,
       "norm_label": "checkelementoversizedh1()"
     },
     {
@@ -5030,7 +5030,7 @@
       "source_location": "L5197",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementoversizedh1dom",
-      "community": 230,
+      "community": 7,
       "norm_label": "checkelementoversizedh1dom()"
     },
     {
@@ -5060,7 +5060,7 @@
       "source_location": "L5238",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_csscoloralpha",
-      "community": 230,
+      "community": 437,
       "norm_label": "csscoloralpha()"
     },
     {
@@ -5280,7 +5280,7 @@
       "source_location": "L5496",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_isrenderedforbrowserrule",
-      "community": 65,
+      "community": 254,
       "norm_label": "isrenderedforbrowserrule()"
     },
     {
@@ -5490,7 +5490,7 @@
       "source_location": "L6407",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_detachoverlay",
-      "community": 7,
+      "community": 125,
       "norm_label": "detachoverlay()"
     },
     {
@@ -5770,7 +5770,7 @@
       "source_location": "L7344",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_waitforvisualpaint",
-      "community": 7,
+      "community": 125,
       "norm_label": "waitforvisualpaint()"
     },
     {
@@ -5810,7 +5810,7 @@
       "source_location": "L7434",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_addbrowserfindings",
-      "community": 7,
+      "community": 125,
       "norm_label": "addbrowserfindings()"
     },
     {
@@ -5980,7 +5980,7 @@
       "source_location": "L7828",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_shouldrunvisualcontrast",
-      "community": 7,
+      "community": 125,
       "norm_label": "shouldrunvisualcontrast()"
     },
     {
@@ -5990,7 +5990,7 @@
       "source_location": "L7832",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_visualcontrastoptions",
-      "community": 7,
+      "community": 125,
       "norm_label": "visualcontrastoptions()"
     },
     {
@@ -6000,7 +6000,7 @@
       "source_location": "L7860",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_remembervisualcontrastanalysis",
-      "community": 7,
+      "community": 125,
       "norm_label": "remembervisualcontrastanalysis()"
     },
     {
@@ -6010,7 +6010,7 @@
       "source_location": "L7870",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_disconnectlazyvisualcontrastobserver",
-      "community": 7,
+      "community": 125,
       "norm_label": "disconnectlazyvisualcontrastobserver()"
     },
     {
@@ -6020,7 +6020,7 @@
       "source_location": "L7878",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_addvisualcontrastresult",
-      "community": 7,
+      "community": 125,
       "norm_label": "addvisualcontrastresult()"
     },
     {
@@ -6050,7 +6050,7 @@
       "source_location": "L7917",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_postextensionerror",
-      "community": 7,
+      "community": 125,
       "norm_label": "postextensionerror()"
     },
     {
@@ -6060,7 +6060,7 @@
       "source_location": "L7925",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_reportvisualcontrasterror",
-      "community": 7,
+      "community": 125,
       "norm_label": "reportvisualcontrasterror()"
     },
     {
@@ -6070,7 +6070,7 @@
       "source_location": "L7939",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_schedulelazyvisualcontrast",
-      "community": 7,
+      "community": 125,
       "norm_label": "schedulelazyvisualcontrast()"
     },
     {
@@ -6080,7 +6080,7 @@
       "source_location": "L7999",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_addvisualcontrastfindings",
-      "community": 7,
+      "community": 125,
       "norm_label": "addvisualcontrastfindings()"
     },
     {
@@ -6100,7 +6100,7 @@
       "source_location": "L8026",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_clearoverlays",
-      "community": 7,
+      "community": 125,
       "norm_label": "clearoverlays()"
     },
     {
@@ -6810,7 +6810,7 @@
       "source_location": "L795",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticelement_classname",
-      "community": 31,
+      "community": 124,
       "norm_label": ".classname()"
     },
     {
@@ -6910,7 +6910,7 @@
       "source_location": "L867",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_queryselectorall",
-      "community": 21,
+      "community": 9,
       "norm_label": ".queryselectorall()"
     },
     {
@@ -6960,7 +6960,7 @@
       "source_location": "L891",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_getstyle",
-      "community": 9,
+      "community": 254,
       "norm_label": ".getstyle()"
     },
     {
@@ -7080,7 +7080,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_detect_html_checkstaticpagetypography",
-      "community": 21,
+      "community": 432,
       "norm_label": "checkstaticpagetypography()"
     },
     {
@@ -7530,7 +7530,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkcolors",
-      "community": 1,
+      "community": 38,
       "norm_label": "checkcolors()"
     },
     {
@@ -7540,7 +7540,7 @@
       "source_location": "L213",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkhovercontrast",
-      "community": 1,
+      "community": 38,
       "norm_label": "checkhovercontrast()"
     },
     {
@@ -7590,7 +7590,7 @@
       "source_location": "L306",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkitalicserif",
-      "community": 432,
+      "community": 1,
       "norm_label": "checkitalicserif()"
     },
     {
@@ -7600,7 +7600,7 @@
       "source_location": "L328",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_isaccentcolor",
-      "community": 38,
+      "community": 1,
       "norm_label": "isaccentcolor()"
     },
     {
@@ -7610,7 +7610,7 @@
       "source_location": "L372",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_resolveheroheadingsizepx",
-      "community": 1,
+      "community": 38,
       "norm_label": "resolveheroheadingsizepx()"
     },
     {
@@ -7630,7 +7630,7 @@
       "source_location": "L459",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkrepeatedsectionkickers",
-      "community": 38,
+      "community": 1,
       "norm_label": "checkrepeatedsectionkickers()"
     },
     {
@@ -7660,7 +7660,7 @@
       "source_location": "L520",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_findshadowcolor",
-      "community": 1,
+      "community": 38,
       "norm_label": "findshadowcolor()"
     },
     {
@@ -7670,7 +7670,7 @@
       "source_location": "L538",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_extractshadowlengths",
-      "community": 1,
+      "community": 38,
       "norm_label": "extractshadowlengths()"
     },
     {
@@ -7680,7 +7680,7 @@
       "source_location": "L553",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkglow",
-      "community": 1,
+      "community": 38,
       "norm_label": "checkglow()"
     },
     {
@@ -7690,7 +7690,7 @@
       "source_location": "L594",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_collectcsscustomprops",
-      "community": 1,
+      "community": 38,
       "norm_label": "collectcsscustomprops()"
     },
     {
@@ -7700,7 +7700,7 @@
       "source_location": "L616",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_csstexthasdarkrootbg",
-      "community": 1,
+      "community": 38,
       "norm_label": "csstexthasdarkrootbg()"
     },
     {
@@ -7710,7 +7710,7 @@
       "source_location": "L637",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scancsstextforglow",
-      "community": 1,
+      "community": 38,
       "norm_label": "scancsstextforglow()"
     },
     {
@@ -7720,7 +7720,7 @@
       "source_location": "L673",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scancsstextforgridbackground",
-      "community": 21,
+      "community": 38,
       "norm_label": "scancsstextforgridbackground()"
     },
     {
@@ -7730,7 +7730,7 @@
       "source_location": "L722",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scancsstextforradialhalo",
-      "community": 1,
+      "community": 38,
       "norm_label": "scancsstextforradialhalo()"
     },
     {
@@ -7750,7 +7750,7 @@
       "source_location": "L797",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_parsecssdeclblock",
-      "community": 1,
+      "community": 38,
       "norm_label": "parsecssdeclblock()"
     },
     {
@@ -7760,7 +7760,7 @@
       "source_location": "L809",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_csslengthtopx",
-      "community": 1,
+      "community": 38,
       "norm_label": "csslengthtopx()"
     },
     {
@@ -7770,7 +7770,7 @@
       "source_location": "L816",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_iszerooffset",
-      "community": 1,
+      "community": 38,
       "norm_label": "iszerooffset()"
     },
     {
@@ -7780,7 +7780,7 @@
       "source_location": "L826",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scancsstextforpseudostripe",
-      "community": 1,
+      "community": 38,
       "norm_label": "scancsstextforpseudostripe()"
     },
     {
@@ -7790,7 +7790,7 @@
       "source_location": "L950",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scancsstextforinsetstripe",
-      "community": 1,
+      "community": 38,
       "norm_label": "scancsstextforinsetstripe()"
     },
     {
@@ -7800,7 +7800,7 @@
       "source_location": "L1014",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_collectmarqueekeyframes",
-      "community": 1,
+      "community": 38,
       "norm_label": "collectmarqueekeyframes()"
     },
     {
@@ -7810,7 +7810,7 @@
       "source_location": "L1052",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scancsstextformarquee",
-      "community": 1,
+      "community": 38,
       "norm_label": "scancsstextformarquee()"
     },
     {
@@ -7820,7 +7820,7 @@
       "source_location": "L1079",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_collectpulsekeyframes",
-      "community": 1,
+      "community": 38,
       "norm_label": "collectpulsekeyframes()"
     },
     {
@@ -7830,7 +7830,7 @@
       "source_location": "L1102",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_animation_value_keywords",
-      "community": 1,
+      "community": 38,
       "norm_label": "animation_value_keywords"
     },
     {
@@ -7840,7 +7840,7 @@
       "source_location": "L1111",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_infiniteanimationnames",
-      "community": 1,
+      "community": 38,
       "norm_label": "infiniteanimationnames()"
     },
     {
@@ -7850,7 +7850,7 @@
       "source_location": "L1132",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_isrounddotradius",
-      "community": 1,
+      "community": 38,
       "norm_label": "isrounddotradius()"
     },
     {
@@ -7860,7 +7860,7 @@
       "source_location": "L1146",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_stripreducedmotionblocks",
-      "community": 1,
+      "community": 38,
       "norm_label": "stripreducedmotionblocks()"
     },
     {
@@ -7870,7 +7870,7 @@
       "source_location": "L1170",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_landmarksourceranges",
-      "community": 1,
+      "community": 38,
       "norm_label": "landmarksourceranges()"
     },
     {
@@ -7880,7 +7880,7 @@
       "source_location": "L1188",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_indexinsourceranges",
-      "community": 1,
+      "community": 38,
       "norm_label": "indexinsourceranges()"
     },
     {
@@ -7890,7 +7890,7 @@
       "source_location": "L1197",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_selectorhitslandmark",
-      "community": 1,
+      "community": 38,
       "norm_label": "selectorhitslandmark()"
     },
     {
@@ -7900,7 +7900,7 @@
       "source_location": "L1233",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scancsstextforpulsingdot",
-      "community": 1,
+      "community": 38,
       "norm_label": "scancsstextforpulsingdot()"
     },
     {
@@ -7910,7 +7910,7 @@
       "source_location": "L1329",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scanhtmlforshapeassembledillustration",
-      "community": 1,
+      "community": 38,
       "norm_label": "scanhtmlforshapeassembledillustration()"
     },
     {
@@ -7920,7 +7920,7 @@
       "source_location": "L1383",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkhtmlpatterns",
-      "community": 1,
+      "community": 38,
       "norm_label": "checkhtmlpatterns()"
     },
     {
@@ -8060,7 +8060,7 @@
       "source_location": "L1990",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementitalicserifdom",
-      "community": 432,
+      "community": 1,
       "norm_label": "checkelementitalicserifdom()"
     },
     {
@@ -8100,7 +8100,7 @@
       "source_location": "L2084",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_resolvevarrefs",
-      "community": 1,
+      "community": 38,
       "norm_label": "resolvevarrefs()"
     },
     {
@@ -8160,7 +8160,7 @@
       "source_location": "L2201",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_splittoplevelcommas",
-      "community": 1,
+      "community": 38,
       "norm_label": "splittoplevelcommas()"
     },
     {
@@ -8170,7 +8170,7 @@
       "source_location": "L2227",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_parsecolormix",
-      "community": 1,
+      "community": 38,
       "norm_label": "parsecolormix()"
     },
     {
@@ -8230,7 +8230,7 @@
       "source_location": "L2409",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_cleaninlinetext",
-      "community": 38,
+      "community": 1,
       "norm_label": "cleaninlinetext()"
     },
     {
@@ -8240,7 +8240,7 @@
       "source_location": "L2418",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_isrepeatedkickercardcontext",
-      "community": 38,
+      "community": 1,
       "norm_label": "isrepeatedkickercardcontext()"
     },
     {
@@ -8250,7 +8250,7 @@
       "source_location": "L2423",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_isrepeatedkickercandidate",
-      "community": 38,
+      "community": 1,
       "norm_label": "isrepeatedkickercandidate()"
     },
     {
@@ -8260,7 +8260,7 @@
       "source_location": "L2452",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_collectrepeatedsectionkickercandidates",
-      "community": 38,
+      "community": 1,
       "norm_label": "collectrepeatedsectionkickercandidates()"
     },
     {
@@ -8270,7 +8270,7 @@
       "source_location": "L2490",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkrepeatedsectionkickersdom",
-      "community": 38,
+      "community": 1,
       "norm_label": "checkrepeatedsectionkickersdom()"
     },
     {
@@ -8280,7 +8280,7 @@
       "source_location": "L2506",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_numbered_label_tags",
-      "community": 38,
+      "community": 1,
       "norm_label": "numbered_label_tags"
     },
     {
@@ -8290,7 +8290,7 @@
       "source_location": "L2511",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_parsenumberedlabeltext",
-      "community": 38,
+      "community": 1,
       "norm_label": "parsenumberedlabeltext()"
     },
     {
@@ -8300,7 +8300,7 @@
       "source_location": "L2522",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_isnumberedsectionlabelcandidate",
-      "community": 38,
+      "community": 1,
       "norm_label": "isnumberedsectionlabelcandidate()"
     },
     {
@@ -8310,7 +8310,7 @@
       "source_location": "L2550",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_collectnumberedsectionlabelcandidates",
-      "community": 38,
+      "community": 1,
       "norm_label": "collectnumberedsectionlabelcandidates()"
     },
     {
@@ -8320,7 +8320,7 @@
       "source_location": "L2606",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checknumberedsectionlabels",
-      "community": 38,
+      "community": 1,
       "norm_label": "checknumberedsectionlabels()"
     },
     {
@@ -8340,7 +8340,7 @@
       "source_location": "L2627",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checknumberedsectionlabelsdom",
-      "community": 38,
+      "community": 1,
       "norm_label": "checknumberedsectionlabelsdom()"
     },
     {
@@ -8380,7 +8380,7 @@
       "source_location": "L2676",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementglowdom",
-      "community": 72,
+      "community": 38,
       "norm_label": "checkelementglowdom()"
     },
     {
@@ -8390,7 +8390,7 @@
       "source_location": "L2712",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementaipalettedom",
-      "community": 1,
+      "community": 38,
       "norm_label": "checkelementaipalettedom()"
     },
     {
@@ -8400,7 +8400,7 @@
       "source_location": "L2782",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_parseradialgradientstops",
-      "community": 1,
+      "community": 38,
       "norm_label": "parseradialgradientstops()"
     },
     {
@@ -8410,7 +8410,7 @@
       "source_location": "L2811",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkradialspotlight",
-      "community": 1,
+      "community": 38,
       "norm_label": "checkradialspotlight()"
     },
     {
@@ -8460,7 +8460,7 @@
       "source_location": "L2894",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_quality_text_tags",
-      "community": 38,
+      "community": 1,
       "norm_label": "quality_text_tags"
     },
     {
@@ -8480,7 +8480,7 @@
       "source_location": "L2925",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_resolvelengthpx",
-      "community": 38,
+      "community": 1,
       "norm_label": "resolvelengthpx()"
     },
     {
@@ -8490,7 +8490,7 @@
       "source_location": "L2937",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_csscoloristransparent",
-      "community": 38,
+      "community": 1,
       "norm_label": "csscoloristransparent()"
     },
     {
@@ -8500,7 +8500,7 @@
       "source_location": "L2946",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_colorsnearlymatch",
-      "community": 38,
+      "community": 1,
       "norm_label": "colorsnearlymatch()"
     },
     {
@@ -8510,7 +8510,7 @@
       "source_location": "L2959",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_getcomputedstylefor",
-      "community": 38,
+      "community": 1,
       "norm_label": "getcomputedstylefor()"
     },
     {
@@ -8520,7 +8520,7 @@
       "source_location": "L2969",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_hasvisiblebackgroundboundary",
-      "community": 38,
+      "community": 1,
       "norm_label": "hasvisiblebackgroundboundary()"
     },
     {
@@ -8560,7 +8560,7 @@
       "source_location": "L3021",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_isvisuallyhidden",
-      "community": 38,
+      "community": 1,
       "norm_label": "isvisuallyhidden()"
     },
     {
@@ -8570,7 +8570,7 @@
       "source_location": "L3045",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_non_rendered_tags",
-      "community": 38,
+      "community": 1,
       "norm_label": "non_rendered_tags"
     },
     {
@@ -8580,7 +8580,7 @@
       "source_location": "L3050",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_isnonrenderedtext",
-      "community": 38,
+      "community": 1,
       "norm_label": "isnonrenderedtext()"
     },
     {
@@ -8590,7 +8590,7 @@
       "source_location": "L3071",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkquality",
-      "community": 38,
+      "community": 1,
       "norm_label": "checkquality()"
     },
     {
@@ -8600,7 +8600,7 @@
       "source_location": "L3443",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementqualitydom",
-      "community": 38,
+      "community": 1,
       "norm_label": "checkelementqualitydom()"
     },
     {
@@ -8630,7 +8630,7 @@
       "source_location": "L3492",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementquality",
-      "community": 38,
+      "community": 1,
       "norm_label": "checkelementquality()"
     },
     {
@@ -8680,7 +8680,7 @@
       "source_location": "L3691",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementitalicserif",
-      "community": 432,
+      "community": 1,
       "norm_label": "checkelementitalicserif()"
     },
     {
@@ -8690,7 +8690,7 @@
       "source_location": "L3702",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementheroeyebrow",
-      "community": 1,
+      "community": 38,
       "norm_label": "checkelementheroeyebrow()"
     },
     {
@@ -8720,7 +8720,7 @@
       "source_location": "L3758",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementglow",
-      "community": 1,
+      "community": 38,
       "norm_label": "checkelementglow()"
     },
     {
@@ -8930,7 +8930,7 @@
       "source_location": "L4410",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_shadowlayeralpha",
-      "community": 429,
+      "community": 1,
       "norm_label": "shadowlayeralpha()"
     },
     {
@@ -8940,7 +8940,7 @@
       "source_location": "L4419",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_shadowmaxblurpx",
-      "community": 429,
+      "community": 1,
       "norm_label": "shadowmaxblurpx()"
     },
     {
@@ -8950,7 +8950,7 @@
       "source_location": "L4436",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_csscoloralpha",
-      "community": 38,
+      "community": 1,
       "norm_label": "csscoloralpha()"
     },
     {
@@ -8960,7 +8960,7 @@
       "source_location": "L4442",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkgptthinborderwideshadow",
-      "community": 429,
+      "community": 1,
       "norm_label": "checkgptthinborderwideshadow()"
     },
     {
@@ -8970,7 +8970,7 @@
       "source_location": "L4454",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_borderwidthsfromstyle",
-      "community": 429,
+      "community": 1,
       "norm_label": "borderwidthsfromstyle()"
     },
     {
@@ -8980,7 +8980,7 @@
       "source_location": "L4463",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_bordercolorsfromstyle",
-      "community": 429,
+      "community": 1,
       "norm_label": "bordercolorsfromstyle()"
     },
     {
@@ -8990,7 +8990,7 @@
       "source_location": "L4472",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementgptbordershadow",
-      "community": 429,
+      "community": 1,
       "norm_label": "checkelementgptbordershadow()"
     },
     {
@@ -9000,7 +9000,7 @@
       "source_location": "L4476",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementgptbordershadowdom",
-      "community": 429,
+      "community": 1,
       "norm_label": "checkelementgptbordershadowdom()"
     },
     {
@@ -9340,7 +9340,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_color",
-      "community": 1,
+      "community": 38,
       "norm_label": "color.mjs"
     },
     {
@@ -9350,7 +9350,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_color_isneutralcolor",
-      "community": 21,
+      "community": 38,
       "norm_label": "isneutralcolor()"
     },
     {
@@ -9370,7 +9370,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_color_relativeluminance",
-      "community": 1,
+      "community": 38,
       "norm_label": "relativeluminance()"
     },
     {
@@ -9380,7 +9380,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_color_contrastratio",
-      "community": 1,
+      "community": 38,
       "norm_label": "contrastratio()"
     },
     {
@@ -9390,7 +9390,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_color_parsegradientcolors",
-      "community": 72,
+      "community": 38,
       "norm_label": "parsegradientcolors()"
     },
     {
@@ -9400,7 +9400,7 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_color_haschroma",
-      "community": 1,
+      "community": 38,
       "norm_label": "haschroma()"
     },
     {
@@ -9410,7 +9410,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_color_gethue",
-      "community": 1,
+      "community": 38,
       "norm_label": "gethue()"
     },
     {
@@ -9420,7 +9420,7 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_color_colortohex",
-      "community": 1,
+      "community": 38,
       "norm_label": "colortohex()"
     },
     {
@@ -9440,7 +9440,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_constants_safe_tags",
-      "community": 1,
+      "community": 65,
       "norm_label": "safe_tags"
     },
     {
@@ -9450,7 +9450,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_constants_border_safe_tags",
-      "community": 72,
+      "community": 254,
       "norm_label": "border_safe_tags"
     },
     {
@@ -9520,7 +9520,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_constants_generic_fonts",
-      "community": 4,
+      "community": 432,
       "norm_label": "generic_fonts"
     },
     {
@@ -9770,7 +9770,7 @@
       "source_location": "L215",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_doctor_rel",
-      "community": 348,
+      "community": 267,
       "norm_label": "rel()"
     },
     {
@@ -10360,7 +10360,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_before_edit_done",
-      "community": 313,
+      "community": 22,
       "norm_label": "done()"
     },
     {
@@ -10370,7 +10370,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_before_edit_allow",
-      "community": 313,
+      "community": 22,
       "norm_label": "allow()"
     },
     {
@@ -10380,7 +10380,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_before_edit_deny",
-      "community": 313,
+      "community": 22,
       "norm_label": "deny()"
     },
     {
@@ -10660,7 +10660,7 @@
       "source_location": "L386",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_before_edit_main",
-      "community": 135,
+      "community": 22,
       "norm_label": "main()"
     },
     {
@@ -10700,7 +10700,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_allowed_exts",
-      "community": 135,
+      "community": 22,
       "norm_label": "allowed_exts"
     },
     {
@@ -10710,7 +10710,7 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_ack_exts",
-      "community": 14,
+      "community": 455,
       "norm_label": "ack_exts"
     },
     {
@@ -10730,7 +10730,7 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_immediate_tier_rules",
-      "community": 177,
+      "community": 14,
       "norm_label": "immediate_tier_rules"
     },
     {
@@ -10740,7 +10740,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_advisory_rules",
-      "community": 177,
+      "community": 14,
       "norm_label": "advisory_rules"
     },
     {
@@ -10750,7 +10750,7 @@
       "source_location": "L145",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_isadvisoryfinding",
-      "community": 177,
+      "community": 14,
       "norm_label": "isadvisoryfinding()"
     },
     {
@@ -10800,7 +10800,7 @@
       "source_location": "L194",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_safereadjson",
-      "community": 14,
+      "community": 135,
       "norm_label": "safereadjson()"
     },
     {
@@ -10850,7 +10850,7 @@
       "source_location": "L218",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_resolveprojectcwd",
-      "community": 14,
+      "community": 313,
       "norm_label": "resolveprojectcwd()"
     },
     {
@@ -10890,7 +10890,7 @@
       "source_location": "L274",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_isnativeplatform",
-      "community": 135,
+      "community": 22,
       "norm_label": "isnativeplatform()"
     },
     {
@@ -10980,7 +10980,7 @@
       "source_location": "L375",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_normalizeignorevalue",
-      "community": 177,
+      "community": 14,
       "norm_label": "normalizeignorevalue()"
     },
     {
@@ -10990,7 +10990,7 @@
       "source_location": "L384",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_normalizeignorerule",
-      "community": 177,
+      "community": 14,
       "norm_label": "normalizeignorerule()"
     },
     {
@@ -11110,7 +11110,7 @@
       "source_location": "L539",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_normalizeignorevalueentries",
-      "community": 177,
+      "community": 14,
       "norm_label": "normalizeignorevalueentries()"
     },
     {
@@ -11150,7 +11150,7 @@
       "source_location": "L595",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_persistcache",
-      "community": 135,
+      "community": 429,
       "norm_label": "persistcache()"
     },
     {
@@ -11160,7 +11160,7 @@
       "source_location": "L619",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_ensurehookgitexcludes",
-      "community": 24,
+      "community": 429,
       "norm_label": "ensurehookgitexcludes()"
     },
     {
@@ -11170,7 +11170,7 @@
       "source_location": "L660",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_resolvehookgitexcludetarget",
-      "community": 14,
+      "community": 429,
       "norm_label": "resolvehookgitexcludetarget()"
     },
     {
@@ -11180,7 +11180,7 @@
       "source_location": "L680",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_resolvegitdir",
-      "community": 14,
+      "community": 429,
       "norm_label": "resolvegitdir()"
     },
     {
@@ -11190,7 +11190,7 @@
       "source_location": "L691",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_escaperegexp",
-      "community": 14,
+      "community": 429,
       "norm_label": "escaperegexp()"
     },
     {
@@ -11240,7 +11240,7 @@
       "source_location": "L725",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_suppressionnotice",
-      "community": 14,
+      "community": 135,
       "norm_label": "suppressionnotice()"
     },
     {
@@ -11260,7 +11260,7 @@
       "source_location": "L765",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_matchesanyglob",
-      "community": 135,
+      "community": 14,
       "norm_label": "matchesanyglob()"
     },
     {
@@ -11270,7 +11270,7 @@
       "source_location": "L783",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_filterfindings",
-      "community": 177,
+      "community": 14,
       "norm_label": "filterfindings()"
     },
     {
@@ -11280,7 +11280,7 @@
       "source_location": "L802",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_splitfindingsbytier",
-      "community": 177,
+      "community": 14,
       "norm_label": "splitfindingsbytier()"
     },
     {
@@ -11290,7 +11290,7 @@
       "source_location": "L819",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_peredittieringactive",
-      "community": 14,
+      "community": 135,
       "norm_label": "peredittieringactive()"
     },
     {
@@ -11300,7 +11300,7 @@
       "source_location": "L824",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_isignoredfindingvalue",
-      "community": 177,
+      "community": 14,
       "norm_label": "isignoredfindingvalue()"
     },
     {
@@ -11310,7 +11310,7 @@
       "source_location": "L839",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_findingmatchesscopedignorefile",
-      "community": 177,
+      "community": 14,
       "norm_label": "findingmatchesscopedignorefile()"
     },
     {
@@ -11320,7 +11320,7 @@
       "source_location": "L853",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_extractfindingignorevalue",
-      "community": 177,
+      "community": 14,
       "norm_label": "extractfindingignorevalue()"
     },
     {
@@ -11330,7 +11330,7 @@
       "source_location": "L868",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_extractfindingignorevalueraw",
-      "community": 177,
+      "community": 14,
       "norm_label": "extractfindingignorevalueraw()"
     },
     {
@@ -11340,7 +11340,7 @@
       "source_location": "L899",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_extractmotionignorevalue",
-      "community": 177,
+      "community": 14,
       "norm_label": "extractmotionignorevalue()"
     },
     {
@@ -11350,7 +11350,7 @@
       "source_location": "L917",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_cleanignorevaluedisplay",
-      "community": 177,
+      "community": 14,
       "norm_label": "cleanignorevaluedisplay()"
     },
     {
@@ -11500,7 +11500,7 @@
       "source_location": "L1192",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_parsegithubtoolargs",
-      "community": 14,
+      "community": 313,
       "norm_label": "parsegithubtoolargs()"
     },
     {
@@ -11510,7 +11510,7 @@
       "source_location": "L1215",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_lookslikeapplypatch",
-      "community": 14,
+      "community": 313,
       "norm_label": "lookslikeapplypatch()"
     },
     {
@@ -11520,7 +11520,7 @@
       "source_location": "L1229",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_applypatchtext",
-      "community": 14,
+      "community": 313,
       "norm_label": "applypatchtext()"
     },
     {
@@ -11530,7 +11530,7 @@
       "source_location": "L1242",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_normalizegithubevent",
-      "community": 14,
+      "community": 313,
       "norm_label": "normalizegithubevent()"
     },
     {
@@ -11540,7 +11540,7 @@
       "source_location": "L1274",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_normalizehookevent",
-      "community": 14,
+      "community": 313,
       "norm_label": "normalizehookevent()"
     },
     {
@@ -11550,7 +11550,7 @@
       "source_location": "L1299",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_envprojectdir",
-      "community": 14,
+      "community": 313,
       "norm_label": "envprojectdir()"
     },
     {
@@ -11650,7 +11650,7 @@
       "source_location": "L1432",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_writeauditlog",
-      "community": 313,
+      "community": 22,
       "norm_label": "writeauditlog()"
     },
     {
@@ -11670,7 +11670,7 @@
       "source_location": "L1468",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_loaddetector",
-      "community": 135,
+      "community": 22,
       "norm_label": "loaddetector()"
     },
     {
@@ -11710,7 +11710,7 @@
       "source_location": "L1530",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_shouldemitackforfile",
-      "community": 14,
+      "community": 455,
       "norm_label": "shouldemitackforfile()"
     },
     {
@@ -11780,7 +11780,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook",
-      "community": 313,
+      "community": 135,
       "norm_label": "hook.mjs"
     },
     {
@@ -11790,7 +11790,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_readstdin",
-      "community": 313,
+      "community": 135,
       "norm_label": "readstdin()"
     },
     {
@@ -11800,7 +11800,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_isstopevent",
-      "community": 313,
+      "community": 135,
       "norm_label": "isstopevent()"
     },
     {
@@ -11810,7 +11810,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_main",
-      "community": 313,
+      "community": 135,
       "norm_label": "main()"
     },
     {
@@ -13140,7 +13140,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_is_generated",
-      "community": 31,
+      "community": 55,
       "norm_label": "is-generated.mjs"
     },
     {
@@ -13150,7 +13150,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_is_generated_header_markers",
-      "community": 31,
+      "community": 55,
       "norm_label": "header_markers"
     },
     {
@@ -13160,7 +13160,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_is_generated_isgeneratedfile",
-      "community": 31,
+      "community": 55,
       "norm_label": "isgeneratedfile()"
     },
     {
@@ -13170,7 +13170,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_is_generated_isgitignored",
-      "community": 31,
+      "community": 55,
       "norm_label": "isgitignored()"
     },
     {
@@ -13180,7 +13180,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_is_generated_hasgeneratedheader",
-      "community": 31,
+      "community": 55,
       "norm_label": "hasgeneratedheader()"
     },
     {
@@ -13190,7 +13190,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_provider",
-      "community": 267,
+      "community": 53,
       "norm_label": "provider.mjs"
     },
     {
@@ -13360,7 +13360,7 @@
       "source_location": "L342",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_deep_checklegacylivestate",
-      "community": 303,
+      "community": 267,
       "norm_label": "checklegacylivestate()"
     },
     {
@@ -13370,7 +13370,7 @@
       "source_location": "L368",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_deep_checkworkspaces",
-      "community": 303,
+      "community": 267,
       "norm_label": "checkworkspaces()"
     },
     {
@@ -13380,7 +13380,7 @@
       "source_location": "L441",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_deep_loadknownruleids",
-      "community": 267,
+      "community": 303,
       "norm_label": "loadknownruleids()"
     },
     {
@@ -13870,7 +13870,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_template_extensions_matchconfiguredextension",
-      "community": 135,
+      "community": 455,
       "norm_label": "matchconfiguredextension()"
     },
     {
@@ -13890,7 +13890,7 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_template_extensions_resolvelivetemplateextensions",
-      "community": 465,
+      "community": 31,
       "norm_label": "resolvelivetemplateextensions()"
     },
     {
@@ -13920,7 +13920,7 @@
       "source_location": "L121",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_template_extensions_readlivetemplateextensions",
-      "community": 465,
+      "community": 455,
       "norm_label": "readlivetemplateextensions()"
     },
     {
@@ -13930,7 +13930,7 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_template_extensions_safereadjson",
-      "community": 465,
+      "community": 455,
       "norm_label": "safereadjson()"
     },
     {
@@ -14290,7 +14290,7 @@
       "source_location": "L903",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_accept_findsessionfile",
-      "community": 33,
+      "community": 31,
       "norm_label": "findsessionfile()"
     },
     {
@@ -14670,7 +14670,7 @@
       "source_location": "L918",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_stripmanualeditruntimestate",
-      "community": 3,
+      "community": 97,
       "norm_label": "stripmanualeditruntimestate()"
     },
     {
@@ -14710,7 +14710,7 @@
       "source_location": "L1017",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_isusefulmanualeditcontext",
-      "community": 97,
+      "community": 0,
       "norm_label": "isusefulmanualeditcontext()"
     },
     {
@@ -14720,7 +14720,7 @@
       "source_location": "L1023",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_collectmanualcontextpieces",
-      "community": 97,
+      "community": 0,
       "norm_label": "collectmanualcontextpieces()"
     },
     {
@@ -14780,7 +14780,7 @@
       "source_location": "L1141",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_showbar",
-      "community": 6,
+      "community": 3,
       "norm_label": "showbar()"
     },
     {
@@ -14800,7 +14800,7 @@
       "source_location": "L1181",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_updatebarcontent",
-      "community": 6,
+      "community": 3,
       "norm_label": "updatebarcontent()"
     },
     {
@@ -14810,7 +14810,7 @@
       "source_location": "L1219",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_applyconfigurebarchrome",
-      "community": 6,
+      "community": 3,
       "norm_label": "applyconfigurebarchrome()"
     },
     {
@@ -14820,7 +14820,7 @@
       "source_location": "L1228",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_restorepickerbarchrome",
-      "community": 6,
+      "community": 3,
       "norm_label": "restorepickerbarchrome()"
     },
     {
@@ -15170,7 +15170,7 @@
       "source_location": "L1802",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_cursorforinsertaxis",
-      "community": 12,
+      "community": 0,
       "norm_label": "cursorforinsertaxis()"
     },
     {
@@ -15240,7 +15240,7 @@
       "source_location": "L1872",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_clampplaceholdersize",
-      "community": 340,
+      "community": 0,
       "norm_label": "clampplaceholdersize()"
     },
     {
@@ -15260,7 +15260,7 @@
       "source_location": "L1886",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_resizeplaceholderfromedge",
-      "community": 340,
+      "community": 0,
       "norm_label": "resizeplaceholderfromedge()"
     },
     {
@@ -15300,7 +15300,7 @@
       "source_location": "L1981",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_setpageinteractioncursor",
-      "community": 12,
+      "community": 0,
       "norm_label": "setpageinteractioncursor()"
     },
     {
@@ -15310,7 +15310,7 @@
       "source_location": "L2001",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_syncpageinteractioncursor",
-      "community": 12,
+      "community": 0,
       "norm_label": "syncpageinteractioncursor()"
     },
     {
@@ -15580,7 +15580,7 @@
       "source_location": "L2594",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_buildcyclingrow",
-      "community": 6,
+      "community": 3,
       "norm_label": "buildcyclingrow()"
     },
     {
@@ -15620,7 +15620,7 @@
       "source_location": "L2834",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_navbtn",
-      "community": 6,
+      "community": 3,
       "norm_label": "navbtn()"
     },
     {
@@ -15680,7 +15680,7 @@
       "source_location": "L2975",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_ensurecyclingrenderable",
-      "community": 6,
+      "community": 3,
       "norm_label": "ensurecyclingrenderable()"
     },
     {
@@ -15710,7 +15710,7 @@
       "source_location": "L3084",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_getmountedsveltecomponentanchor",
-      "community": 3,
+      "community": 84,
       "norm_label": "getmountedsveltecomponentanchor()"
     },
     {
@@ -15810,7 +15810,7 @@
       "source_location": "L3372",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_unwrapmixedcontenttextnodes",
-      "community": 3,
+      "community": 97,
       "norm_label": "unwrapmixedcontenttextnodes()"
     },
     {
@@ -15930,7 +15930,7 @@
       "source_location": "L3556",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_sourcehintforelement",
-      "community": 97,
+      "community": 0,
       "norm_label": "sourcehintforelement()"
     },
     {
@@ -15940,7 +15940,7 @@
       "source_location": "L3572",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_parsesourceloc",
-      "community": 97,
+      "community": 0,
       "norm_label": "parsesourceloc()"
     },
     {
@@ -16260,7 +16260,7 @@
       "source_location": "L4035",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_maybeshowfirstsavetoast",
-      "community": 44,
+      "community": 97,
       "norm_label": "maybeshowfirstsavetoast()"
     },
     {
@@ -16470,7 +16470,7 @@
       "source_location": "L4434",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_usesshadowchromeroot",
-      "community": 114,
+      "community": 0,
       "norm_label": "usesshadowchromeroot()"
     },
     {
@@ -16480,7 +16480,7 @@
       "source_location": "L4439",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_setimportantstyle",
-      "community": 114,
+      "community": 0,
       "norm_label": "setimportantstyle()"
     },
     {
@@ -16490,7 +16490,7 @@
       "source_location": "L4443",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_initeditbadgehitproxies",
-      "community": 114,
+      "community": 0,
       "norm_label": "initeditbadgehitproxies()"
     },
     {
@@ -16500,7 +16500,7 @@
       "source_location": "L4465",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_styleeditbadgeproxy",
-      "community": 114,
+      "community": 0,
       "norm_label": "styleeditbadgeproxy()"
     },
     {
@@ -16510,7 +16510,7 @@
       "source_location": "L4491",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_proxymouseevent",
-      "community": 114,
+      "community": 0,
       "norm_label": "proxymouseevent()"
     },
     {
@@ -16520,7 +16520,7 @@
       "source_location": "L4513",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_bindeditbadgeproxy",
-      "community": 114,
+      "community": 0,
       "norm_label": "bindeditbadgeproxy()"
     },
     {
@@ -16530,7 +16530,7 @@
       "source_location": "L4544",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_editbadgeproxytargets",
-      "community": 114,
+      "community": 0,
       "norm_label": "editbadgeproxytargets()"
     },
     {
@@ -16540,7 +16540,7 @@
       "source_location": "L4555",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_synceditbadgehitproxies",
-      "community": 114,
+      "community": 0,
       "norm_label": "synceditbadgehitproxies()"
     },
     {
@@ -16550,7 +16550,7 @@
       "source_location": "L4589",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_initeditbadge",
-      "community": 114,
+      "community": 0,
       "norm_label": "initeditbadge()"
     },
     {
@@ -16560,7 +16560,7 @@
       "source_location": "L4617",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_positioneditbadge",
-      "community": 114,
+      "community": 0,
       "norm_label": "positioneditbadge()"
     },
     {
@@ -16840,7 +16840,7 @@
       "source_location": "L5105",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_issvelteinsertmanifest",
-      "community": 3,
+      "community": 84,
       "norm_label": "issvelteinsertmanifest()"
     },
     {
@@ -16850,7 +16850,7 @@
       "source_location": "L5109",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_findliveelementforsveltemanifest",
-      "community": 3,
+      "community": 84,
       "norm_label": "findliveelementforsveltemanifest()"
     },
     {
@@ -16880,7 +16880,7 @@
       "source_location": "L5155",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_resolvecomponentmoduleurl",
-      "community": 3,
+      "community": 84,
       "norm_label": "resolvecomponentmoduleurl()"
     },
     {
@@ -16890,7 +16890,7 @@
       "source_location": "L5159",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_loadsvelteruntime",
-      "community": 3,
+      "community": 84,
       "norm_label": "loadsvelteruntime()"
     },
     {
@@ -17020,7 +17020,7 @@
       "source_location": "L5344",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_buildsveltepropvaluesfromliveelement",
-      "community": 84,
+      "community": 0,
       "norm_label": "buildsveltepropvaluesfromliveelement()"
     },
     {
@@ -17030,7 +17030,7 @@
       "source_location": "L5358",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_mountsveltecomponentvariant",
-      "community": 3,
+      "community": 84,
       "norm_label": "mountsveltecomponentvariant()"
     },
     {
@@ -17050,7 +17050,7 @@
       "source_location": "L5430",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_applyoriginalattrstosvelteanchor",
-      "community": 3,
+      "community": 84,
       "norm_label": "applyoriginalattrstosvelteanchor()"
     },
     {
@@ -17060,7 +17060,7 @@
       "source_location": "L5445",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_commitacceptedsveltecomponenttodom",
-      "community": 3,
+      "community": 84,
       "norm_label": "commitacceptedsveltecomponenttodom()"
     },
     {
@@ -17080,7 +17080,7 @@
       "source_location": "L5593",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_waitforsveltecomponenttargetandretry",
-      "community": 3,
+      "community": 84,
       "norm_label": "waitforsveltecomponenttargetandretry()"
     },
     {
@@ -17140,7 +17140,7 @@
       "source_location": "L5822",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_buildsvelteexpressiontextmap",
-      "community": 84,
+      "community": 0,
       "norm_label": "buildsvelteexpressiontextmap()"
     },
     {
@@ -17150,7 +17150,7 @@
       "source_location": "L5865",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_expressiontextmatcher",
-      "community": 84,
+      "community": 0,
       "norm_label": "expressiontextmatcher()"
     },
     {
@@ -17160,7 +17160,7 @@
       "source_location": "L5879",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_collecttextnodes",
-      "community": 84,
+      "community": 0,
       "norm_label": "collecttextnodes()"
     },
     {
@@ -17170,7 +17170,7 @@
       "source_location": "L5891",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_normalizepreviewtext",
-      "community": 84,
+      "community": 0,
       "norm_label": "normalizepreviewtext()"
     },
     {
@@ -17180,7 +17180,7 @@
       "source_location": "L5895",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_escaperegexp",
-      "community": 84,
+      "community": 0,
       "norm_label": "escaperegexp()"
     },
     {
@@ -17200,7 +17200,7 @@
       "source_location": "L5934",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_cyclevariant",
-      "community": 6,
+      "community": 3,
       "norm_label": "cyclevariant()"
     },
     {
@@ -17510,7 +17510,7 @@
       "source_location": "L7080",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_loadmodernscreenshot",
-      "community": 0,
+      "community": 114,
       "norm_label": "loadmodernscreenshot()"
     },
     {
@@ -17550,7 +17550,7 @@
       "source_location": "L7166",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_istransparentcolor",
-      "community": 0,
+      "community": 114,
       "norm_label": "istransparentcolor()"
     },
     {
@@ -17560,7 +17560,7 @@
       "source_location": "L7182",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_resolvecanvasbackground",
-      "community": 0,
+      "community": 114,
       "norm_label": "resolvecanvasbackground()"
     },
     {
@@ -17570,7 +17570,7 @@
       "source_location": "L7203",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_capturechromenodes",
-      "community": 0,
+      "community": 114,
       "norm_label": "capturechromenodes()"
     },
     {
@@ -17580,7 +17580,7 @@
       "source_location": "L7227",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_hidecapturechromeforshaderproxy",
-      "community": 0,
+      "community": 114,
       "norm_label": "hidecapturechromeforshaderproxy()"
     },
     {
@@ -17590,7 +17590,7 @@
       "source_location": "L7246",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_shoulduseancestorcropshaderproxy",
-      "community": 0,
+      "community": 114,
       "norm_label": "shoulduseancestorcropshaderproxy()"
     },
     {
@@ -17600,7 +17600,7 @@
       "source_location": "L7256",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_paintsshaderproxysurface",
-      "community": 0,
+      "community": 114,
       "norm_label": "paintsshaderproxysurface()"
     },
     {
@@ -17610,7 +17610,7 @@
       "source_location": "L7263",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_findshaderproxycaptureroot",
-      "community": 0,
+      "community": 114,
       "norm_label": "findshaderproxycaptureroot()"
     },
     {
@@ -17620,7 +17620,7 @@
       "source_location": "L7286",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_captureelementfromrenderedancestor",
-      "community": 0,
+      "community": 114,
       "norm_label": "captureelementfromrenderedancestor()"
     },
     {
@@ -17630,7 +17630,7 @@
       "source_location": "L7310",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_captureelementtoblob",
-      "community": 0,
+      "community": 114,
       "norm_label": "captureelementtoblob()"
     },
     {
@@ -17650,7 +17650,7 @@
       "source_location": "L7529",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_csscolortorgb01",
-      "community": 0,
+      "community": 114,
       "norm_label": "csscolortorgb01()"
     },
     {
@@ -17660,7 +17660,7 @@
       "source_location": "L7543",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_resolvepaperrgb",
-      "community": 0,
+      "community": 114,
       "norm_label": "resolvepaperrgb()"
     },
     {
@@ -17670,7 +17670,7 @@
       "source_location": "L7560",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_paintsbackdrop",
-      "community": 0,
+      "community": 114,
       "norm_label": "paintsbackdrop()"
     },
     {
@@ -17680,7 +17680,7 @@
       "source_location": "L7575",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_findbackdropancestor",
-      "community": 0,
+      "community": 114,
       "norm_label": "findbackdropancestor()"
     },
     {
@@ -17690,7 +17690,7 @@
       "source_location": "L7586",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_averagergb01",
-      "community": 0,
+      "community": 114,
       "norm_label": "averagergb01()"
     },
     {
@@ -17700,7 +17700,7 @@
       "source_location": "L7597",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_dominantrgb01",
-      "community": 0,
+      "community": 114,
       "norm_label": "dominantrgb01()"
     },
     {
@@ -17710,7 +17710,7 @@
       "source_location": "L7623",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_samplesurroundingrgb",
-      "community": 0,
+      "community": 114,
       "norm_label": "samplesurroundingrgb()"
     },
     {
@@ -17720,7 +17720,7 @@
       "source_location": "L7641",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_compileshader",
-      "community": 0,
+      "community": 3,
       "norm_label": "compileshader()"
     },
     {
@@ -17750,7 +17750,7 @@
       "source_location": "L7674",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_showshaderbitmapfallback",
-      "community": 0,
+      "community": 3,
       "norm_label": "showshaderbitmapfallback()"
     },
     {
@@ -17760,7 +17760,7 @@
       "source_location": "L7693",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_showshaderoverlay",
-      "community": 0,
+      "community": 3,
       "norm_label": "showshaderoverlay()"
     },
     {
@@ -17770,7 +17770,7 @@
       "source_location": "L7805",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_handleaccept",
-      "community": 6,
+      "community": 3,
       "norm_label": "handleaccept()"
     },
     {
@@ -17790,7 +17790,7 @@
       "source_location": "L7887",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_scheduleacceptcleanup",
-      "community": 0,
+      "community": 84,
       "norm_label": "scheduleacceptcleanup()"
     },
     {
@@ -17820,7 +17820,7 @@
       "source_location": "L7931",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_accepteddomalreadyclean",
-      "community": 0,
+      "community": 84,
       "norm_label": "accepteddomalreadyclean()"
     },
     {
@@ -17830,7 +17830,7 @@
       "source_location": "L7938",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_ensureaccepteddomclean",
-      "community": 0,
+      "community": 84,
       "norm_label": "ensureaccepteddomclean()"
     },
     {
@@ -17840,7 +17840,7 @@
       "source_location": "L7964",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_findacceptedruntimewrappers",
-      "community": 0,
+      "community": 84,
       "norm_label": "findacceptedruntimewrappers()"
     },
     {
@@ -17850,7 +17850,7 @@
       "source_location": "L7972",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_restoreaccepteddomfromsnapshot",
-      "community": 0,
+      "community": 84,
       "norm_label": "restoreaccepteddomfromsnapshot()"
     },
     {
@@ -17860,7 +17860,7 @@
       "source_location": "L7994",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_reloadaftermissingaccepteddom",
-      "community": 0,
+      "community": 84,
       "norm_label": "reloadaftermissingaccepteddom()"
     },
     {
@@ -18090,7 +18090,7 @@
       "source_location": "L8336",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_dismisstoast",
-      "community": 44,
+      "community": 3,
       "norm_label": "dismisstoast()"
     },
     {
@@ -20710,7 +20710,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_manual_edit_evidence_buildmanualeditevidence",
-      "community": 55,
+      "community": 50,
       "norm_label": "buildmanualeditevidence()"
     },
     {
@@ -21410,7 +21410,7 @@
       "source_location": "L199",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_server_preparegenerateeventforlease",
-      "community": 5,
+      "community": 149,
       "norm_label": "preparegenerateeventforlease()"
     },
     {
@@ -22360,7 +22360,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_event_validation",
-      "community": 125,
+      "community": 66,
       "norm_label": "event-validation.mjs"
     },
     {
@@ -22370,7 +22370,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_event_validation_insert_positions",
-      "community": 125,
+      "community": 66,
       "norm_label": "insert_positions"
     },
     {
@@ -22380,7 +22380,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_event_validation_forbidden_manual_edit_text_chars",
-      "community": 125,
+      "community": 66,
       "norm_label": "forbidden_manual_edit_text_chars"
     },
     {
@@ -22390,7 +22390,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_event_validation_isvalidid",
-      "community": 125,
+      "community": 66,
       "norm_label": "isvalidid()"
     },
     {
@@ -22400,7 +22400,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_event_validation_isvalidvariantid",
-      "community": 125,
+      "community": 66,
       "norm_label": "isvalidvariantid()"
     },
     {
@@ -22410,7 +22410,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_event_validation_validatemanualedittext",
-      "community": 125,
+      "community": 66,
       "norm_label": "validatemanualedittext()"
     },
     {
@@ -22420,7 +22420,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_event_validation_validateannotationfields",
-      "community": 125,
+      "community": 66,
       "norm_label": "validateannotationfields()"
     },
     {
@@ -22430,7 +22430,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_event_validation_validateinsertgenerate",
-      "community": 125,
+      "community": 66,
       "norm_label": "validateinsertgenerate()"
     },
     {
@@ -22440,7 +22440,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_event_validation_validatereplacegenerate",
-      "community": 125,
+      "community": 66,
       "norm_label": "validatereplacegenerate()"
     },
     {
@@ -22450,7 +22450,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_event_validation_validatemanualeditevent",
-      "community": 125,
+      "community": 66,
       "norm_label": "validatemanualeditevent()"
     },
     {
@@ -22460,7 +22460,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_event_validation_validateevent",
-      "community": 125,
+      "community": 66,
       "norm_label": "validateevent()"
     },
     {
@@ -23230,7 +23230,7 @@
       "source_location": "L900",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_manual_apply_summarizemanualapplyfailures",
-      "community": 50,
+      "community": 32,
       "norm_label": "summarizemanualapplyfailures()"
     },
     {
@@ -23240,7 +23240,7 @@
       "source_location": "L913",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_manual_apply_summarizemanualdiagnostics",
-      "community": 50,
+      "community": 32,
       "norm_label": "summarizemanualdiagnostics()"
     },
     {
@@ -23250,7 +23250,7 @@
       "source_location": "L927",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_manual_apply_summarizemanuallogfile",
-      "community": 50,
+      "community": 32,
       "norm_label": "summarizemanuallogfile()"
     },
     {
@@ -23260,7 +23260,7 @@
       "source_location": "L934",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_manual_apply_compactmanuallogtext",
-      "community": 50,
+      "community": 32,
       "norm_label": "compactmanuallogtext()"
     },
     {
@@ -23670,7 +23670,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_source_search_findsourcefile",
-      "community": 460,
+      "community": 31,
       "norm_label": "findsourcefile()"
     },
     {
@@ -24570,7 +24570,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_vocabulary",
-      "community": 125,
+      "community": 66,
       "norm_label": "vocabulary.mjs"
     },
     {
@@ -24580,7 +24580,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_vocabulary_live_commands",
-      "community": 125,
+      "community": 66,
       "norm_label": "live_commands"
     },
     {
@@ -24590,7 +24590,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_vocabulary_visual_actions",
-      "community": 125,
+      "community": 66,
       "norm_label": "visual_actions"
     },
     {
@@ -30448,7 +30448,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_tests_uninstall_test_env",
-      "community": 90,
+      "community": 50,
       "norm_label": "env"
     },
     {
@@ -30888,7 +30888,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_health_voice_route",
-      "community": 58,
+      "community": 83,
       "norm_label": "route.ts"
     },
     {
@@ -30898,7 +30898,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_health_voice_route_get",
-      "community": 58,
+      "community": 83,
       "norm_label": "get()"
     },
     {
@@ -30988,7 +30988,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_logs_route",
-      "community": 454,
+      "community": 302,
       "norm_label": "route.ts"
     },
     {
@@ -30998,7 +30998,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_logs_route_requireadmin",
-      "community": 454,
+      "community": 302,
       "norm_label": "requireadmin()"
     },
     {
@@ -31008,7 +31008,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_logs_route_get",
-      "community": 454,
+      "community": 302,
       "norm_label": "get()"
     },
     {
@@ -31018,7 +31018,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_logs_route_delete",
-      "community": 454,
+      "community": 302,
       "norm_label": "delete()"
     },
     {
@@ -31348,7 +31348,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_tenants_approve_route",
-      "community": 83,
+      "community": 302,
       "norm_label": "route.ts"
     },
     {
@@ -31358,7 +31358,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_tenants_approve_route_post",
-      "community": 83,
+      "community": 302,
       "norm_label": "post()"
     },
     {
@@ -32972,6 +32972,76 @@
       "norm_label": "correcttranscriptwithllm()"
     },
     {
+      "label": "merchant_memory.ts",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_merchant_memory",
+      "community": 230,
+      "norm_label": "merchant_memory.ts"
+    },
+    {
+      "label": "MemoryEntry",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_merchant_memory_memoryentry",
+      "community": 230,
+      "norm_label": "memoryentry"
+    },
+    {
+      "label": "SaveMemoryParams",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_merchant_memory_savememoryparams",
+      "community": 230,
+      "norm_label": "savememoryparams"
+    },
+    {
+      "label": "containsForbiddenFinancialData()",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_merchant_memory_containsforbiddenfinancialdata",
+      "community": 230,
+      "norm_label": "containsforbiddenfinancialdata()"
+    },
+    {
+      "label": "resolveMerchantMemories()",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_merchant_memory_resolvemerchantmemories",
+      "community": 230,
+      "norm_label": "resolvemerchantmemories()"
+    },
+    {
+      "label": "saveMerchantMemory()",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L76",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_merchant_memory_savemerchantmemory",
+      "community": 230,
+      "norm_label": "savemerchantmemory()"
+    },
+    {
+      "label": "extractAndPersistMemory()",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L129",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_merchant_memory_extractandpersistmemory",
+      "community": 230,
+      "norm_label": "extractandpersistmemory()"
+    },
+    {
       "label": "phone-sanitizer.ts",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/phone-sanitizer.ts",
@@ -33278,7 +33348,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "casper_voice_web_lib_session_verifyadminsession",
-      "community": 83,
+      "community": 302,
       "norm_label": "verifyadminsession()"
     },
     {
@@ -33288,7 +33358,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_lib_subscription_guard",
-      "community": 58,
+      "community": 83,
       "norm_label": "subscription-guard.ts"
     },
     {
@@ -33298,7 +33368,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "casper_voice_web_lib_subscription_guard_enforcesubscriptionexpiry",
-      "community": 58,
+      "community": 83,
       "norm_label": "enforcesubscriptionexpiry()"
     },
     {
@@ -33712,10 +33782,30 @@
       "norm_label": "getappointmentslisttool"
     },
     {
-      "label": "reportMissingFeatureTool",
+      "label": "cancelAppointmentTool",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
       "source_location": "L164",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_telegram_llm_cancelappointmenttool",
+      "community": 26,
+      "norm_label": "cancelappointmenttool"
+    },
+    {
+      "label": "rescheduleAppointmentTool",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L177",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_telegram_llm_rescheduleappointmenttool",
+      "community": 26,
+      "norm_label": "rescheduleappointmenttool"
+    },
+    {
+      "label": "reportMissingFeatureTool",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L191",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_reportmissingfeaturetool",
       "community": 26,
@@ -33725,7 +33815,7 @@
       "label": "logCustomerPaymentTool",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L179",
+      "source_location": "L206",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_logcustomerpaymenttool",
       "community": 26,
@@ -33735,7 +33825,7 @@
       "label": "getCustomerBalanceTool",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L198",
+      "source_location": "L225",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_getcustomerbalancetool",
       "community": 26,
@@ -33745,7 +33835,7 @@
       "label": "logSupplierPaymentTool",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L211",
+      "source_location": "L238",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_logsupplierpaymenttool",
       "community": 26,
@@ -33755,7 +33845,7 @@
       "label": "getSupplierBalanceTool",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L225",
+      "source_location": "L252",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_getsupplierbalancetool",
       "community": 26,
@@ -33765,7 +33855,7 @@
       "label": "logSalesReturnTool",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L237",
+      "source_location": "L264",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_logsalesreturntool",
       "community": 26,
@@ -33775,17 +33865,117 @@
       "label": "logPurchaseReturnTool",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L253",
+      "source_location": "L280",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_logpurchasereturntool",
       "community": 26,
       "norm_label": "logpurchasereturntool"
     },
     {
+      "label": "ALL_TOOLS",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L298",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_telegram_llm_all_tools",
+      "community": 26,
+      "norm_label": "all_tools"
+    },
+    {
+      "label": "ClusterKey",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L306",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_telegram_llm_clusterkey",
+      "community": 26,
+      "norm_label": "clusterkey"
+    },
+    {
+      "label": "SALES_TOOLS",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L308",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_telegram_llm_sales_tools",
+      "community": 26,
+      "norm_label": "sales_tools"
+    },
+    {
+      "label": "PURCHASE_TOOLS",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L309",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_telegram_llm_purchase_tools",
+      "community": 26,
+      "norm_label": "purchase_tools"
+    },
+    {
+      "label": "APPOINTMENT_TOOLS",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L310",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_telegram_llm_appointment_tools",
+      "community": 26,
+      "norm_label": "appointment_tools"
+    },
+    {
+      "label": "INVENTORY_TOOLS",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L311",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_telegram_llm_inventory_tools",
+      "community": 26,
+      "norm_label": "inventory_tools"
+    },
+    {
+      "label": "FINANCE_META_TOOLS",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L312",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_telegram_llm_finance_meta_tools",
+      "community": 26,
+      "norm_label": "finance_meta_tools"
+    },
+    {
+      "label": "CLUSTER_KEYWORDS",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L314",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_telegram_llm_cluster_keywords",
+      "community": 26,
+      "norm_label": "cluster_keywords"
+    },
+    {
+      "label": "resolveActiveTools()",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L322",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_telegram_llm_resolveactivetools",
+      "community": 26,
+      "norm_label": "resolveactivetools()"
+    },
+    {
+      "label": "buildActivePrompt()",
+      "file_type": "code",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L352",
+      "_origin": "ast",
+      "id": "casper_voice_web_lib_telegram_llm_buildactiveprompt",
+      "community": 26,
+      "norm_label": "buildactiveprompt()"
+    },
+    {
       "label": "executedKeys",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L269",
+      "source_location": "L405",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_executedkeys",
       "community": 26,
@@ -33795,7 +33985,7 @@
       "label": "syncCustomerLedgers()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L271",
+      "source_location": "L407",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_synccustomerledgers",
       "community": 26,
@@ -33805,7 +33995,7 @@
       "label": "findCustomerFuzzy()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L313",
+      "source_location": "L449",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_findcustomerfuzzy",
       "community": 26,
@@ -33815,7 +34005,7 @@
       "label": "findProductFuzzy()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L413",
+      "source_location": "L549",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_findproductfuzzy",
       "community": 62,
@@ -33825,7 +34015,7 @@
       "label": "enforceArabicEnglishOnly()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L458",
+      "source_location": "L594",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_enforcearabicenglishonly",
       "community": 26,
@@ -33835,7 +34025,7 @@
       "label": "sanitizeArgsLanguage()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L471",
+      "source_location": "L607",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_sanitizeargslanguage",
       "community": 62,
@@ -33845,7 +34035,7 @@
       "label": "resolveRelativeArabicDate()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L485",
+      "source_location": "L621",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_resolverelativearabicdate",
       "community": 62,
@@ -33855,7 +34045,7 @@
       "label": "cleanArabicTimeStr()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L546",
+      "source_location": "L682",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_cleanarabictimestr",
       "community": 62,
@@ -33865,7 +34055,7 @@
       "label": "FINANCIAL_TOOLS",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L584",
+      "source_location": "L720",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_financial_tools",
       "community": 62,
@@ -33875,7 +34065,7 @@
       "label": "GROUNDING_TEXT_FIELDS",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L589",
+      "source_location": "L725",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_grounding_text_fields",
       "community": 26,
@@ -33885,7 +34075,7 @@
       "label": "ARABIC_NUMBER_WORDS",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L597",
+      "source_location": "L733",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_arabic_number_words",
       "community": 26,
@@ -33895,7 +34085,7 @@
       "label": "normalizeArabic()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L599",
+      "source_location": "L735",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_normalizearabic",
       "community": 62,
@@ -33905,7 +34095,7 @@
       "label": "messageHasAnyNumber()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L611",
+      "source_location": "L747",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_messagehasanynumber",
       "community": 62,
@@ -33915,7 +34105,7 @@
       "label": "isArabicFuzzyMatch()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L617",
+      "source_location": "L753",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_isarabicfuzzymatch",
       "community": 62,
@@ -33925,7 +34115,7 @@
       "label": "extractAllNumbersFromText()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L637",
+      "source_location": "L773",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_extractallnumbersfromtext",
       "community": 62,
@@ -33935,7 +34125,7 @@
       "label": "groundingCheck()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L663",
+      "source_location": "L799",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_groundingcheck",
       "community": 62,
@@ -33945,7 +34135,7 @@
       "label": "sanitizeNonToolReply()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L752",
+      "source_location": "L888",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_sanitizenontoolreply",
       "community": 26,
@@ -33955,7 +34145,7 @@
       "label": "logRejectedToolCall()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L764",
+      "source_location": "L900",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_logrejectedtoolcall",
       "community": 62,
@@ -33965,7 +34155,7 @@
       "label": "executeTool()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L775",
+      "source_location": "L911",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_executetool",
       "community": 62,
@@ -33975,7 +34165,7 @@
       "label": "LLMResult",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2011",
+      "source_location": "L2221",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_llmresult",
       "community": 26,
@@ -33985,7 +34175,7 @@
       "label": "saveChatMessage()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2015",
+      "source_location": "L2225",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_savechatmessage",
       "community": 26,
@@ -33995,7 +34185,7 @@
       "label": "processTelegramMessageWithLLM()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2028",
+      "source_location": "L2238",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "community": 26,
@@ -34128,7 +34318,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_middleware",
-      "community": 89,
+      "community": 302,
       "norm_label": "middleware.ts"
     },
     {
@@ -34138,7 +34328,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "casper_voice_web_middleware_public_paths",
-      "community": 89,
+      "community": 302,
       "norm_label": "public_paths"
     },
     {
@@ -34148,7 +34338,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "casper_voice_web_middleware_isinternalsecretvalid",
-      "community": 89,
+      "community": 302,
       "norm_label": "isinternalsecretvalid()"
     },
     {
@@ -34158,7 +34348,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "casper_voice_web_middleware_middleware",
-      "community": 89,
+      "community": 302,
       "norm_label": "middleware()"
     },
     {
@@ -34168,7 +34358,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "casper_voice_web_middleware_config",
-      "community": 89,
+      "community": 302,
       "norm_label": "config"
     },
     {
@@ -34926,7 +35116,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_advanced_edge_cases",
-      "community": 26,
+      "community": 58,
       "norm_label": "test_advanced_edge_cases.ts"
     },
     {
@@ -34936,7 +35126,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_advanced_edge_cases_today",
-      "community": 26,
+      "community": 58,
       "norm_label": "today"
     },
     {
@@ -34946,7 +35136,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_advanced_edge_cases_setuptestdata",
-      "community": 26,
+      "community": 58,
       "norm_label": "setuptestdata()"
     },
     {
@@ -34956,7 +35146,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_advanced_edge_cases_runedgetest",
-      "community": 26,
+      "community": 58,
       "norm_label": "runedgetest()"
     },
     {
@@ -34966,7 +35156,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_advanced_edge_cases_main",
-      "community": 26,
+      "community": 58,
       "norm_label": "main()"
     },
     {
@@ -35376,7 +35566,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_gibberish_input",
-      "community": 457,
+      "community": 26,
       "norm_label": "test_gibberish_input.ts"
     },
     {
@@ -35386,7 +35576,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_gibberish_input_setuptestdata",
-      "community": 457,
+      "community": 26,
       "norm_label": "setuptestdata()"
     },
     {
@@ -35396,7 +35586,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_gibberish_input_rungibberishtest",
-      "community": 457,
+      "community": 26,
       "norm_label": "rungibberishtest()"
     },
     {
@@ -35406,7 +35596,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_gibberish_input_main",
-      "community": 457,
+      "community": 26,
       "norm_label": "main()"
     },
     {
@@ -35446,7 +35636,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_live_interaction_demo",
-      "community": 449,
+      "community": 58,
       "norm_label": "test_live_interaction_demo.ts"
     },
     {
@@ -35456,7 +35646,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_live_interaction_demo_today",
-      "community": 449,
+      "community": 58,
       "norm_label": "today"
     },
     {
@@ -35466,7 +35656,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_live_interaction_demo_setuptestdata",
-      "community": 449,
+      "community": 58,
       "norm_label": "setuptestdata()"
     },
     {
@@ -35476,7 +35666,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_live_interaction_demo_runscenario",
-      "community": 449,
+      "community": 58,
       "norm_label": "runscenario()"
     },
     {
@@ -35486,7 +35676,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_live_interaction_demo_main",
-      "community": 449,
+      "community": 58,
       "norm_label": "main()"
     },
     {
@@ -35906,7 +36096,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_uncataloged_case",
-      "community": 462,
+      "community": 26,
       "norm_label": "test_uncataloged_case.ts"
     },
     {
@@ -35916,7 +36106,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_uncataloged_case_setuptestdata",
-      "community": 462,
+      "community": 26,
       "norm_label": "setuptestdata()"
     },
     {
@@ -35926,7 +36116,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_uncataloged_case_runtestcase",
-      "community": 462,
+      "community": 26,
       "norm_label": "runtestcase()"
     },
     {
@@ -35936,7 +36126,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_uncataloged_case_main",
-      "community": 462,
+      "community": 26,
       "norm_label": "main()"
     },
     {
@@ -36178,6 +36368,16 @@
       "id": "casper_voice_web_tests_consolidated_utilities_test_prisma",
       "community": 424,
       "norm_label": "prisma"
+    },
+    {
+      "label": "merchant_memory.test.ts",
+      "file_type": "code",
+      "source_file": "casper-voice-web/tests/merchant_memory.test.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "casper_voice_web_tests_merchant_memory_test",
+      "community": 230,
+      "norm_label": "merchant_memory.test.ts"
     },
     {
       "label": "multi_tenant_verification_suite.test.ts",
@@ -47726,7 +47926,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_agents",
-      "community": 150,
+      "community": 116,
       "norm_label": "agents.md"
     },
     {
@@ -47736,7 +47936,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_agents_ponytail_lazy_senior_dev_mode",
-      "community": 150,
+      "community": 116,
       "norm_label": "ponytail, lazy senior dev mode"
     },
     {
@@ -49486,7 +49686,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_docs_agent_portability",
-      "community": 116,
+      "community": 150,
       "norm_label": "agent-portability.md"
     },
     {
@@ -49496,7 +49696,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_docs_agent_portability_agent_portability",
-      "community": 116,
+      "community": 150,
       "norm_label": "agent portability"
     },
     {
@@ -49506,7 +49706,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_docs_agent_portability_supported_adapters",
-      "community": 116,
+      "community": 150,
       "norm_label": "supported adapters"
     },
     {
@@ -49516,7 +49716,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_docs_agent_portability_adapter_rule",
-      "community": 116,
+      "community": 150,
       "norm_label": "adapter rule"
     },
     {
@@ -49526,7 +49726,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_docs_agent_portability_portable_behavior",
-      "community": 116,
+      "community": 150,
       "norm_label": "portable behavior"
     },
     {
@@ -137176,7 +137376,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1010",
+      "source_location": "L1147",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "agents_skills_impeccable_scripts_modern_screenshot_umd_v"
@@ -150059,7 +150259,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2038",
+      "source_location": "L2248",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_apikeymanager",
@@ -150137,7 +150337,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2159",
+      "source_location": "L2331",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_apikeymanager_getvalidapikey"
@@ -150203,7 +150403,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2218",
+      "source_location": "L2390",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_apikeymanager_markkeyexhausted"
@@ -150570,6 +150770,143 @@
       "weight": 1.0,
       "source": "scripts_test_llm_correction_runtest",
       "target": "casper_voice_web_lib_llm_correction_correcttranscriptwithllm",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_merchant_memory",
+      "target": "casper_voice_web_lib_merchant_memory_containsforbiddenfinancialdata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L129",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_merchant_memory",
+      "target": "casper_voice_web_lib_merchant_memory_extractandpersistmemory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_merchant_memory",
+      "target": "casper_voice_web_lib_merchant_memory_memoryentry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_merchant_memory",
+      "target": "casper_voice_web_lib_merchant_memory_resolvemerchantmemories",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_merchant_memory",
+      "target": "casper_voice_web_lib_merchant_memory_savememoryparams",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_merchant_memory",
+      "target": "casper_voice_web_lib_merchant_memory_savemerchantmemory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_merchant_memory",
+      "target": "casper_voice_web_lib_prisma",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/tests/merchant_memory.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "casper_voice_web_tests_merchant_memory_test",
+      "target": "casper_voice_web_lib_merchant_memory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L88",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_merchant_memory_savemerchantmemory",
+      "target": "casper_voice_web_lib_merchant_memory_containsforbiddenfinancialdata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/tests/merchant_memory.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "casper_voice_web_tests_merchant_memory_test",
+      "target": "casper_voice_web_lib_merchant_memory_resolvemerchantmemories",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/merchant_memory.ts",
+      "source_location": "L145",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_merchant_memory_extractandpersistmemory",
+      "target": "casper_voice_web_lib_merchant_memory_savemerchantmemory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/tests/merchant_memory.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "casper_voice_web_tests_merchant_memory_test",
+      "target": "casper_voice_web_lib_merchant_memory_savemerchantmemory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/tests/merchant_memory.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "casper_voice_web_tests_merchant_memory_test",
+      "target": "casper_voice_web_lib_merchant_memory_extractandpersistmemory",
       "confidence_score": 1.0
     },
     {
@@ -151306,6 +151643,17 @@
       "source_location": "L2",
       "weight": 1.0,
       "source": "casper_voice_web_test_llm_fixes",
+      "target": "casper_voice_web_lib_prisma",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/tests/merchant_memory.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "casper_voice_web_tests_merchant_memory_test",
       "target": "casper_voice_web_lib_prisma",
       "confidence_score": 1.0
     },
@@ -152127,7 +152475,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1992",
+      "source_location": "L2202",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_sendtelegramalert"
@@ -152149,7 +152497,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/usage-alert.ts",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0,
       "source": "casper_voice_web_lib_usage_alert_checkandalerttokenusage",
       "target": "casper_voice_web_lib_telegram_sendtelegramalert"
@@ -152455,7 +152803,27 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L597",
+      "source_location": "L298",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm",
+      "target": "casper_voice_web_lib_telegram_llm_all_tools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L310",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm",
+      "target": "casper_voice_web_lib_telegram_llm_appointment_tools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L733",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_arabic_number_words",
@@ -152475,7 +152843,27 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L546",
+      "source_location": "L352",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm",
+      "target": "casper_voice_web_lib_telegram_llm_buildactiveprompt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L164",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm",
+      "target": "casper_voice_web_lib_telegram_llm_cancelappointmenttool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L682",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_cleanarabictimestr",
@@ -152485,7 +152873,27 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L458",
+      "source_location": "L314",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm",
+      "target": "casper_voice_web_lib_telegram_llm_cluster_keywords",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L306",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm",
+      "target": "casper_voice_web_lib_telegram_llm_clusterkey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L594",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_enforcearabicenglishonly",
@@ -152495,7 +152903,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L269",
+      "source_location": "L405",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_executedkeys",
@@ -152505,7 +152913,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L775",
+      "source_location": "L911",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_executetool",
@@ -152515,7 +152923,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L637",
+      "source_location": "L773",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_extractallnumbersfromtext",
@@ -152525,7 +152933,17 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L584",
+      "source_location": "L312",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm",
+      "target": "casper_voice_web_lib_telegram_llm_finance_meta_tools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L720",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_financial_tools",
@@ -152535,7 +152953,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L313",
+      "source_location": "L449",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_findcustomerfuzzy",
@@ -152545,7 +152963,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L413",
+      "source_location": "L549",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_findproductfuzzy",
@@ -152565,7 +152983,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L198",
+      "source_location": "L225",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_getcustomerbalancetool",
@@ -152585,7 +153003,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L225",
+      "source_location": "L252",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_getsupplierbalancetool",
@@ -152595,7 +153013,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L589",
+      "source_location": "L725",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_grounding_text_fields",
@@ -152605,7 +153023,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L663",
+      "source_location": "L799",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_groundingcheck",
@@ -152615,7 +153033,17 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L617",
+      "source_location": "L311",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm",
+      "target": "casper_voice_web_lib_telegram_llm_inventory_tools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L753",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_isarabicfuzzymatch",
@@ -152625,7 +153053,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2011",
+      "source_location": "L2221",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_llmresult",
@@ -152635,7 +153063,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L179",
+      "source_location": "L206",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_logcustomerpaymenttool",
@@ -152655,7 +153083,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L253",
+      "source_location": "L280",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_logpurchasereturntool",
@@ -152675,7 +153103,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L764",
+      "source_location": "L900",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_logrejectedtoolcall",
@@ -152685,7 +153113,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L237",
+      "source_location": "L264",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_logsalesreturntool",
@@ -152705,7 +153133,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L211",
+      "source_location": "L238",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_logsupplierpaymenttool",
@@ -152715,7 +153143,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L611",
+      "source_location": "L747",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_messagehasanynumber",
@@ -152725,7 +153153,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L599",
+      "source_location": "L735",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_normalizearabic",
@@ -152735,7 +153163,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2028",
+      "source_location": "L2238",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
@@ -152745,7 +153173,17 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L164",
+      "source_location": "L309",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm",
+      "target": "casper_voice_web_lib_telegram_llm_purchase_tools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L191",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_reportmissingfeaturetool",
@@ -152755,7 +153193,27 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L485",
+      "source_location": "L177",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm",
+      "target": "casper_voice_web_lib_telegram_llm_rescheduleappointmenttool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L322",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm",
+      "target": "casper_voice_web_lib_telegram_llm_resolveactivetools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L621",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_resolverelativearabicdate",
@@ -152765,7 +153223,17 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L471",
+      "source_location": "L308",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm",
+      "target": "casper_voice_web_lib_telegram_llm_sales_tools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L607",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_sanitizeargslanguage",
@@ -152775,7 +153243,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L752",
+      "source_location": "L888",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_sanitizenontoolreply",
@@ -152785,7 +153253,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2015",
+      "source_location": "L2225",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_savechatmessage",
@@ -152795,7 +153263,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L271",
+      "source_location": "L407",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_synccustomerledgers",
@@ -153289,7 +153757,29 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L401",
+      "source_location": "L2314",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
+      "target": "casper_voice_web_lib_telegram_llm_resolveactivetools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L2315",
+      "weight": 1.0,
+      "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
+      "target": "casper_voice_web_lib_telegram_llm_buildactiveprompt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/lib/telegram_llm.ts",
+      "source_location": "L537",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_findcustomerfuzzy",
       "target": "casper_voice_web_lib_telegram_llm_synccustomerledgers",
@@ -153300,7 +153790,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1035",
+      "source_location": "L1172",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_findcustomerfuzzy",
@@ -153311,7 +153801,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1056",
+      "source_location": "L1193",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_findproductfuzzy",
@@ -153322,7 +153812,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L448",
+      "source_location": "L584",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_findproductfuzzy",
       "target": "casper_voice_web_lib_telegram_llm_isarabicfuzzymatch",
@@ -153333,7 +153823,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2192",
+      "source_location": "L2364",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_enforcearabicenglishonly",
@@ -153344,7 +153834,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L778",
+      "source_location": "L914",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_sanitizeargslanguage",
@@ -153355,7 +153845,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1917",
+      "source_location": "L2054",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_resolverelativearabicdate",
@@ -153388,7 +153878,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1918",
+      "source_location": "L2055",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_cleanarabictimestr",
@@ -153422,7 +153912,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L664",
+      "source_location": "L800",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_groundingcheck",
       "target": "casper_voice_web_lib_telegram_llm_financial_tools"
@@ -153432,7 +153922,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1253",
+      "source_location": "L1390",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_normalizearabic",
@@ -153443,7 +153933,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L638",
+      "source_location": "L774",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_extractallnumbersfromtext",
       "target": "casper_voice_web_lib_telegram_llm_normalizearabic",
@@ -153454,7 +153944,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L666",
+      "source_location": "L802",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_groundingcheck",
       "target": "casper_voice_web_lib_telegram_llm_normalizearabic",
@@ -153465,7 +153955,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L612",
+      "source_location": "L748",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_messagehasanynumber",
       "target": "casper_voice_web_lib_telegram_llm_normalizearabic",
@@ -153476,7 +153966,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L679",
+      "source_location": "L815",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_groundingcheck",
       "target": "casper_voice_web_lib_telegram_llm_isarabicfuzzymatch",
@@ -153487,7 +153977,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L827",
+      "source_location": "L964",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_extractallnumbersfromtext",
@@ -153498,7 +153988,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L693",
+      "source_location": "L829",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_groundingcheck",
       "target": "casper_voice_web_lib_telegram_llm_extractallnumbersfromtext",
@@ -153509,7 +153999,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L890",
+      "source_location": "L1027",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_groundingcheck",
@@ -153520,7 +154010,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2189",
+      "source_location": "L2361",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_sanitizenontoolreply",
@@ -153531,7 +154021,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L893",
+      "source_location": "L1030",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_logrejectedtoolcall",
@@ -153542,7 +154032,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2184",
+      "source_location": "L2356",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_executetool",
@@ -153696,7 +154186,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2064",
+      "source_location": "L2274",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_savechatmessage",
@@ -153708,7 +154198,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2211",
+      "source_location": "L2383",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_usage_alert_checkandalerttokenusage"
@@ -182511,5 +183001,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "ab472959405f8ccf8b15022d81751a6eca3f116c"
+  "built_at_commit": "8f9d9e1d73e7cb0c781788a57b2944086af711e4"
 }

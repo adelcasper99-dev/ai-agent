@@ -1,47 +1,40 @@
-# Casper Voice — Audit Remediation Spec & Implementation Plan
-`2026-08-11` · Hardened Spec for 12 Remaining Findings
+# Implementation Plan: Product Catalog Auto-Sync on Purchase & Arabic Fuzzy Search
+
+Fix the issue where products purchased via `log_purchase` are not automatically upserted into the `Product` catalog table, and implement `findProductFuzzy` to ensure flexible Arabic name resolution in `log_sale`.
+
+## Proposed Changes
+
+### [casper-voice-web/lib/telegram_llm.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)
+
+#### 1. Implement `findProductFuzzy(tx, tenantId, rawItemName)`
+- Normalizes `rawItemName` and all products for `tenantId`.
+- Normalizes Arabic alef/hamza (`أإآ` -> `ا`), marboota (`ة` -> `ه`), yaa (`ى` -> `ي`).
+- Strips prefixes (`ال`, `و`, `ب`).
+- Matches exact normalized name, `contains` substring, or token overlap.
+
+#### 2. Update `log_purchase` Handler
+- Inside the transaction, after creating/getting `Supplier` and `Purchase`:
+- Search for product using `findProductFuzzy(tx, tenantId, item_name)`.
+- If found: Increment `stockQuantity += quantity`. If unit price is 0, update `unitPrice = calculatedUnitPrice`.
+- If not found: Create a new `Product` row:
+  - `tenantId`
+  - `name: String(item_name).trim()`
+  - `isStockItem: true`
+  - `stockQuantity: quantity`
+  - `unitPrice: calculatedUnitPrice`
+
+#### 3. Update `log_sale` Handler
+- Replace exact `tx.product.findFirst` with `findProductFuzzy(tx, tenantId, itemNameTrimmed)`.
 
 ---
 
-## 1. Executive Summary
+## Verification Plan
 
-This specification addresses all 12 open audit findings in the Casper Voice Web application, classified into 4 priority tiers:
-1. **Tier 1 (Critical Auth)**: Fix `generate/route.ts` line 11 string comparison `adminSessionCookie === "valid"`.
-2. **Tier 2 (High Crypto)**: Refactor `lib/session.ts` to use Web Crypto API (`crypto.subtle`) for Edge runtime fallback and update all signature calls to `async/await`.
-3. **Tier 3 (High Financial Schema)**: Migrate 7 monetary models in `prisma/schema.prisma` from `Float` to `Decimal` (@db.Decimal(18, 4)).
-4. **Tier 4 (Medium Cleanup)**: Remove hardcoded usage stats in `api/usage/route.ts` and document missing secrets in `.env.example`.
+### Automated Tests
+- Run `npx ts-node scripts/manual-sim/test_all_tools.ts` to verify all 36 test scenarios pass.
+- Run new custom test scenario reproducing the exact steps from the screenshot.
 
----
-
-## 2. Targeted Component Changes
-
-### 2.1 Component 1: Admin Link Generation Auth (`app/api/dashboard/settings/admin-link/generate/route.ts`)
-- Replace literal `adminSessionCookie === "valid"` check with `Boolean(adminSessionCookie) && await verifyAdminSession(adminSessionCookie!)`.
-- Import `verifyAdminSession` from `@/lib/session`.
-
-### 2.2 Component 2: Session Crypto Module (`lib/session.ts` & Call Sites)
-- Replace djb2 fallback with Web Crypto API (`crypto.subtle`).
-- Make `computeHmacHex`, `signTenantSession`, `verifyTenantSession`, `signAdminSession`, `verifyAdminSession` `async`.
-- Update all call sites across `app/api/logs/route.ts`, `app/api/tenants/approve/route.ts`, `app/api/tenants/manage/route.ts`, `app/api/tenants/reject/route.ts`, `app/api/auth/login/route.ts`, `middleware.ts`, and `app/api/dashboard/settings/admin-link/generate/route.ts`.
-
-### 2.3 Component 3: Prisma Schema & Financial Models (`prisma/schema.prisma`)
-- Change monetary fields from `Float` to `Decimal` (`@db.Decimal(18, 4)`):
-  - `Expense.amount`
-  - `Product.unitPrice`
-  - `Sale.price`, `Sale.total`, `Sale.paidAmount`, `Sale.deferredAmount`
-  - `Purchase.totalAmount`, `Purchase.paidAmount`, `Purchase.deferredAmount`
-  - `SupplierPayment.amount`
-  - `CustomerLedgerEntry.amount`
-  - `JournalEntry.debit`, `JournalEntry.credit`
-- Run `npx prisma migrate dev --name monetary_float_to_decimal`.
-
-### 2.4 Component 4: Usage Metrics & Environment Configuration (`app/api/usage/route.ts`, `.env.example`)
-- Remove hardcoded request count (`12`) and bandwidth string (`1.2 GB`) in `app/api/usage/route.ts`.
-- Append `ADMIN_SESSION_SECRET` and `ADMIN_KEY` to `.env.example`.
-
----
-
-## 3. Verification & Quality Gates
-- **Type Check**: `npx tsc --noEmit` must pass cleanly.
-- **Prisma Migration**: `npx prisma migrate dev` must complete without errors.
-- **Rule Verification**: `node scripts/check-casper-rules.js` must return zero violations.
+### Manual Verification
+- Purchase 50 tons of "اسمنت" from supplier.
+- Sell 5 tons of "اسمنت ممتاز" to customer.
+- Verify product stock decreases from 50 to 45 and sale succeeds without "Item not in catalog" error.

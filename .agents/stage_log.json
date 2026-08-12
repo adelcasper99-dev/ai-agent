@@ -1,56 +1,11 @@
 [
-  {
-    "stage": "0a-grill-me",
-    "status": "COMPLETED",
-    "timestamp": "2026-08-11T06:52:00Z",
-    "artifacts": []
-  },
-  {
-    "stage": "0b-research",
-    "status": "COMPLETED",
-    "timestamp": "2026-08-11T06:52:15Z",
-    "artifacts": ["research_findings.md"]
-  },
-  {
-    "stage": "1-spec",
-    "status": "COMPLETED",
-    "timestamp": "2026-08-11T06:52:20Z",
-    "artifacts": ["implementation_plan.md"]
-  },
-  {
-    "stage": "2ab-ironclad",
-    "status": "COMPLETED",
-    "timestamp": "2026-08-11T06:52:25Z",
-    "artifacts": ["ironclad_review_implementation_plan.md"]
-  },
-  {
-    "stage": "3-build",
-    "status": "COMPLETED",
-    "timestamp": "2026-08-11T06:52:40Z",
-    "artifacts": ["task.md"]
-  },
-  {
-    "stage": "3b-audit",
-    "status": "COMPLETED",
-    "timestamp": "2026-08-11T06:52:46Z",
-    "artifacts": ["code_review_report.md"]
-  },
-  {
-    "stage": "4-test",
-    "status": "COMPLETED",
-    "timestamp": "2026-08-11T06:53:13Z",
-    "artifacts": ["test_results.txt"]
-  },
-  {
-    "stage": "5-accept",
-    "status": "COMPLETED",
-    "timestamp": "2026-08-11T06:53:19Z",
-    "artifacts": ["walkthrough.md"]
-  },
-  {
-    "stage": "6-compliance",
-    "status": "COMPLETED",
-    "timestamp": "2026-08-11T06:54:00Z",
-    "artifacts": ["stage_log.json"]
-  }
+  { "stage": "0a-grill-me", "status": "COMPLETED", "timestamp": "2026-08-12T11:50:40Z", "artifacts": [] },
+  { "stage": "0b-research", "status": "COMPLETED", "timestamp": "2026-08-12T11:51:00Z", "artifacts": ["research_findings.md"] },
+  { "stage": "1-spec", "status": "COMPLETED", "timestamp": "2026-08-12T11:51:20Z", "artifacts": ["implementation_plan.md"] },
+  { "stage": "2ab-ironclad", "status": "COMPLETED", "timestamp": "2026-08-12T11:51:37Z", "artifacts": ["ironclad_review_implementation_plan.md"] },
+  { "stage": "3-build", "status": "COMPLETED", "timestamp": "2026-08-12T11:53:48Z", "artifacts": ["task.md"] },
+  { "stage": "3b-audit", "status": "COMPLETED", "timestamp": "2026-08-12T11:54:06Z", "artifacts": ["code_review_report.md"] },
+  { "stage": "4-test", "status": "COMPLETED", "timestamp": "2026-08-12T11:57:30Z", "artifacts": ["test_results.txt"] },
+  { "stage": "5-accept", "status": "COMPLETED", "timestamp": "2026-08-12T11:57:50Z", "artifacts": ["walkthrough.md"] },
+  { "stage": "6-compliance", "status": "COMPLETED", "timestamp": "2026-08-12T11:58:00Z", "artifacts": ["stage_log.json"] }
 ]

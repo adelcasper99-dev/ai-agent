@@ -410,6 +410,48 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
   return customer;
 }
 
+export async function findProductFuzzy(tx: any, tenantId: string, name: string) {
+  if (!name || String(name).trim() === "") return null;
+  const tId = tenantId || "";
+  const rawName = String(name).trim();
+
+  let product = await tx.product.findFirst({
+    where: { tenantId: tId, name: rawName }
+  });
+  if (product) return product;
+
+  const normalize = (s: string) =>
+    s
+      .replace(/^(ال|و|ب|ك|ف)/, "")
+      .replace(/[أإآ]/g, "ا")
+      .replace(/ة/g, "ه")
+      .replace(/ى/g, "ي")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const normalizedInput = normalize(rawName);
+  const allProducts = await tx.product.findMany({ where: { tenantId: tId } });
+
+  product = allProducts.find((p: any) => normalize(p.name) === normalizedInput);
+  if (product) return product;
+
+  product = allProducts.find((p: any) => {
+    const pNorm = normalize(p.name);
+    return pNorm.includes(normalizedInput) || normalizedInput.includes(pNorm);
+  });
+  if (product) return product;
+
+  const inputWords = normalizedInput.split(" ").filter(w => w.length > 1);
+  product = allProducts.find((p: any) => {
+    const pNorm = normalize(p.name);
+    const pWords = pNorm.split(" ").filter(w => w.length > 1);
+    return isArabicFuzzyMatch(normalizedInput, pWords) || inputWords.some(iw => isArabicFuzzyMatch(iw, pWords));
+  });
+
+  return product || null;
+}
+
+
 // === NEW: Strict System-Wide Language Guardrail (Arabic & English Only) ===
 const FOREIGN_SCRIPTS_REGEX = /[\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fa5\u0400-\u04ff\u0900-\u097f\u0e00-\u0e7f\uac00-\ud7af]/gu;
 
@@ -1010,19 +1052,8 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
 
           const itemNameTrimmed = String(item_name).trim();
           
-          // 1. Catalog Lookup (Exact or Fuzzy)
-          let product = await tx.product.findFirst({
-            where: { tenantId: tenantId || "", name: itemNameTrimmed }
-          });
-
-          if (!product) {
-            product = await tx.product.findFirst({
-              where: {
-                tenantId: tenantId || "",
-                name: { contains: itemNameTrimmed }
-              }
-            });
-          }
+          // 1. Catalog Lookup (Fuzzy & Arabic Normalization)
+          let product = await findProductFuzzy(tx, tenantId || "", itemNameTrimmed);
 
           if (!product) {
             throw new Error("ITEM_NOT_IN_CATALOG");
@@ -1497,6 +1528,31 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
             ...(tenantId && { tenantId })
           }
         });
+
+        // Product Catalog Auto-Sync: Increment existing product stock or insert new product
+        const purchaseItemName = String(item_name).trim();
+        let existingProduct = await findProductFuzzy(tx, tenantId, purchaseItemName);
+        const unitCost = qty > 0 ? total.div(new Decimal(qty)).toNumber() : total.toNumber();
+
+        if (existingProduct) {
+          await tx.product.update({
+            where: { id: existingProduct.id },
+            data: {
+              stockQuantity: existingProduct.stockQuantity + qty,
+              ...(existingProduct.unitPrice === 0 && { unitPrice: unitCost })
+            }
+          });
+        } else {
+          await tx.product.create({
+            data: {
+              tenantId,
+              name: purchaseItemName,
+              isStockItem: true,
+              stockQuantity: qty,
+              unitPrice: unitCost
+            }
+          });
+        }
 
         await tx.journalEntry.create({
           data: { accountCode: "INVENTORY", debit: total.toNumber(), referenceId: purchase.id, description: `مشتريات: ${purchase.itemName}`, ...(tenantId && { tenantId }) }
@@ -2220,7 +2276,7 @@ export async function processTelegramMessageWithLLM(
         { role: "user", content: normalizedText }
       ];
 
-      const groqModels = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "deepseek-r1-distill-llama-70b", "qwen-2.5-coder-32b"];
+      const groqModels = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"];
       let groqRes: any = null;
       let capturedFailedGen: string | null = null;
 
@@ -2240,6 +2296,9 @@ export async function processTelegramMessageWithLLM(
           if (fg && typeof fg === 'string' && fg.includes('<function=')) {
             capturedFailedGen = fg;
             break;
+          }
+          if (gModelErr?.status === 429 || String(gModelErr?.message).includes("429")) {
+            await new Promise(res => setTimeout(res, 2000));
           }
         }
       }

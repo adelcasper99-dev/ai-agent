@@ -23,6 +23,8 @@ import {
   processFallbackInput,
 } from "@/lib/telegram_fallback";
 import { correctTranscriptWithLLM } from "@/lib/llm_correction";
+import { transcribeVoiceNote, processImage } from "@/lib/conversation.service";
+
 import { buildWhisperPrompt } from "@/lib/whisper_prompt";
 
 
@@ -49,6 +51,8 @@ export async function POST(req: NextRequest) {
         chat: z.object({ id: z.number() }).passthrough().optional(),
         text: z.string().optional(),
         voice: z.object({ file_id: z.string() }).passthrough().optional(),
+        photo: z.array(z.object({ file_id: z.string() }).passthrough()).optional(),
+        document: z.object({ file_id: z.string(), mime_type: z.string().optional() }).passthrough().optional(),
       }).passthrough().optional(),
       business_message: z.object({
         message_id: z.number().optional(),
@@ -731,42 +735,13 @@ export async function POST(req: NextRequest) {
         if (fileData.ok && fileData.result.file_path) {
           const filePath = fileData.result.file_path;
           const audioRes = await fetch(`https://api.telegram.org/file/bot${botToken}/${filePath}`);
-          const audioBuffer = await audioRes.arrayBuffer();
+          const audioBuffer = Buffer.from(await audioRes.arrayBuffer());
           
-          const blob = new Blob([audioBuffer], { type: 'audio/ogg' });
-          const formData = new FormData();
-          formData.append('file', blob, 'voice.ogg');
-          formData.append('model', 'whisper-large-v3-turbo');
-          formData.append('language', 'ar');
-
           const voiceTenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: chatId } });
-          const dynamicPrompt = await buildWhisperPrompt(voiceTenant?.id);
-          formData.append('prompt', dynamicPrompt);
-
-          let groqKey = process.env.GROQ_API_KEY;
-          if (!groqKey) {
-             const setting = await (prisma as any).setting.findUnique({ where: { key: "GROQ_API_KEY" } });
-             if (setting) groqKey = setting.value;
-          }
-
-          if (groqKey) {
-            const groqRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
-              method: 'POST',
-              headers: { 'Authorization': `Bearer ${groqKey}` },
-              body: formData
-            });
-            const groqData = await groqRes.json();
-            if (groqData.text) {
-              const rawText = groqData.text;
-              console.log(`\n[Voice Webhook] Raw STT: "${rawText}"`);
-              text = await correctTranscriptWithLLM(rawText); // Override the text and continue!
-              console.log(`[Voice Webhook] Corrected STT: "${text}"\n`);
-            } else {
-              throw new Error("No text returned from Groq API");
-            }
-          } else {
-            throw new Error("GROQ_API_KEY is missing");
-          }
+          const rawText = await transcribeVoiceNote(audioBuffer, voiceTenant?.id);
+          console.log(`\n[Voice Webhook] Raw STT: "${rawText}"`);
+          text = await correctTranscriptWithLLM(rawText);
+          console.log(`[Voice Webhook] Corrected STT: "${text}"\n`);
         }
       } catch (err: any) {
         console.error("Voice Note Error:", err);
@@ -774,6 +749,47 @@ export async function POST(req: NextRequest) {
           chatId,
           text: "❌ عذراً، حدث خطأ أثناء تفريغ الرسالة الصوتية.",
           idempotencyKey: `voice_err:${chatId}:${message.message_id}`,
+        });
+        return NextResponse.json({ ok: true });
+      }
+    }
+
+    // Image/Document Handling (Vision via Gemini)
+    if (message.photo && message.photo.length > 0) {
+      try {
+        const botToken = process.env.TELEGRAM_BOT_TOKEN;
+        const photo = message.photo[message.photo.length - 1]; // Highest resolution
+        
+        const [alertRes, fileRes] = await Promise.all([
+          sendTelegramAlert({
+            chatId,
+            text: "جاري قراءة الفاتورة/الصورة... ⏳",
+            idempotencyKey: `photo_ack:${chatId}:${message.message_id}`,
+          }),
+          fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${photo.file_id}`)
+        ]);
+        const fileData = await fileRes.json();
+        
+        if (fileData.ok && fileData.result.file_path) {
+          const filePath = fileData.result.file_path;
+          const imageRes = await fetch(`https://api.telegram.org/file/bot${botToken}/${filePath}`);
+          const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
+          
+          const extractedJsonStr = await processImage(
+            imageBuffer, 
+            "image/jpeg", 
+            "استخرج بيانات الفاتورة بدقة (المنتج، السعر، التاريخ، الكمية). أرجع النتيجة بصيغة JSON."
+          );
+          
+          console.log(`\n[Vision Webhook] Extracted JSON: ${extractedJsonStr}\n`);
+          text = `[بيانات مستخرجة من صورة]:\n${extractedJsonStr}\n\nيرجى تأكيد تسجيل هذه البيانات أو إلغائها.`;
+        }
+      } catch (err: any) {
+        console.error("Image Processing Error:", err);
+        await sendTelegramAlert({
+          chatId,
+          text: "❌ عذراً، حدث خطأ أثناء قراءة الصورة.",
+          idempotencyKey: `photo_err:${chatId}:${message.message_id}`,
         });
         return NextResponse.json({ ok: true });
       }

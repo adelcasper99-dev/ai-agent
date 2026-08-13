@@ -1180,6 +1180,19 @@ async function logRejectedToolCall(tenantId: string | undefined, toolName: strin
 // === END grounding guard ===
 
 export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0, fullContextText?: string): Promise<{ success: boolean; resultText: string; uiSent?: boolean }> {
+  // ── TENANT ISOLATION GUARD ─────────────────────────────────────────────────
+  // Financial mutations MUST have a resolved tenantId. Block hard if missing.
+  const FINANCIAL_TOOLS = [
+    'log_sale', 'log_expense', 'log_purchase', 'book_appointment',
+    'pay_supplier_debt', 'log_sales_return', 'log_purchase_return',
+    'add_product', 'add_customer', 'log_customer_payment',
+    'cancel_last_transaction', 'correct_last_transaction', 'update_expense',
+  ];
+  if (!tenantId && FINANCIAL_TOOLS.includes(name)) {
+    console.error(`[executeTool] BLOCKED: tool=${name} called without tenantId — refusing to write NULL-tenant data.`);
+    return { success: false, resultText: 'خطأ نظامي: لم يتم تحديد هوية الشركة، لم يُسجَّل أي بيانات.' };
+  }
+  // ──────────────────────────────────────────────────────────────────────────
   try {
     // Strict System-Wide Language Guardrail: Sanitize tool args
     args = sanitizeArgsLanguage(args);

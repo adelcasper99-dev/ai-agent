@@ -1351,7 +1351,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
             ...(tenantId && { tenant: { connect: { id: tenantId } } })
           }
         });
-        return { success: true, resultText: `✅ تم تسجيل العميل "${cName}" بنجاح.${cPhone ? ` تليفون: ${cPhone}` : ''}` };
+        return { success: true, resultText: `✅ عميل جديد — ${cName}${cPhone ? ` — 📞 ${cPhone}` : ''}` };
       } catch (err: any) {
         if (err.code === "P2002") {
           return { success: false, resultText: `العميل "${cName}" متسجل بالفعل.` };
@@ -1550,7 +1550,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
             }
           });
           if (existingSale) {
-            return { success: true, resultText: `تم تسجيل البيع مسبقاً. تفاصيل العملية: ${existingSale.quantity} ${existingSale.itemName} إجمالي ${existingSale.total} جنيه بنجاح!` };
+            return { success: true, resultText: `⚡ مسجل قبل كده — ${existingSale.quantity} ${existingSale.itemName} — ${existingSale.total} ج` };
           }
         }
         throw err;
@@ -1561,7 +1561,8 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         if (unitMatch) detectedUnitSale = unitMatch[1];
       }
       const saleUnitStr = detectedUnitSale ? `${detectedUnitSale} ` : "";
-      return { success: true, resultText: `تم تسجيل بيع ${saleResult.quantity} ${saleUnitStr}${saleResult.itemName} إجمالي ${saleResult.total} جنيه (مدفوع: ${saleResult.paidAmount}، متبقي: ${saleResult.deferredAmount}) بنجاح!` };
+      const payStr = saleResult.deferredAmount > 0 ? ` | آجل: ${saleResult.deferredAmount} ج` : ' | كاش ✅';
+      return { success: true, resultText: `✅ بيع — ${saleResult.quantity} ${saleUnitStr}${saleResult.itemName} — ${saleResult.total} ج${payStr}` };
     }
 
     if (name === "log_expense") {
@@ -1595,7 +1596,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         
         return expense;
       });
-      return { success: true, resultText: `تم تسجيل مصروف ${expenseResult.amount} جنيه (${expenseResult.description}) بنجاح!` };
+      return { success: true, resultText: `✅ مصروف — ${expenseResult.amount} ج — ${expenseResult.description}` };
     }
 
     if (name === "book_appointment") {
@@ -1742,9 +1743,9 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
             return customer;
          });
          if (is_refund) {
-           return { success: true, resultText: `تم تسجيل دفع مبلغ ${amount} جنيه كاش للعميل (${paymentResult.name}) وتحديث حسابه بنجاح! 💵` };
+           return { success: true, resultText: `✅ استرداد — ${amount} ج → ${paymentResult.name}` };
          }
-         return { success: true, resultText: `تم تسجيل سداد مبلغ ${amount} جنيه من العميل (${paymentResult.name}) بنجاح! 💵` };
+         return { success: true, resultText: `✅ سداد — ${paymentResult.name} — ${amount} ج` };
        } catch (err: any) {
          return { success: false, resultText: err.message || "حدث خطأ أثناء العملية." };
        }
@@ -1940,7 +1941,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       if (detectedUnit && displayItemName.startsWith(detectedUnit)) {
         displayItemName = displayItemName.substring(detectedUnit.length).trim();
       }
-      return { success: true, resultText: `تم تسجيل فاتورة مشتريات (${qty} ${unitStr}${displayItemName}) من المورد (${purchaseResult.supplier.name}) بقيمة إجمالية ${purchaseResult.purchase.totalAmount} جنيه بنجاح! 📦` };
+      return { success: true, resultText: `✅ مشتريات — ${qty} ${unitStr}${displayItemName} × ${purchaseResult.supplier.name} — ${purchaseResult.purchase.totalAmount} ج` };
     }
 
     if (name === "log_supplier_payment") {
@@ -2039,7 +2040,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
 
         return {
           success: true,
-          resultText: `تم تسجيل سداد مبلغ ${amount} جنيه للمورد (${supplierFound}) بنجاح! 💸\nالمتبقي له (الديون): ${totalDebtResult} جنيه.`
+          resultText: `✅ سداد مورد — ${supplierFound} — ${amount} ج | متبقي: ${totalDebtResult} ج`
         };
       } catch (err: any) {
         return { success: false, resultText: err.message || "حدث خطأ أثناء العملية." };
@@ -2128,7 +2129,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
 
         return {
           success: true,
-          resultText: `تم تسجيل مرتجع مبيعات (${qty} ${itemNameStr}) من العميل (${customerFound}) بقيمة ${retAmount.toNumber()} جنيه وتحديث حسابه بنجاح! 🔄`
+          resultText: `🔄 مرتجع بيع — ${qty} ${itemNameStr} ← ${customerFound} — ${retAmount.toNumber()} ج`
         };
       } catch (err: any) {
         return { success: false, resultText: err.message || "حدث خطأ أثناء العملية." };
@@ -2208,7 +2209,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
 
         return {
           success: true,
-          resultText: `تم تسجيل مرتجع مشتريات (${qty} ${itemNameStr}) للمورد (${supplierFound}) بقيمة ${retAmount.toNumber()} جنيه بنجاح! 🔄`
+          resultText: `🔄 مرتجع شراء — ${qty} ${itemNameStr} → ${supplierFound} — ${retAmount.toNumber()} ج`
         };
       } catch (err: any) {
         return { success: false, resultText: err.message || "حدث خطأ أثناء العملية." };

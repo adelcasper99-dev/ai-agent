@@ -553,10 +553,16 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
       const allCustomers = await tx.customer.findMany({ where: { tenantId: tId }, select: { id: true, name: true } });
       let match = allCustomers.find((c: any) => normalize(c.name) === normalizedInput);
       if (!match) {
-        match = allCustomers.find((c: any) => {
+        const matches = allCustomers.filter((c: any) => {
           const normC = normalize(c.name);
           return normC.length >= 2 && normalizedInput.length >= 2 && (normC.includes(normalizedInput) || normalizedInput.includes(normC));
         });
+        if (matches.length === 1) {
+          match = matches[0];
+        } else if (matches.length > 1) {
+          const names = matches.map((m: any) => m.name).join(' أو ');
+          throw new Error(`لقينا أكتر من عميل بالاسم ده (${names}). تقصد مين فيهم بالظبط؟`);
+        }
       }
       if (match) {
          customer = await tx.customer.findUnique({ where: { id: match.id }, include });
@@ -564,6 +570,8 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
     }
 
   }
+
+
 
   // Fallback: Check for existing Sale records created prior to Customer model creation
   if (!customer && name) {
@@ -642,6 +650,38 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
   }
 
   return customer;
+}
+
+async function findSupplierFuzzy(tx: any, tenantId: string, name: string, includeFull: boolean = false) {
+  let supplier = null;
+  const include = includeFull ? { purchases: { include: { payments: true } }, payments: true } : undefined;
+  const tId = tenantId || "";
+  
+  if (name) {
+    supplier = await tx.supplier.findFirst({ where: { tenantId: tId, name }, include });
+    if (!supplier) {
+      const normalize = (s: string) => s.replace(/^["'«»“”\s]+|["'«»“”\s]+$/g, '').replace(/^(لـ|ل|من|عن|حساب|مورد)\s+/, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+      const normalizedInput = normalize(name);
+      const allSuppliers = await tx.supplier.findMany({ where: { tenantId: tId }, select: { id: true, name: true } });
+      let match = allSuppliers.find((s: any) => normalize(s.name) === normalizedInput);
+      if (!match) {
+        const matches = allSuppliers.filter((s: any) => {
+          const normS = normalize(s.name);
+          return normS.length >= 2 && normalizedInput.length >= 2 && (normS.includes(normalizedInput) || normalizedInput.includes(normS));
+        });
+        if (matches.length === 1) {
+          match = matches[0];
+        } else if (matches.length > 1) {
+          const names = matches.map((m: any) => m.name).join(' أو ');
+          throw new Error(`لقينا أكتر من مورد بالاسم ده (${names}). تقصد مين فيهم بالظبط؟`);
+        }
+      }
+      if (match) {
+         supplier = await tx.supplier.findUnique({ where: { id: match.id }, include });
+      }
+    }
+  }
+  return supplier;
 }
 
 export async function findProductFuzzy(tx: any, tenantId: string, name: string) {
@@ -1932,6 +1972,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
        };
     }
 
+
     if (name === "log_purchase") {
       const { supplier_name, item_name, total_amount, paid_amount, quantity = 1, price_per_unit, unit } = args;
       
@@ -2008,11 +2049,12 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       const supplierNameStr = String(supplier_name).trim();
 
       const purchaseResult = await (prisma as any).$transaction(async (tx: any) => {
-        const supplier = await tx.supplier.upsert({
-          where: { tenantId_name: { tenantId, name: supplierNameStr } },
-          update: {},
-          create: { name: supplierNameStr, tenantId }
-        });
+        let supplier = await findSupplierFuzzy(tx, tenantId || "", supplierNameStr, false);
+        if (!supplier) {
+          supplier = await tx.supplier.create({
+            data: { name: supplierNameStr, ...(tenantId && { tenantId }) }
+          });
+        }
 
         const purchase = await tx.purchase.create({
           data: {
@@ -2099,20 +2141,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
 
       try {
         const { totalDebtResult, supplierFound } = await (prisma as any).$transaction(async (tx: any) => {
-          let supplier = await tx.supplier.findFirst({
-            where: { name: { contains: supName }, ...(tenantId && { tenantId }) }
-          });
-
-          if (!supplier && tenantId) {
-            const memoryMatch = await tx.merchantMemory.findFirst({
-              where: { tenantId, key: supName }
-            });
-            if (memoryMatch) {
-              supplier = await tx.supplier.findFirst({
-                where: { tenantId, name: { contains: memoryMatch.value } }
-              });
-            }
-          }
+          let supplier = await findSupplierFuzzy(tx, tenantId || "", supName, false);
 
           if (!supplier) {
             supplier = await tx.supplier.create({
@@ -2333,9 +2362,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
 
       try {
           const supplierFound = await (prisma as any).$transaction(async (tx: any) => {
-          const supplier = await tx.supplier.findFirst({
-            where: { name: { contains: supName }, ...(tenantId && { tenantId }) }
-          });
+          const supplier = await findSupplierFuzzy(tx, tenantId || "", supName, false);
           if (!supplier) {
             throw new Error(`لم يتم العثور على المورد: ${supName}`);
           }

@@ -1005,10 +1005,8 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
       if (hasOnlyOneAmount && !hasUnitAnchor && !hasTotalAnchor2) {
         const amount = significantNums[0];
         const totalIfUnit = amount * qty;
-        const reason = `الـ${amount} ده إجمالي الـ${qty} ولا سعر الوحدة الواحدة؟ 🧐\n\n` +
-          `1️⃣ إجمالي الفاتورة بالكامل (${amount} ج)\n` +
-          `2️⃣ سعر القطعة الواحدة (${amount} × ${qty} = ${totalIfUnit} ج)\n\n` +
-          `👉 (رد بـ 1 أو 2، أو اضغط على الأزرار بالأسفل)`;
+        const reason = `🧐 الـ ${amount} إجمالي ولا للقطعة؟\n` +
+          `👉 (اختر من الأزرار، أو رد بـ 1 للإجمالي و 2 للقطعة)`;
 
         const replyMarkup = {
           inline_keyboard: [

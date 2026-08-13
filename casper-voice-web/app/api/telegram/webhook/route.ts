@@ -1233,11 +1233,13 @@ export async function POST(req: NextRequest) {
 
       const replyText = llmResult.text;
 
-      await sendTelegramAlert({
-        chatId,
-        text: replyText,
-        idempotencyKey: `llm_reply:${chatId}:${message.message_id}`,
-      });
+      if (replyText) {
+        await sendTelegramAlert({
+          chatId,
+          text: replyText,
+          idempotencyKey: `llm_reply:${chatId}:${message.message_id}`,
+        });
+      }
 
       // Audit Trail Logging in Conversation
       await prisma.conversation.create({
@@ -1287,10 +1289,12 @@ async function handleCustomerMessage(params: {
       tenant.merchantName
     );
 
-    const replyText = (llmResult as any)?.text || "عذراً، لم أتمكن من فهم طلبك.";
+    const replyText = (llmResult as any)?.text;
     
-    // Send response via the business connection on behalf of the owner
-    await sendAsBusinessOwner(sendVia.chatId, sendVia.businessConnectionId, replyText);
+    if (replyText) {
+      // Send response via the business connection on behalf of the owner
+      await sendAsBusinessOwner(sendVia.chatId, sendVia.businessConnectionId, replyText);
+    }
   }
 }
 

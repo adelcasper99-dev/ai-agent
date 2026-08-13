@@ -1120,7 +1120,7 @@ async function logRejectedToolCall(tenantId: string | undefined, toolName: strin
 }
 // === END grounding guard ===
 
-export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0, fullContextText?: string): Promise<{ success: boolean; resultText: string }> {
+export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0, fullContextText?: string): Promise<{ success: boolean; resultText: string; uiSent?: boolean }> {
   try {
     // Strict System-Wide Language Guardrail: Sanitize tool args
     args = sanitizeArgsLanguage(args);
@@ -1276,6 +1276,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
             idempotencyKey: `choice_markup_${Date.now()}`
           });
         }
+        return { success: false, resultText: grounding.reason || "معنديش تفاصيل كفاية عشان أسجل العملية دي، ممكن توضحلي الصنف/المبلغ تاني؟", uiSent: true };
       }
 
       return { success: false, resultText: grounding.reason || "معنديش تفاصيل كفاية عشان أسجل العملية دي، ممكن توضحلي الصنف/المبلغ تاني؟" };
@@ -3058,7 +3059,9 @@ export async function processTelegramMessageWithLLM(
           for (let idx = 0; idx < functionCalls.length; idx++) {
             const call = functionCalls[idx];
             const toolRes = await executeTool(call.name, call.args, tenantId, text, telegramMessageId, idx, fullContextText);
-            combinedResults.push(toolRes.resultText);
+            if (!toolRes.uiSent) {
+              combinedResults.push(toolRes.resultText);
+            }
           }
           finalReply = combinedResults.join('\n\n').trim();
         } else {
@@ -3066,7 +3069,9 @@ export async function processTelegramMessageWithLLM(
         }
 
         finalReply = enforceArabicEnglishOnly(finalReply);
-        void saveChatMessage(tenantId, telegramChatId, "assistant", finalReply);
+        if (finalReply) {
+          void saveChatMessage(tenantId, telegramChatId, "assistant", finalReply);
+        }
 
         // Fire-and-forget: learn new aliases from this message asynchronously (0ms user wait)
         if (tenantId) void extractAndPersistMemory(tenantId, normalizedText);
@@ -3199,6 +3204,7 @@ export async function processTelegramMessageWithLLM(
             }
           }
           const toolRes = await executeTool(funcName, args, tenantId, normalizedText, telegramMessageId, 0, fullContextText);
+          if (toolRes.uiSent) return { status: "success", text: "" };
           void saveChatMessage(tenantId, telegramChatId, "assistant", toolRes.resultText);
           return { status: "success", text: toolRes.resultText };
         }
@@ -3215,7 +3221,9 @@ export async function processTelegramMessageWithLLM(
           let args: Record<string, any> = {};
           try { args = JSON.parse(call.function.arguments); } catch {}
           const toolRes = await executeTool(call.function.name, args, tenantId, normalizedText, telegramMessageId, idx, fullContextText);
-          results.push(toolRes.resultText);
+          if (!toolRes.uiSent) {
+            results.push(toolRes.resultText);
+          }
         }
         finalReply = results.join('\n\n').trim();
       } else {
@@ -3223,7 +3231,9 @@ export async function processTelegramMessageWithLLM(
       }
 
       finalReply = enforceArabicEnglishOnly(finalReply);
-      void saveChatMessage(tenantId, telegramChatId, "assistant", finalReply);
+      if (finalReply) {
+        void saveChatMessage(tenantId, telegramChatId, "assistant", finalReply);
+      }
       return { status: "success", text: finalReply };
     } catch (groqErr: any) {
       console.error(`[Telegram LLM Groq Key ${gAttempt} Error]:`, groqErr);
@@ -3249,6 +3259,7 @@ export async function processTelegramMessageWithLLM(
               }
             }
             const toolRes = await executeTool(funcName, args, tenantId, text, telegramMessageId, 0, fullContextText);
+            if (toolRes.uiSent) return { status: "success", text: "" };
             void saveChatMessage(tenantId, telegramChatId, "assistant", toolRes.resultText);
             return { status: "success", text: toolRes.resultText };
           }

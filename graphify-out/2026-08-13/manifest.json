@@ -795,8 +795,8 @@
     "semantic_hash": ""
   },
   ".agents/stage_log.json": {
-    "mtime": 1786588858.2861865,
-    "ast_hash": "353a96afa9679068603a64469f9ce0fa",
+    "mtime": 1786556275.4052708,
+    "ast_hash": "bb6db5f70d0fab4a9df67f15c67c3b0f",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -1405,8 +1405,8 @@
     "semantic_hash": ""
   },
   ".agents/skills/pipeline/SKILL.md": {
-    "mtime": 1786589009.9678707,
-    "ast_hash": "e049af266199e9b055e94d7e2ff64373",
+    "mtime": 1785137713.8234756,
+    "ast_hash": "d8db9dbce94ace0c3105fd57b2e9ada1",
     "semantic_hash": ""
   },
   ".agents/skills/ponytail-audit/SKILL.md": {
@@ -2420,33 +2420,33 @@
     "semantic_hash": ""
   },
   "code_review_report.md": {
-    "mtime": 1786588785.213395,
-    "ast_hash": "c25ed4b0fe10e0d95df2c12a5e8d8822",
+    "mtime": 1786524846.9518812,
+    "ast_hash": "4ae80bd2035e90e3a7ebf87332f2219e",
     "semantic_hash": ""
   },
   "ironclad_review_implementation_plan.md": {
-    "mtime": 1786562550.6283755,
-    "ast_hash": "91d8bdba7d6c58d65c94765a4df28655",
+    "mtime": 1786524697.8464224,
+    "ast_hash": "589e5933b2902f66de800757ff94340d",
     "semantic_hash": ""
   },
   "research_findings.md": {
-    "mtime": 1786588531.4853866,
-    "ast_hash": "34e6725a90755f92e440494887b051d9",
+    "mtime": 1786524661.2798357,
+    "ast_hash": "c884a26bdabdc9f0de014acd9bddad0d",
     "semantic_hash": ""
   },
   "task.md": {
-    "mtime": 1786588781.6190329,
-    "ast_hash": "871f7e7e9862ff72dad22171d9048b7a",
+    "mtime": 1786524828.3500285,
+    "ast_hash": "95881e7fad220f29b9d384e5746b6ab2",
     "semantic_hash": ""
   },
   "test_results.txt": {
-    "mtime": 1786588835.5944471,
-    "ast_hash": "6b7725a73a6beacaddbbe3494c993684",
+    "mtime": 1786525348.1520472,
+    "ast_hash": "6c76f1f72c1a72d711ced6c92d97b11f",
     "semantic_hash": ""
   },
   "walkthrough.md": {
-    "mtime": 1786588840.3220923,
-    "ast_hash": "f8c9f6f1b721416fbf313a253d872a06",
+    "mtime": 1786525368.8933773,
+    "ast_hash": "9d05939898e786859ff29595282a8910",
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/tenants/approve/route.ts": {
@@ -2600,8 +2600,8 @@
     "semantic_hash": ""
   },
   "implementation_plan.md": {
-    "mtime": 1786562546.3268578,
-    "ast_hash": "f1e76e05d7c38ac2909d6ba3b2465862",
+    "mtime": 1786524679.6212792,
+    "ast_hash": "5341d397d2e99ed50f7a47e0a87ba56a",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/auth.ts": {
@@ -2610,8 +2610,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram_llm.ts": {
-    "mtime": 1786591150.4002285,
-    "ast_hash": "ea342d9cce8c29e0ce56fa3cec247dcc",
+    "mtime": 1786556200.5844862,
+    "ast_hash": "113fbecb99ab1ded1aaee02b1f4cf80c",
     "semantic_hash": ""
   },
   "casper-voice-web/app/telegram-voice/page.tsx": {
@@ -3200,43 +3200,13 @@
     "semantic_hash": ""
   },
   "casper-voice-web/lib/merchant_memory.ts": {
-    "mtime": 1786561786.0021167,
-    "ast_hash": "551651c256db40258ab94f844adf4b1f",
+    "mtime": 1786556219.25509,
+    "ast_hash": "67cc8ed7111c91f8dc8591d94bde2d99",
     "semantic_hash": ""
   },
   "casper-voice-web/tests/merchant_memory.test.ts": {
-    "mtime": 1786557483.6424932,
-    "ast_hash": "0c5ab3deacf14504b6d128904c603b47",
-    "semantic_hash": ""
-  },
-  "casper-voice-web/test_avco_guards.ts": {
-    "mtime": 1786591138.1767974,
-    "ast_hash": "6860ee41c3afdf64e1194742e9d28854",
-    "semantic_hash": ""
-  },
-  "casper-voice-web/test_merchant_memory.ts": {
-    "mtime": 1786561804.3542745,
-    "ast_hash": "c04b64fd71acee0a076212ea9d39d228",
-    "semantic_hash": ""
-  },
-  "casper-voice-web/test_sale_grounding.ts": {
-    "mtime": 1786562613.7585578,
-    "ast_hash": "e51c30e0c4365085aa1999db559d0a66",
-    "semantic_hash": ""
-  },
-  "casper-voice-web/test_transaction_correction.ts": {
-    "mtime": 1786591097.8367968,
-    "ast_hash": "e66843035cb215f8f12223340c949c4f",
-    "semantic_hash": ""
-  },
-  "ironclad_review_transaction_correction.md": {
-    "mtime": 1786588278.6904511,
-    "ast_hash": "7b54b53df679d96e231506b1759783b9",
-    "semantic_hash": ""
-  },
-  "pipeline_completion_report.md": {
-    "mtime": 1786588862.678725,
-    "ast_hash": "7842b7c74ae91df57c2574bc73b1fe0d",
+    "mtime": 1786556207.3573565,
+    "ast_hash": "f656da82f81f812ffd31791334db4770",
     "semantic_hash": ""
   }
 }

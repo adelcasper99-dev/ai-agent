@@ -1178,7 +1178,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       }
     }
 
-    const grounding = groundingCheck(name, args, groundingText);
+    const grounding = groundingCheck(name, args, msgText);
     if (!grounding.ok) {
       console.warn(`[Grounding Guard] Rejected ${name}:`, grounding.reason, { args, userMessageText });
       void logRejectedToolCall(tenantId, name, args, msgText, grounding.reason || "Grounding failure");
@@ -1584,9 +1584,13 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         const unitMatch = msgText.match(/\b(طن|كيلو|شكارة|كرتونة|متر|علبة|قطعة|جرام)\b/i);
         if (unitMatch) detectedUnitSale = unitMatch[1];
       }
-      const saleUnitStr = detectedUnitSale ? `${detectedUnitSale} ` : "";
+      const unitWordsPattern = /^(كرتونة|كرتونه|كراتين|علبة|علبه|علب|شكارة|شكاره|شكاير|قطعة|قطعه|قطع|طن|أطنان|اطنان|كيلو|كيلوات|متر|أمتار|امتار|جرام|جرامات)\s+/i;
+      let displaySaleItem = saleResult.itemName.replace(unitWordsPattern, '').trim();
+      if (detectedUnitSale && displaySaleItem.startsWith(detectedUnitSale)) {
+        displaySaleItem = displaySaleItem.substring(detectedUnitSale.length).trim();
+      }
       const payStr = saleResult.deferredAmount > 0 ? ` | آجل: ${saleResult.deferredAmount} ج` : ' | كاش ✅';
-      return { success: true, resultText: `✅ بيع — ${saleResult.quantity} ${saleUnitStr}${saleResult.itemName} — ${saleResult.total} ج${payStr}` };
+      return { success: true, resultText: `✅ بيع — ${saleResult.quantity} ${saleUnitStr}${displaySaleItem} — ${saleResult.total} ج${payStr}` };
     }
 
     if (name === "log_expense") {
@@ -1971,7 +1975,8 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         return { purchase, supplier };
       });
 
-      let displayItemName = purchaseResult.purchase.itemName;
+      const unitWordsPattern = /^(كرتونة|كرتونه|كراتين|علبة|علبه|علب|شكارة|شكاره|شكاير|قطعة|قطعه|قطع|طن|أطنان|اطنان|كيلو|كيلوات|متر|أمتار|امتار|جرام|جرامات)\s+/i;
+      let displayItemName = purchaseResult.purchase.itemName.replace(unitWordsPattern, '').trim();
       if (detectedUnit && displayItemName.startsWith(detectedUnit)) {
         displayItemName = displayItemName.substring(detectedUnit.length).trim();
       }

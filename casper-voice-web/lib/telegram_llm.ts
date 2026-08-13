@@ -397,8 +397,8 @@ const INVENTORY_TOOLS: FunctionDeclaration[] = [addProductTool, updateStockTool]
 const FINANCE_META_TOOLS: FunctionDeclaration[] = [logExpenseTool, getFinancialSummaryTool, reportMissingFeatureTool, saveMerchantMemoryTool, getMerchantMemoryTool, cancelLastTransactionTool, correctLastTransactionTool];
 
 const CLUSTER_KEYWORDS: Record<ClusterKey, string[]> = {
-  SALES: ["بيع", "بعت", "اشترى", "كاش", "آجل", "عميل", "حساب عميل", "رصيد عميل", "قبضت", "سدد", "مرتجع مبيعات", "رجع من", "تليفون عميل", "ديون عميل", "بعت مش اشتريت", "الغى", "إلغاء", "خطأ", "تعديل"],
-  PURCHASES: ["شراء", "اشتريت", "مشتريات", "مورد", "فاتورة", "سددت للمورد", "مرتجع مشتريات", "رجعت للمورد", "حساب المورد", "ديون مورد", "اشتريت مش بعت", "الغى", "إلغاء", "خطأ", "تعديل"],
+  SALES: ["بيع", "بعت", "كاش", "آجل", "عميل", "حساب عميل", "رصيد عميل", "قبضت", "سدد", "مرتجع مبيعات", "رجع من", "تليفون عميل", "ديون عميل", "بعت مش اشتريت", "الغى", "إلغاء", "خطأ", "تعديل"],
+  PURCHASES: ["شراء", "اشتريت", "اشترى", "اشترى من", "مشتريات", "مورد", "فاتورة", "سددت للمورد", "مرتجع مشتريات", "رجعت للمورد", "حساب المورد", "ديون مورد", "اشتريت مش بعت", "الغى", "إلغاء", "خطأ", "تعديل"],
   APPOINTMENTS: ["موعد", "ميعاد", "حجز", "الغي", "لغى", "مسح ميعاد", "تأجيل", "أجل", "غير ميعاد", "مواعيد", "بكرة الساعة", "اشوف مواعيد", "معاد"],
   INVENTORY: ["صنف", "منتج", "كتالوج", "مخزون", "جرد", "رصيد فعلي", "صحح مخزون", "أضف صنف", "سلعة جديدة"],
   FINANCE_META: ["مصروف", "مصاريف", "تقرير", "ملخص", "أرباح", "مبيعات النهاردة", "كشف حساب شهر", "ميزة ناقصة", "امسح", "تعديل", "خطأ"]
@@ -459,8 +459,14 @@ export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: stri
     PURCHASES: `
 قواعد المشتريات والموردين (log_purchase / log_supplier_payment / get_supplier_balance / log_purchase_return):
 1. تسجيل فاتورة مشتريات (log_purchase): استخرج اسم المورد واسم الصنف والكمية والأسعار.
-2. سداد واستعلام حسابات الموردين: استخدم log_supplier_payment للسداد و get_supplier_balance للاستعلام.
-3. مرتجع مشتريات للمورد (log_purchase_return): عند إرجاع بضاعة للمورد استخدم log_purchase_return.`,
+2. قاعدة التمييز الجوهري بين البيع والشراء:
+   - إذا كانت الجملة على النمط: "اشترى/اشتريت [صنف] من [اسم]" ->
+     - يعني التاجر أنه اشترى من مورد -> استخدم log_purchase وليس log_sale بأي شكل.
+     - اسم الشخص بعد "من" هو المورد (supplier_name) وليس عميلاً.
+   - إذا كانت الجملة على النمط: "اشترى [اسم العميل] [صنف] [سعر]" (بدون كلمة 'من') ->
+     - يعني عميل اشترى منك -> استخدم log_sale.
+3. سداد واستعلام حسابات الموردين: استخدم log_supplier_payment للسداد و get_supplier_balance للاستعلام.
+4. مرتجع مشتريات للمورد (log_purchase_return): عند إرجاع بضاعة للمورد استخدم log_purchase_return.`,
 
     APPOINTMENTS: `
 قواعد إدارة المواعيد (book_appointment / get_appointments_list / cancel_appointment / reschedule_appointment):

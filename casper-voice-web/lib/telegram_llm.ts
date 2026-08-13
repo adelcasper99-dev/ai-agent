@@ -1923,11 +1923,21 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         const unitCost = qty > 0 ? total.div(new Decimal(qty)).toNumber() : total.toNumber();
 
         if (existingProduct) {
+          const oldQty = existingProduct.stockQuantity > 0 ? existingProduct.stockQuantity : 0;
+          const oldCost = new Decimal(existingProduct.unitPrice);
+          const newBatchCost = new Decimal(unitCost);
+          
+          // AVCO (Weighted Average Cost) = (Old Total Cost + New Batch Total Cost) / Total Quantity
+          const totalQty = oldQty + qty;
+          const newAvgUnitCost = totalQty > 0 
+            ? oldCost.mul(oldQty).add(newBatchCost.mul(qty)).div(totalQty)
+            : newBatchCost;
+
           await tx.product.update({
             where: { id: existingProduct.id },
             data: {
               stockQuantity: existingProduct.stockQuantity + qty,
-              ...(existingProduct.unitPrice === 0 && { unitPrice: unitCost })
+              unitPrice: newAvgUnitCost.toNumber()
             }
           });
         } else {

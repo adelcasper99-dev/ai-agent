@@ -2197,24 +2197,58 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       }
 
       let totalPurchases = new Decimal(0);
-      let totalPaidOnPurchases = new Decimal(0);
+      let totalCashPaidAtPurchase = new Decimal(0);
       let totalDirectPayments = new Decimal(0);
+      let totalReturns = new Decimal(0);
       
       for (const supplier of suppliers) {
+        const purchaseIds = (supplier.purchases || []).map((p: any) => p.id);
+        
         for (const p of supplier.purchases || []) {
           totalPurchases = totalPurchases.add(p.totalAmount);
-          totalPaidOnPurchases = totalPaidOnPurchases.add(p.paidAmount);
         }
         for (const pym of supplier.payments || []) {
           totalDirectPayments = totalDirectPayments.add(pym.amount);
         }
+
+        // Fetch Cash paid at time of purchase
+        if (purchaseIds.length > 0) {
+          const cashEntries = await prisma.journalEntry.findMany({
+            where: { referenceId: { in: purchaseIds }, accountCode: "CASH", ...(tenantId && { tenantId }) }
+          });
+          for (const entry of cashEntries) {
+            totalCashPaidAtPurchase = totalCashPaidAtPurchase.add(entry.credit || 0);
+          }
+        }
+
+        // Fetch Returns
+        const returnEntries = await prisma.journalEntry.findMany({
+          where: { 
+            accountCode: "ACCOUNTS_PAYABLE", 
+            description: `تسوية مورد - مرتجع مشتريات: ${supplier.name}`,
+            ...(tenantId && { tenantId })
+          }
+        });
+        for (const entry of returnEntries) {
+          totalReturns = totalReturns.add(entry.debit || 0);
+        }
       }
 
-      const netRemainingDebt = totalPurchases.sub(totalPaidOnPurchases);
+      const totalPaid = totalCashPaidAtPurchase.add(totalDirectPayments);
+      const netRemainingDebt = totalPurchases.sub(totalPaid).sub(totalReturns);
+      
+      let balanceStr = "";
+      if (netRemainingDebt.gt(0)) {
+        balanceStr = `${netRemainingDebt.toNumber()} جنيه (مستحق له / آجل)`;
+      } else if (netRemainingDebt.lt(0)) {
+        balanceStr = `${netRemainingDebt.abs().toNumber()} جنيه (دائن / لك عنده)`;
+      } else {
+        balanceStr = `0 جنيه (خالص)`;
+      }
 
       return {
         success: true,
-        resultText: `📊 *كشف حساب المورد (${suppliers[0].name}):*\n\n📦 *إجمالي المشتريات منه:* ${totalPurchases.toNumber()} جنيه\n💵 *إجمالي المسدد له:* ${totalPaidOnPurchases.toNumber()} جنيه\n📝 *الديون المتبقية له (الآجل):* ${netRemainingDebt.toNumber()} جنيه`
+        resultText: `📊 *كشف حساب المورد (${suppliers[0].name}):*\n\n📦 *إجمالي المشتريات منه:* ${totalPurchases.toNumber()} جنيه\n🔄 *إجمالي المرتجعات:* ${totalReturns.toNumber()} جنيه\n💵 *إجمالي المسدد له (نقداً):* ${totalPaid.toNumber()} جنيه\n📝 *الرصيد النهائي:* ${balanceStr}`
       };
     }
 

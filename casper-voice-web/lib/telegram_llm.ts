@@ -988,6 +988,30 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
     }
   }
 
+  // D. اشترى Ambiguity Guard: If log_sale is triggered but "اشترى + من" pattern is present → block and ask clarification
+  if (toolName === "log_sale") {
+    const hasIshtaraMin = /(اشترى|اشتريت)\s+.{1,40}\s+من\s+\S+/i.test(msg);
+    if (hasIshtaraMin) {
+      return {
+        ok: false,
+        reason: "قصدك إنك انت اشتريت من مورد ولا إن العميل اشترى منك؟ وضح عشان أسجل صح 🧐"
+      };
+    }
+  }
+
+  // E. Ambiguous "اشترى" without من or clear customer context → ask
+  if (toolName === "log_sale") {
+    const hasIshtara = /\baشترى\b/i.test(normalizedMsg);
+    const hasMen = /\bمن\b/.test(msg);
+    const hasCustomerSignal = /(لـ|حساب|عميل|زبون)/i.test(msg);
+    if (hasIshtara && !hasMen && !hasCustomerSignal) {
+      return {
+        ok: false,
+        reason: "مش واضح قصدك — العميل اشترى منك ولا انت اشتريت من حد؟ وضحلي عشان أسجلها صح 🧐"
+      };
+    }
+  }
+
   return { ok: true };
 }
 

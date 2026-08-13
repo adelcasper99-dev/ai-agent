@@ -1,8 +1,12 @@
-# 📋 Stage 3 Build Tasks — Telegram Inline Keyboards & Numbered Choice Interceptor
+# 📝 Surgical Build Task Log
 
-- [x] 1. Implement `sendTelegramMessageWithKeyboard` and `answerTelegramCallbackQuery` helpers in `route.ts` / `telegram_llm.ts`.
-- [x] 2. Format `C2 Ambiguity Guard`, `Confirmation Guard`, and `Buying vs Selling Guard` with numbered options `1.` / `2.` + Inline Keyboard `inline_keyboard` payload.
-- [x] 3. Implement Single-Digit Interceptor (`1`, `2`, `١`, `٢`) and Invalid Choice Handler (`3`, invalid option) in `route.ts` / `telegram_llm.ts`.
-- [x] 4. Implement 30-minute State Machine Expiration logic (`pendingChoiceExpiresAt`).
-- [x] 5. Implement Telegram `callback_query` webhook payload handler in `app/api/telegram/webhook/route.ts`.
-- [x] 6. Verify zero `any` type violations and complete TypeScript build (`npx tsc --noEmit`).
+- [x] Create GET /api/tenants/list endpoint for active tenants.
+- [x] Update GET /api/reports/suppliers to parse optional `tenantId` query param.
+- [x] Update GET /api/reports/summary to parse optional `tenantId` query param.
+- [x] Update GET /api/reports/sales-analysis to parse optional `tenantId` query param.
+- [x] Update GET /api/reports/aged-receivables to parse optional `tenantId` query param.
+- [x] Update GET /api/sales to support optional `tenantId` query param.
+- [x] Update GET /api/expenses to support optional `tenantId` query param.
+- [x] Update GET /api/appointments to support optional `tenantId` query param.
+- [x] Add dynamic Tenant Selector state and UI dropdown to `app/dashboard/reports/page.tsx`.
+- [x] Re-fetch all reports APIs dynamically when selected tenant changes.

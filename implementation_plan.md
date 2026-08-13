@@ -1,52 +1,51 @@
-# 🛠️ Hardened Implementation Plan — Telegram Interactive Inline Keyboards & Choice Interceptor
-## Full-Stack Option Buttons, Single-Digit Interception (1, 2) & Callback Query Handler
+# 📋 Implementation Plan: Multi-Tenant Tenant Selector & Reports Filtering
+
+Implement dynamic tenant filtering across the Casper Admin Reports Dashboard (`app/dashboard/reports/page.tsx`) and underlying API endpoints to allow Super Admins to filter reports by specific company or view overall platform metrics.
 
 ---
 
-## 📋 Summary & Objectives
-Enhance Casper POS Telegram Agent with **Interactive Telegram Inline Keyboard Buttons** and **Single-Digit Text Shortcuts (`1`, `2`, `١`, `٢`)** for all clarification and confirmation prompts:
+## 🎯 Proposed Changes
 
-1. **Price Ambiguity (C2)**: Offer Inline Buttons (`[📦 إجمالي 1000 ج]`, `[💰 سعر القطعة 10,000 ج]`) or text choices (`1` / `2`).
-2. **Cancellation Guard**: Offer Inline Buttons (`[✅ تأكيد الإلغاء]`, `[❌ إلغاء الطلب]`) or text choices (`1` / `2`).
-3. **Purchase vs Sale Disambiguation**: Offer Inline Buttons (`[🛒 مشتريات]`, `[🛍️ مبيعات]`) or text choices (`1` / `2`).
-4. **State Machine Expiry & Invalid Choice Protection**:
-   - Auto-expire pending choices after 30 minutes.
-   - Reply with clear error if an invalid digit (e.g. `3`) or unrecognized option is typed.
+### Backend API Layer
+
+#### [NEW] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/tenants/list/route.ts)
+- Implement `GET /api/tenants/list` to return active tenants `[{ id, name }]`.
+
+#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/reports/suppliers/route.ts)
+- Parse optional `tenantId` query parameter.
+- Filter `prisma.supplier.findMany` with `where: tenantId && tenantId !== "all" ? { tenantId } : {}`.
+
+#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/reports/summary/route.ts)
+- Parse optional `tenantId` query parameter.
+- Filter sales, expenses, and purchases by `tenantId`.
+
+#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/sales/route.ts)
+- Accept optional `tenantId` parameter when requested from admin reports context.
+
+#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/expenses/route.ts)
+- Accept optional `tenantId` parameter when requested from admin reports context.
+
+#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/appointments/route.ts)
+- Accept optional `tenantId` parameter when requested from admin reports context.
 
 ---
 
-## 🛠️ Proposed Changes
+### Frontend Dashboard Layer
 
-### Component 1: Telegram Webhook Route Callback Query Support
-#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/telegram/webhook/route.ts)
-- Add handler for `callback_query` payload in Telegram webhook request.
-- Extract `callback_query_id`, `data`, and `chat_id`.
-- Automatically invoke Telegram `answerCallbackQuery` API to stop loading spinner.
-- Resolve choice and edit original telegram message text to show final resolution.
-
-### Component 2: Choice Formatting & Inline Keyboard Helper
-#### [MODIFY] [telegram_llm.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)
-- Update `groundingCheck` and `cancel_last_transaction` to return structured choice metadata:
-  - `replyMarkup`: Telegram `inline_keyboard` payload with callback data.
-  - Numbered text choices (1., 2.) in message body.
-- Implement single-digit interceptor (`1`, `2`, `١`, `٢`) in `executeTool` / webhook router.
-
-### Component 3: Database & State Machine Expiration
-#### [MODIFY] [telegram_llm.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)
-- Persist pending state in `ConversationState` table with `expiresAt = Date.now() + 30 * 60 * 1000`.
-- Purge expired states before processing new choices.
+#### [MODIFY] [page.tsx](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/dashboard/reports/page.tsx)
+- Add state `selectedTenantId` (default `"all"`).
+- Fetch tenant list on mount from `/api/tenants/list`.
+- Render a dynamic `Tenant Selector` dropdown in the page header with building icon `Building2`.
+- Update report fetch hooks (`/api/reports/suppliers`, `/api/sales`, `/api/expenses`, `/api/appointments`, `/api/reports/summary`) to pass `?tenantId=${selectedTenantId}` whenever `selectedTenantId` changes.
 
 ---
 
 ## 🧪 Verification Plan
 
-### Automated Unit & Integration Tests
-- Run `npx tsx test_telegram_keyboards.ts` verifying:
-  1. Callback Query payload resolution.
-  2. Single-digit interceptor (`1`, `2`, `١`, `٢`).
-  3. Expiration handling (> 30 mins).
-  4. Invalid option handling (`3`).
-  5. Zero TypeScript errors (`npx tsc --noEmit`).
+### Automated Tests
+- Run `node scripts/check-casper-rules.js` to ensure zero native float math and strict TypeScript safety.
+- Run `npx vitest run` to verify API and tenant route integrity.
+- Run `npm run build` inside `casper-voice-web` to guarantee clean TypeScript compilation.
 
 ### Manual Verification
-- Testing directly on Telegram bot with live inline buttons and digit replies.
+- Test selecting "جميع الشركات" vs specific tenant (e.g., "شركة محلات الشروق") and verify that all KPIs, charts, suppliers, and sales update dynamically.

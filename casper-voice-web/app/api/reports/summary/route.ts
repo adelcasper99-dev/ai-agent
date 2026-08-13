@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const period = searchParams.get("period") || "today";
+    const tenantId = searchParams.get("tenantId");
 
     let dateFilter: { gte?: Date } = {};
     const now = new Date();
@@ -24,7 +25,10 @@ export async function GET(req: NextRequest) {
       dateFilter = { gte: startOfMonth };
     }
 
-    const whereClause = dateFilter.gte ? { createdAt: dateFilter } : {};
+    const whereClause: any = dateFilter.gte ? { createdAt: dateFilter } : {};
+    if (tenantId && tenantId !== "all") {
+      whereClause.tenantId = tenantId;
+    }
 
     // 1. Sales
     const sales = await prisma.sale.findMany({ where: whereClause });

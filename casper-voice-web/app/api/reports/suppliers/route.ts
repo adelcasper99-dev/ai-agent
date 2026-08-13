@@ -8,8 +8,11 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const name = searchParams.get("name");
+    const tenantId = searchParams.get("tenantId");
 
-    const where = name ? { name: { contains: name } } : {};
+    const where: any = {};
+    if (name) where.name = { contains: name };
+    if (tenantId && tenantId !== "all") where.tenantId = tenantId;
 
     const suppliers = await prisma.supplier.findMany({
       where,

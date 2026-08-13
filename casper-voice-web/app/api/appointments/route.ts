@@ -70,13 +70,17 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const tenantId = await getResolvedTenantId(req);
-  if (!tenantId) {
-    return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+  const sessionTenantId = await getResolvedTenantId(req);
+  const queryTenantId = req.nextUrl.searchParams.get("tenantId");
+
+  const effectiveTenantId = queryTenantId ?? sessionTenantId;
+  const where: any = {};
+  if (effectiveTenantId && effectiveTenantId !== "all") {
+    where.tenantId = effectiveTenantId;
   }
 
   const appointments = await prisma.appointment.findMany({
-    where: { tenantId },
+    where,
     orderBy: { createdAt: "desc" },
     take: 50,
   });

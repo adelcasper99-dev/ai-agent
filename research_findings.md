@@ -1,21 +1,30 @@
-# 📚 Stage 0b: Best-Practice Research — Telegram Inline Keyboards & Callback Handlers
+# 🔬 Research Findings: Multi-Tenant Report Filtering & Tenant Selector
 
-## 1. Telegram Bot API Best Practices for Inline Keyboards
-- **Callback Data Encoding (`callback_data`)**: Must be <= 64 bytes total. Structure using compact colon-delimited schema:
-  `c:<action>:<id_or_val>` (e.g. `c:price:tot:1000` or `c:cancel:conf:p123`).
-- **Answer Callback Query (`answerCallbackQuery`)**: EVERY callback query MUST be answered immediately via Telegram API (`answerCallbackQuery(callback_query_id)`) to remove the loading spinner on the user's client button.
-- **Message Editing (`editMessageText` or `editMessageReplyMarkup`)**: Once a button is clicked, update the original message to remove the buttons and show the resolved state (e.g. `✅ تم تأكيد إجمالي الفاتورة: 1000 ج`), preventing double-clicking on stale buttons.
+## 1. Context & Architecture
+In Casper POS & ERP Admin Dashboard (`app/dashboard/reports/page.tsx`), reports currently display data fetched from `/api/reports/suppliers`, `/api/reports/summary`, `/api/expenses`, `/api/sales`, and `/api/appointments`.
 
-## 2. State Interceptor Architecture (SQLite / Prisma `ConversationState`)
-- Store active choice context in `ConversationState`:
-  - `pendingType`: `'PRICE_AMBIGUITY' | 'CONFIRM_CANCEL' | 'BUY_VS_SELL'`
-  - `pendingData`: JSON string containing args, toolName, and original message
-  - `expiresAt`: `now() + 30 minutes`
-- Single-Digit Interception (`1`, `2`, `١`, `٢`):
-  - Intercept in webhook handler before sending to LLM.
-  - Map `1` / `١` -> Choice A, `2` / `٢` -> Choice B.
-  - If state is expired or invalid option -> prompt clear error and reset state.
+To allow the Admin to view report metrics for specific companies or all companies combined, we need:
+1. A **Tenant Selector Dropdown** in the header of `ReportsPage` (`app/dashboard/reports/page.tsx`).
+2. An API endpoint to list active tenants (`/api/tenants/list`).
+3. Parameterized report endpoints that accept optional `tenantId` query parameter.
 
-## 3. High-Security Transaction Guards (RBAC & Financial Precision)
-- Double-entry accounting rules apply to resolved purchases/sales.
-- Monetary fields parsed from callback or text must strictly use `Decimal.js`.
+## 2. Multi-Tenant API Design Pattern
+For each report endpoint (`/api/reports/suppliers`, `/api/reports/summary`, `/api/reports/sales-analysis`, `/api/reports/aged-receivables`):
+```typescript
+const { searchParams } = new URL(req.url);
+const tenantId = searchParams.get("tenantId");
+
+const tenantFilter = tenantId && tenantId !== "all" ? { tenantId } : {};
+const where = { ...baseFilter, ...tenantFilter };
+```
+
+## 3. Data Integrity & Decimal.js Guardrails
+- Financial calculations (Sales totals, Expense totals, Supplier debts, Net profit) MUST use `Decimal.js` for all aggregations.
+- Zero floating-point math permitted.
+- Tenant isolation enforced: if `tenantId` is specified, all DB queries strictly append `where: { tenantId }`.
+
+## 4. UX & Frontend State Management
+- In `app/dashboard/reports/page.tsx`:
+  - `selectedTenantId` state initialized to `"all"`.
+  - Fetch list of tenants on mount from `/api/tenants/list`.
+  - Re-fetch report APIs (`/api/reports/suppliers`, `/api/sales`, `/api/expenses`, `/api/appointments`, `/api/reports/summary`) whenever `selectedTenantId` changes.

@@ -438,11 +438,13 @@ export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: stri
   const CORE_PROMPT = `أنت المساعد الشخصي الذكي الخاص بمدير أو صاحب العمل ${companyStr} ${typeStr} ${hoursStr}.
 تحدث بالعامية المصرية الحية والراقية مباشرة وسريعة.
 
-قواعد حظر التخيل والبيانات الأساسية:
-- جميع العملاء والمستخدمين يتحدثون اللغة العربية (العامية المصرية) والإنجليزية فقط لا غير.
-- يُمنع منعاً باتاً ترجمة كلام التاجر أو تحويل المعاملات إلى أي لغة أجنبية أخرى.
-- إذا كان هناك حقل مفقود أو غير واضح، اسأل التاجر فوراً وبكل وضوح بالعامية المصرية لاستكمال البيانات الناقصة.
-- أداة report_missing_feature مخصصة فقط للميزات البرمجية الحقيقية غير المتاحة. يُمنع منعاً باتاً استدعاؤها عند رفض حجز موعد في الماضي أو تلقي كلام عشوائي.`;
+قواعد حظر التخيل والبيانات الأساسية وتفريد الوسائط (Tool Parameter Extraction Isolation):
+1. جميع العملاء والمستخدمين يتحدثون اللغة العربية (العامية المصرية) والإنجليزية فقط لا غير.
+2. يُمنع منعاً باتاً ترجمة كلام التاجر أو تحويل المعاملات إلى أي لغة أجنبية أخرى.
+3. تفريد وسائط الأدوات (Tool Arguments Isolation): يجب استخراج المبالغ والأرقام وأسماء الأصناف والأشخاص من **رسالة المستخدم الحالية فقط**. يُمنع منعاً باتاً استعادة أرقام أو وسائط قديمة من سجل الحوار (Chat History) وتطبيقها على الرسالة الجديدة.
+4. عدم الخلط بين الاستعلام وتنفيذ المعاملات: إذا كان نص رسالة المستخدم استعلاماً عن كشف حساب ("كشف حساب", "كم له", "كم عليه", "رصيد")، يُمنع استدعاء أدوات المعاملات مثل log_purchase_return أو log_sale، ويجب استدعاء get_supplier_balance أو get_customer_balance حصراً.
+5. إذا كان هناك حقل مفقود أو غير واضح، اسأل التاجر فوراً وبكل وضوح بالعامية المصرية لاستكمال البيانات الناقصة.
+6. أداة report_missing_feature مخصصة فقط للميزات البرمجية الحقيقية غير المتاحة. يُمنع منعاً باتاً استدعاؤها عند رفض حجز موعد في الماضي أو تلقي كلام عشوائي.`;
 
   const EXTRACTION_RULES: Record<ClusterKey, string> = {
     SALES: `
@@ -918,6 +920,24 @@ export function extractAllNumbersFromText(text: string): number[] {
       if (!isNaN(n)) nums.push(n);
     }
   }
+
+  // Composite Egyptian Arabic Phrases (Must check before individual words and consume from remainingText)
+  let remainingText = norm;
+  const COMPOSITE_WORD_TO_NUM: Record<string, number> = {
+    "مليون ونص": 1500000, "مليون ونصف": 1500000,
+    "الف ونص": 1500, "الف ونصف": 1500, "ألف ونص": 1500, "ألف ونصف": 1500,
+    "الفين ونص": 2500, "ألفين ونص": 2500,
+    "مية ونص": 150, "ميه ونص": 150,
+  };
+
+  for (const [phrase, val] of Object.entries(COMPOSITE_WORD_TO_NUM)) {
+    const normPhrase = normalizeArabic(phrase);
+    if (remainingText.includes(normPhrase)) {
+      nums.push(val);
+      remainingText = remainingText.replace(normPhrase, "");
+    }
+  }
+
   const WORD_TO_NUM: Record<string, number> = {
     "نص": 0.5, "نصف": 0.5, "ربع": 0.25, "تلت": 0.333, "ثلت": 0.333,
     "واحد": 1, "اتنين": 2, "إتنين": 2, "تلاتة": 3, "ثلاثة": 3, "اربعة": 4, "أربعة": 4,
@@ -929,7 +949,7 @@ export function extractAllNumbersFromText(text: string): number[] {
     "الف": 1000, "ألف": 1000, "الفين": 2000, "ألفين": 2000, "مليون": 1000000
   };
   for (const [word, val] of Object.entries(WORD_TO_NUM)) {
-    if (norm.includes(word)) nums.push(val);
+    if (remainingText.includes(word)) nums.push(val);
   }
   return nums;
 }
@@ -946,7 +966,7 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
     const val = args?.[field];
     if (val && String(val).trim().length > 1) {
       const normalizedVal = normalizeArabic(String(val));
-      if (normalizedVal.includes("مورد عام") || normalizedVal.includes("عميل عام") || normalizedVal.includes("صنف غير محدد") || normalizedVal.includes("غير محدد") || normalizedVal.includes("غير موضح") || normalizedVal.includes("لم يحدد") || normalizedVal.includes("غير معروف") || normalizedVal.includes("غير مذكور")) {
+      if (normalizedVal.includes("مورد عام") || normalizedVal.includes("عميل عام") || normalizedVal.includes("صنف غير محدد") || normalizedVal.includes("غير محدد") || normalizedVal.includes("غير موضح") || normalizedVal.includes("لم يحدد") || normalizedVal.includes("غير معروف") || normalizedVal.includes("غير مذكور") || normalizedVal.includes("بضاعة") || normalizedVal.includes("بضاعه") || normalizedVal.includes("صنف")) {
         continue; // Generic system placeholders are allowed
       }
       const words = normalizedVal.split(" ").filter((w) => w.length > 1);
@@ -1017,8 +1037,8 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
   if ((toolName === "log_purchase" || toolName === "log_sale") && !isExplicitCredit) {
     const rawNums = extractAllNumbersFromText(msg).filter((n) => n >= 100);
     if (rawNums.length >= 2) {
-      const hasTotalAnchor = /(?:\s|^)(?:ب|بـ|سعر|إجمالي|اجمالي|بقيمة|ثمن)\s*\d+/i.test(msg);
-      const hasPaidAnchor = /(?:\s|^)(?:دفع|دفعت|مقدم|عربون|كاش|مسدد)\s*\d+/i.test(msg);
+      const hasTotalAnchor = /(?:\s|^)(?:ب|بـ|سعر|إجمالي|اجمالي|بقيمة|ثمن)\s*(?:\d+|ألف|الف|مية|ميه|مليون)/i.test(msg);
+      const hasPaidAnchor = /(?:\s|^)(?:دفع|دفعت|مقدم|عربون|كاش|مسدد)/i.test(msg);
       if (!hasTotalAnchor && !hasPaidAnchor) {
         return { 
           ok: false, 
@@ -3090,7 +3110,9 @@ export async function processTelegramMessageWithLLM(
   console.log(`[TokenRouter] Input: "${normalizedText.slice(0, 35)}..." | Active Clusters: [${activeClusters.join(', ')}] | Tools Sent: ${activeTools.length}/${ALL_TOOLS.length}`);
 
   // Format history for Gemini SDK & ensure history starts with user role
-  const geminiHistory = rawHistory.map(h => ({
+  // Single-turn tool isolation: Clear history when active tools match explicit action keywords to prevent argument bleeding
+  const isExplicitActionCmd = /(اشتريت|رجعت|دفعت|سددت|بعت|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد)/i.test(normalizedText);
+  let geminiHistory = isExplicitActionCmd ? [] : rawHistory.map(h => ({
     role: h.role === "assistant" ? "model" : "user",
     parts: [{ text: h.text }]
   }));

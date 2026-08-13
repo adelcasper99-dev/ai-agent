@@ -1,9 +1,16 @@
-// app/api/reports/aged-receivables/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const tenantId = searchParams.get("tenantId");
+
+    const whereClause: any = {};
+    if (tenantId && tenantId !== "all") {
+      whereClause.tenantId = tenantId;
+    }
+
     const now = new Date();
     const customers: any[] = [];
     let totalDue = 0, current = 0, days30 = 0, days60 = 0, days90 = 0;
@@ -11,6 +18,7 @@ export async function GET() {
     try {
       // Try fetching from Customer model with outstanding invoices
       const customersRaw = await (prisma as any).customer?.findMany({
+        where: whereClause,
         include: {
           sales: {
             where: { remainingAmount: { gt: 0 } },

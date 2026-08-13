@@ -1,31 +1,28 @@
-session_intent: "Add cancel_appointment & update_appointment LLM tools, harden ApiKeyManager with multi-key pool rotation, and execute 7-stage engineering pipeline."
+session_intent: "Refactor Telegram LLM tool execution for fuzzy entity resolution, centralize supplier balance reports, implement strict multi-match disambiguation, and execute chaos testing."
 decisions:
   - "Use Groq llama-3.1-8b-instant fallback for appointment tools when llama-3.3-70b-versatile returns tool_use_failed"
   - "Hardcode dynamic prefix resolution in ApiKeyManager as `${normProvider.toUpperCase()}_API_KEY`"
   - "Support comma and newline separated composite key strings in ApiKeyManager (`GROQ_API_KEYS=\"k1,k2\"`)"
   - "Maintain in-memory key exhaustion set with DB fallback and 24h automatic reset"
+  - "Enforce strict fuzzy entity resolution with mandatory error throwing on multiple candidate matches in findCustomerFuzzy and findSupplierFuzzy"
+  - "Centralize manual supplier payment aggregation inside get_supplier_balance"
+  - "Implemented single-turn tool context isolation in processTelegramMessageWithLLM for explicit action commands"
+  - "Verified log_purchase_return partial, full, and multi-purchase FIFO debt reduction with 100% passing 13-assertion chaos test suite"
 files_modified:
   - path: "casper-voice-web/lib/telegram_llm.ts"
-    why: "added cancel_appointment & update_appointment tools, fixed Groq fallback loop break->continue, updated model rotation array, fixed multi-function JSON parser"
-  - path: "casper-voice-web/lib/apiKeyManager.ts"
-    why: "generic provider prefix matching, comma/newline key splitting, exported _resetExhaustedKeysForTesting"
-  - path: "casper-voice-web/test_appointments.ts"
-    why: "created unit test suite for 4 appointment tools with raw DB evidence verification"
-  - path: "casper-voice-web/test_all_tools.ts"
-    why: "created 16-tool master integration runner"
-  - path: "casper-voice-web/test_api_key_manager.ts"
-    why: "created unit test suite for ApiKeyManager multi-key pool rotation"
-  - path: ".agents/stage_log.json"
-    why: "recorded pipeline execution stages 0a through 6"
+    why: "added single-turn tool context isolation for action commands, expanded Grounding Guard text placeholders (بضاعة, صنف)"
+  - path: "casper-voice-web/test_chaos_purchase_returns.ts"
+    why: "created 13-assertion chaos test suite for purchase returns (100% PASS)"
 active_goals:
-  - "complete pipeline execution and context compaction"
+  - "implement response trimming template in main Telegram message handler"
 next_steps:
-  - "deploy multi-key configuration to production .env"
-  - "monitor live Telegram bot tool execution"
+  - "implement response trimming template in main Telegram message handler"
+  - "verify merchantMemory state consistency after entity resolution retry"
 failed_approaches:
   - "attempted OpenAI SDK rewrite for all providers in telegram_llm.ts — rejected, native SDKs already handle Gemini FunctionDeclarations correctly"
+  - "automated supplier reporting without manual payment aggregation — fixed by centralizing in get_supplier_balance"
 last_condense:
-  timestamp: "2026-08-11T06:57:45Z"
-  tokens_before: 145000
-  tokens_after: 28000
+  timestamp: "2026-08-13T10:28:00Z"
+  tokens_before: 175000
+  tokens_after: 32000
   reduction_pct: 81

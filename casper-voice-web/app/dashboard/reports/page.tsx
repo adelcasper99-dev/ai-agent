@@ -8,7 +8,7 @@ import {
   TrendingUp, TrendingDown, ShoppingBag, DollarSign, 
   Filter, Calendar as CalendarIcon, FileText,
   BarChart2, Clock, Users, Search, ChevronDown, X, Edit2, Eye,
-  Download, AlertTriangle, Layers, Tag, User, Store, Phone, Truck
+  Download, AlertTriangle, Layers, Tag, User, Store, Phone, Truck, Building2
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -82,6 +82,10 @@ export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState("financial");
   const [filterPeriod, setFilterPeriod] = useState("month");
   
+  // Tenant Selection
+  const [tenants, setTenants] = useState<{ id: string; name: string }[]>([]);
+  const [selectedTenantId, setSelectedTenantId] = useState<string>("all");
+
   // Suppliers Filters
   const [supplierSearchTerm, setSupplierSearchTerm] = useState("");
   const [supplierDateFilter, setSupplierDateFilter] = useState("all");
@@ -106,12 +110,25 @@ export default function ReportsPage() {
   const [agedReceivables, setAgedReceivables] = useState<any>(null);
   const [agedLoading, setAgedLoading] = useState(false);
 
+  // Load tenant list for selector on mount
   useEffect(() => {
+    fetch("/api/tenants/list")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.tenants) setTenants(data.tenants);
+      })
+      .catch((err) => console.error("Error fetching tenants list:", err));
+  }, []);
+
+  // Fetch report data based on selectedTenantId
+  useEffect(() => {
+    setLoading(true);
+    const tenantQuery = selectedTenantId !== "all" ? `?tenantId=${selectedTenantId}` : "";
     Promise.all([
-      fetch("/api/expenses").then((r) => r.json()),
-      fetch("/api/sales").then((r) => r.json()),
-      fetch("/api/appointments").then((r) => r.json()),
-      fetch("/api/reports/suppliers").then((r) => r.json()),
+      fetch(`/api/expenses${tenantQuery}`).then((r) => r.json()),
+      fetch(`/api/sales${tenantQuery}`).then((r) => r.json()),
+      fetch(`/api/appointments${tenantQuery}`).then((r) => r.json()),
+      fetch(`/api/reports/suppliers${tenantQuery}`).then((r) => r.json()),
     ]).then(([e, s, a, sup]) => {
       setExpenses(e.expenses || []);
       setSales(s.sales || []);
@@ -119,27 +136,29 @@ export default function ReportsPage() {
       setSuppliers(sup.suppliers || []);
       setLoading(false);
     });
-  }, []);
+  }, [selectedTenantId]);
 
-  // Fetch Sales Analysis when groupBy changes
+  // Fetch Sales Analysis when groupBy or tenant changes
   useEffect(() => {
     if (activeTab !== "sales_analysis") return;
     setSalesAnalysisLoading(true);
-    fetch(`/api/reports/sales-analysis?groupBy=${salesGroupBy}`)
+    const tenantQuery = selectedTenantId !== "all" ? `&tenantId=${selectedTenantId}` : "";
+    fetch(`/api/reports/sales-analysis?groupBy=${salesGroupBy}${tenantQuery}`)
       .then(r => r.json())
       .then(data => { setSalesAnalysis(data); setSalesAnalysisLoading(false); })
       .catch(() => setSalesAnalysisLoading(false));
-  }, [salesGroupBy, activeTab]);
+  }, [salesGroupBy, activeTab, selectedTenantId]);
 
-  // Fetch Aged Receivables on tab open
+  // Fetch Aged Receivables on tab open or tenant change
   useEffect(() => {
-    if (activeTab !== "aged_receivables" || agedReceivables) return;
+    if (activeTab !== "aged_receivables") return;
     setAgedLoading(true);
-    fetch("/api/reports/aged-receivables")
+    const tenantQuery = selectedTenantId !== "all" ? `?tenantId=${selectedTenantId}` : "";
+    fetch(`/api/reports/aged-receivables${tenantQuery}`)
       .then(r => r.json())
       .then(data => { setAgedReceivables(data); setAgedLoading(false); })
       .catch(() => setAgedLoading(false));
-  }, [activeTab]);
+  }, [activeTab, selectedTenantId]);
 
   const totalExpenses = expenses.reduce((acc, e) => acc.plus(new Decimal(e.amount ?? 0)), new Decimal(0));
   const totalSales = sales.reduce((acc, s) => acc.plus(new Decimal(s.total ?? 0)), new Decimal(0));
@@ -202,15 +221,19 @@ export default function ReportsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 p-1 rounded-xl bg-zinc-900 border border-white/10">
-              <select className="bg-transparent border-none text-sm font-bold text-zinc-300 focus:ring-0 px-3 py-2 outline-none cursor-pointer">
-                <option>كل الفروع</option>
-                <option>الفرع الرئيسي</option>
-              </select>
-              <div className="w-px h-5 bg-white/10 mx-1" />
-              <select className="bg-transparent border-none text-sm font-bold text-cyan-400 focus:ring-0 px-3 py-2 outline-none cursor-pointer">
-                <option>أعلى إيراد</option>
-                <option>أكثر كمية</option>
+            <div className="flex items-center gap-2 p-1.5 rounded-xl bg-zinc-900 border border-cyan-500/30 text-cyan-400">
+              <Building2 className="w-4 h-4 text-cyan-400 ms-2 shrink-0" />
+              <select 
+                value={selectedTenantId}
+                onChange={(e) => setSelectedTenantId(e.target.value)}
+                className="bg-transparent border-none text-sm font-bold text-white focus:ring-0 px-2 py-1 outline-none cursor-pointer"
+              >
+                <option value="all" className="bg-zinc-900 text-white">🏢 جميع الشركات (إجمالي)</option>
+                {tenants.map((t) => (
+                  <option key={t.id} value={t.id} className="bg-zinc-900 text-white">
+                    🏢 {t.name}
+                  </option>
+                ))}
               </select>
             </div>
 

@@ -8,6 +8,12 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const groupBy = (searchParams.get("groupBy") || "category") as GroupByOption;
+    const tenantId = searchParams.get("tenantId");
+
+    const where: any = { status: { not: "RETURNED" } };
+    if (tenantId && tenantId !== "all") {
+      where.tenantId = tenantId;
+    }
 
     // Try to fetch real data; fall back to empty on any error
     let results: any[] = [];
@@ -22,7 +28,7 @@ export async function GET(req: NextRequest) {
           items: { include: { product: { include: { category: true } } } },
           createdBy: true,
         },
-        where: { status: { not: "RETURNED" } },
+        where,
       });
 
       if (salesRaw && salesRaw.length > 0) {

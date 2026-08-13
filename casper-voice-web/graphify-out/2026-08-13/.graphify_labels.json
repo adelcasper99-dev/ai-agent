@@ -76,17 +76,5 @@
   "74": "route.ts",
   "75": "reset_sim_tenant.ts",
   "76": "route.ts",
-  "77": "query_rejected.ts",
-  "78": "test_agent_db_loop.ts",
-  "79": "test_ambiguity_and_arabic_numerals.ts",
-  "80": "test_implicit_service_prompts.ts",
-  "81": "test_multi_unit_conversion.ts",
-  "82": "test_onboarding_name_persistence.ts",
-  "83": "test_product_variant_ambiguity.ts",
-  "84": "test_service_vs_product.ts",
-  "85": "stock_pressure.test.ts",
-  "86": "sync_conflict.test.ts",
-  "87": "test_gemini.py",
-  "88": "write_test_all_tools.py",
-  "89": "test-tenant.ts"
+  "77": "query_rejected.ts"
 }

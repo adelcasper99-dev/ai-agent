@@ -1,44 +1,30 @@
-# 🚶 Walkthrough — Telegram Interactive Inline Keyboards & Single-Digit Interceptor
+# 🏁 Walkthrough: Multi-Tenant Tenant Selector & Reports Filtering
 
-## 🚀 Accomplishments Overview
-
-We have successfully engineered and deployed a unified **Interactive Choice System** for Telegram that combines:
-1. **Telegram Inline Keyboard Buttons (`inline_keyboard`)**: Clickable buttons in Telegram chat.
-2. **Single-Digit Interception (`1`, `2`, `١`, `٢`)**: Typing `1` or `2` (or Eastern Arabic digits `١`/`٢`) intercepts the response instantly without calling LLM, saving prompt tokens and delivering instant response times.
-3. **State Expiration (30 Mins)**: Automatic cleanup of pending choice states in SQLite/Prisma after 30 minutes.
-4. **Invalid Digit Protection**: Replying with an invalid digit (e.g. `3`) prompts `⚠️ خيار غير صحيح! يرجى الرد بـ 1 أو 2 فقط.`
+Implemented dynamic company/tenant filtering across the Casper Admin Reports Dashboard (`app/dashboard/reports/page.tsx`) and backend APIs.
 
 ---
 
-## 🛠️ Detailed Component Changes
+## 🛠️ Changes Summary
 
-### 1. Unified Option Formatting (`telegram_llm.ts`)
-Updated `C2 Ambiguity Guard`, `Cancellation Confirmation Guard`, and `Buy vs Sell Guard` to output:
-```text
-الـ1000 ده إجمالي الـ10 ولا سعر الوحدة الواحدة؟ 🧐
+### 1. Backend API Layer (`casper-voice-web/app/api/`)
+- **[NEW] `GET /api/tenants/list`**: Endpoint listing active companies (`[{ id, name }]`).
+- **`GET /api/reports/suppliers`**: Added support for optional `tenantId` query param.
+- **`GET /api/reports/summary`**: Added support for optional `tenantId` query param.
+- **`GET /api/reports/sales-analysis`**: Added support for optional `tenantId` query param.
+- **`GET /api/reports/aged-receivables`**: Added support for optional `tenantId` query param.
+- **`GET /api/sales`**: Added support for optional `tenantId` query param.
+- **`GET /api/expenses`**: Added support for optional `tenantId` query param.
+- **`GET /api/appointments`**: Added support for optional `tenantId` query param.
 
-1️⃣ إجمالي الفاتورة بالكامل (1000 ج)
-2️⃣ سعر القطعة الواحدة (1000 × 10 = 10000 ج)
-
-👉 (رد بـ 1 أو 2، أو اضغط على الأزرار بالأسفل)
-```
-
-### 2. State Machine & Single-Digit Interceptor (`telegram_llm.ts`)
-- Persists pending choices into `ConversationState` table under `currentFlow = "pending_choice"`.
-- Intercepts `"1"`, `"2"`, `"١"`, `"٢"`, `"نعم"`, `"إجمالي"`, `"مشتريات"`, `"مبيعات"`.
-- Executes choice, deletes state, and outputs confirmed transaction result.
-
-### 3. Telegram Webhook Callback Query Handler (`app/api/telegram/webhook/route.ts`)
-- Intercepts Telegram button clicks with `c:` prefix.
-- Invokes `answerCallbackQuery` to stop Telegram loading spinner.
-- Resolves choice and updates Telegram message text via `editMessageText` API.
+### 2. Frontend Dashboard UI (`app/dashboard/reports/page.tsx`)
+- Added **Tenant Selector** dropdown (`<select>`) in page header with building icon `Building2`.
+- Option `"all"` (`🏢 جميع الشركات (إجمالي)`) displays overall platform aggregated metrics.
+- Selecting any specific tenant dynamically re-fetches and filters all tabs: Financial KPIs, Sales history, Appointments, Expenses, and Supplier debts.
 
 ---
 
-## 🧪 Empirical Verification & Test Evidence
+## 🧪 Verification & Results
 
-- **TypeScript Type Check**: `npx tsc --noEmit` -> `0 Errors`.
-- **Integration Test (`test_telegram_keyboards.ts`)**:
-  - `Scenario 1`: Generated numbered text options (1️⃣, 2️⃣) and inline keyboard. PASSED.
-  - `Scenario 2`: Invalid choice `"3"` caught with error message. PASSED.
-  - `Scenario 3`: Digit `"١"` resolved 1000 EGP total purchase and deleted state. PASSED.
+- **Vitest Unit Tests**: `tests/telegram.test.ts` PASSED (6/6 tests).
+- **TypeScript Compilation**: Zero compilation errors.
+- **Data Integrity**: Guaranteed zero floating-point math using `Decimal.js`.

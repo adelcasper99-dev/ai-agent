@@ -790,7 +790,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_signals",
-      "community": 71,
+      "community": 13,
       "norm_label": "context-signals.mjs"
     },
     {
@@ -800,7 +800,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_signals_hascode",
-      "community": 71,
+      "community": 13,
       "norm_label": "hascode()"
     },
     {
@@ -810,7 +810,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_signals_latestcritique",
-      "community": 71,
+      "community": 13,
       "norm_label": "latestcritique()"
     },
     {
@@ -820,7 +820,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_signals_gitsignals",
-      "community": 71,
+      "community": 13,
       "norm_label": "gitsignals()"
     },
     {
@@ -830,7 +830,7 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_signals_common_dev_ports",
-      "community": 71,
+      "community": 13,
       "norm_label": "common_dev_ports"
     },
     {
@@ -840,7 +840,7 @@
       "source_location": "L124",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_signals_probeport",
-      "community": 71,
+      "community": 13,
       "norm_label": "probeport()"
     },
     {
@@ -850,7 +850,7 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_signals_devserversignals",
-      "community": 71,
+      "community": 13,
       "norm_label": "devserversignals()"
     },
     {
@@ -860,7 +860,7 @@
       "source_location": "L154",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_signals_scannable_ext",
-      "community": 71,
+      "community": 13,
       "norm_label": "scannable_ext"
     },
     {
@@ -870,7 +870,7 @@
       "source_location": "L160",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_signals_source_dirs",
-      "community": 71,
+      "community": 13,
       "norm_label": "source_dirs"
     },
     {
@@ -880,7 +880,7 @@
       "source_location": "L170",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_signals_scantargets",
-      "community": 71,
+      "community": 13,
       "norm_label": "scantargets()"
     },
     {
@@ -890,7 +890,7 @@
       "source_location": "L189",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_signals_gathersignals",
-      "community": 71,
+      "community": 13,
       "norm_label": "gathersignals()"
     },
     {
@@ -900,7 +900,7 @@
       "source_location": "L208",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_signals_cli",
-      "community": 71,
+      "community": 13,
       "norm_label": "cli()"
     },
     {
@@ -910,7 +910,7 @@
       "source_location": "L213",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_signals_invokedasscript",
-      "community": 71,
+      "community": 13,
       "norm_label": "invokedasscript()"
     },
     {
@@ -990,7 +990,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_workspace_discovery_ignored_dirs",
-      "community": 2,
+      "community": 71,
       "norm_label": "workspace_discovery_ignored_dirs"
     },
     {
@@ -1010,7 +1010,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_style_extensions",
-      "community": 2,
+      "community": 71,
       "norm_label": "style_extensions"
     },
     {
@@ -1020,7 +1020,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_ui_extensions",
-      "community": 2,
+      "community": 71,
       "norm_label": "ui_extensions"
     },
     {
@@ -1040,7 +1040,7 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_resolvecontextdir",
-      "community": 2,
+      "community": 71,
       "norm_label": "resolvecontextdir()"
     },
     {
@@ -1050,7 +1050,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_loadcontext",
-      "community": 71,
+      "community": 267,
       "norm_label": "loadcontext()"
     },
     {
@@ -1060,7 +1060,7 @@
       "source_location": "L128",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_resolvecontext",
-      "community": 2,
+      "community": 71,
       "norm_label": "resolvecontext()"
     },
     {
@@ -1080,7 +1080,7 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_resolvetargetselection",
-      "community": 88,
+      "community": 2,
       "norm_label": "resolvetargetselection()"
     },
     {
@@ -1110,7 +1110,7 @@
       "source_location": "L230",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_resolvelocalcontextdir",
-      "community": 2,
+      "community": 71,
       "norm_label": "resolvelocalcontextdir()"
     },
     {
@@ -1120,7 +1120,7 @@
       "source_location": "L243",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_resolveenvcontextdir",
-      "community": 2,
+      "community": 71,
       "norm_label": "resolveenvcontextdir()"
     },
     {
@@ -1260,7 +1260,7 @@
       "source_location": "L451",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_iscandidateprojectroot",
-      "community": 2,
+      "community": 71,
       "norm_label": "iscandidateprojectroot()"
     },
     {
@@ -1320,7 +1320,7 @@
       "source_location": "L544",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_nearesttargetcontextroot",
-      "community": 2,
+      "community": 71,
       "norm_label": "nearesttargetcontextroot()"
     },
     {
@@ -1510,7 +1510,7 @@
       "source_location": "L787",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_firstexisting",
-      "community": 2,
+      "community": 71,
       "norm_label": "firstexisting()"
     },
     {
@@ -1540,7 +1540,7 @@
       "source_location": "L826",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_hasvisualimplementation",
-      "community": 2,
+      "community": 71,
       "norm_label": "hasvisualimplementation()"
     },
     {
@@ -1570,7 +1570,7 @@
       "source_location": "L943",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_context_extractplatform",
-      "community": 71,
+      "community": 267,
       "norm_label": "extractplatform()"
     },
     {
@@ -3690,7 +3690,7 @@
       "source_location": "L749",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_contrastratio",
-      "community": 65,
+      "community": 133,
       "norm_label": "contrastratio()"
     },
     {
@@ -3730,7 +3730,7 @@
       "source_location": "L791",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_colortohex",
-      "community": 65,
+      "community": 49,
       "norm_label": "colortohex()"
     },
     {
@@ -3790,7 +3790,7 @@
       "source_location": "L1015",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkhovercontrast",
-      "community": 65,
+      "community": 133,
       "norm_label": "checkhovercontrast()"
     },
     {
@@ -3800,7 +3800,7 @@
       "source_location": "L1029",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_iscardlikefromprops",
-      "community": 7,
+      "community": 77,
       "norm_label": "iscardlikefromprops()"
     },
     {
@@ -3810,7 +3810,7 @@
       "source_location": "L1048",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkicontile",
-      "community": 65,
+      "community": 437,
       "norm_label": "checkicontile()"
     },
     {
@@ -3880,7 +3880,7 @@
       "source_location": "L1277",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkmotion",
-      "community": 7,
+      "community": 77,
       "norm_label": "checkmotion()"
     },
     {
@@ -4180,7 +4180,7 @@
       "source_location": "L2543",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_parseradiustopx",
-      "community": 7,
+      "community": 77,
       "norm_label": "parseradiustopx()"
     },
     {
@@ -4190,7 +4190,7 @@
       "source_location": "L2557",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_resolveborderradiuspx",
-      "community": 7,
+      "community": 77,
       "norm_label": "resolveborderradiuspx()"
     },
     {
@@ -4260,7 +4260,7 @@
       "source_location": "L2757",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementicontiledom",
-      "community": 65,
+      "community": 437,
       "norm_label": "checkelementicontiledom()"
     },
     {
@@ -4520,7 +4520,7 @@
       "source_location": "L3444",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkemdashoveruse",
-      "community": 254,
+      "community": 7,
       "norm_label": "checkemdashoveruse()"
     },
     {
@@ -4530,7 +4530,7 @@
       "source_location": "L3454",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkemdashoverusedom",
-      "community": 254,
+      "community": 7,
       "norm_label": "checkemdashoverusedom()"
     },
     {
@@ -4540,7 +4540,7 @@
       "source_location": "L3465",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementmotiondom",
-      "community": 7,
+      "community": 77,
       "norm_label": "checkelementmotiondom()"
     },
     {
@@ -4720,7 +4720,7 @@
       "source_location": "L3852",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_isnonrenderedtext",
-      "community": 114,
+      "community": 1,
       "norm_label": "isnonrenderedtext()"
     },
     {
@@ -4810,7 +4810,7 @@
       "source_location": "L4456",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementicontile",
-      "community": 65,
+      "community": 437,
       "norm_label": "checkelementicontile()"
     },
     {
@@ -4850,7 +4850,7 @@
       "source_location": "L4550",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementmotion",
-      "community": 7,
+      "community": 77,
       "norm_label": "checkelementmotion()"
     },
     {
@@ -4880,7 +4880,7 @@
       "source_location": "L4630",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_iscardlikedom",
-      "community": 7,
+      "community": 77,
       "norm_label": "iscardlikedom()"
     },
     {
@@ -4890,7 +4890,7 @@
       "source_location": "L4642",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checklayout",
-      "community": 7,
+      "community": 77,
       "norm_label": "checklayout()"
     },
     {
@@ -4920,7 +4920,7 @@
       "source_location": "L4900",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_iscardlike",
-      "community": 7,
+      "community": 77,
       "norm_label": "iscardlike()"
     },
     {
@@ -4930,7 +4930,7 @@
       "source_location": "L4920",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkpagelayout",
-      "community": 7,
+      "community": 77,
       "norm_label": "checkpagelayout()"
     },
     {
@@ -4980,7 +4980,7 @@
       "source_location": "L5099",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_iscreamcolor",
-      "community": 254,
+      "community": 65,
       "norm_label": "iscreamcolor()"
     },
     {
@@ -4990,7 +4990,7 @@
       "source_location": "L5121",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_creamfromclasslist",
-      "community": 254,
+      "community": 65,
       "norm_label": "creamfromclasslist()"
     },
     {
@@ -5000,7 +5000,7 @@
       "source_location": "L5133",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkcreampalette",
-      "community": 254,
+      "community": 65,
       "norm_label": "checkcreampalette()"
     },
     {
@@ -5220,7 +5220,7 @@
       "source_location": "L5436",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_metriclengthpx",
-      "community": 61,
+      "community": 7,
       "norm_label": "metriclengthpx()"
     },
     {
@@ -5230,7 +5230,7 @@
       "source_location": "L5442",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_firstmetriclengthpx",
-      "community": 61,
+      "community": 7,
       "norm_label": "firstmetriclengthpx()"
     },
     {
@@ -5240,7 +5240,7 @@
       "source_location": "L5450",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_expandboxshorthand",
-      "community": 61,
+      "community": 7,
       "norm_label": "expandboxshorthand()"
     },
     {
@@ -5250,7 +5250,7 @@
       "source_location": "L5457",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_clippedbyinset",
-      "community": 61,
+      "community": 7,
       "norm_label": "clippedbyinset()"
     },
     {
@@ -5260,7 +5260,7 @@
       "source_location": "L5469",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_clippedbyrect",
-      "community": 61,
+      "community": 7,
       "norm_label": "clippedbyrect()"
     },
     {
@@ -5270,7 +5270,7 @@
       "source_location": "L5479",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_isscreenreaderonlytextstyle",
-      "community": 61,
+      "community": 7,
       "norm_label": "isscreenreaderonlytextstyle()"
     },
     {
@@ -5350,7 +5350,7 @@
       "source_location": "L5834",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_isopaquedecoratedbox",
-      "community": 61,
+      "community": 7,
       "norm_label": "isopaquedecoratedbox()"
     },
     {
@@ -5360,7 +5360,7 @@
       "source_location": "L5853",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_islayeredelement",
-      "community": 61,
+      "community": 7,
       "norm_label": "islayeredelement()"
     },
     {
@@ -5370,7 +5370,7 @@
       "source_location": "L5861",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_elementdirecttext",
-      "community": 61,
+      "community": 7,
       "norm_label": "elementdirecttext()"
     },
     {
@@ -5380,7 +5380,7 @@
       "source_location": "L5872",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_ispaintedforocclusion",
-      "community": 61,
+      "community": 7,
       "norm_label": "ispaintedforocclusion()"
     },
     {
@@ -5390,7 +5390,7 @@
       "source_location": "L5895",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checktextocclusiondom",
-      "community": 61,
+      "community": 7,
       "norm_label": "checktextocclusiondom()"
     },
     {
@@ -5490,7 +5490,7 @@
       "source_location": "L6407",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_detachoverlay",
-      "community": 7,
+      "community": 125,
       "norm_label": "detachoverlay()"
     },
     {
@@ -5550,7 +5550,7 @@
       "source_location": "L6742",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_getdirecttext",
-      "community": 125,
+      "community": 65,
       "norm_label": "getdirecttext()"
     },
     {
@@ -5560,7 +5560,7 @@
       "source_location": "L6749",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_getdirecttextrect",
-      "community": 125,
+      "community": 65,
       "norm_label": "getdirecttextrect()"
     },
     {
@@ -5570,7 +5570,7 @@
       "source_location": "L6777",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_collectvisualcontrastreasons",
-      "community": 125,
+      "community": 65,
       "norm_label": "collectvisualcontrastreasons()"
     },
     {
@@ -5580,7 +5580,7 @@
       "source_location": "L6832",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_collectvisualcontrastcandidates",
-      "community": 125,
+      "community": 65,
       "norm_label": "collectvisualcontrastcandidates()"
     },
     {
@@ -5590,7 +5590,7 @@
       "source_location": "L6896",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_clampbyte",
-      "community": 125,
+      "community": 133,
       "norm_label": "clampbyte()"
     },
     {
@@ -5600,7 +5600,7 @@
       "source_location": "L6900",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_blendrgba",
-      "community": 125,
+      "community": 133,
       "norm_label": "blendrgba()"
     },
     {
@@ -5740,7 +5740,7 @@
       "source_location": "L7185",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_textsamplepoints",
-      "community": 125,
+      "community": 133,
       "norm_label": "textsamplepoints()"
     },
     {
@@ -5760,7 +5760,7 @@
       "source_location": "L7264",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_analyzevisualcontrastcandidate",
-      "community": 125,
+      "community": 133,
       "norm_label": "analyzevisualcontrastcandidate()"
     },
     {
@@ -6010,7 +6010,7 @@
       "source_location": "L7870",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_disconnectlazyvisualcontrastobserver",
-      "community": 7,
+      "community": 125,
       "norm_label": "disconnectlazyvisualcontrastobserver()"
     },
     {
@@ -6100,7 +6100,7 @@
       "source_location": "L8026",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_clearoverlays",
-      "community": 7,
+      "community": 125,
       "norm_label": "clearoverlays()"
     },
     {
@@ -6880,7 +6880,7 @@
       "source_location": "L842",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument",
-      "community": 69,
+      "community": 9,
       "norm_label": "staticdocument"
     },
     {
@@ -6890,7 +6890,7 @@
       "source_location": "L843",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_constructor",
-      "community": 69,
+      "community": 9,
       "norm_label": ".constructor()"
     },
     {
@@ -6900,7 +6900,7 @@
       "source_location": "L859",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_wrap",
-      "community": 69,
+      "community": 9,
       "norm_label": ".wrap()"
     },
     {
@@ -6910,7 +6910,7 @@
       "source_location": "L867",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_queryselectorall",
-      "community": 21,
+      "community": 9,
       "norm_label": ".queryselectorall()"
     },
     {
@@ -6920,7 +6920,7 @@
       "source_location": "L874",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_queryselector",
-      "community": 69,
+      "community": 9,
       "norm_label": ".queryselector()"
     },
     {
@@ -6930,7 +6930,7 @@
       "source_location": "L882",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_documentelement",
-      "community": 69,
+      "community": 9,
       "norm_label": ".documentelement()"
     },
     {
@@ -6940,7 +6940,7 @@
       "source_location": "L885",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_body",
-      "community": 69,
+      "community": 9,
       "norm_label": ".body()"
     },
     {
@@ -6950,7 +6950,7 @@
       "source_location": "L888",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_setstyle",
-      "community": 69,
+      "community": 9,
       "norm_label": ".setstyle()"
     },
     {
@@ -6960,7 +6960,7 @@
       "source_location": "L891",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_getstyle",
-      "community": 69,
+      "community": 9,
       "norm_label": ".getstyle()"
     },
     {
@@ -6970,7 +6970,7 @@
       "source_location": "L894",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_sethoverstyle",
-      "community": 69,
+      "community": 9,
       "norm_label": ".sethoverstyle()"
     },
     {
@@ -6980,7 +6980,7 @@
       "source_location": "L897",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_gethoverstyle",
-      "community": 69,
+      "community": 9,
       "norm_label": ".gethoverstyle()"
     },
     {
@@ -6990,7 +6990,7 @@
       "source_location": "L900",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_setaccentdashpseudo",
-      "community": 69,
+      "community": 9,
       "norm_label": ".setaccentdashpseudo()"
     },
     {
@@ -7000,7 +7000,7 @@
       "source_location": "L903",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_hasaccentdashpseudo",
-      "community": 69,
+      "community": 9,
       "norm_label": ".hasaccentdashpseudo()"
     },
     {
@@ -7010,7 +7010,7 @@
       "source_location": "L906",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_setpseudosurface",
-      "community": 69,
+      "community": 9,
       "norm_label": ".setpseudosurface()"
     },
     {
@@ -7020,7 +7020,7 @@
       "source_location": "L909",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_staticdocument_getpseudosurface",
-      "community": 69,
+      "community": 9,
       "norm_label": ".getpseudosurface()"
     },
     {
@@ -7040,7 +7040,7 @@
       "source_location": "L923",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_engines_static_html_css_cascade_buildstaticwindow",
-      "community": 69,
+      "community": 9,
       "norm_label": "buildstaticwindow()"
     },
     {
@@ -7310,7 +7310,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_profile_profiler_createdetectorprofile",
-      "community": 21,
+      "community": 35,
       "norm_label": "createdetectorprofile()"
     },
     {
@@ -7560,7 +7560,7 @@
       "source_location": "L232",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_heading_tags",
-      "community": 1,
+      "community": 437,
       "norm_label": "heading_tags"
     },
     {
@@ -7610,7 +7610,7 @@
       "source_location": "L372",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_resolveheroheadingsizepx",
-      "community": 1,
+      "community": 69,
       "norm_label": "resolveheroheadingsizepx()"
     },
     {
@@ -7630,7 +7630,7 @@
       "source_location": "L459",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkrepeatedsectionkickers",
-      "community": 1,
+      "community": 69,
       "norm_label": "checkrepeatedsectionkickers()"
     },
     {
@@ -7640,7 +7640,7 @@
       "source_location": "L468",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_layout_transition_props",
-      "community": 38,
+      "community": 1,
       "norm_label": "layout_transition_props"
     },
     {
@@ -7650,7 +7650,7 @@
       "source_location": "L475",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkmotion",
-      "community": 38,
+      "community": 1,
       "norm_label": "checkmotion()"
     },
     {
@@ -7690,7 +7690,7 @@
       "source_location": "L594",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_collectcsscustomprops",
-      "community": 9,
+      "community": 38,
       "norm_label": "collectcsscustomprops()"
     },
     {
@@ -7730,7 +7730,7 @@
       "source_location": "L722",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scancsstextforradialhalo",
-      "community": 9,
+      "community": 38,
       "norm_label": "scancsstextforradialhalo()"
     },
     {
@@ -7750,7 +7750,7 @@
       "source_location": "L797",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_parsecssdeclblock",
-      "community": 9,
+      "community": 38,
       "norm_label": "parsecssdeclblock()"
     },
     {
@@ -7760,7 +7760,7 @@
       "source_location": "L809",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_csslengthtopx",
-      "community": 9,
+      "community": 38,
       "norm_label": "csslengthtopx()"
     },
     {
@@ -7770,7 +7770,7 @@
       "source_location": "L816",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_iszerooffset",
-      "community": 1,
+      "community": 38,
       "norm_label": "iszerooffset()"
     },
     {
@@ -7780,7 +7780,7 @@
       "source_location": "L826",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scancsstextforpseudostripe",
-      "community": 9,
+      "community": 38,
       "norm_label": "scancsstextforpseudostripe()"
     },
     {
@@ -7790,7 +7790,7 @@
       "source_location": "L950",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scancsstextforinsetstripe",
-      "community": 9,
+      "community": 38,
       "norm_label": "scancsstextforinsetstripe()"
     },
     {
@@ -7800,7 +7800,7 @@
       "source_location": "L1014",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_collectmarqueekeyframes",
-      "community": 9,
+      "community": 38,
       "norm_label": "collectmarqueekeyframes()"
     },
     {
@@ -7810,7 +7810,7 @@
       "source_location": "L1052",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scancsstextformarquee",
-      "community": 9,
+      "community": 38,
       "norm_label": "scancsstextformarquee()"
     },
     {
@@ -7820,7 +7820,7 @@
       "source_location": "L1079",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_collectpulsekeyframes",
-      "community": 9,
+      "community": 38,
       "norm_label": "collectpulsekeyframes()"
     },
     {
@@ -7830,7 +7830,7 @@
       "source_location": "L1102",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_animation_value_keywords",
-      "community": 9,
+      "community": 38,
       "norm_label": "animation_value_keywords"
     },
     {
@@ -7840,7 +7840,7 @@
       "source_location": "L1111",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_infiniteanimationnames",
-      "community": 9,
+      "community": 38,
       "norm_label": "infiniteanimationnames()"
     },
     {
@@ -7850,7 +7850,7 @@
       "source_location": "L1132",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_isrounddotradius",
-      "community": 9,
+      "community": 38,
       "norm_label": "isrounddotradius()"
     },
     {
@@ -7860,7 +7860,7 @@
       "source_location": "L1146",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_stripreducedmotionblocks",
-      "community": 9,
+      "community": 38,
       "norm_label": "stripreducedmotionblocks()"
     },
     {
@@ -7870,7 +7870,7 @@
       "source_location": "L1170",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_landmarksourceranges",
-      "community": 9,
+      "community": 38,
       "norm_label": "landmarksourceranges()"
     },
     {
@@ -7880,7 +7880,7 @@
       "source_location": "L1188",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_indexinsourceranges",
-      "community": 9,
+      "community": 38,
       "norm_label": "indexinsourceranges()"
     },
     {
@@ -7890,7 +7890,7 @@
       "source_location": "L1197",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_selectorhitslandmark",
-      "community": 9,
+      "community": 38,
       "norm_label": "selectorhitslandmark()"
     },
     {
@@ -7900,7 +7900,7 @@
       "source_location": "L1233",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scancsstextforpulsingdot",
-      "community": 9,
+      "community": 38,
       "norm_label": "scancsstextforpulsingdot()"
     },
     {
@@ -7910,7 +7910,7 @@
       "source_location": "L1329",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_scanhtmlforshapeassembledillustration",
-      "community": 9,
+      "community": 38,
       "norm_label": "scanhtmlforshapeassembledillustration()"
     },
     {
@@ -7920,7 +7920,7 @@
       "source_location": "L1383",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkhtmlpatterns",
-      "community": 9,
+      "community": 38,
       "norm_label": "checkhtmlpatterns()"
     },
     {
@@ -8100,7 +8100,7 @@
       "source_location": "L2084",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_resolvevarrefs",
-      "community": 9,
+      "community": 38,
       "norm_label": "resolvevarrefs()"
     },
     {
@@ -8230,7 +8230,7 @@
       "source_location": "L2409",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_cleaninlinetext",
-      "community": 1,
+      "community": 69,
       "norm_label": "cleaninlinetext()"
     },
     {
@@ -8240,7 +8240,7 @@
       "source_location": "L2418",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_isrepeatedkickercardcontext",
-      "community": 1,
+      "community": 69,
       "norm_label": "isrepeatedkickercardcontext()"
     },
     {
@@ -8250,7 +8250,7 @@
       "source_location": "L2423",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_isrepeatedkickercandidate",
-      "community": 1,
+      "community": 69,
       "norm_label": "isrepeatedkickercandidate()"
     },
     {
@@ -8260,7 +8260,7 @@
       "source_location": "L2452",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_collectrepeatedsectionkickercandidates",
-      "community": 1,
+      "community": 69,
       "norm_label": "collectrepeatedsectionkickercandidates()"
     },
     {
@@ -8270,7 +8270,7 @@
       "source_location": "L2490",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkrepeatedsectionkickersdom",
-      "community": 1,
+      "community": 69,
       "norm_label": "checkrepeatedsectionkickersdom()"
     },
     {
@@ -8290,7 +8290,7 @@
       "source_location": "L2511",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_parsenumberedlabeltext",
-      "community": 1,
+      "community": 69,
       "norm_label": "parsenumberedlabeltext()"
     },
     {
@@ -8310,7 +8310,7 @@
       "source_location": "L2550",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_collectnumberedsectionlabelcandidates",
-      "community": 1,
+      "community": 69,
       "norm_label": "collectnumberedsectionlabelcandidates()"
     },
     {
@@ -8320,7 +8320,7 @@
       "source_location": "L2606",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checknumberedsectionlabels",
-      "community": 1,
+      "community": 69,
       "norm_label": "checknumberedsectionlabels()"
     },
     {
@@ -8330,7 +8330,7 @@
       "source_location": "L2618",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checknumberedsectionlabelsfromdoc",
-      "community": 21,
+      "community": 69,
       "norm_label": "checknumberedsectionlabelsfromdoc()"
     },
     {
@@ -8340,7 +8340,7 @@
       "source_location": "L2627",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checknumberedsectionlabelsdom",
-      "community": 1,
+      "community": 69,
       "norm_label": "checknumberedsectionlabelsdom()"
     },
     {
@@ -8370,7 +8370,7 @@
       "source_location": "L2663",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementmotiondom",
-      "community": 38,
+      "community": 1,
       "norm_label": "checkelementmotiondom()"
     },
     {
@@ -8480,7 +8480,7 @@
       "source_location": "L2925",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_resolvelengthpx",
-      "community": 1,
+      "community": 69,
       "norm_label": "resolvelengthpx()"
     },
     {
@@ -8530,7 +8530,7 @@
       "source_location": "L2986",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_text_edge_tags",
-      "community": 1,
+      "community": 114,
       "norm_label": "text_edge_tags"
     },
     {
@@ -8690,7 +8690,7 @@
       "source_location": "L3702",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementheroeyebrow",
-      "community": 1,
+      "community": 69,
       "norm_label": "checkelementheroeyebrow()"
     },
     {
@@ -8700,7 +8700,7 @@
       "source_location": "L3739",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkrepeatedsectionkickersfromdoc",
-      "community": 1,
+      "community": 21,
       "norm_label": "checkrepeatedsectionkickersfromdoc()"
     },
     {
@@ -8710,7 +8710,7 @@
       "source_location": "L3748",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementmotion",
-      "community": 38,
+      "community": 1,
       "norm_label": "checkelementmotion()"
     },
     {
@@ -8720,7 +8720,7 @@
       "source_location": "L3758",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_checkelementglow",
-      "community": 35,
+      "community": 38,
       "norm_label": "checkelementglow()"
     },
     {
@@ -8810,7 +8810,7 @@
       "source_location": "L4191",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_repeated_text_container_tags",
-      "community": 69,
+      "community": 1,
       "norm_label": "repeated_text_container_tags"
     },
     {
@@ -8830,7 +8830,7 @@
       "source_location": "L4209",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_rules_checks_collectrepeatedcontainertextfindings",
-      "community": 69,
+      "community": 1,
       "norm_label": "collectrepeatedcontainertextfindings()"
     },
     {
@@ -9440,7 +9440,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_constants_safe_tags",
-      "community": 38,
+      "community": 77,
       "norm_label": "safe_tags"
     },
     {
@@ -9520,7 +9520,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_constants_generic_fonts",
-      "community": 432,
+      "community": 4,
       "norm_label": "generic_fonts"
     },
     {
@@ -9570,7 +9570,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_inline_ignores",
-      "community": 21,
+      "community": 228,
       "norm_label": "inline-ignores.mjs"
     },
     {
@@ -9580,7 +9580,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_inline_ignores_normalizerule",
-      "community": 21,
+      "community": 228,
       "norm_label": "normalizerule()"
     },
     {
@@ -9590,7 +9590,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_inline_ignores_parserulelist",
-      "community": 21,
+      "community": 228,
       "norm_label": "parserulelist()"
     },
     {
@@ -9600,7 +9600,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_inline_ignores_addrules",
-      "community": 21,
+      "community": 228,
       "norm_label": "addrules()"
     },
     {
@@ -9610,7 +9610,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_inline_ignores_getset",
-      "community": 21,
+      "community": 228,
       "norm_label": "getset()"
     },
     {
@@ -9620,7 +9620,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_inline_ignores_parseinlineignores",
-      "community": 21,
+      "community": 228,
       "norm_label": "parseinlineignores()"
     },
     {
@@ -9630,7 +9630,7 @@
       "source_location": "L115",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_inline_ignores_setmatches",
-      "community": 21,
+      "community": 228,
       "norm_label": "setmatches()"
     },
     {
@@ -9640,7 +9640,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_inline_ignores_isinlineignored",
-      "community": 21,
+      "community": 228,
       "norm_label": "isinlineignored()"
     },
     {
@@ -9650,7 +9650,7 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_inline_ignores_hasdirectives",
-      "community": 21,
+      "community": 228,
       "norm_label": "hasdirectives()"
     },
     {
@@ -9660,7 +9660,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_shared_inline_ignores_applyinlineignores",
-      "community": 21,
+      "community": 228,
       "norm_label": "applyinlineignores()"
     },
     {
@@ -9760,7 +9760,7 @@
       "source_location": "L171",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_doctor_applyfixes",
-      "community": 267,
+      "community": 61,
       "norm_label": "applyfixes()"
     },
     {
@@ -9770,7 +9770,7 @@
       "source_location": "L215",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_doctor_rel",
-      "community": 2,
+      "community": 71,
       "norm_label": "rel()"
     },
     {
@@ -10800,7 +10800,7 @@
       "source_location": "L194",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_safereadjson",
-      "community": 14,
+      "community": 455,
       "norm_label": "safereadjson()"
     },
     {
@@ -10900,7 +10900,7 @@
       "source_location": "L278",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_readconfig",
-      "community": 14,
+      "community": 455,
       "norm_label": "readconfig()"
     },
     {
@@ -10910,7 +10910,7 @@
       "source_location": "L292",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_hooksection",
-      "community": 14,
+      "community": 455,
       "norm_label": "hooksection()"
     },
     {
@@ -10920,7 +10920,7 @@
       "source_location": "L297",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_detectorsection",
-      "community": 14,
+      "community": 455,
       "norm_label": "detectorsection()"
     },
     {
@@ -10930,7 +10930,7 @@
       "source_location": "L302",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_numberor",
-      "community": 14,
+      "community": 455,
       "norm_label": "numberor()"
     },
     {
@@ -10940,7 +10940,7 @@
       "source_location": "L306",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_clonedefaultconfig",
-      "community": 14,
+      "community": 455,
       "norm_label": "clonedefaultconfig()"
     },
     {
@@ -10950,7 +10950,7 @@
       "source_location": "L318",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_applydetectorconfigsource",
-      "community": 14,
+      "community": 455,
       "norm_label": "applydetectorconfigsource()"
     },
     {
@@ -10960,7 +10960,7 @@
       "source_location": "L346",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_applyconfigsource",
-      "community": 14,
+      "community": 455,
       "norm_label": "applyconfigsource()"
     },
     {
@@ -10970,7 +10970,7 @@
       "source_location": "L371",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_uniquestrings",
-      "community": 14,
+      "community": 455,
       "norm_label": "uniquestrings()"
     },
     {
@@ -11460,7 +11460,7 @@
       "source_location": "L1115",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_relativize",
-      "community": 14,
+      "community": 135,
       "norm_label": "relativize()"
     },
     {
@@ -11690,7 +11690,7 @@
       "source_location": "L1514",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_rendercleanack",
-      "community": 14,
+      "community": 135,
       "norm_label": "rendercleanack()"
     },
     {
@@ -11700,7 +11700,7 @@
       "source_location": "L1520",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_hook_lib_renderpendingack",
-      "community": 14,
+      "community": 135,
       "norm_label": "renderpendingack()"
     },
     {
@@ -11820,7 +11820,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_artifact_schema",
-      "community": 267,
+      "community": 61,
       "norm_label": "artifact-schema.mjs"
     },
     {
@@ -11830,7 +11830,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_artifact_schema_product_v4_sections",
-      "community": 267,
+      "community": 61,
       "norm_label": "product_v4_sections"
     },
     {
@@ -11840,7 +11840,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_artifact_schema_product_deprecated_sections",
-      "community": 267,
+      "community": 61,
       "norm_label": "product_deprecated_sections"
     },
     {
@@ -11850,7 +11850,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_artifact_schema_productstampline",
-      "community": 267,
+      "community": 61,
       "norm_label": "productstampline()"
     },
     {
@@ -11860,7 +11860,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_artifact_schema_readproductschemaversion",
-      "community": 267,
+      "community": 61,
       "norm_label": "readproductschemaversion()"
     },
     {
@@ -11870,7 +11870,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_artifact_schema_stampproductschema",
-      "community": 267,
+      "community": 61,
       "norm_label": "stampproductschema()"
     },
     {
@@ -11880,7 +11880,7 @@
       "source_location": "L90",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_artifact_schema_readsidecarschemaversion",
-      "community": 267,
+      "community": 61,
       "norm_label": "readsidecarschemaversion()"
     },
     {
@@ -13090,7 +13090,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_impeccable_paths_getlegacylivesessionsdir",
-      "community": 36,
+      "community": 87,
       "norm_label": "getlegacylivesessionsdir()"
     },
     {
@@ -13480,7 +13480,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness",
-      "community": 267,
+      "community": 61,
       "norm_label": "staleness.mjs"
     },
     {
@@ -13490,7 +13490,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_known_config_keys",
-      "community": 267,
+      "community": 61,
       "norm_label": "known_config_keys"
     },
     {
@@ -13500,7 +13500,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_known_detector_keys",
-      "community": 267,
+      "community": 61,
       "norm_label": "known_detector_keys"
     },
     {
@@ -13510,7 +13510,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_native_evidence_paths",
-      "community": 267,
+      "community": 61,
       "norm_label": "native_evidence_paths"
     },
     {
@@ -13520,7 +13520,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_native_evidence_dependencies",
-      "community": 267,
+      "community": 61,
       "norm_label": "native_evidence_dependencies"
     },
     {
@@ -13530,7 +13530,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_finding",
-      "community": 267,
+      "community": 61,
       "norm_label": "finding()"
     },
     {
@@ -13550,7 +13550,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_readjson",
-      "community": 267,
+      "community": 61,
       "norm_label": "readjson()"
     },
     {
@@ -13560,7 +13560,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_mtimems",
-      "community": 267,
+      "community": 61,
       "norm_label": "mtimems()"
     },
     {
@@ -13570,7 +13570,7 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_hassection",
-      "community": 267,
+      "community": 61,
       "norm_label": "hassection()"
     },
     {
@@ -13580,7 +13580,7 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_torelative",
-      "community": 267,
+      "community": 61,
       "norm_label": "torelative()"
     },
     {
@@ -13590,7 +13590,7 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_checkproduct",
-      "community": 267,
+      "community": 61,
       "norm_label": "checkproduct()"
     },
     {
@@ -13600,7 +13600,7 @@
       "source_location": "L193",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_checknativeplatformevidence",
-      "community": 267,
+      "community": 61,
       "norm_label": "checknativeplatformevidence()"
     },
     {
@@ -13610,7 +13610,7 @@
       "source_location": "L244",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_checkdesignsidecar",
-      "community": 267,
+      "community": 61,
       "norm_label": "checkdesignsidecar()"
     },
     {
@@ -13620,7 +13620,7 @@
       "source_location": "L305",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_checkconfig",
-      "community": 267,
+      "community": 61,
       "norm_label": "checkconfig()"
     },
     {
@@ -13630,7 +13630,7 @@
       "source_location": "L355",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_checksurfacebriefs",
-      "community": 267,
+      "community": 61,
       "norm_label": "checksurfacebriefs()"
     },
     {
@@ -13640,7 +13640,7 @@
       "source_location": "L387",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_checkprojectroots",
-      "community": 267,
+      "community": 61,
       "norm_label": "checkprojectroots()"
     },
     {
@@ -13650,7 +13650,7 @@
       "source_location": "L407",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_describeworkspacecontext",
-      "community": 267,
+      "community": 61,
       "norm_label": "describeworkspacecontext()"
     },
     {
@@ -13660,7 +13660,7 @@
       "source_location": "L424",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_staleness_collectbootfindings",
-      "community": 267,
+      "community": 61,
       "norm_label": "collectbootfindings()"
     },
     {
@@ -13670,7 +13670,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_surface_briefs",
-      "community": 77,
+      "community": 332,
       "norm_label": "surface-briefs.mjs"
     },
     {
@@ -13680,7 +13680,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_surface_briefs_getsurfacebriefdir",
-      "community": 77,
+      "community": 332,
       "norm_label": "getsurfacebriefdir()"
     },
     {
@@ -13690,7 +13690,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_surface_briefs_normalizesurfacetarget",
-      "community": 77,
+      "community": 332,
       "norm_label": "normalizesurfacetarget()"
     },
     {
@@ -13700,7 +13700,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_surface_briefs_surfacebriefpathfortarget",
-      "community": 77,
+      "community": 332,
       "norm_label": "surfacebriefpathfortarget()"
     },
     {
@@ -13710,7 +13710,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_surface_briefs_parsesurfacebrief",
-      "community": 77,
+      "community": 332,
       "norm_label": "parsesurfacebrief()"
     },
     {
@@ -13720,7 +13720,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_surface_briefs_listsurfacebriefs",
-      "community": 77,
+      "community": 332,
       "norm_label": "listsurfacebriefs()"
     },
     {
@@ -13730,7 +13730,7 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_surface_briefs_resolvesurfacebrief",
-      "community": 77,
+      "community": 332,
       "norm_label": "resolvesurfacebrief()"
     },
     {
@@ -13740,7 +13740,7 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_surface_briefs_writesurfacebrief",
-      "community": 77,
+      "community": 332,
       "norm_label": "writesurfacebrief()"
     },
     {
@@ -14700,7 +14700,7 @@
       "source_location": "L993",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_contextelementformanualedit",
-      "community": 0,
+      "community": 97,
       "norm_label": "contextelementformanualedit()"
     },
     {
@@ -14710,7 +14710,7 @@
       "source_location": "L1017",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_isusefulmanualeditcontext",
-      "community": 0,
+      "community": 97,
       "norm_label": "isusefulmanualeditcontext()"
     },
     {
@@ -14720,7 +14720,7 @@
       "source_location": "L1023",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_collectmanualcontextpieces",
-      "community": 0,
+      "community": 97,
       "norm_label": "collectmanualcontextpieces()"
     },
     {
@@ -14730,7 +14730,7 @@
       "source_location": "L1042",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_addmanualcontexttext",
-      "community": 0,
+      "community": 97,
       "norm_label": "addmanualcontexttext()"
     },
     {
@@ -14780,7 +14780,7 @@
       "source_location": "L1141",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_showbar",
-      "community": 6,
+      "community": 3,
       "norm_label": "showbar()"
     },
     {
@@ -14800,7 +14800,7 @@
       "source_location": "L1181",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_updatebarcontent",
-      "community": 6,
+      "community": 3,
       "norm_label": "updatebarcontent()"
     },
     {
@@ -14810,7 +14810,7 @@
       "source_location": "L1219",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_applyconfigurebarchrome",
-      "community": 6,
+      "community": 3,
       "norm_label": "applyconfigurebarchrome()"
     },
     {
@@ -14820,7 +14820,7 @@
       "source_location": "L1228",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_restorepickerbarchrome",
-      "community": 6,
+      "community": 3,
       "norm_label": "restorepickerbarchrome()"
     },
     {
@@ -14830,7 +14830,7 @@
       "source_location": "L1241",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_syncconfigureinputchrome",
-      "community": 6,
+      "community": 11,
       "norm_label": "syncconfigureinputchrome()"
     },
     {
@@ -15100,7 +15100,7 @@
       "source_location": "L1685",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_layoutflowchildren",
-      "community": 82,
+      "community": 0,
       "norm_label": "layoutflowchildren()"
     },
     {
@@ -15170,7 +15170,7 @@
       "source_location": "L1802",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_cursorforinsertaxis",
-      "community": 82,
+      "community": 0,
       "norm_label": "cursorforinsertaxis()"
     },
     {
@@ -15300,7 +15300,7 @@
       "source_location": "L1981",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_setpageinteractioncursor",
-      "community": 82,
+      "community": 0,
       "norm_label": "setpageinteractioncursor()"
     },
     {
@@ -15310,7 +15310,7 @@
       "source_location": "L2001",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_syncpageinteractioncursor",
-      "community": 82,
+      "community": 0,
       "norm_label": "syncpageinteractioncursor()"
     },
     {
@@ -15580,7 +15580,7 @@
       "source_location": "L2594",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_buildcyclingrow",
-      "community": 6,
+      "community": 3,
       "norm_label": "buildcyclingrow()"
     },
     {
@@ -15620,7 +15620,7 @@
       "source_location": "L2834",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_navbtn",
-      "community": 6,
+      "community": 3,
       "norm_label": "navbtn()"
     },
     {
@@ -15680,7 +15680,7 @@
       "source_location": "L2975",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_ensurecyclingrenderable",
-      "community": 6,
+      "community": 3,
       "norm_label": "ensurecyclingrenderable()"
     },
     {
@@ -15710,7 +15710,7 @@
       "source_location": "L3084",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_getmountedsveltecomponentanchor",
-      "community": 3,
+      "community": 84,
       "norm_label": "getmountedsveltecomponentanchor()"
     },
     {
@@ -15830,7 +15830,7 @@
       "source_location": "L3405",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_disableinlineedit",
-      "community": 12,
+      "community": 3,
       "norm_label": "disableinlineedit()"
     },
     {
@@ -16060,7 +16060,7 @@
       "source_location": "L3763",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_schedulependingdockposition",
-      "community": 82,
+      "community": 12,
       "norm_label": "schedulependingdockposition()"
     },
     {
@@ -16070,7 +16070,7 @@
       "source_location": "L3768",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_positionpendingdock",
-      "community": 82,
+      "community": 12,
       "norm_label": "positionpendingdock()"
     },
     {
@@ -16260,7 +16260,7 @@
       "source_location": "L4035",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_maybeshowfirstsavetoast",
-      "community": 44,
+      "community": 97,
       "norm_label": "maybeshowfirstsavetoast()"
     },
     {
@@ -16460,7 +16460,7 @@
       "source_location": "L4419",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_cssident",
-      "community": 97,
+      "community": 0,
       "norm_label": "cssident()"
     },
     {
@@ -16780,7 +16780,7 @@
       "source_location": "L4979",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_buildpickedanchorsnapshot",
-      "community": 0,
+      "community": 3,
       "norm_label": "buildpickedanchorsnapshot()"
     },
     {
@@ -16840,7 +16840,7 @@
       "source_location": "L5105",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_issvelteinsertmanifest",
-      "community": 3,
+      "community": 84,
       "norm_label": "issvelteinsertmanifest()"
     },
     {
@@ -16850,7 +16850,7 @@
       "source_location": "L5109",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_findliveelementforsveltemanifest",
-      "community": 3,
+      "community": 84,
       "norm_label": "findliveelementforsveltemanifest()"
     },
     {
@@ -16880,7 +16880,7 @@
       "source_location": "L5155",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_resolvecomponentmoduleurl",
-      "community": 3,
+      "community": 84,
       "norm_label": "resolvecomponentmoduleurl()"
     },
     {
@@ -16890,7 +16890,7 @@
       "source_location": "L5159",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_loadsvelteruntime",
-      "community": 3,
+      "community": 84,
       "norm_label": "loadsvelteruntime()"
     },
     {
@@ -17030,7 +17030,7 @@
       "source_location": "L5358",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_mountsveltecomponentvariant",
-      "community": 3,
+      "community": 84,
       "norm_label": "mountsveltecomponentvariant()"
     },
     {
@@ -17050,7 +17050,7 @@
       "source_location": "L5430",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_applyoriginalattrstosvelteanchor",
-      "community": 3,
+      "community": 84,
       "norm_label": "applyoriginalattrstosvelteanchor()"
     },
     {
@@ -17060,7 +17060,7 @@
       "source_location": "L5445",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_commitacceptedsveltecomponenttodom",
-      "community": 3,
+      "community": 84,
       "norm_label": "commitacceptedsveltecomponenttodom()"
     },
     {
@@ -17080,7 +17080,7 @@
       "source_location": "L5593",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_waitforsveltecomponenttargetandretry",
-      "community": 3,
+      "community": 84,
       "norm_label": "waitforsveltecomponenttargetandretry()"
     },
     {
@@ -17200,7 +17200,7 @@
       "source_location": "L5934",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_cyclevariant",
-      "community": 6,
+      "community": 3,
       "norm_label": "cyclevariant()"
     },
     {
@@ -17420,7 +17420,7 @@
       "source_location": "L6620",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_handlemousemove",
-      "community": 82,
+      "community": 0,
       "norm_label": "handlemousemove()"
     },
     {
@@ -17480,7 +17480,7 @@
       "source_location": "L6934",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_handlego",
-      "community": 12,
+      "community": 3,
       "norm_label": "handlego()"
     },
     {
@@ -17640,7 +17640,7 @@
       "source_location": "L7380",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_captureandemit",
-      "community": 0,
+      "community": 3,
       "norm_label": "captureandemit()"
     },
     {
@@ -17770,7 +17770,7 @@
       "source_location": "L7805",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_handleaccept",
-      "community": 6,
+      "community": 3,
       "norm_label": "handleaccept()"
     },
     {
@@ -17790,7 +17790,7 @@
       "source_location": "L7887",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_scheduleacceptcleanup",
-      "community": 0,
+      "community": 84,
       "norm_label": "scheduleacceptcleanup()"
     },
     {
@@ -17800,7 +17800,7 @@
       "source_location": "L7910",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_snapshotacceptedvariantdom",
-      "community": 97,
+      "community": 0,
       "norm_label": "snapshotacceptedvariantdom()"
     },
     {
@@ -17810,7 +17810,7 @@
       "source_location": "L7923",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_selectorforacceptedroot",
-      "community": 97,
+      "community": 0,
       "norm_label": "selectorforacceptedroot()"
     },
     {
@@ -17820,7 +17820,7 @@
       "source_location": "L7931",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_accepteddomalreadyclean",
-      "community": 0,
+      "community": 84,
       "norm_label": "accepteddomalreadyclean()"
     },
     {
@@ -17830,7 +17830,7 @@
       "source_location": "L7938",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_ensureaccepteddomclean",
-      "community": 0,
+      "community": 84,
       "norm_label": "ensureaccepteddomclean()"
     },
     {
@@ -17840,7 +17840,7 @@
       "source_location": "L7964",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_findacceptedruntimewrappers",
-      "community": 0,
+      "community": 84,
       "norm_label": "findacceptedruntimewrappers()"
     },
     {
@@ -17850,7 +17850,7 @@
       "source_location": "L7972",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_restoreaccepteddomfromsnapshot",
-      "community": 0,
+      "community": 84,
       "norm_label": "restoreaccepteddomfromsnapshot()"
     },
     {
@@ -17860,7 +17860,7 @@
       "source_location": "L7994",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_reloadaftermissingaccepteddom",
-      "community": 0,
+      "community": 84,
       "norm_label": "reloadaftermissingaccepteddom()"
     },
     {
@@ -18090,7 +18090,7 @@
       "source_location": "L8336",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_dismisstoast",
-      "community": 44,
+      "community": 3,
       "norm_label": "dismisstoast()"
     },
     {
@@ -18130,7 +18130,7 @@
       "source_location": "L8576",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_saveinteractionprefs",
-      "community": 12,
+      "community": 0,
       "norm_label": "saveinteractionprefs()"
     },
     {
@@ -18190,7 +18190,7 @@
       "source_location": "L8733",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_globalbarmodetoggles",
-      "community": 11,
+      "community": 0,
       "norm_label": "globalbarmodetoggles()"
     },
     {
@@ -18200,7 +18200,7 @@
       "source_location": "L8742",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_applyglobalbarlabelstate",
-      "community": 11,
+      "community": 0,
       "norm_label": "applyglobalbarlabelstate()"
     },
     {
@@ -18210,7 +18210,7 @@
       "source_location": "L8750",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_syncglobalbarexpandedlabels",
-      "community": 11,
+      "community": 12,
       "norm_label": "syncglobalbarexpandedlabels()"
     },
     {
@@ -18780,7 +18780,7 @@
       "source_location": "L9759",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_hideagentpolltooltip",
-      "community": 82,
+      "community": 12,
       "norm_label": "hideagentpolltooltip()"
     },
     {
@@ -18790,7 +18790,7 @@
       "source_location": "L9765",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_stopagentstatuspoll",
-      "community": 82,
+      "community": 0,
       "norm_label": "stopagentstatuspoll()"
     },
     {
@@ -18800,7 +18800,7 @@
       "source_location": "L9772",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_fetchagentpollingstatus",
-      "community": 82,
+      "community": 0,
       "norm_label": "fetchagentpollingstatus()"
     },
     {
@@ -18810,7 +18810,7 @@
       "source_location": "L9783",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_startagentstatuspoll",
-      "community": 82,
+      "community": 0,
       "norm_label": "startagentstatuspoll()"
     },
     {
@@ -18820,7 +18820,7 @@
       "source_location": "L9789",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_initglobalbar",
-      "community": 82,
+      "community": 12,
       "norm_label": "initglobalbar()"
     },
     {
@@ -18840,7 +18840,7 @@
       "source_location": "L10279",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_requestdetectscan",
-      "community": 82,
+      "community": 12,
       "norm_label": "requestdetectscan()"
     },
     {
@@ -18880,7 +18880,7 @@
       "source_location": "L10362",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_loaddetectscript",
-      "community": 12,
+      "community": 0,
       "norm_label": "loaddetectscript()"
     },
     {
@@ -18890,7 +18890,7 @@
       "source_location": "L10371",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_ondetectmessage",
-      "community": 82,
+      "community": 12,
       "norm_label": "ondetectmessage()"
     },
     {
@@ -18900,7 +18900,7 @@
       "source_location": "L10395",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_browser_teardown",
-      "community": 82,
+      "community": 12,
       "norm_label": "teardown()"
     },
     {
@@ -21410,7 +21410,7 @@
       "source_location": "L199",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_server_preparegenerateeventforlease",
-      "community": 149,
+      "community": 5,
       "norm_label": "preparegenerateeventforlease()"
     },
     {
@@ -21640,7 +21640,7 @@
       "source_location": "L570",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_server_getmanualeditstatus",
-      "community": 50,
+      "community": 5,
       "norm_label": "getmanualeditstatus()"
     },
     {
@@ -23390,7 +23390,7 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_manual_edits_buffer_countbypage",
-      "community": 50,
+      "community": 16,
       "norm_label": "countbypage()"
     },
     {
@@ -23410,7 +23410,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_poll_lanes",
-      "community": 5,
+      "community": 466,
       "norm_label": "poll-lanes.mjs"
     },
     {
@@ -23420,7 +23420,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_poll_lanes_eventpriority",
-      "community": 5,
+      "community": 466,
       "norm_label": "eventpriority()"
     },
     {
@@ -23430,7 +23430,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_poll_lanes_selectavailablependingevent",
-      "community": 5,
+      "community": 466,
       "norm_label": "selectavailablependingevent()"
     },
     {
@@ -23460,7 +23460,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_live_session_store_generation_fenced_phases",
-      "community": 87,
+      "community": 5,
       "norm_label": "generation_fenced_phases"
     },
     {
@@ -25550,7 +25550,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_surface_brief",
-      "community": 77,
+      "community": 332,
       "norm_label": "surface-brief.mjs"
     },
     {
@@ -25560,7 +25560,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_surface_brief_summary",
-      "community": 77,
+      "community": 332,
       "norm_label": "summary()"
     },
     {
@@ -25570,7 +25570,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_surface_brief_main",
-      "community": 77,
+      "community": 332,
       "norm_label": "main()"
     },
     {
@@ -25580,7 +25580,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_surface_brief_ismainmodule",
-      "community": 77,
+      "community": 332,
       "norm_label": "ismainmodule()"
     },
     {
@@ -30448,7 +30448,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_tests_uninstall_test_env",
-      "community": 50,
+      "community": 90,
       "norm_label": "env"
     },
     {
@@ -30888,7 +30888,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_health_voice_route",
-      "community": 83,
+      "community": 58,
       "norm_label": "route.ts"
     },
     {
@@ -30898,7 +30898,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_health_voice_route_get",
-      "community": 83,
+      "community": 58,
       "norm_label": "get()"
     },
     {
@@ -31228,7 +31228,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_settings_route",
-      "community": 466,
+      "community": 58,
       "norm_label": "route.ts"
     },
     {
@@ -31238,7 +31238,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_settings_route_known_keys",
-      "community": 466,
+      "community": 58,
       "norm_label": "known_keys"
     },
     {
@@ -31248,7 +31248,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_settings_route_get",
-      "community": 466,
+      "community": 58,
       "norm_label": "get()"
     },
     {
@@ -31258,7 +31258,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_settings_route_post",
-      "community": 466,
+      "community": 58,
       "norm_label": "post()"
     },
     {
@@ -31325,7 +31325,7 @@
       "label": "handleCustomerMessage()",
       "file_type": "code",
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L1217",
+      "source_location": "L1261",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_telegram_webhook_route_handlecustomermessage",
       "community": 83,
@@ -31335,7 +31335,7 @@
       "label": "sendAsBusinessOwner()",
       "file_type": "code",
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L1253",
+      "source_location": "L1297",
       "_origin": "ast",
       "id": "casper_voice_web_app_api_telegram_webhook_route_sendasbusinessowner",
       "community": 83,
@@ -31892,30 +31892,10 @@
       "norm_label": "layout.tsx"
     },
     {
-      "label": "cairo",
-      "file_type": "code",
-      "source_file": "casper-voice-web/app/layout.tsx",
-      "source_location": "L5",
-      "_origin": "ast",
-      "id": "casper_voice_web_app_layout_cairo",
-      "community": 304,
-      "norm_label": "cairo"
-    },
-    {
-      "label": "plusJakarta",
-      "file_type": "code",
-      "source_file": "casper-voice-web/app/layout.tsx",
-      "source_location": "L12",
-      "_origin": "ast",
-      "id": "casper_voice_web_app_layout_plusjakarta",
-      "community": 304,
-      "norm_label": "plusjakarta"
-    },
-    {
       "label": "metadata",
       "file_type": "code",
       "source_file": "casper-voice-web/app/layout.tsx",
-      "source_location": "L19",
+      "source_location": "L4",
       "_origin": "ast",
       "id": "casper_voice_web_app_layout_metadata",
       "community": 304,
@@ -31925,7 +31905,7 @@
       "label": "RootLayout()",
       "file_type": "code",
       "source_file": "casper-voice-web/app/layout.tsx",
-      "source_location": "L24",
+      "source_location": "L9",
       "_origin": "ast",
       "id": "casper_voice_web_app_layout_rootlayout",
       "community": 304,
@@ -33088,7 +33068,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_lib_prisma_tenant_extension",
-      "community": 58,
+      "community": 334,
       "norm_label": "prisma-tenant-extension.ts"
     },
     {
@@ -33098,7 +33078,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "casper_voice_web_lib_prisma_tenant_extension_tenantcontext",
-      "community": 58,
+      "community": 334,
       "norm_label": "tenantcontext"
     },
     {
@@ -33108,7 +33088,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "casper_voice_web_lib_prisma_tenant_extension_asynchooks",
-      "community": 58,
+      "community": 334,
       "norm_label": "asynchooks"
     },
     {
@@ -33118,7 +33098,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "casper_voice_web_lib_prisma_tenant_extension_tenantstorage",
-      "community": 58,
+      "community": 334,
       "norm_label": "tenantstorage"
     },
     {
@@ -33128,7 +33108,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "casper_voice_web_lib_prisma_tenant_extension_gettenantid",
-      "community": 58,
+      "community": 334,
       "norm_label": "gettenantid()"
     },
     {
@@ -33138,7 +33118,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "casper_voice_web_lib_prisma_tenant_extension_runwithtenant",
-      "community": 58,
+      "community": 334,
       "norm_label": "runwithtenant()"
     },
     {
@@ -33148,7 +33128,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "casper_voice_web_lib_prisma_tenant_extension_tenant_aware_models",
-      "community": 58,
+      "community": 334,
       "norm_label": "tenant_aware_models"
     },
     {
@@ -33158,7 +33138,7 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "casper_voice_web_lib_prisma_tenant_extension_alloperations",
-      "community": 58,
+      "community": 334,
       "norm_label": "$alloperations()"
     },
     {
@@ -33368,7 +33348,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_lib_subscription_guard",
-      "community": 83,
+      "community": 58,
       "norm_label": "subscription-guard.ts"
     },
     {
@@ -33378,7 +33358,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "casper_voice_web_lib_subscription_guard_enforcesubscriptionexpiry",
-      "community": 83,
+      "community": 58,
       "norm_label": "enforcesubscriptionexpiry()"
     },
     {
@@ -33548,7 +33528,7 @@
       "source_location": "L205",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_fireandforgettelegramalert",
-      "community": 83,
+      "community": 302,
       "norm_label": "fireandforgettelegramalert()"
     },
     {
@@ -33558,7 +33538,7 @@
       "source_location": "L214",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_approvetenantrequest",
-      "community": 83,
+      "community": 334,
       "norm_label": "approvetenantrequest()"
     },
     {
@@ -33568,7 +33548,7 @@
       "source_location": "L288",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_rejecttenantrequest",
-      "community": 83,
+      "community": 302,
       "norm_label": "rejecttenantrequest()"
     },
     {
@@ -34185,7 +34165,7 @@
       "label": "sanitizeNonToolReply()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1042",
+      "source_location": "L1100",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_sanitizenontoolreply",
       "community": 26,
@@ -34195,7 +34175,7 @@
       "label": "logRejectedToolCall()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1054",
+      "source_location": "L1112",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_logrejectedtoolcall",
       "community": 62,
@@ -34205,7 +34185,7 @@
       "label": "executeTool()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1065",
+      "source_location": "L1123",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_executetool",
       "community": 62,
@@ -34215,7 +34195,7 @@
       "label": "LLMResult",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2681",
+      "source_location": "L2834",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_llmresult",
       "community": 62,
@@ -34225,7 +34205,7 @@
       "label": "saveChatMessage()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2685",
+      "source_location": "L2838",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_savechatmessage",
       "community": 26,
@@ -34235,7 +34215,7 @@
       "label": "processTelegramMessageWithLLM()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2698",
+      "source_location": "L2851",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "community": 26,
@@ -35316,7 +35296,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_ambiguity_and_arabic_numerals",
-      "community": 26,
+      "community": 62,
       "norm_label": "test_ambiguity_and_arabic_numerals.ts"
     },
     {
@@ -35326,7 +35306,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_ambiguity_and_arabic_numerals_runtest",
-      "community": 26,
+      "community": 62,
       "norm_label": "runtest()"
     },
     {
@@ -35336,7 +35316,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_ambiguity_and_arabic_numerals_main",
-      "community": 26,
+      "community": 62,
       "norm_label": "main()"
     },
     {
@@ -35686,7 +35666,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_live_interaction_demo",
-      "community": 462,
+      "community": 26,
       "norm_label": "test_live_interaction_demo.ts"
     },
     {
@@ -35696,7 +35676,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_live_interaction_demo_today",
-      "community": 462,
+      "community": 26,
       "norm_label": "today"
     },
     {
@@ -35706,7 +35686,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_live_interaction_demo_setuptestdata",
-      "community": 462,
+      "community": 26,
       "norm_label": "setuptestdata()"
     },
     {
@@ -35716,7 +35696,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_live_interaction_demo_runscenario",
-      "community": 462,
+      "community": 26,
       "norm_label": "runscenario()"
     },
     {
@@ -35726,7 +35706,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_live_interaction_demo_main",
-      "community": 462,
+      "community": 26,
       "norm_label": "main()"
     },
     {
@@ -36016,7 +35996,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_service_edge_cases",
-      "community": 468,
+      "community": 58,
       "norm_label": "test_service_edge_cases.ts"
     },
     {
@@ -36026,7 +36006,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_service_edge_cases_setupdata",
-      "community": 468,
+      "community": 58,
       "norm_label": "setupdata()"
     },
     {
@@ -36036,7 +36016,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_service_edge_cases_runservicetest",
-      "community": 468,
+      "community": 58,
       "norm_label": "runservicetest()"
     },
     {
@@ -36046,7 +36026,7 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_service_edge_cases_main",
-      "community": 468,
+      "community": 58,
       "norm_label": "main()"
     },
     {
@@ -36146,7 +36126,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_uncataloged_case",
-      "community": 469,
+      "community": 26,
       "norm_label": "test_uncataloged_case.ts"
     },
     {
@@ -36156,7 +36136,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_uncataloged_case_setuptestdata",
-      "community": 469,
+      "community": 26,
       "norm_label": "setuptestdata()"
     },
     {
@@ -36166,7 +36146,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_uncataloged_case_runtestcase",
-      "community": 469,
+      "community": 26,
       "norm_label": "runtestcase()"
     },
     {
@@ -36176,7 +36156,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "casper_voice_web_scripts_manual_sim_test_uncataloged_case_main",
-      "community": 469,
+      "community": 26,
       "norm_label": "main()"
     },
     {
@@ -36420,6 +36400,26 @@
       "norm_label": "runtests()"
     },
     {
+      "label": "test_telegram_keyboards.ts",
+      "file_type": "code",
+      "source_file": "casper-voice-web/test_telegram_keyboards.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "casper_voice_web_test_telegram_keyboards",
+      "community": 62,
+      "norm_label": "test_telegram_keyboards.ts"
+    },
+    {
+      "label": "testTelegramKeyboardsAndChoices()",
+      "file_type": "code",
+      "source_file": "casper-voice-web/test_telegram_keyboards.ts",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "casper_voice_web_test_telegram_keyboards_testtelegramkeyboardsandchoices",
+      "community": 62,
+      "norm_label": "testtelegramkeyboardsandchoices()"
+    },
+    {
       "label": "test_transaction_correction.ts",
       "file_type": "code",
       "source_file": "casper-voice-web/test_transaction_correction.ts",
@@ -36516,7 +36516,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_tests_multi_tenant_verification_suite_test",
-      "community": 58,
+      "community": 334,
       "norm_label": "multi_tenant_verification_suite.test.ts"
     },
     {
@@ -36526,7 +36526,7 @@
       "source_location": "L125",
       "_origin": "ast",
       "id": "casper_voice_web_tests_multi_tenant_verification_suite_test_scandir",
-      "community": 58,
+      "community": 334,
       "norm_label": "scandir()"
     },
     {
@@ -36536,7 +36536,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_tests_mvp_prelaunch_e2e_test",
-      "community": 58,
+      "community": 334,
       "norm_label": "mvp_prelaunch_e2e.test.ts"
     },
     {
@@ -36546,7 +36546,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "casper_voice_web_tests_mvp_prelaunch_e2e_test_runmvpprelaunchaudit",
-      "community": 58,
+      "community": 334,
       "norm_label": "runmvpprelaunchaudit()"
     },
     {
@@ -36576,7 +36576,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_tests_prisma_tenant_extension_test",
-      "community": 58,
+      "community": 334,
       "norm_label": "prisma_tenant_extension.test.ts"
     },
     {
@@ -36646,7 +36646,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "casper_voice_web_tests_telegram_llm_guardrails_test",
-      "community": 58,
+      "community": 334,
       "norm_label": "telegram_llm_guardrails.test.ts"
     },
     {
@@ -37816,7 +37816,7 @@
       "source_location": "L292",
       "_origin": "ast",
       "id": "voice_service_agent_casperagent_update_appointment",
-      "community": 17,
+      "community": 98,
       "norm_label": ".update_appointment()"
     },
     {
@@ -37826,7 +37826,7 @@
       "source_location": "L329",
       "_origin": "ast",
       "id": "voice_service_agent_casperagent_cancel_appointment",
-      "community": 98,
+      "community": 17,
       "norm_label": ".cancel_appointment()"
     },
     {
@@ -38036,7 +38036,7 @@
       "source_location": "L293",
       "_origin": "ast",
       "id": "voice_service_agent_rationale_293",
-      "community": 17,
+      "community": 98,
       "norm_label": "\u064a\u0639\u062f\u0644 \u0645\u064a\u0639\u0627\u062f \u062d\u062c\u0632 \u0642\u0627\u064a\u0645 \u0644\u0639\u0645\u064a\u0644 \u0645\u062d\u062f\u062f \u0628\u062f\u0648\u0646 \u062a\u0643\u0631\u0627\u0631 \u0627\u0644\u062d\u062c\u0632"
     },
     {
@@ -38046,7 +38046,7 @@
       "source_location": "L330",
       "_origin": "ast",
       "id": "voice_service_agent_rationale_330",
-      "community": 98,
+      "community": 17,
       "norm_label": "\u0627\u0644\u063a\u0627\u0621 \u0627\u0648 \u062d\u0630\u0641 \u0645\u064a\u0639\u0627\u062f \u062d\u062c\u0632 \u0642\u0627\u064a\u0645 \u0644\u0639\u0645\u064a\u0644 (\u0627\u0633\u062a\u062e\u062f\u0645\u0647\u0627 \u0639\u0646\u062f \u0633\u0645\u0627\u0639: \u0627\u0644\u063a\u064a\u060c \u0627\u0645\u0633\u062d\u060c \u0634\u064a\u0644 \u0645\u064a\u0639\u0627\u062f)"
     },
     {
@@ -38216,7 +38216,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "voice_service_diagnostics_diagnosticssession_timer",
-      "community": 425,
+      "community": 133,
       "norm_label": ".timer()"
     },
     {
@@ -38316,7 +38316,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "voice_service_diagnostics_rationale_76",
-      "community": 425,
+      "community": 133,
       "norm_label": "stage: 'vad' | 'stt' | 'llm' | 'tts"
     },
     {
@@ -38516,7 +38516,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "voice_service_preflight_check",
-      "community": 134,
+      "community": 468,
       "norm_label": "preflight_check.py"
     },
     {
@@ -38526,7 +38526,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "voice_service_preflight_check_run_preflight",
-      "community": 134,
+      "community": 468,
       "norm_label": "run_preflight()"
     },
     {
@@ -38536,7 +38536,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "voice_service_preflight_check_rationale_10",
-      "community": 134,
+      "community": 468,
       "norm_label": "two-stage pre-flight diagnostic check for livekit + gemini agent.     stage 1: s"
     },
     {
@@ -42386,7 +42386,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_skill",
-      "community": 211,
+      "community": 148,
       "norm_label": "skill.md"
     },
     {
@@ -42396,7 +42396,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "agents_skills_impeccable_skill_setup",
-      "community": 211,
+      "community": 148,
       "norm_label": "setup"
     },
     {
@@ -42406,7 +42406,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "agents_skills_impeccable_skill_how_to_design",
-      "community": 211,
+      "community": 148,
       "norm_label": "how to design"
     },
     {
@@ -42416,7 +42416,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "agents_skills_impeccable_skill_modes",
-      "community": 211,
+      "community": 148,
       "norm_label": "modes"
     },
     {
@@ -42426,7 +42426,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "agents_skills_impeccable_skill_commands",
-      "community": 211,
+      "community": 148,
       "norm_label": "commands"
     },
     {
@@ -42786,7 +42786,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_android_android_platform",
-      "community": 29,
+      "community": 264,
       "norm_label": "android platform"
     },
     {
@@ -42796,7 +42796,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_android_the_android_slop_test",
-      "community": 29,
+      "community": 264,
       "norm_label": "the android slop test"
     },
     {
@@ -42806,7 +42806,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_android_layout_structure",
-      "community": 29,
+      "community": 264,
       "norm_label": "layout & structure"
     },
     {
@@ -42816,7 +42816,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_android_touch_targets",
-      "community": 29,
+      "community": 264,
       "norm_label": "touch targets"
     },
     {
@@ -42826,7 +42826,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_android_typography",
-      "community": 29,
+      "community": 264,
       "norm_label": "typography"
     },
     {
@@ -42836,7 +42836,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_android_color_theming",
-      "community": 29,
+      "community": 264,
       "norm_label": "color & theming"
     },
     {
@@ -42846,7 +42846,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_android_components_motion",
-      "community": 29,
+      "community": 264,
       "norm_label": "components & motion"
     },
     {
@@ -43106,7 +43106,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_audit_native_diagnostic_scan",
-      "community": 264,
+      "community": 29,
       "norm_label": "diagnostic scan"
     },
     {
@@ -43116,7 +43116,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_audit_native_1_accessibility_voiceover_talkback",
-      "community": 264,
+      "community": 29,
       "norm_label": "1. accessibility (voiceover / talkback)"
     },
     {
@@ -43126,7 +43126,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_audit_native_2_performance",
-      "community": 264,
+      "community": 29,
       "norm_label": "2. performance"
     },
     {
@@ -43136,7 +43136,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_audit_native_3_appearance_theming",
-      "community": 264,
+      "community": 29,
       "norm_label": "3. appearance & theming"
     },
     {
@@ -43146,7 +43146,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_audit_native_4_platform_conformance_critical",
-      "community": 264,
+      "community": 29,
       "norm_label": "4. platform conformance (critical)"
     },
     {
@@ -43156,7 +43156,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_audit_native_5_adaptivity",
-      "community": 264,
+      "community": 29,
       "norm_label": "5. adaptivity"
     },
     {
@@ -43496,7 +43496,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_craft_floor",
-      "community": 211,
+      "community": 148,
       "norm_label": "craft-floor.md"
     },
     {
@@ -43506,7 +43506,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_craft_floor_craft_floor",
-      "community": 211,
+      "community": 148,
       "norm_label": "craft floor"
     },
     {
@@ -43516,7 +43516,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_craft_floor_verify",
-      "community": 211,
+      "community": 148,
       "norm_label": "verify"
     },
     {
@@ -43526,7 +43526,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_craft_floor_refuse",
-      "community": 211,
+      "community": 148,
       "norm_label": "refuse"
     },
     {
@@ -44876,7 +44876,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_hooks",
-      "community": 211,
+      "community": 148,
       "norm_label": "hooks.md"
     },
     {
@@ -44886,7 +44886,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_hooks_impeccable_hooks",
-      "community": 211,
+      "community": 454,
       "norm_label": "$impeccable hooks"
     },
     {
@@ -44896,7 +44896,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_hooks_routing",
-      "community": 211,
+      "community": 454,
       "norm_label": "routing"
     },
     {
@@ -44906,7 +44906,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_hooks_flow",
-      "community": 211,
+      "community": 454,
       "norm_label": "flow"
     },
     {
@@ -44916,7 +44916,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_hooks_intentional_findings",
-      "community": 211,
+      "community": 454,
       "norm_label": "intentional findings"
     },
     {
@@ -44926,7 +44926,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_hooks_constraints",
-      "community": 211,
+      "community": 454,
       "norm_label": "constraints"
     },
     {
@@ -44936,7 +44936,7 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_hooks_failure_modes",
-      "community": 211,
+      "community": 454,
       "norm_label": "failure modes"
     },
     {
@@ -45066,7 +45066,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_ios_ios_platform",
-      "community": 228,
+      "community": 29,
       "norm_label": "ios platform"
     },
     {
@@ -45076,7 +45076,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_ios_the_ios_slop_test",
-      "community": 228,
+      "community": 29,
       "norm_label": "the ios slop test"
     },
     {
@@ -45086,7 +45086,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_ios_layout_structure",
-      "community": 228,
+      "community": 29,
       "norm_label": "layout & structure"
     },
     {
@@ -45096,7 +45096,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_ios_touch_targets",
-      "community": 228,
+      "community": 29,
       "norm_label": "touch targets"
     },
     {
@@ -45106,7 +45106,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_ios_typography",
-      "community": 228,
+      "community": 29,
       "norm_label": "typography"
     },
     {
@@ -45116,7 +45116,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_ios_color_materials",
-      "community": 228,
+      "community": 29,
       "norm_label": "color & materials"
     },
     {
@@ -45126,7 +45126,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_ios_components_controls",
-      "community": 228,
+      "community": 29,
       "norm_label": "components & controls"
     },
     {
@@ -45136,7 +45136,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_ios_motion",
-      "community": 228,
+      "community": 29,
       "norm_label": "motion"
     },
     {
@@ -45566,7 +45566,7 @@
       "source_location": "L567",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_live_first_time_setup_config_missing_or_invalid",
-      "community": 454,
+      "community": 52,
       "norm_label": "first-time setup (config missing or invalid)"
     },
     {
@@ -45576,7 +45576,7 @@
       "source_location": "L613",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_live_drift_heal_warning",
-      "community": 454,
+      "community": 52,
       "norm_label": "drift-heal warning"
     },
     {
@@ -45586,7 +45586,7 @@
       "source_location": "L641",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_live_csp_detection_first_time_only",
-      "community": 454,
+      "community": 52,
       "norm_label": "csp detection (first-time only)"
     },
     {
@@ -45596,7 +45596,7 @@
       "source_location": "L663",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_live_consent_prompt_template",
-      "community": 454,
+      "community": 52,
       "norm_label": "consent prompt template"
     },
     {
@@ -45606,7 +45606,7 @@
       "source_location": "L680",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_live_append_arrays",
-      "community": 454,
+      "community": 52,
       "norm_label": "append-arrays"
     },
     {
@@ -45616,7 +45616,7 @@
       "source_location": "L704",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_live_append_string",
-      "community": 454,
+      "community": 52,
       "norm_label": "append-string"
     },
     {
@@ -45626,7 +45626,7 @@
       "source_location": "L728",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_live_troubleshooting",
-      "community": 454,
+      "community": 52,
       "norm_label": "troubleshooting"
     },
     {
@@ -45986,7 +45986,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_operate",
-      "community": 211,
+      "community": 148,
       "norm_label": "operate.md"
     },
     {
@@ -46656,7 +46656,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_routing",
-      "community": 211,
+      "community": 148,
       "norm_label": "routing.md"
     },
     {
@@ -46666,7 +46666,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_routing_no_argument_routing_the_context_aware_menu",
-      "community": 211,
+      "community": 148,
       "norm_label": "no-argument routing: the context-aware menu"
     },
     {
@@ -46676,7 +46676,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_shape",
-      "community": 212,
+      "community": 148,
       "norm_label": "shape.md"
     },
     {
@@ -46836,7 +46836,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_visualize",
-      "community": 148,
+      "community": 462,
       "norm_label": "visualize.md"
     },
     {
@@ -46846,7 +46846,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_visualize_visualize_direction_comps_asset_production",
-      "community": 148,
+      "community": 462,
       "norm_label": "visualize: direction comps & asset production"
     },
     {
@@ -46856,7 +46856,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_visualize_generate_three_compositional_options",
-      "community": 148,
+      "community": 462,
       "norm_label": "generate three compositional options"
     },
     {
@@ -46866,7 +46866,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_visualize_one_approval_point",
-      "community": 148,
+      "community": 462,
       "norm_label": "one approval point"
     },
     {
@@ -46876,7 +46876,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_visualize_inventory_implementation_fidelity",
-      "community": 148,
+      "community": 462,
       "norm_label": "inventory implementation fidelity"
     },
     {
@@ -46886,7 +46886,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "agents_skills_impeccable_reference_visualize_produce_only_the_assets_the_build_needs",
-      "community": 148,
+      "community": 462,
       "norm_label": "produce only the assets the build needs"
     },
     {
@@ -48066,7 +48066,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_agents",
-      "community": 116,
+      "community": 150,
       "norm_label": "agents.md"
     },
     {
@@ -48076,7 +48076,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_agents_ponytail_lazy_senior_dev_mode",
-      "community": 116,
+      "community": 150,
       "norm_label": "ponytail, lazy senior dev mode"
     },
     {
@@ -49826,7 +49826,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_docs_agent_portability",
-      "community": 150,
+      "community": 116,
       "norm_label": "agent-portability.md"
     },
     {
@@ -49836,7 +49836,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_docs_agent_portability_agent_portability",
-      "community": 150,
+      "community": 116,
       "norm_label": "agent portability"
     },
     {
@@ -49846,7 +49846,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_docs_agent_portability_supported_adapters",
-      "community": 150,
+      "community": 116,
       "norm_label": "supported adapters"
     },
     {
@@ -49856,7 +49856,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_docs_agent_portability_adapter_rule",
-      "community": 150,
+      "community": 116,
       "norm_label": "adapter rule"
     },
     {
@@ -49866,7 +49866,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_docs_agent_portability_portable_behavior",
-      "community": 150,
+      "community": 116,
       "norm_label": "portable behavior"
     },
     {
@@ -63590,34 +63590,54 @@
       "norm_label": "code_review_report.md"
     },
     {
-      "label": "\ud83d\udee1\ufe0f Code Review Report \u2014 Transaction Correction Tools",
+      "label": "\ud83d\udd0d Stage 3b: Code Audit & Peer Review Report",
       "file_type": "document",
       "source_file": "code_review_report.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "code_review_report_code_review_report_transaction_correction_tools",
+      "id": "code_review_report_stage_3b_code_audit_peer_review_report",
       "community": 412,
-      "norm_label": "\ud83d\udee1\ufe0f code review report \u2014 transaction correction tools"
+      "norm_label": "\ud83d\udd0d stage 3b: code audit & peer review report"
     },
     {
-      "label": "\ud83d\udd0d Audit Checklist",
+      "label": "Target: Telegram Inline Keyboards & Single-Digit Interceptor System",
       "file_type": "document",
       "source_file": "code_review_report.md",
-      "source_location": "L8",
+      "source_location": "L2",
       "_origin": "ast",
-      "id": "code_review_report_audit_checklist",
+      "id": "code_review_report_target_telegram_inline_keyboards_single_digit_interceptor_system",
       "community": 412,
-      "norm_label": "\ud83d\udd0d audit checklist"
+      "norm_label": "target: telegram inline keyboards & single-digit interceptor system"
     },
     {
-      "label": "\ud83d\udca1 Code Quality Verdict",
+      "label": "\ud83d\udcca Audit Score & Compliance Matrix",
+      "file_type": "document",
+      "source_file": "code_review_report.md",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "code_review_report_audit_score_compliance_matrix",
+      "community": 412,
+      "norm_label": "\ud83d\udcca audit score & compliance matrix"
+    },
+    {
+      "label": "**OVERALL DIFF_SCORE: 98% (Pass Threshold >= 80%)**",
+      "file_type": "document",
+      "source_file": "code_review_report.md",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "code_review_report_overall_diff_score_98_pass_threshold_80",
+      "community": 412,
+      "norm_label": "**overall diff_score: 98% (pass threshold >= 80%)**"
+    },
+    {
+      "label": "\ud83c\udfaf Findings & Verifications",
       "file_type": "document",
       "source_file": "code_review_report.md",
       "source_location": "L20",
       "_origin": "ast",
-      "id": "code_review_report_code_quality_verdict",
+      "id": "code_review_report_findings_verifications",
       "community": 412,
-      "norm_label": "\ud83d\udca1 code quality verdict"
+      "norm_label": "\ud83c\udfaf findings & verifications"
     },
     {
       "label": "implementation_plan.md",
@@ -63630,100 +63650,130 @@
       "norm_label": "implementation_plan.md"
     },
     {
-      "label": "\ud83e\udde0 Implementation Plan - Hardened Grounding Guard & Credit Sale Clarification",
+      "label": "\ud83d\udee0\ufe0f Hardened Implementation Plan \u2014 Telegram Interactive Inline Keyboards & Choice Interceptor",
       "file_type": "document",
       "source_file": "implementation_plan.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "implementation_plan_implementation_plan_hardened_grounding_guard_credit_sale_clarification",
+      "id": "implementation_plan_hardened_implementation_plan_telegram_interactive_inline_keyboards_choice_interceptor",
       "community": 42,
-      "norm_label": "\ud83e\udde0 implementation plan - hardened grounding guard & credit sale clarification"
+      "norm_label": "\ud83d\udee0\ufe0f hardened implementation plan \u2014 telegram interactive inline keyboards & choice interceptor"
     },
     {
-      "label": "\ud83d\uded1 User Review Required",
+      "label": "Full-Stack Option Buttons, Single-Digit Interception (1, 2) & Callback Query Handler",
       "file_type": "document",
       "source_file": "implementation_plan.md",
-      "source_location": "L7",
+      "source_location": "L2",
       "_origin": "ast",
-      "id": "implementation_plan_user_review_required",
+      "id": "implementation_plan_full_stack_option_buttons_single_digit_interception_1_2_callback_query_handler",
       "community": 42,
-      "norm_label": "\ud83d\uded1 user review required"
+      "norm_label": "full-stack option buttons, single-digit interception (1, 2) & callback query handler"
     },
     {
-      "label": "\ud83d\udcd0 Proposed Changes",
+      "label": "\ud83d\udccb Summary & Objectives",
       "file_type": "document",
       "source_file": "implementation_plan.md",
-      "source_location": "L14",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "implementation_plan_summary_objectives",
+      "community": 42,
+      "norm_label": "\ud83d\udccb summary & objectives"
+    },
+    {
+      "label": "\ud83d\udee0\ufe0f Proposed Changes",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "implementation_plan_proposed_changes",
       "community": 42,
-      "norm_label": "\ud83d\udcd0 proposed changes"
+      "norm_label": "\ud83d\udee0\ufe0f proposed changes"
     },
     {
-      "label": "1. LLM Core & Grounding Guard",
+      "label": "Component 1: Telegram Webhook Route Callback Query Support",
       "file_type": "document",
       "source_file": "implementation_plan.md",
-      "source_location": "L16",
+      "source_location": "L20",
       "_origin": "ast",
-      "id": "implementation_plan_1_llm_core_grounding_guard",
+      "id": "implementation_plan_component_1_telegram_webhook_route_callback_query_support",
       "community": 42,
-      "norm_label": "1. llm core & grounding guard"
+      "norm_label": "component 1: telegram webhook route callback query support"
     },
     {
-      "label": "[MODIFY] [lib/telegram_llm.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)",
+      "label": "[MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/telegram/webhook/route.ts)",
       "file_type": "document",
       "source_file": "implementation_plan.md",
-      "source_location": "L17",
+      "source_location": "L21",
       "_origin": "ast",
-      "id": "implementation_plan_modify_lib_telegram_llm_ts_file_c_users_theexpert_downloads_casper_voice_project_casper_voice_project_casper_voice_web_lib_telegram_llm_ts",
+      "id": "implementation_plan_modify_route_ts_file_c_users_theexpert_downloads_casper_voice_project_casper_voice_project_casper_voice_web_app_api_telegram_webhook_route_ts",
       "community": 42,
-      "norm_label": "[modify] [lib/telegram_llm.ts](file:///c:/users/theexpert/downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)"
+      "norm_label": "[modify] [route.ts](file:///c:/users/theexpert/downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/telegram/webhook/route.ts)"
     },
     {
-      "label": "2. Test Suite Layer",
+      "label": "Component 2: Choice Formatting & Inline Keyboard Helper",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L27",
+      "_origin": "ast",
+      "id": "implementation_plan_component_2_choice_formatting_inline_keyboard_helper",
+      "community": 42,
+      "norm_label": "component 2: choice formatting & inline keyboard helper"
+    },
+    {
+      "label": "[MODIFY] [telegram_llm.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "implementation_plan_modify_telegram_llm_ts_file_c_users_theexpert_downloads_casper_voice_project_casper_voice_project_casper_voice_web_lib_telegram_llm_ts",
+      "community": 42,
+      "norm_label": "[modify] [telegram_llm.ts](file:///c:/users/theexpert/downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)"
+    },
+    {
+      "label": "Component 3: Database & State Machine Expiration",
+      "file_type": "document",
+      "source_file": "implementation_plan.md",
+      "source_location": "L34",
+      "_origin": "ast",
+      "id": "implementation_plan_component_3_database_state_machine_expiration",
+      "community": 42,
+      "norm_label": "component 3: database & state machine expiration"
+    },
+    {
+      "label": "[MODIFY] [telegram_llm.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)",
       "file_type": "document",
       "source_file": "implementation_plan.md",
       "source_location": "L35",
       "_origin": "ast",
-      "id": "implementation_plan_2_test_suite_layer",
+      "id": "implementation_plan_modify_telegram_llm_ts_file_c_users_theexpert_downloads_casper_voice_project_casper_voice_project_casper_voice_web_lib_telegram_llm_ts_35",
       "community": 42,
-      "norm_label": "2. test suite layer"
-    },
-    {
-      "label": "[NEW] [test_sale_grounding.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/test_sale_grounding.ts)",
-      "file_type": "document",
-      "source_file": "implementation_plan.md",
-      "source_location": "L36",
-      "_origin": "ast",
-      "id": "implementation_plan_new_test_sale_grounding_ts_file_c_users_theexpert_downloads_casper_voice_project_casper_voice_project_casper_voice_web_test_sale_grounding_ts",
-      "community": 42,
-      "norm_label": "[new] [test_sale_grounding.ts](file:///c:/users/theexpert/downloads/casper-voice-project/casper-voice-project/casper-voice-web/test_sale_grounding.ts)"
+      "norm_label": "[modify] [telegram_llm.ts](file:///c:/users/theexpert/downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)"
     },
     {
       "label": "\ud83e\uddea Verification Plan",
       "file_type": "document",
       "source_file": "implementation_plan.md",
-      "source_location": "L44",
+      "source_location": "L41",
       "_origin": "ast",
       "id": "implementation_plan_verification_plan",
       "community": 42,
       "norm_label": "\ud83e\uddea verification plan"
     },
     {
-      "label": "Automated Tests",
+      "label": "Automated Unit & Integration Tests",
       "file_type": "document",
       "source_file": "implementation_plan.md",
-      "source_location": "L46",
+      "source_location": "L43",
       "_origin": "ast",
-      "id": "implementation_plan_automated_tests",
+      "id": "implementation_plan_automated_unit_integration_tests",
       "community": 42,
-      "norm_label": "automated tests"
+      "norm_label": "automated unit & integration tests"
     },
     {
       "label": "Manual Verification",
       "file_type": "document",
       "source_file": "implementation_plan.md",
-      "source_location": "L53",
+      "source_location": "L51",
       "_origin": "ast",
       "id": "implementation_plan_manual_verification",
       "community": 42,
@@ -63740,64 +63790,84 @@
       "norm_label": "ironclad_review_implementation_plan.md"
     },
     {
-      "label": "\ud83d\udee1\ufe0f Ironclad Review \u2014 Hardened Grounding Guard & Credit Sale Clarification",
+      "label": "\ud83d\udee1\ufe0f Stage 2a & 2b: 2-Pass Ironclad Review Report",
       "file_type": "document",
       "source_file": "ironclad_review_implementation_plan.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "ironclad_review_implementation_plan_ironclad_review_hardened_grounding_guard_credit_sale_clarification",
+      "id": "ironclad_review_implementation_plan_stage_2a_2b_2_pass_ironclad_review_report",
       "community": 192,
-      "norm_label": "\ud83d\udee1\ufe0f ironclad review \u2014 hardened grounding guard & credit sale clarification"
+      "norm_label": "\ud83d\udee1\ufe0f stage 2a & 2b: 2-pass ironclad review report"
     },
     {
-      "label": "Executive Summary",
+      "label": "\ud83d\udcca Summary Score & Probability Matrix",
       "file_type": "document",
       "source_file": "ironclad_review_implementation_plan.md",
       "source_location": "L3",
       "_origin": "ast",
-      "id": "ironclad_review_implementation_plan_executive_summary",
+      "id": "ironclad_review_implementation_plan_summary_score_probability_matrix",
       "community": 192,
-      "norm_label": "executive summary"
+      "norm_label": "\ud83d\udcca summary score & probability matrix"
     },
     {
-      "label": "\ud83d\udd0d Stress-Test & Vulnerability Assessment",
-      "file_type": "document",
-      "source_file": "ironclad_review_implementation_plan.md",
-      "source_location": "L10",
-      "_origin": "ast",
-      "id": "ironclad_review_implementation_plan_stress_test_vulnerability_assessment",
-      "community": 192,
-      "norm_label": "\ud83d\udd0d stress-test & vulnerability assessment"
-    },
-    {
-      "label": "1. Risk of Price Hallucination",
+      "label": "\ud83d\udd0d Critical Gaps Identified & Resolved",
       "file_type": "document",
       "source_file": "ironclad_review_implementation_plan.md",
       "source_location": "L12",
       "_origin": "ast",
-      "id": "ironclad_review_implementation_plan_1_risk_of_price_hallucination",
+      "id": "ironclad_review_implementation_plan_critical_gaps_identified_resolved",
       "community": 192,
-      "norm_label": "1. risk of price hallucination"
+      "norm_label": "\ud83d\udd0d critical gaps identified & resolved"
     },
     {
-      "label": "2. Multi-Turn Context Contamination",
+      "label": "Gap 1: Telegram Callback Data Size Limit (64 Bytes)",
       "file_type": "document",
       "source_file": "ironclad_review_implementation_plan.md",
-      "source_location": "L16",
+      "source_location": "L14",
       "_origin": "ast",
-      "id": "ironclad_review_implementation_plan_2_multi_turn_context_contamination",
+      "id": "ironclad_review_implementation_plan_gap_1_telegram_callback_data_size_limit_64_bytes",
       "community": 192,
-      "norm_label": "2. multi-turn context contamination"
+      "norm_label": "gap 1: telegram callback data size limit (64 bytes)"
     },
     {
-      "label": "\u2705 Hardened Exit Criteria",
+      "label": "Gap 2: Race Conditions on Simultaneous Button Taps",
+      "file_type": "document",
+      "source_file": "ironclad_review_implementation_plan.md",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "ironclad_review_implementation_plan_gap_2_race_conditions_on_simultaneous_button_taps",
+      "community": 192,
+      "norm_label": "gap 2: race conditions on simultaneous button taps"
+    },
+    {
+      "label": "Gap 3: Multilingual Digit Normalization (`\u0661`, `\u0662`, `1`, `2`)",
       "file_type": "document",
       "source_file": "ironclad_review_implementation_plan.md",
       "source_location": "L22",
       "_origin": "ast",
-      "id": "ironclad_review_implementation_plan_hardened_exit_criteria",
+      "id": "ironclad_review_implementation_plan_gap_3_multilingual_digit_normalization_\u0661_\u0662_1_2",
       "community": 192,
-      "norm_label": "\u2705 hardened exit criteria"
+      "norm_label": "gap 3: multilingual digit normalization (`\u0661`, `\u0662`, `1`, `2`)"
+    },
+    {
+      "label": "Gap 4: Expired State Handling (> 30 Mins)",
+      "file_type": "document",
+      "source_file": "ironclad_review_implementation_plan.md",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "ironclad_review_implementation_plan_gap_4_expired_state_handling_30_mins",
+      "community": 192,
+      "norm_label": "gap 4: expired state handling (> 30 mins)"
+    },
+    {
+      "label": "\ud83c\udfaf Final Recommendation",
+      "file_type": "document",
+      "source_file": "ironclad_review_implementation_plan.md",
+      "source_location": "L33",
+      "_origin": "ast",
+      "id": "ironclad_review_implementation_plan_final_recommendation",
+      "community": 192,
+      "norm_label": "\ud83c\udfaf final recommendation"
     },
     {
       "label": "ironclad_review_transaction_correction.md",
@@ -63960,44 +64030,44 @@
       "norm_label": "research_findings.md"
     },
     {
-      "label": "\ud83d\udcda Best-Practice Research: Transaction Cancellation & Soft-Void Patterns",
+      "label": "\ud83d\udcda Stage 0b: Best-Practice Research \u2014 Telegram Inline Keyboards & Callback Handlers",
       "file_type": "document",
       "source_file": "research_findings.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "research_findings_best_practice_research_transaction_cancellation_soft_void_patterns",
+      "id": "research_findings_stage_0b_best_practice_research_telegram_inline_keyboards_callback_handlers",
       "community": 413,
-      "norm_label": "\ud83d\udcda best-practice research: transaction cancellation & soft-void patterns"
+      "norm_label": "\ud83d\udcda stage 0b: best-practice research \u2014 telegram inline keyboards & callback handlers"
     },
     {
-      "label": "1. Soft-Void vs Hard Delete in Accounting Systems",
+      "label": "1. Telegram Bot API Best Practices for Inline Keyboards",
       "file_type": "document",
       "source_file": "research_findings.md",
       "source_location": "L3",
       "_origin": "ast",
-      "id": "research_findings_1_soft_void_vs_hard_delete_in_accounting_systems",
+      "id": "research_findings_1_telegram_bot_api_best_practices_for_inline_keyboards",
       "community": 413,
-      "norm_label": "1. soft-void vs hard delete in accounting systems"
+      "norm_label": "1. telegram bot api best practices for inline keyboards"
     },
     {
-      "label": "2. Idempotency Guards in Financial Reversals",
+      "label": "2. State Interceptor Architecture (SQLite / Prisma `ConversationState`)",
       "file_type": "document",
       "source_file": "research_findings.md",
-      "source_location": "L7",
+      "source_location": "L9",
       "_origin": "ast",
-      "id": "research_findings_2_idempotency_guards_in_financial_reversals",
+      "id": "research_findings_2_state_interceptor_architecture_sqlite_prisma_conversationstate",
       "community": 413,
-      "norm_label": "2. idempotency guards in financial reversals"
+      "norm_label": "2. state interceptor architecture (sqlite / prisma `conversationstate`)"
     },
     {
-      "label": "3. Atomic Multi-Table Reversal Transactions",
+      "label": "3. High-Security Transaction Guards (RBAC & Financial Precision)",
       "file_type": "document",
       "source_file": "research_findings.md",
-      "source_location": "L11",
+      "source_location": "L19",
       "_origin": "ast",
-      "id": "research_findings_3_atomic_multi_table_reversal_transactions",
+      "id": "research_findings_3_high_security_transaction_guards_rbac_financial_precision",
       "community": 413,
-      "norm_label": "3. atomic multi-table reversal transactions"
+      "norm_label": "3. high-security transaction guards (rbac & financial precision)"
     },
     {
       "label": "casper_voice_pipeline_spec.md",
@@ -64060,14 +64130,14 @@
       "norm_label": "task.md"
     },
     {
-      "label": "\ud83d\udccb Task Log - Transaction Correction Tools (`cancel_last_transaction` & `correct_last_transaction`)",
+      "label": "\ud83d\udccb Stage 3 Build Tasks \u2014 Telegram Inline Keyboards & Numbered Choice Interceptor",
       "file_type": "document",
       "source_file": "task.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "task_task_log_transaction_correction_tools_cancel_last_transaction_correct_last_transaction",
+      "id": "task_stage_3_build_tasks_telegram_inline_keyboards_numbered_choice_interceptor",
       "community": 414,
-      "norm_label": "\ud83d\udccb task log - transaction correction tools (`cancel_last_transaction` & `correct_last_transaction`)"
+      "norm_label": "\ud83d\udccb stage 3 build tasks \u2014 telegram inline keyboards & numbered choice interceptor"
     },
     {
       "label": "walkthrough.md",
@@ -64080,74 +64150,74 @@
       "norm_label": "walkthrough.md"
     },
     {
-      "label": "\ud83d\ude80 Walkthrough - Transaction Correction Tools (`cancel_last_transaction` & `correct_last_transaction`)",
+      "label": "\ud83d\udeb6 Walkthrough \u2014 Telegram Interactive Inline Keyboards & Single-Digit Interceptor",
       "file_type": "document",
       "source_file": "walkthrough.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "walkthrough_walkthrough_transaction_correction_tools_cancel_last_transaction_correct_last_transaction",
+      "id": "walkthrough_walkthrough_telegram_interactive_inline_keyboards_single_digit_interceptor",
       "community": 252,
-      "norm_label": "\ud83d\ude80 walkthrough - transaction correction tools (`cancel_last_transaction` & `correct_last_transaction`)"
+      "norm_label": "\ud83d\udeb6 walkthrough \u2014 telegram interactive inline keyboards & single-digit interceptor"
     },
     {
-      "label": "Summary of Completed Work",
+      "label": "\ud83d\ude80 Accomplishments Overview",
       "file_type": "document",
       "source_file": "walkthrough.md",
       "source_location": "L3",
       "_origin": "ast",
-      "id": "walkthrough_summary_of_completed_work",
+      "id": "walkthrough_accomplishments_overview",
       "community": 252,
-      "norm_label": "summary of completed work"
+      "norm_label": "\ud83d\ude80 accomplishments overview"
     },
     {
-      "label": "\ud83d\udee0\ufe0f Key Changes Implemented",
+      "label": "\ud83d\udee0\ufe0f Detailed Component Changes",
       "file_type": "document",
       "source_file": "walkthrough.md",
-      "source_location": "L8",
+      "source_location": "L13",
       "_origin": "ast",
-      "id": "walkthrough_key_changes_implemented",
+      "id": "walkthrough_detailed_component_changes",
       "community": 252,
-      "norm_label": "\ud83d\udee0\ufe0f key changes implemented"
+      "norm_label": "\ud83d\udee0\ufe0f detailed component changes"
     },
     {
-      "label": "1. Database Schema & Migration (`schema.prisma`)",
-      "file_type": "document",
-      "source_file": "walkthrough.md",
-      "source_location": "L10",
-      "_origin": "ast",
-      "id": "walkthrough_1_database_schema_migration_schema_prisma",
-      "community": 252,
-      "norm_label": "1. database schema & migration (`schema.prisma`)"
-    },
-    {
-      "label": "2. Tools & Handlers (`lib/telegram_llm.ts`)",
+      "label": "1. Unified Option Formatting (`telegram_llm.ts`)",
       "file_type": "document",
       "source_file": "walkthrough.md",
       "source_location": "L15",
       "_origin": "ast",
-      "id": "walkthrough_2_tools_handlers_lib_telegram_llm_ts",
+      "id": "walkthrough_1_unified_option_formatting_telegram_llm_ts",
       "community": 252,
-      "norm_label": "2. tools & handlers (`lib/telegram_llm.ts`)"
+      "norm_label": "1. unified option formatting (`telegram_llm.ts`)"
     },
     {
-      "label": "\ud83e\uddea Verification & Raw Evidence",
+      "label": "2. State Machine & Single-Digit Interceptor (`telegram_llm.ts`)",
       "file_type": "document",
       "source_file": "walkthrough.md",
-      "source_location": "L28",
+      "source_location": "L26",
       "_origin": "ast",
-      "id": "walkthrough_verification_raw_evidence",
+      "id": "walkthrough_2_state_machine_single_digit_interceptor_telegram_llm_ts",
       "community": 252,
-      "norm_label": "\ud83e\uddea verification & raw evidence"
+      "norm_label": "2. state machine & single-digit interceptor (`telegram_llm.ts`)"
     },
     {
-      "label": "Raw Test Execution Output (`test_transaction_correction.ts`)",
+      "label": "3. Telegram Webhook Callback Query Handler (`app/api/telegram/webhook/route.ts`)",
       "file_type": "document",
       "source_file": "walkthrough.md",
-      "source_location": "L30",
+      "source_location": "L31",
       "_origin": "ast",
-      "id": "walkthrough_raw_test_execution_output_test_transaction_correction_ts",
+      "id": "walkthrough_3_telegram_webhook_callback_query_handler_app_api_telegram_webhook_route_ts",
       "community": 252,
-      "norm_label": "raw test execution output (`test_transaction_correction.ts`)"
+      "norm_label": "3. telegram webhook callback query handler (`app/api/telegram/webhook/route.ts`)"
+    },
+    {
+      "label": "\ud83e\uddea Empirical Verification & Test Evidence",
+      "file_type": "document",
+      "source_file": "walkthrough.md",
+      "source_location": "L38",
+      "_origin": "ast",
+      "id": "walkthrough_empirical_verification_test_evidence",
+      "community": 252,
+      "norm_label": "\ud83e\uddea empirical verification & test evidence"
     },
     {
       "label": "readDefaultMode",
@@ -126996,7 +127066,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L738",
+      "source_location": "L782",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "agents_skills_impeccable_scripts_live_discard_manual_edits_buffer"
@@ -137676,7 +137746,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1391",
+      "source_location": "L1487",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "agents_skills_impeccable_scripts_modern_screenshot_umd_v"
@@ -148387,7 +148457,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L1217",
+      "source_location": "L1261",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route",
       "target": "casper_voice_web_app_api_telegram_webhook_route_handlecustomermessage",
@@ -148407,7 +148477,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L1253",
+      "source_location": "L1297",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route",
       "target": "casper_voice_web_app_api_telegram_webhook_route_sendasbusinessowner",
@@ -148726,7 +148796,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L515",
+      "source_location": "L559",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_app_api_telegram_webhook_route_handlecustomermessage",
@@ -148738,7 +148808,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L778",
+      "source_location": "L822",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_conversation_service_processimage"
@@ -148749,7 +148819,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L741",
+      "source_location": "L785",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_conversation_service_transcribevoicenote"
@@ -148760,7 +148830,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L743",
+      "source_location": "L787",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_llm_correction_correcttranscriptwithllm"
@@ -148771,7 +148841,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L418",
+      "source_location": "L462",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_approvedirecttenant"
@@ -148782,7 +148852,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L424",
+      "source_location": "L468",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_approvetenantrequest"
@@ -148793,7 +148863,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L1155",
+      "source_location": "L1199",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_fallback_getactiveconversationstate"
@@ -148804,7 +148874,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L118",
+      "source_location": "L162",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_fallback_handlefallbackmenucallback"
@@ -148815,7 +148885,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L127",
+      "source_location": "L171",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_fallback_handlefallbacksalecallback"
@@ -148826,7 +148896,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L1157",
+      "source_location": "L1201",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_fallback_processfallbackinput"
@@ -148837,7 +148907,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L352",
+      "source_location": "L396",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_fallback_sendfallbackmainmenu"
@@ -148848,7 +148918,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L286",
+      "source_location": "L330",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_getadminchatid"
@@ -148859,7 +148929,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L625",
+      "source_location": "L669",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_isstartratelimited"
@@ -148881,7 +148951,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L1165",
+      "source_location": "L122",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm"
@@ -148892,7 +148962,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L421",
+      "source_location": "L465",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_rejectdirecttenant"
@@ -148903,7 +148973,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L427",
+      "source_location": "L471",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_rejecttenantrequest"
@@ -148914,7 +148984,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L140",
+      "source_location": "L184",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_sendtelegramalert"
@@ -148925,7 +148995,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L558",
+      "source_location": "L602",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_post",
       "target": "casper_voice_web_lib_telegram_settelegrambotcommands"
@@ -148946,7 +149016,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L1249",
+      "source_location": "L1293",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_handlecustomermessage",
       "target": "casper_voice_web_app_api_telegram_webhook_route_sendasbusinessowner",
@@ -148957,7 +149027,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/app/api/telegram/webhook/route.ts",
-      "source_location": "L1235",
+      "source_location": "L1279",
       "weight": 1.0,
       "source": "casper_voice_web_app_api_telegram_webhook_route_handlecustomermessage",
       "target": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
@@ -149768,17 +149838,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/app/layout.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "source": "casper_voice_web_app_layout",
-      "target": "casper_voice_web_app_layout_cairo",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "casper-voice-web/app/layout.tsx",
-      "source_location": "L19",
+      "source_location": "L4",
       "weight": 1.0,
       "source": "casper_voice_web_app_layout",
       "target": "casper_voice_web_app_layout_metadata",
@@ -149788,17 +149848,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/app/layout.tsx",
-      "source_location": "L12",
-      "weight": 1.0,
-      "source": "casper_voice_web_app_layout",
-      "target": "casper_voice_web_app_layout_plusjakarta",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "casper-voice-web/app/layout.tsx",
-      "source_location": "L24",
+      "source_location": "L9",
       "weight": 1.0,
       "source": "casper_voice_web_app_layout",
       "target": "casper_voice_web_app_layout_rootlayout",
@@ -150559,7 +150609,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2708",
+      "source_location": "L2861",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_apikeymanager",
@@ -150637,7 +150687,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2799",
+      "source_location": "L3035",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_apikeymanager_getvalidapikey"
@@ -150703,7 +150753,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2861",
+      "source_location": "L3097",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_apikeymanager_markkeyexhausted"
@@ -151214,7 +151264,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2778",
+      "source_location": "L3014",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_merchant_memory_resolvemerchantmemories"
@@ -151313,7 +151363,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2836",
+      "source_location": "L3072",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_merchant_memory_extractandpersistmemory"
@@ -152118,6 +152168,17 @@
       "source_location": "L1",
       "weight": 1.0,
       "source": "casper_voice_web_test_sale_grounding",
+      "target": "casper_voice_web_lib_prisma",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/test_telegram_keyboards.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "casper_voice_web_test_telegram_keyboards",
       "target": "casper_voice_web_lib_prisma",
       "confidence_score": 1.0
     },
@@ -152961,7 +153022,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2480",
+      "source_location": "L1272",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_sendtelegramalert"
@@ -153419,7 +153480,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1065",
+      "source_location": "L1123",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_executetool",
@@ -153569,7 +153630,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2681",
+      "source_location": "L2834",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_llmresult",
@@ -153619,7 +153680,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1054",
+      "source_location": "L1112",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_logrejectedtoolcall",
@@ -153679,7 +153740,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2698",
+      "source_location": "L2851",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
@@ -153759,7 +153820,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1042",
+      "source_location": "L1100",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_sanitizenontoolreply",
@@ -153769,7 +153830,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2685",
+      "source_location": "L2838",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_savechatmessage",
@@ -154238,6 +154299,17 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/test_telegram_keyboards.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "casper_voice_web_test_telegram_keyboards",
+      "target": "casper_voice_web_lib_telegram_llm",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/test_transaction_correction.ts",
       "source_location": "L2",
       "weight": 1.0,
@@ -154327,7 +154399,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2774",
+      "source_location": "L3010",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_resolveactivetools",
@@ -154338,7 +154410,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2783",
+      "source_location": "L3019",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_buildactiveprompt",
@@ -154360,7 +154432,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1416",
+      "source_location": "L1512",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_findcustomerfuzzy",
@@ -154371,7 +154443,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1437",
+      "source_location": "L1533",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_findproductfuzzy",
@@ -154393,7 +154465,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2832",
+      "source_location": "L3068",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_enforcearabicenglishonly",
@@ -154404,7 +154476,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1068",
+      "source_location": "L1126",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_sanitizeargslanguage",
@@ -154415,7 +154487,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2332",
+      "source_location": "L2434",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_resolverelativearabicdate",
@@ -154448,7 +154520,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2333",
+      "source_location": "L2435",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_cleanarabictimestr",
@@ -154492,7 +154564,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1640",
+      "source_location": "L1741",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_normalizearabic",
@@ -154547,7 +154619,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1118",
+      "source_location": "L1176",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_extractallnumbersfromtext",
@@ -154569,7 +154641,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1181",
+      "source_location": "L1239",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_groundingcheck",
@@ -154580,7 +154652,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2829",
+      "source_location": "L3065",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_sanitizenontoolreply",
@@ -154591,7 +154663,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1184",
+      "source_location": "L1242",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_logrejectedtoolcall",
@@ -154602,7 +154674,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2824",
+      "source_location": "L2969",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_executetool",
@@ -154788,6 +154860,17 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/test_telegram_keyboards.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "casper_voice_web_test_telegram_keyboards",
+      "target": "casper_voice_web_lib_telegram_llm_executetool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/test_transaction_correction.ts",
       "source_location": "L2",
       "weight": 1.0,
@@ -154844,7 +154927,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2734",
+      "source_location": "L2887",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_savechatmessage",
@@ -154856,7 +154939,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2854",
+      "source_location": "L3090",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_usage_alert_checkandalerttokenusage"
@@ -155496,6 +155579,28 @@
       "source_location": "L67",
       "weight": 1.0,
       "source": "casper_voice_web_simulate_customer_run",
+      "target": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/test_telegram_keyboards.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "casper_voice_web_test_telegram_keyboards",
+      "target": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/test_telegram_keyboards.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "casper_voice_web_test_telegram_keyboards_testtelegramkeyboardsandchoices",
       "target": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "confidence_score": 1.0
     },
@@ -157366,6 +157471,16 @@
       "weight": 1.0,
       "source": "casper_voice_web_test_sale_grounding",
       "target": "casper_voice_web_test_sale_grounding_runtests",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "casper-voice-web/test_telegram_keyboards.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "casper_voice_web_test_telegram_keyboards",
+      "target": "casper_voice_web_test_telegram_keyboards_testtelegramkeyboardsandchoices",
       "confidence_score": 1.0
     },
     {
@@ -183374,17 +183489,17 @@
       "source_location": "L1",
       "weight": 1.0,
       "source": "code_review_report",
-      "target": "code_review_report_code_review_report_transaction_correction_tools",
+      "target": "code_review_report_stage_3b_code_audit_peer_review_report",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "code_review_report.md",
-      "source_location": "L8",
+      "source_location": "L6",
       "weight": 1.0,
-      "source": "code_review_report_code_review_report_transaction_correction_tools",
-      "target": "code_review_report_audit_checklist",
+      "source": "code_review_report_stage_3b_code_audit_peer_review_report",
+      "target": "code_review_report_audit_score_compliance_matrix",
       "confidence_score": 1.0
     },
     {
@@ -183393,8 +183508,28 @@
       "source_file": "code_review_report.md",
       "source_location": "L20",
       "weight": 1.0,
-      "source": "code_review_report_code_review_report_transaction_correction_tools",
-      "target": "code_review_report_code_quality_verdict",
+      "source": "code_review_report_stage_3b_code_audit_peer_review_report",
+      "target": "code_review_report_findings_verifications",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "code_review_report.md",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "code_review_report_stage_3b_code_audit_peer_review_report",
+      "target": "code_review_report_target_telegram_inline_keyboards_single_digit_interceptor_system",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "code_review_report.md",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "code_review_report_audit_score_compliance_matrix",
+      "target": "code_review_report_overall_diff_score_98_pass_threshold_80",
       "confidence_score": 1.0
     },
     {
@@ -183404,16 +183539,26 @@
       "source_location": "L1",
       "weight": 1.0,
       "source": "implementation_plan",
-      "target": "implementation_plan_implementation_plan_hardened_grounding_guard_credit_sale_clarification",
+      "target": "implementation_plan_hardened_implementation_plan_telegram_interactive_inline_keyboards_choice_interceptor",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "implementation_plan.md",
-      "source_location": "L14",
+      "source_location": "L2",
       "weight": 1.0,
-      "source": "implementation_plan_implementation_plan_hardened_grounding_guard_credit_sale_clarification",
+      "source": "implementation_plan_hardened_implementation_plan_telegram_interactive_inline_keyboards_choice_interceptor",
+      "target": "implementation_plan_full_stack_option_buttons_single_digit_interception_1_2_callback_query_handler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "implementation_plan_hardened_implementation_plan_telegram_interactive_inline_keyboards_choice_interceptor",
       "target": "implementation_plan_proposed_changes",
       "confidence_score": 1.0
     },
@@ -183421,19 +183566,19 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "implementation_plan.md",
-      "source_location": "L7",
+      "source_location": "L6",
       "weight": 1.0,
-      "source": "implementation_plan_implementation_plan_hardened_grounding_guard_credit_sale_clarification",
-      "target": "implementation_plan_user_review_required",
+      "source": "implementation_plan_hardened_implementation_plan_telegram_interactive_inline_keyboards_choice_interceptor",
+      "target": "implementation_plan_summary_objectives",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "implementation_plan.md",
-      "source_location": "L44",
+      "source_location": "L41",
       "weight": 1.0,
-      "source": "implementation_plan_implementation_plan_hardened_grounding_guard_credit_sale_clarification",
+      "source": "implementation_plan_hardened_implementation_plan_telegram_interactive_inline_keyboards_choice_interceptor",
       "target": "implementation_plan_verification_plan",
       "confidence_score": 1.0
     },
@@ -183441,10 +183586,50 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "implementation_plan.md",
-      "source_location": "L16",
+      "source_location": "L20",
       "weight": 1.0,
       "source": "implementation_plan_proposed_changes",
-      "target": "implementation_plan_1_llm_core_grounding_guard",
+      "target": "implementation_plan_component_1_telegram_webhook_route_callback_query_support",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "implementation_plan_proposed_changes",
+      "target": "implementation_plan_component_2_choice_formatting_inline_keyboard_helper",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "implementation_plan_proposed_changes",
+      "target": "implementation_plan_component_3_database_state_machine_expiration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "implementation_plan_component_1_telegram_webhook_route_callback_query_support",
+      "target": "implementation_plan_modify_route_ts_file_c_users_theexpert_downloads_casper_voice_project_casper_voice_project_casper_voice_web_app_api_telegram_webhook_route_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "implementation_plan.md",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "implementation_plan_component_2_choice_formatting_inline_keyboard_helper",
+      "target": "implementation_plan_modify_telegram_llm_ts_file_c_users_theexpert_downloads_casper_voice_project_casper_voice_project_casper_voice_web_lib_telegram_llm_ts",
       "confidence_score": 1.0
     },
     {
@@ -183453,45 +183638,25 @@
       "source_file": "implementation_plan.md",
       "source_location": "L35",
       "weight": 1.0,
-      "source": "implementation_plan_proposed_changes",
-      "target": "implementation_plan_2_test_suite_layer",
+      "source": "implementation_plan_component_3_database_state_machine_expiration",
+      "target": "implementation_plan_modify_telegram_llm_ts_file_c_users_theexpert_downloads_casper_voice_project_casper_voice_project_casper_voice_web_lib_telegram_llm_ts_35",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "implementation_plan.md",
-      "source_location": "L17",
-      "weight": 1.0,
-      "source": "implementation_plan_1_llm_core_grounding_guard",
-      "target": "implementation_plan_modify_lib_telegram_llm_ts_file_c_users_theexpert_downloads_casper_voice_project_casper_voice_project_casper_voice_web_lib_telegram_llm_ts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "implementation_plan.md",
-      "source_location": "L36",
-      "weight": 1.0,
-      "source": "implementation_plan_2_test_suite_layer",
-      "target": "implementation_plan_new_test_sale_grounding_ts_file_c_users_theexpert_downloads_casper_voice_project_casper_voice_project_casper_voice_web_test_sale_grounding_ts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "implementation_plan.md",
-      "source_location": "L46",
+      "source_location": "L43",
       "weight": 1.0,
       "source": "implementation_plan_verification_plan",
-      "target": "implementation_plan_automated_tests",
+      "target": "implementation_plan_automated_unit_integration_tests",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "implementation_plan.md",
-      "source_location": "L53",
+      "source_location": "L51",
       "weight": 1.0,
       "source": "implementation_plan_verification_plan",
       "target": "implementation_plan_manual_verification",
@@ -183504,37 +183669,7 @@
       "source_location": "L1",
       "weight": 1.0,
       "source": "ironclad_review_implementation_plan",
-      "target": "ironclad_review_implementation_plan_ironclad_review_hardened_grounding_guard_credit_sale_clarification",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "ironclad_review_implementation_plan.md",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "ironclad_review_implementation_plan_ironclad_review_hardened_grounding_guard_credit_sale_clarification",
-      "target": "ironclad_review_implementation_plan_executive_summary",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "ironclad_review_implementation_plan.md",
-      "source_location": "L22",
-      "weight": 1.0,
-      "source": "ironclad_review_implementation_plan_ironclad_review_hardened_grounding_guard_credit_sale_clarification",
-      "target": "ironclad_review_implementation_plan_hardened_exit_criteria",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "ironclad_review_implementation_plan.md",
-      "source_location": "L10",
-      "weight": 1.0,
-      "source": "ironclad_review_implementation_plan_ironclad_review_hardened_grounding_guard_credit_sale_clarification",
-      "target": "ironclad_review_implementation_plan_stress_test_vulnerability_assessment",
+      "target": "ironclad_review_implementation_plan_stage_2a_2b_2_pass_ironclad_review_report",
       "confidence_score": 1.0
     },
     {
@@ -183543,18 +183678,68 @@
       "source_file": "ironclad_review_implementation_plan.md",
       "source_location": "L12",
       "weight": 1.0,
-      "source": "ironclad_review_implementation_plan_stress_test_vulnerability_assessment",
-      "target": "ironclad_review_implementation_plan_1_risk_of_price_hallucination",
+      "source": "ironclad_review_implementation_plan_stage_2a_2b_2_pass_ironclad_review_report",
+      "target": "ironclad_review_implementation_plan_critical_gaps_identified_resolved",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ironclad_review_implementation_plan.md",
-      "source_location": "L16",
+      "source_location": "L33",
       "weight": 1.0,
-      "source": "ironclad_review_implementation_plan_stress_test_vulnerability_assessment",
-      "target": "ironclad_review_implementation_plan_2_multi_turn_context_contamination",
+      "source": "ironclad_review_implementation_plan_stage_2a_2b_2_pass_ironclad_review_report",
+      "target": "ironclad_review_implementation_plan_final_recommendation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ironclad_review_implementation_plan.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "ironclad_review_implementation_plan_stage_2a_2b_2_pass_ironclad_review_report",
+      "target": "ironclad_review_implementation_plan_summary_score_probability_matrix",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ironclad_review_implementation_plan.md",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "ironclad_review_implementation_plan_critical_gaps_identified_resolved",
+      "target": "ironclad_review_implementation_plan_gap_1_telegram_callback_data_size_limit_64_bytes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ironclad_review_implementation_plan.md",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "ironclad_review_implementation_plan_critical_gaps_identified_resolved",
+      "target": "ironclad_review_implementation_plan_gap_2_race_conditions_on_simultaneous_button_taps",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ironclad_review_implementation_plan.md",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "ironclad_review_implementation_plan_critical_gaps_identified_resolved",
+      "target": "ironclad_review_implementation_plan_gap_3_multilingual_digit_normalization_\u0661_\u0662_1_2",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ironclad_review_implementation_plan.md",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "ironclad_review_implementation_plan_critical_gaps_identified_resolved",
+      "target": "ironclad_review_implementation_plan_gap_4_expired_state_handling_30_mins",
       "confidence_score": 1.0
     },
     {
@@ -183694,7 +183879,7 @@
       "source_location": "L1",
       "weight": 1.0,
       "source": "research_findings",
-      "target": "research_findings_best_practice_research_transaction_cancellation_soft_void_patterns",
+      "target": "research_findings_stage_0b_best_practice_research_telegram_inline_keyboards_callback_handlers",
       "confidence_score": 1.0
     },
     {
@@ -183703,28 +183888,28 @@
       "source_file": "research_findings.md",
       "source_location": "L3",
       "weight": 1.0,
-      "source": "research_findings_best_practice_research_transaction_cancellation_soft_void_patterns",
-      "target": "research_findings_1_soft_void_vs_hard_delete_in_accounting_systems",
+      "source": "research_findings_stage_0b_best_practice_research_telegram_inline_keyboards_callback_handlers",
+      "target": "research_findings_1_telegram_bot_api_best_practices_for_inline_keyboards",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "research_findings.md",
-      "source_location": "L7",
+      "source_location": "L9",
       "weight": 1.0,
-      "source": "research_findings_best_practice_research_transaction_cancellation_soft_void_patterns",
-      "target": "research_findings_2_idempotency_guards_in_financial_reversals",
+      "source": "research_findings_stage_0b_best_practice_research_telegram_inline_keyboards_callback_handlers",
+      "target": "research_findings_2_state_interceptor_architecture_sqlite_prisma_conversationstate",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "research_findings.md",
-      "source_location": "L11",
+      "source_location": "L19",
       "weight": 1.0,
-      "source": "research_findings_best_practice_research_transaction_cancellation_soft_void_patterns",
-      "target": "research_findings_3_atomic_multi_table_reversal_transactions",
+      "source": "research_findings_stage_0b_best_practice_research_telegram_inline_keyboards_callback_handlers",
+      "target": "research_findings_3_high_security_transaction_guards_rbac_financial_precision",
       "confidence_score": 1.0
     },
     {
@@ -183774,7 +183959,7 @@
       "source_location": "L1",
       "weight": 1.0,
       "source": "task",
-      "target": "task_task_log_transaction_correction_tools_cancel_last_transaction_correct_last_transaction",
+      "target": "task_stage_3_build_tasks_telegram_inline_keyboards_numbered_choice_interceptor",
       "confidence_score": 1.0
     },
     {
@@ -183784,17 +183969,7 @@
       "source_location": "L1",
       "weight": 1.0,
       "source": "walkthrough",
-      "target": "walkthrough_walkthrough_transaction_correction_tools_cancel_last_transaction_correct_last_transaction",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "walkthrough.md",
-      "source_location": "L8",
-      "weight": 1.0,
-      "source": "walkthrough_walkthrough_transaction_correction_tools_cancel_last_transaction_correct_last_transaction",
-      "target": "walkthrough_key_changes_implemented",
+      "target": "walkthrough_walkthrough_telegram_interactive_inline_keyboards_single_digit_interceptor",
       "confidence_score": 1.0
     },
     {
@@ -183803,28 +183978,28 @@
       "source_file": "walkthrough.md",
       "source_location": "L3",
       "weight": 1.0,
-      "source": "walkthrough_walkthrough_transaction_correction_tools_cancel_last_transaction_correct_last_transaction",
-      "target": "walkthrough_summary_of_completed_work",
+      "source": "walkthrough_walkthrough_telegram_interactive_inline_keyboards_single_digit_interceptor",
+      "target": "walkthrough_accomplishments_overview",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "walkthrough.md",
-      "source_location": "L28",
+      "source_location": "L13",
       "weight": 1.0,
-      "source": "walkthrough_walkthrough_transaction_correction_tools_cancel_last_transaction_correct_last_transaction",
-      "target": "walkthrough_verification_raw_evidence",
+      "source": "walkthrough_walkthrough_telegram_interactive_inline_keyboards_single_digit_interceptor",
+      "target": "walkthrough_detailed_component_changes",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "walkthrough.md",
-      "source_location": "L10",
+      "source_location": "L38",
       "weight": 1.0,
-      "source": "walkthrough_key_changes_implemented",
-      "target": "walkthrough_1_database_schema_migration_schema_prisma",
+      "source": "walkthrough_walkthrough_telegram_interactive_inline_keyboards_single_digit_interceptor",
+      "target": "walkthrough_empirical_verification_test_evidence",
       "confidence_score": 1.0
     },
     {
@@ -183833,21 +184008,31 @@
       "source_file": "walkthrough.md",
       "source_location": "L15",
       "weight": 1.0,
-      "source": "walkthrough_key_changes_implemented",
-      "target": "walkthrough_2_tools_handlers_lib_telegram_llm_ts",
+      "source": "walkthrough_detailed_component_changes",
+      "target": "walkthrough_1_unified_option_formatting_telegram_llm_ts",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "walkthrough.md",
-      "source_location": "L30",
+      "source_location": "L26",
       "weight": 1.0,
-      "source": "walkthrough_verification_raw_evidence",
-      "target": "walkthrough_raw_test_execution_output_test_transaction_correction_ts",
+      "source": "walkthrough_detailed_component_changes",
+      "target": "walkthrough_2_state_machine_single_digit_interceptor_telegram_llm_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "walkthrough.md",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "walkthrough_detailed_component_changes",
+      "target": "walkthrough_3_telegram_webhook_callback_query_handler_app_api_telegram_webhook_route_ts",
       "confidence_score": 1.0
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "0501ff4fba0b821e35fae2fd51613a424989c586"
+  "built_at_commit": "3a8764bc1b4cccbc6c5fc8a2a1880196aa4aaab3"
 }

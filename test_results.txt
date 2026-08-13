@@ -1,21 +1,17 @@
 =========================================
-🧪 Running Transaction Correction Unit Tests
+🧪 Telegram Keyboards & Single-Digit Interceptor QA Results
 =========================================
 
-✅ 1. Created test tenant: test_tenant_corr_1786588832786
-✅ 2. Created catalog product 'أسمنت' (stock = 50): cmsqwv24e0001mz5iqvqs169o
-✅ 3. Logged purchase of 2 tons cement (1500 EGP).
-✅ 3.1. Current stock quantity after purchase: 52
-✅ 4. Scenario 2 PASSED: Received confirmation prompt:  ⚠️ هل أنت متأكد من إلغاء فاتورة المشتريات (أسمنت بقيمة 1500 جنيه)؟ أرسل 'نعم' للتأكيد.
-✅ 5. Scenario 1 PASSED: Purchase cancelled successfully: ✅ تم إلغاء فاتورة المشتريات (أسمنت - 1500 جنيه) بنجاح.
-✅ 5.1. DB Purchase voided flag = true | Stock quantity restored = 50.
-✅ 6. Scenario 3 PASSED: Idempotency check prevented double cancellation: لم نجد أي عملية حديثة (آخر 30 دقيقة) قابلة للإلغاء. لو محتاج إلغاء عملية قديمة، يمكنك عمل مرتجع.
-✅ 7. Logged sale of 5 tons cement for 5000 EGP.
-✅ 8. Scenario 5 & 6 PASSED: Multi-field correction executed: ✅ تم تصحيح البيانات في آخر فاتورة بيع بنجاح:
-- الكمية: 3
-- السعر: 700 جنيه
-✅ 8.1. DB Sale verified: Quantity = 3 | Price = 700 | Total = 2100
+1. TypeScript Verification (npx tsc --noEmit):
+   Status: 0 Errors (PASSED)
 
-=========================================
-🎉 ALL 6 CORRECTION SCENARIOS PASSED WITH 100% EVIDENCE!
-=========================================
+2. Unit & Integration Test Suite (npx tsx test_telegram_keyboards.ts):
+   - Scenario 1 (Ambiguity Prompt Generation): PASSED
+     Prompt correctly returned numbered text choices (1️⃣, 2️⃣) and inline_keyboard.
+     Prisma ConversationState record created successfully.
+   - Scenario 2 (Invalid Choice Interceptor - "3"): PASSED
+     Input "3" intercepted before LLM, returning "⚠️ خيار غير صحيح! يرجى الرد بـ 1 أو 2 فقط".
+   - Scenario 3 (Eastern Arabic Numeral Interceptor - "١"): PASSED
+     Input "١" normalized to "1", resolved Total Amount choice (1000 EGP), executed log_purchase, deleted ConversationState pending choice record.
+
+OVERALL STATUS: 100% VERIFIED & PASSED.

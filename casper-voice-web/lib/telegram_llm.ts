@@ -894,7 +894,7 @@ export function extractAllNumbersFromText(text: string): number[] {
   return nums;
 }
 
-function groundingCheck(toolName: string, args: any, userMessageText?: string): { ok: boolean; reason?: string } {
+function groundingCheck(toolName: string, args: any, userMessageText?: string): { ok: boolean; reason?: string; replyMarkup?: any; pendingState?: any } {
   if (!FINANCIAL_TOOLS.has(toolName)) return { ok: true };
   const msg = userMessageText || "";
   const normalizedMsg = normalizeArabic(msg);
@@ -1004,9 +1004,29 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
       
       if (hasOnlyOneAmount && !hasUnitAnchor && !hasTotalAnchor2) {
         const amount = significantNums[0];
+        const totalIfUnit = amount * qty;
+        const reason = `الـ${amount} ده إجمالي الـ${qty} ولا سعر الوحدة الواحدة؟ 🧐\n\n` +
+          `1️⃣ إجمالي الفاتورة بالكامل (${amount} ج)\n` +
+          `2️⃣ سعر القطعة الواحدة (${amount} × ${qty} = ${totalIfUnit} ج)\n\n` +
+          `👉 (رد بـ 1 أو 2، أو اضغط على الأزرار بالأسفل)`;
+
+        const replyMarkup = {
+          inline_keyboard: [
+            [
+              { text: `📦 إجمالي (${amount} ج)`, callback_data: `c:p:tot:${amount}` },
+              { text: `💰 للقطعة (${totalIfUnit} ج)`, callback_data: `c:p:unit:${amount}` }
+            ]
+          ]
+        };
+
         return {
           ok: false,
-          reason: `الـ${amount} ده إجمالي الـ${qty} ولا سعر الوحدة الواحدة؟ 🧐`
+          reason,
+          replyMarkup,
+          pendingState: {
+            type: "PRICE_AMBIGUITY",
+            payload: { toolName, args, qty, amount, totalIfUnit, msgText: msg }
+          }
         };
       }
     }
@@ -1016,9 +1036,28 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
   if (toolName === "log_sale") {
     const hasIshtaraMin = /(اشترى|اشتريت)\s+.{1,40}\s+من\s+\S+/i.test(msg);
     if (hasIshtaraMin) {
+      const reason = `مش واضح قصدك، المعاملة دي إيه بالضبط؟ 🧐\n\n` +
+        `1️⃣ مشتريات (أنا اشتريت بضاعة جديدة للمحل من مورد)\n` +
+        `2️⃣ مبيعات (عميل اشترى مني بضاعة)\n\n` +
+        `👉 (رد بـ 1 أو 2، أو اضغط على الأزرار بالأسفل)`;
+
+      const replyMarkup = {
+        inline_keyboard: [
+          [
+            { text: "🛒 مشتريات من مورد", callback_data: "c:type:purchase" },
+            { text: "🛍️ مبيعات لعميل", callback_data: "c:type:sale" }
+          ]
+        ]
+      };
+
       return {
         ok: false,
-        reason: "قصدك إنك انت اشتريت من مورد ولا إن العميل اشترى منك؟ وضح عشان أسجل صح 🧐"
+        reason,
+        replyMarkup,
+        pendingState: {
+          type: "BUY_VS_SELL",
+          payload: { args, msgText: msg }
+        }
       };
     }
   }
@@ -1029,9 +1068,28 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
     const hasMen = /\bمن\b/.test(msg);
     const hasCustomerSignal = /(لـ|حساب|عميل|زبون)/i.test(msg);
     if (hasIshtara && !hasMen && !hasCustomerSignal) {
+      const reason = `مش واضح قصدك، المعاملة دي إيه بالضبط؟ 🧐\n\n` +
+        `1️⃣ مشتريات (أنا اشتريت بضاعة جديدة للمحل من مورد)\n` +
+        `2️⃣ مبيعات (عميل اشترى مني بضاعة)\n\n` +
+        `👉 (رد بـ 1 أو 2، أو اضغط على الأزرار بالأسفل)`;
+
+      const replyMarkup = {
+        inline_keyboard: [
+          [
+            { text: "🛒 مشتريات من مورد", callback_data: "c:type:purchase" },
+            { text: "🛍️ مبيعات لعميل", callback_data: "c:type:sale" }
+          ]
+        ]
+      };
+
       return {
         ok: false,
-        reason: "مش واضح قصدك — العميل اشترى منك ولا انت اشتريت من حد؟ وضحلي عشان أسجلها صح 🧐"
+        reason,
+        replyMarkup,
+        pendingState: {
+          type: "BUY_VS_SELL",
+          payload: { args, msgText: msg }
+        }
       };
     }
   }
@@ -1182,6 +1240,44 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     if (!grounding.ok) {
       console.warn(`[Grounding Guard] Rejected ${name}:`, grounding.reason, { args, userMessageText });
       void logRejectedToolCall(tenantId, name, args, msgText, grounding.reason || "Grounding failure");
+
+      if (tenantId && (grounding as any).pendingState) {
+        const statePayload = JSON.stringify({
+          ...(grounding as any).pendingState,
+          createdAt: Date.now()
+        });
+        const existingState = await (prisma as any).conversationState.findFirst({
+          where: { tenantId, currentFlow: "pending_choice" }
+        });
+        if (existingState) {
+          await (prisma as any).conversationState.update({
+            where: { id: existingState.id },
+            data: { collectedData: statePayload }
+          }).catch((e: any) => console.error("[PendingState Update Error]:", e));
+        } else {
+          await (prisma as any).conversationState.create({
+            data: {
+              tenantId,
+              telegramChatId: `choice_${tenantId}`,
+              currentFlow: "pending_choice",
+              collectedData: statePayload
+            }
+          }).catch((e: any) => console.error("[PendingState Create Error]:", e));
+        }
+      }
+
+      if ((grounding as any).replyMarkup && tenantId) {
+        const tenant = await (prisma as any).tenant.findUnique({ where: { id: tenantId } });
+        if (tenant?.telegramChatId) {
+          void sendTelegramAlert({
+            chatId: tenant.telegramChatId,
+            text: grounding.reason || "",
+            replyMarkup: (grounding as any).replyMarkup,
+            idempotencyKey: `choice_markup_${Date.now()}`
+          });
+        }
+      }
+
       return { success: false, resultText: grounding.reason || "معنديش تفاصيل كفاية عشان أسجل العملية دي، ممكن توضحلي الصنف/المبلغ تاني؟" };
     }
 
@@ -2533,9 +2629,60 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         const typeLabel = target.type === "sale" ? "فاتورة البيع" : target.type === "purchase" ? "فاتورة المشتريات" : "المصروف";
         const itemInfo = target.record.itemName || target.record.description || "";
         const amountInfo = target.record.total || target.record.totalAmount || target.record.amount;
+
+        const confirmationText = `⚠️ تأكيد إلغاء ${typeLabel} (${itemInfo} بقيمة ${amountInfo} جنيه):\n\n` +
+          `1️⃣ نعم، تأكيد الإلغاء\n` +
+          `2️⃣ لا، احتفظ بالعملية\n\n` +
+          `👉 (رد بـ 1 أو 2، أو اضغط على الأزرار بالأسفل)`;
+
+        const replyMarkup = {
+          inline_keyboard: [
+            [
+              { text: "✅ نعم، تأكيد الإلغاء", callback_data: `c:cancel:yes:${target.type}` },
+              { text: "❌ لا، احتفظ بالعملية", callback_data: `c:cancel:no:${target.type}` }
+            ]
+          ]
+        };
+
+        if (tenantId) {
+          const cancelStatePayload = JSON.stringify({
+            type: "CANCEL_CONFIRM",
+            payload: { txType: target.type, id: target.record.id, itemInfo, amountInfo },
+            createdAt: Date.now()
+          });
+          const existingState = await (prisma as any).conversationState.findFirst({
+            where: { tenantId, currentFlow: "pending_choice" }
+          });
+          if (existingState) {
+            await (prisma as any).conversationState.update({
+              where: { id: existingState.id },
+              data: { collectedData: cancelStatePayload }
+            }).catch((e: any) => console.error("[PendingState Update Error]:", e));
+          } else {
+            await (prisma as any).conversationState.create({
+              data: {
+                tenantId,
+                telegramChatId: `choice_${tenantId}`,
+                currentFlow: "pending_choice",
+                collectedData: cancelStatePayload
+              }
+            }).catch((e: any) => console.error("[PendingState Create Error]:", e));
+          }
+
+          const tenant = await (prisma as any).tenant.findUnique({ where: { id: tenantId } });
+          if (tenant?.telegramChatId) {
+            void sendTelegramAlert({
+              chatId: tenant.telegramChatId,
+              text: confirmationText,
+              replyMarkup,
+              idempotencyKey: `cancel_markup_${Date.now()}`
+            });
+          }
+        }
+
         return {
           success: false,
-          resultText: `⚠️ هل أنت متأكد من إلغاء ${typeLabel} (${itemInfo} بقيمة ${amountInfo} جنيه)؟ أرسل 'نعم' للتأكيد.`
+          resultText: confirmationText
         };
       }
 
@@ -2764,6 +2911,89 @@ export async function processTelegramMessageWithLLM(
     return { status: "success", text: reply };
   }
   // === END small-talk router ===
+
+  // === NEW: Pending Choice Interceptor & State Machine (1, 2, 3...) ===
+  if (tenantId) {
+    const pendingChoiceState = await (prisma as any).conversationState.findFirst({
+      where: { tenantId, currentFlow: "pending_choice" }
+    });
+
+    if (pendingChoiceState && pendingChoiceState.collectedData) {
+      try {
+        const choiceData = JSON.parse(pendingChoiceState.collectedData);
+        const createdAt = Number(choiceData.createdAt) || 0;
+        const isExpired = Date.now() - createdAt > 30 * 60 * 1000; // 30 minutes expiry
+
+        if (isExpired) {
+          await (prisma as any).conversationState.delete({
+            where: { id: pendingChoiceState.id }
+          }).catch(() => null);
+          const reply = "⏰ انتهت مهلة الاختيار (30 دقيقة). يرجى إعادة كتابة أو إرسال الطلب.";
+          void saveChatMessage(tenantId, telegramChatId, "assistant", reply);
+          return { status: "success", text: reply };
+        }
+
+        const inputStr = normalizedText.trim();
+        const isOne = inputStr === "1" || /^(إجمالي|اجمالي|نعم|تأكيد|تاكيد|مشتريات)/i.test(inputStr);
+        const isTwo = inputStr === "2" || /^(سعر\s*القطعة|سعر\s*العلبة|القطعة|العلبة|لا|إلغاء|الغاء|مبيعات)/i.test(inputStr);
+        const isInvalidDigit = /^[3-9]$/.test(inputStr);
+
+        if (isInvalidDigit) {
+          const reply = "⚠️ خيار غير صحيح! يرجى الرد بـ 1 أو 2 فقط (أو اضغط الأزرار بالأسفل).";
+          void saveChatMessage(tenantId, telegramChatId, "assistant", reply);
+          return { status: "success", text: reply };
+        }
+
+        if (isOne || isTwo) {
+          await (prisma as any).conversationState.delete({
+            where: { id: pendingChoiceState.id }
+          }).catch(() => null);
+
+          let resolvedReply = "";
+          if (choiceData.type === "PRICE_AMBIGUITY") {
+            const { toolName, args, amount, qty, totalIfUnit, msgText } = choiceData.payload;
+            let confirmedMsg = msgText;
+            if (isOne) {
+              // Option 1: Total Amount
+              args.total_amount = amount;
+              args.price = amount / qty;
+              args.price_per_unit = amount / qty;
+              confirmedMsg = `${msgText} بإجمالي ${amount}`;
+            } else {
+              // Option 2: Price Per Unit
+              args.price = amount;
+              args.price_per_unit = amount;
+              args.total_amount = totalIfUnit;
+              confirmedMsg = `${msgText} سعر الكرتونة ${amount}`;
+            }
+            const res = await executeTool(toolName, args, tenantId, confirmedMsg);
+            resolvedReply = res.resultText;
+          } else if (choiceData.type === "CANCEL_CONFIRM") {
+            if (isOne) {
+              const res = await executeTool("cancel_last_transaction", {
+                transaction_type: choiceData.payload.txType,
+                confirmed: true
+              }, tenantId, "نعم تأكيد الإلغاء");
+              resolvedReply = res.resultText;
+            } else {
+              resolvedReply = "👍 تم الاحتفاظ بالعملية دون أي تغيير.";
+            }
+          } else if (choiceData.type === "BUY_VS_SELL") {
+            const targetTool = isOne ? "log_purchase" : "log_sale";
+            const res = await executeTool(targetTool, choiceData.payload.args, tenantId, choiceData.payload.msgText);
+            resolvedReply = res.resultText;
+          }
+
+          if (resolvedReply) {
+            void saveChatMessage(tenantId, telegramChatId, "assistant", resolvedReply);
+            return { status: "success", text: resolvedReply };
+          }
+        }
+      } catch (err) {
+        console.error("[Pending Choice Interceptor Error]:", err);
+      }
+    }
+  }
 
   // Try models in order - first available free-tier model wins
   const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];

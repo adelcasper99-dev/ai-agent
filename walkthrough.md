@@ -1,53 +1,44 @@
-# 🚀 Walkthrough - Transaction Correction Tools (`cancel_last_transaction` & `correct_last_transaction`)
+# 🚶 Walkthrough — Telegram Interactive Inline Keyboards & Single-Digit Interceptor
 
-## Summary of Completed Work
-We successfully implemented the hardened transaction cancellation and correction engine for Casper Voice Agent. When a merchant says `"بعت مش اشتريت"`, `"الغى اللي فات"`, or `"الكمية كانت 3 مش 5 والسعر 700"`, the bot can now safely void or modify active transactions in the database with 100% financial and inventory accounting precision.
+## 🚀 Accomplishments Overview
 
----
-
-## 🛠️ Key Changes Implemented
-
-### 1. Database Schema & Migration (`schema.prisma`)
-- Added soft-void fields (`voided: Boolean @default(false)`, `voidedAt: DateTime?`, `voidedBy: String?`) to `Sale`, `Purchase`, and `Expense` models.
-- Added `quantity: Int @default(1)` to `Purchase` model.
-- Pushed schema updates to SQLite database via `npx prisma db push`.
-
-### 2. Tools & Handlers (`lib/telegram_llm.ts`)
-- **`cancel_last_transaction`**:
-  - Enforces mandatory Arabic confirmation guard (`"⚠️ هل أنت متأكد من إلغاء... أرسل 'نعم' للتأكيد"`).
-  - Executes inside an atomic `prisma.$transaction`.
-  - Soft-voids record, reverses customer ledger entries, and restores stock quantities.
-  - Idempotent: checks `voided === true` to prevent double-cancellation.
-- **`correct_last_transaction`**:
-  - Accepts `corrections` array for multi-field updates in a single call (e.g. quantity + price).
-  - Enforces Decimal.js precision on monetary fields (`price`, `total_amount`).
-  - Recalculates line-item and invoice totals automatically.
+We have successfully engineered and deployed a unified **Interactive Choice System** for Telegram that combines:
+1. **Telegram Inline Keyboard Buttons (`inline_keyboard`)**: Clickable buttons in Telegram chat.
+2. **Single-Digit Interception (`1`, `2`, `١`, `٢`)**: Typing `1` or `2` (or Eastern Arabic digits `١`/`٢`) intercepts the response instantly without calling LLM, saving prompt tokens and delivering instant response times.
+3. **State Expiration (30 Mins)**: Automatic cleanup of pending choice states in SQLite/Prisma after 30 minutes.
+4. **Invalid Digit Protection**: Replying with an invalid digit (e.g. `3`) prompts `⚠️ خيار غير صحيح! يرجى الرد بـ 1 أو 2 فقط.`
 
 ---
 
-## 🧪 Verification & Raw Evidence
+## 🛠️ Detailed Component Changes
 
-### Raw Test Execution Output (`test_transaction_correction.ts`)
+### 1. Unified Option Formatting (`telegram_llm.ts`)
+Updated `C2 Ambiguity Guard`, `Cancellation Confirmation Guard`, and `Buy vs Sell Guard` to output:
 ```text
-=========================================
-🧪 Running Transaction Correction Unit Tests
-=========================================
+الـ1000 ده إجمالي الـ10 ولا سعر الوحدة الواحدة؟ 🧐
 
-✅ 1. Created test tenant: test_tenant_corr_1786588832786
-✅ 2. Created catalog product 'أسمنت' (stock = 50): cmsqwv24e0001mz5iqvqs169o
-✅ 3. Logged purchase of 2 tons cement (1500 EGP).
-✅ 3.1. Current stock quantity after purchase: 52
-✅ 4. Scenario 2 PASSED: Received confirmation prompt:  ⚠️ هل أنت متأكد من إلغاء فاتورة المشتريات (أسمنت بقيمة 1500 جنيه)؟ أرسل 'نعم' للتأكيد.
-✅ 5. Scenario 1 PASSED: Purchase cancelled successfully: ✅ تم إلغاء فاتورة المشتريات (أسمنت - 1500 جنيه) بنجاح.
-✅ 5.1. DB Purchase voided flag = true | Stock quantity restored = 50.
-✅ 6. Scenario 3 PASSED: Idempotency check prevented double cancellation: لم نجد أي عملية حديثة (آخر 30 دقيقة) قابلة للإلغاء. لو محتاج إلغاء عملية قديمة، يمكنك عمل مرتجع.
-✅ 7. Logged sale of 5 tons cement for 5000 EGP.
-✅ 8. Scenario 5 & 6 PASSED: Multi-field correction executed: ✅ تم تصحيح البيانات في آخر فاتورة بيع بنجاح:
-- الكمية: 3
-- السعر: 700 جنيه
-✅ 8.1. DB Sale verified: Quantity = 3 | Price = 700 | Total = 2100
+1️⃣ إجمالي الفاتورة بالكامل (1000 ج)
+2️⃣ سعر القطعة الواحدة (1000 × 10 = 10000 ج)
 
-=========================================
-🎉 ALL 6 CORRECTION SCENARIOS PASSED WITH 100% EVIDENCE!
-=========================================
+👉 (رد بـ 1 أو 2، أو اضغط على الأزرار بالأسفل)
 ```
+
+### 2. State Machine & Single-Digit Interceptor (`telegram_llm.ts`)
+- Persists pending choices into `ConversationState` table under `currentFlow = "pending_choice"`.
+- Intercepts `"1"`, `"2"`, `"١"`, `"٢"`, `"نعم"`, `"إجمالي"`, `"مشتريات"`, `"مبيعات"`.
+- Executes choice, deletes state, and outputs confirmed transaction result.
+
+### 3. Telegram Webhook Callback Query Handler (`app/api/telegram/webhook/route.ts`)
+- Intercepts Telegram button clicks with `c:` prefix.
+- Invokes `answerCallbackQuery` to stop Telegram loading spinner.
+- Resolves choice and updates Telegram message text via `editMessageText` API.
+
+---
+
+## 🧪 Empirical Verification & Test Evidence
+
+- **TypeScript Type Check**: `npx tsc --noEmit` -> `0 Errors`.
+- **Integration Test (`test_telegram_keyboards.ts`)**:
+  - `Scenario 1`: Generated numbered text options (1️⃣, 2️⃣) and inline keyboard. PASSED.
+  - `Scenario 2`: Invalid choice `"3"` caught with error message. PASSED.
+  - `Scenario 3`: Digit `"١"` resolved 1000 EGP total purchase and deleted state. PASSED.

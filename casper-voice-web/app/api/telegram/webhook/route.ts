@@ -103,6 +103,50 @@ export async function POST(req: NextRequest) {
         }
       };
 
+      if (data.startsWith("c:")) {
+        await answerCallback("جاري التنفيذ... 🚀");
+        const parts = data.split(":");
+        const actionType = parts[1]; // "p", "cancel", "type"
+
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (tenant) {
+          let choiceNum = "1";
+          if (actionType === "p") {
+            choiceNum = parts[2] === "tot" ? "1" : "2";
+          } else if (actionType === "cancel") {
+            choiceNum = parts[2] === "yes" ? "1" : "2";
+          } else if (actionType === "type") {
+            choiceNum = parts[2] === "purchase" ? "1" : "2";
+          }
+
+          const processRes = await processTelegramMessageWithLLM(
+            choiceNum,
+            tenant.id,
+            tenant.merchantName || undefined,
+            tenant.businessType || undefined,
+            tenant.workingHours || undefined,
+            callbackChatId
+          );
+
+          const resultText = (processRes as any).text || "تم تنفيذ الاختيار بنجاح ✅";
+          if (callback.message?.message_id) {
+            const token = process.env.TELEGRAM_BOT_TOKEN;
+            if (token) {
+              await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  chat_id: callbackChatId,
+                  message_id: callback.message.message_id,
+                  text: resultText
+                })
+              }).catch(() => null);
+            }
+          }
+        }
+        return NextResponse.json({ ok: true });
+      }
+
       const isTenantCommand = data.startsWith("menu:") || data.startsWith("sale:") || data.startsWith("cmd_");
       if (isTenantCommand) {
         const tenantCheck = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });

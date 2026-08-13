@@ -1,7 +1,8 @@
-# 📋 Task Log - Transaction Correction Tools (`cancel_last_transaction` & `correct_last_transaction`)
+# 📋 Stage 3 Build Tasks — Telegram Inline Keyboards & Numbered Choice Interceptor
 
-- [x] Prisma Schema Migration: Added `voided`, `voidedAt`, `voidedBy` fields to `Sale`, `Purchase`, and `Expense` models
-- [x] Database Push: Synchronized SQLite database schema via `npx prisma db push`
-- [x] Tool Declarations: Created `cancelLastTransactionTool` & `correctLastTransactionTool` in `lib/telegram_llm.ts`
-- [x] Tool Cluster Registration: Added tools to `ALL_TOOLS`, `SALES_TOOLS`, `PURCHASE_TOOLS`, `FINANCE_META_TOOLS` & updated `CLUSTER_KEYWORDS`
-- [x] Execute Handlers: Implemented `cancel_last_transaction` (atomic $transaction + confirmation guard) & `correct_last_transaction` (multi-field `corrections[]` + Decimal.js)
+- [x] 1. Implement `sendTelegramMessageWithKeyboard` and `answerTelegramCallbackQuery` helpers in `route.ts` / `telegram_llm.ts`.
+- [x] 2. Format `C2 Ambiguity Guard`, `Confirmation Guard`, and `Buying vs Selling Guard` with numbered options `1.` / `2.` + Inline Keyboard `inline_keyboard` payload.
+- [x] 3. Implement Single-Digit Interceptor (`1`, `2`, `١`, `٢`) and Invalid Choice Handler (`3`, invalid option) in `route.ts` / `telegram_llm.ts`.
+- [x] 4. Implement 30-minute State Machine Expiration logic (`pendingChoiceExpiresAt`).
+- [x] 5. Implement Telegram `callback_query` webhook payload handler in `app/api/telegram/webhook/route.ts`.
+- [x] 6. Verify zero `any` type violations and complete TypeScript build (`npx tsc --noEmit`).

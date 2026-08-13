@@ -1,57 +1,52 @@
-# 🧠 Implementation Plan - Hardened Grounding Guard & Credit Sale Clarification
-
-Fix the infinite clarification loop in `lib/telegram_llm.ts` when a merchant logs a credit sale (`آجل`) without specifying a price or when replying `"الفاتوره كلها اجل مفيش كاش"`.
-
----
-
-## 🛑 User Review Required
-
-> [!IMPORTANT]
-> **Zero Breaking Changes**: This plan modifies only internal grounding rules and payment distribution pre-parsers in `lib/telegram_llm.ts`. Database schema remains untouched.
+# 🛠️ Hardened Implementation Plan — Telegram Interactive Inline Keyboards & Choice Interceptor
+## Full-Stack Option Buttons, Single-Digit Interception (1, 2) & Callback Query Handler
 
 ---
 
-## 📐 Proposed Changes
+## 📋 Summary & Objectives
+Enhance Casper POS Telegram Agent with **Interactive Telegram Inline Keyboard Buttons** and **Single-Digit Text Shortcuts (`1`, `2`, `١`, `٢`)** for all clarification and confirmation prompts:
 
-### 1. LLM Core & Grounding Guard
-#### [MODIFY] [lib/telegram_llm.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)
-
-1. **Credit Terms Pre-Parser**:
-   - In `groundingCheck` and `executeTool` for `log_sale` / `log_purchase`:
-   - Detect explicit zero-cash phrases (`"كله آجل"`, `"مفيش كاش"`, `"على الحساب"`).
-   - Automatically force `args.paid_amount = 0` and `args.deferred_amount = total_amount`.
-
-2. **Catalog Price Grounding Exemption**:
-   - In `groundingCheck`:
-   - If `log_sale` is called and `item_name` matches a `Product` in the database with `unitPrice > 0`, bypass single-turn numerical text matching for the price parameter.
-
-3. **Smart Dynamic Clarification Prompting**:
-   - In `groundingCheck` ambiguous number check:
-   - Check if message explicitly states `"آجل"` or `"كاش"`. If payment mode is unambiguous, DO NOT return the generic *"أنهي كاش وأنهي إجمالي؟"* question.
-   - If `price` / `amount` is completely missing from both text and catalog, return a direct price prompt: *"عشان أسجلك الفاتورة، سعر [الصنف] كام أو إجمالي الفاتورة كام؟ 💵"*.
+1. **Price Ambiguity (C2)**: Offer Inline Buttons (`[📦 إجمالي 1000 ج]`, `[💰 سعر القطعة 10,000 ج]`) or text choices (`1` / `2`).
+2. **Cancellation Guard**: Offer Inline Buttons (`[✅ تأكيد الإلغاء]`, `[❌ إلغاء الطلب]`) or text choices (`1` / `2`).
+3. **Purchase vs Sale Disambiguation**: Offer Inline Buttons (`[🛒 مشتريات]`, `[🛍️ مبيعات]`) or text choices (`1` / `2`).
+4. **State Machine Expiry & Invalid Choice Protection**:
+   - Auto-expire pending choices after 30 minutes.
+   - Reply with clear error if an invalid digit (e.g. `3`) or unrecognized option is typed.
 
 ---
 
-### 2. Test Suite Layer
-#### [NEW] [test_sale_grounding.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/test_sale_grounding.ts)
-- Create automated unit tests verifying:
-  1. Credit sale with catalog item (price from DB) succeeds without text numbers.
-  2. Credit sale with `"الفاتوره كلها اجل مفيش كاش"` sets `paid_amount = 0` cleanly.
-  3. Sale without price and without catalog match returns explicit price request prompt.
+## 🛠️ Proposed Changes
+
+### Component 1: Telegram Webhook Route Callback Query Support
+#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/telegram/webhook/route.ts)
+- Add handler for `callback_query` payload in Telegram webhook request.
+- Extract `callback_query_id`, `data`, and `chat_id`.
+- Automatically invoke Telegram `answerCallbackQuery` API to stop loading spinner.
+- Resolve choice and edit original telegram message text to show final resolution.
+
+### Component 2: Choice Formatting & Inline Keyboard Helper
+#### [MODIFY] [telegram_llm.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)
+- Update `groundingCheck` and `cancel_last_transaction` to return structured choice metadata:
+  - `replyMarkup`: Telegram `inline_keyboard` payload with callback data.
+  - Numbered text choices (1., 2.) in message body.
+- Implement single-digit interceptor (`1`, `2`, `١`, `٢`) in `executeTool` / webhook router.
+
+### Component 3: Database & State Machine Expiration
+#### [MODIFY] [telegram_llm.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)
+- Persist pending state in `ConversationState` table with `expiresAt = Date.now() + 30 * 60 * 1000`.
+- Purge expired states before processing new choices.
 
 ---
 
 ## 🧪 Verification Plan
 
-### Automated Tests
-Run unit test script:
-```powershell
-cd c:\Users\TheExpert\Downloads\casper-voice-project\casper-voice-project\casper-voice-web
-npx tsx test_sale_grounding.ts
-```
+### Automated Unit & Integration Tests
+- Run `npx tsx test_telegram_keyboards.ts` verifying:
+  1. Callback Query payload resolution.
+  2. Single-digit interceptor (`1`, `2`, `١`, `٢`).
+  3. Expiration handling (> 30 mins).
+  4. Invalid option handling (`3`).
+  5. Zero TypeScript errors (`npx tsc --noEmit`).
 
 ### Manual Verification
-1. Simulate message: `"سجل بيع 5 كرتونة لزق لـ أحمد محمد آجل على الحساب"`.
-2. Verify catalog price or explicit price request is returned.
-3. Reply: `"الفاتوره كلها اجل مفيش كاش"`.
-4. Verify no infinite loop occurs and sale is logged with `paid = 0, deferred = total`.
+- Testing directly on Telegram bot with live inline buttons and digit replies.

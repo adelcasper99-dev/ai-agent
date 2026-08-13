@@ -994,8 +994,8 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
     const qty = Number(args?.quantity) || 1;
     if (qty > 1) {
       const userNums = extractAllNumbersFromText(msg).filter((n) => n > 0);
-      const significantNums = userNums.filter((n) => n >= 10);
-      // Only one significant number in message (ambiguous — is it total or unit price?)
+      const significantNums = userNums.filter((n) => n >= 10 && n !== qty);
+      // Only one significant price/total amount in message (ambiguous — is it total or unit price?)
       const hasOnlyOneAmount = significantNums.length === 1;
       // Check for explicit unit-price anchors ("الكرتونة بـ", "الواحدة", "للحبة", "كل كرتونة")
       const hasUnitAnchor = /(الكرتون[ةه]|الحب[ةه]|الواحد[ةه]|للقطع[ةه]|كل\s+\w+\s+بـ?|للكيلو|للطن|للمتر)/i.test(msg);

@@ -38,7 +38,7 @@ async function runTests() {
       quantity: 2,
       total_amount: 1500,
       paid_amount: 1500
-    }, testTenantId, "اشتريت 2 طن أسمنت من المهندس شريف بـ 1500 كاش");
+    }, testTenantId, "اشتريت 2 طن أسمنت من المهندس شريف بإجمالي 1500 كاش");
 
     if (!purchaseRes.success) {
       throw new Error(`Failed to create initial purchase: ${purchaseRes.resultText}`);
@@ -99,7 +99,7 @@ async function runTests() {
       quantity: 5,
       price: 1000,
       customer_name: "أحمد محمد"
-    }, testTenantId, "سجل بيع 5 طن أسمنت لـ أحمد محمد بـ 5000 كاش");
+    }, testTenantId, "سجل بيع 5 طن أسمنت لـ أحمد محمد بإجمالي 5000 كاش");
 
     if (!saleRes.success) {
       throw new Error(`Failed to create sale for correction test: ${saleRes.resultText}`);

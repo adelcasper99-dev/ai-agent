@@ -1,20 +1,5 @@
 import type { Metadata } from "next";
-import { Cairo, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-
-const cairo = Cairo({
-  variable: "--font-cairo",
-  subsets: ["arabic", "latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  display: "swap",
-});
-
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-numeric",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "لوحة تحكم كاسبر | Casper Admin",
@@ -27,8 +12,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className={`dark ${cairo.variable} ${plusJakarta.variable}`}>
-      <body className="antialiased">{children}</body>
+    <html lang="ar" dir="rtl">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+      </head>
+      <body className="font-cairo antialiased">
+        {children}
+      </body>
     </html>
   );
 }

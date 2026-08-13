@@ -1225,10 +1225,18 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     // Auto-resolve payment direction based on entity existence (Customer vs Supplier)
     if (name === "log_customer_payment" && args.customer_name && tenantId) {
       const rawName = String(args.customer_name).replace(/^(العميل|عميل|للعميل|المورد|مورد|للمورد|لـ|ل|من|عن)\s*/, '').trim();
+      
       const existingSupplier = await prisma.supplier.findFirst({
         where: { tenantId, name: { contains: rawName } }
       });
-      if (existingSupplier) {
+      const existingCustomer = await prisma.customer.findFirst({
+        where: { tenantId, name: { contains: rawName } }
+      });
+      
+      const isExplicitReceive = /(استلمت|اخدت|خدت|حوللي|دفعلي|جابلي|من|دخلت|دفع|حساب عميل)/i.test(msgText);
+      const isExplicitPay = /(سددت|دفعت|اديت|عطيته|طلعت|لـ|ل|للمورد|حساب مورد)/i.test(msgText);
+
+      if (existingSupplier && (isExplicitPay || (!existingCustomer && !isExplicitReceive))) {
         console.log(`[Domain Resolver] Auto-redirecting log_customer_payment to log_supplier_payment for supplier: "${existingSupplier.name}"`);
         name = "log_supplier_payment";
         args = { supplier_name: existingSupplier.name, amount: args.amount };

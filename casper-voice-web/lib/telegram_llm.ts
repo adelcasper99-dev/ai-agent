@@ -988,6 +988,30 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
     }
   }
 
+  // C2. Unit vs Total Price Ambiguity Guard:
+  // "10 كراتين ب 1000" → unclear if 1000 is total or per-unit price
+  if ((toolName === "log_purchase" || toolName === "log_sale") && !isExplicitCredit) {
+    const qty = Number(args?.quantity) || 1;
+    if (qty > 1) {
+      const userNums = extractAllNumbersFromText(msg).filter((n) => n > 0);
+      const significantNums = userNums.filter((n) => n >= 10);
+      // Only one significant number in message (ambiguous — is it total or unit price?)
+      const hasOnlyOneAmount = significantNums.length === 1;
+      // Check for explicit unit-price anchors ("الكرتونة بـ", "الواحدة", "للحبة", "كل كرتونة")
+      const hasUnitAnchor = /(الكرتون[ةه]|الحب[ةه]|الواحد[ةه]|للقطع[ةه]|كل\s+\w+\s+بـ?|للكيلو|للطن|للمتر)/i.test(msg);
+      // Check for explicit total anchors ("إجمالي", "الكل", "كلهم", "المجموع")
+      const hasTotalAnchor2 = /(إجمالي|اجمالي|الكل|كلهم|المجموع|بالكامل|الإجمالي)/i.test(msg);
+      
+      if (hasOnlyOneAmount && !hasUnitAnchor && !hasTotalAnchor2) {
+        const amount = significantNums[0];
+        return {
+          ok: false,
+          reason: `الـ${amount} ده إجمالي الـ${qty} ولا سعر الوحدة الواحدة؟ 🧐`
+        };
+      }
+    }
+  }
+
   // D. اشترى Ambiguity Guard: If log_sale is triggered but "اشترى + من" pattern is present → block and ask clarification
   if (toolName === "log_sale") {
     const hasIshtaraMin = /(اشترى|اشتريت)\s+.{1,40}\s+من\s+\S+/i.test(msg);

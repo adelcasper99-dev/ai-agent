@@ -329,6 +329,54 @@ const getMerchantMemoryTool: FunctionDeclaration = {
   }
 };
 
+const cancelLastTransactionTool: FunctionDeclaration = {
+  name: "cancel_last_transaction",
+  description: "إلغاء آخر عملية مسجلة (بيع، مشتريات، أو مصروف) عندما يطلب التاجر إلغاءها أو يقول 'بعت مش اشتريت' أو 'الغى العملية الأخيرة'",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      transaction_type: {
+        type: SchemaType.STRING,
+        description: "نوع العملية المراد إلغاؤها: 'sale' (بيع) أو 'purchase' (مشتريات) أو 'expense' (مصروف) أو 'auto' (تلقائي)"
+      },
+      confirmed: {
+        type: SchemaType.BOOLEAN,
+        description: "هل أكد التاجر صراحة بالإلغاء بعد سؤال التأكيد؟ (مثال: نعم/أكيد/أيوة)"
+      }
+    },
+    required: ["transaction_type"]
+  }
+};
+
+const correctLastTransactionTool: FunctionDeclaration = {
+  name: "correct_last_transaction",
+  description: "تعديل حقل أو أكثر (الكمية، السعر، اسم العميل، اسم المورد) في آخر عملية مسجلة عندما يوضح التاجر خطأ في البيانات المسجلة",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      corrections: {
+        type: SchemaType.ARRAY,
+        description: "قائمة التعديلات المراد تطبيقها على العملية الأخيرة",
+        items: {
+          type: SchemaType.OBJECT,
+          properties: {
+            field: {
+              type: SchemaType.STRING,
+              description: "الحقل المراد تعديله: 'customer_name' أو 'supplier_name' أو 'quantity' أو 'price' أو 'total_amount'"
+            },
+            new_value: {
+              type: SchemaType.STRING,
+              description: "القيمة الجديدة الصحيحة المراد حفظها"
+            }
+          },
+          required: ["field", "new_value"]
+        }
+      }
+    },
+    required: ["corrections"]
+  }
+};
+
 // ==================== DYNAMIC TOOL ROUTING & CLUSTERS ====================
 
 export const ALL_TOOLS: FunctionDeclaration[] = [
@@ -336,23 +384,24 @@ export const ALL_TOOLS: FunctionDeclaration[] = [
   getFinancialSummaryTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool,
   reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool,
   getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool, addProductTool,
-  updateStockTool, addCustomerTool, saveMerchantMemoryTool, getMerchantMemoryTool
+  updateStockTool, addCustomerTool, saveMerchantMemoryTool, getMerchantMemoryTool,
+  cancelLastTransactionTool, correctLastTransactionTool
 ];
 
 export type ClusterKey = 'SALES' | 'PURCHASES' | 'APPOINTMENTS' | 'INVENTORY' | 'FINANCE_META';
 
-const SALES_TOOLS: FunctionDeclaration[] = [logSaleTool, addCustomerTool, logSalesReturnTool, logCustomerPaymentTool, getCustomerBalanceTool];
-const PURCHASE_TOOLS: FunctionDeclaration[] = [logPurchaseTool, logSupplierPaymentTool, getSupplierBalanceTool, logPurchaseReturnTool];
+const SALES_TOOLS: FunctionDeclaration[] = [logSaleTool, addCustomerTool, logSalesReturnTool, logCustomerPaymentTool, getCustomerBalanceTool, cancelLastTransactionTool, correctLastTransactionTool];
+const PURCHASE_TOOLS: FunctionDeclaration[] = [logPurchaseTool, logSupplierPaymentTool, getSupplierBalanceTool, logPurchaseReturnTool, cancelLastTransactionTool, correctLastTransactionTool];
 const APPOINTMENT_TOOLS: FunctionDeclaration[] = [bookAppointmentTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool];
 const INVENTORY_TOOLS: FunctionDeclaration[] = [addProductTool, updateStockTool];
-const FINANCE_META_TOOLS: FunctionDeclaration[] = [logExpenseTool, getFinancialSummaryTool, reportMissingFeatureTool, saveMerchantMemoryTool, getMerchantMemoryTool];
+const FINANCE_META_TOOLS: FunctionDeclaration[] = [logExpenseTool, getFinancialSummaryTool, reportMissingFeatureTool, saveMerchantMemoryTool, getMerchantMemoryTool, cancelLastTransactionTool, correctLastTransactionTool];
 
 const CLUSTER_KEYWORDS: Record<ClusterKey, string[]> = {
-  SALES: ["بيع", "بعت", "اشترى", "كاش", "آجل", "عميل", "حساب عميل", "رصيد عميل", "قبضت", "سدد", "مرتجع مبيعات", "رجع من", "تليفون عميل", "ديون عميل"],
-  PURCHASES: ["شراء", "اشتريت", "مشتريات", "مورد", "فاتورة", "سددت للمورد", "مرتجع مشتريات", "رجعت للمورد", "حساب المورد", "ديون مورد"],
+  SALES: ["بيع", "بعت", "اشترى", "كاش", "آجل", "عميل", "حساب عميل", "رصيد عميل", "قبضت", "سدد", "مرتجع مبيعات", "رجع من", "تليفون عميل", "ديون عميل", "بعت مش اشتريت", "الغى", "إلغاء", "خطأ", "تعديل"],
+  PURCHASES: ["شراء", "اشتريت", "مشتريات", "مورد", "فاتورة", "سددت للمورد", "مرتجع مشتريات", "رجعت للمورد", "حساب المورد", "ديون مورد", "اشتريت مش بعت", "الغى", "إلغاء", "خطأ", "تعديل"],
   APPOINTMENTS: ["موعد", "ميعاد", "حجز", "الغي", "لغى", "مسح ميعاد", "تأجيل", "أجل", "غير ميعاد", "مواعيد", "بكرة الساعة", "اشوف مواعيد", "معاد"],
   INVENTORY: ["صنف", "منتج", "كتالوج", "مخزون", "جرد", "رصيد فعلي", "صحح مخزون", "أضف صنف", "سلعة جديدة"],
-  FINANCE_META: ["مصروف", "مصاريف", "تقرير", "ملخص", "أرباح", "مبيعات النهاردة", "كشف حساب شهر", "ميزة ناقصة"]
+  FINANCE_META: ["مصروف", "مصاريف", "تقرير", "ملخص", "أرباح", "مبيعات النهاردة", "كشف حساب شهر", "ميزة ناقصة", "امسح", "تعديل", "خطأ"]
 };
 
 export function resolveActiveTools(text: string, lastHistoryMsg?: string): { activeTools: FunctionDeclaration[]; activeClusters: ClusterKey[] } {
@@ -1805,6 +1854,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
           data: {
             supplierId: supplier.id,
             itemName: String(item_name).trim(),
+            quantity: qty,
             totalAmount: total.toNumber(),
             paidAmount: paid.toNumber(),
             deferredAmount: remaining.toNumber(),
@@ -2073,7 +2123,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       const qty = Number(quantity) || 1;
 
       try {
-        const supplierFound = await (prisma as any).$transaction(async (tx: any) => {
+          const supplierFound = await (prisma as any).$transaction(async (tx: any) => {
           const supplier = await tx.supplier.findFirst({
             where: { name: { contains: supName }, ...(tenantId && { tenantId }) }
           });
@@ -2371,6 +2421,186 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       return { 
         success: true, 
         resultText: "تم إرسال اقتراحك للمطور بنجاح! سيتم العمل على إضافتها قريباً، شكراً لك."
+      };
+    }
+
+    if (name === "cancel_last_transaction") {
+      if (!tenantId) {
+        return { success: false, resultText: "عذراً، يلزم تحديد هوية النشاط لإلغاء المعاملة." };
+      }
+
+      const isConfirmed = args?.confirmed === true || /(نعم|ايوه|أيوة|تأكيد|اكيد|اتفضل|أكيد|ماشي|تمام)/i.test(userMessageText || "");
+      const windowStart = new Date(Date.now() - 30 * 60 * 1000);
+      const requestedType = args?.transaction_type || "auto";
+
+      const lastSale = (requestedType === "sale" || requestedType === "auto")
+        ? await (prisma as any).sale.findFirst({ where: { tenantId, voided: false, createdAt: { gte: windowStart } }, orderBy: { createdAt: "desc" } })
+        : null;
+
+      const lastPurchase = (requestedType === "purchase" || requestedType === "auto")
+        ? await (prisma as any).purchase.findFirst({ where: { tenantId, voided: false, createdAt: { gte: windowStart } }, orderBy: { createdAt: "desc" } })
+        : null;
+
+      const lastExpense = (requestedType === "expense" || requestedType === "auto")
+        ? await (prisma as any).expense.findFirst({ where: { tenantId, voided: false, createdAt: { gte: windowStart } }, orderBy: { createdAt: "desc" } })
+        : null;
+
+      const candidates = [
+        lastSale ? { type: "sale", record: lastSale, time: lastSale.createdAt.getTime() } : null,
+        lastPurchase ? { type: "purchase", record: lastPurchase, time: lastPurchase.createdAt.getTime() } : null,
+        lastExpense ? { type: "expense", record: lastExpense, time: lastExpense.createdAt.getTime() } : null,
+      ].filter(Boolean) as { type: "sale" | "purchase" | "expense"; record: any; time: number }[];
+
+      candidates.sort((a, b) => b.time - a.time);
+      const target = candidates[0];
+
+      if (!target) {
+        return { success: false, resultText: "لم نجد أي عملية حديثة (آخر 30 دقيقة) قابلة للإلغاء. لو محتاج إلغاء عملية قديمة، يمكنك عمل مرتجع." };
+      }
+
+      if (!isConfirmed) {
+        const typeLabel = target.type === "sale" ? "فاتورة البيع" : target.type === "purchase" ? "فاتورة المشتريات" : "المصروف";
+        const itemInfo = target.record.itemName || target.record.description || "";
+        const amountInfo = target.record.total || target.record.totalAmount || target.record.amount;
+        return {
+          success: false,
+          resultText: `⚠️ هل أنت متأكد من إلغاء ${typeLabel} (${itemInfo} بقيمة ${amountInfo} جنيه)؟ أرسل 'نعم' للتأكيد.`
+        };
+      }
+
+      if (target.record.voided) {
+        return { success: false, resultText: "العملية دي اتلغت بالفعل 🚫" };
+      }
+
+      return await prisma.$transaction(async (tx) => {
+        if (target.type === "sale") {
+          const sale = target.record;
+          await (tx as any).sale.update({
+            where: { id: sale.id },
+            data: { voided: true, voidedAt: new Date(), voidedBy: telegramMessageId?.toString() || "system" }
+          });
+          if (sale.customerId && Number(sale.deferredAmount) > 0) {
+            await (tx as any).customerLedgerEntry.create({
+              data: {
+                tenantId,
+                customerId: sale.customerId,
+                saleId: sale.id,
+                entryType: "VOID_REVERSAL",
+                amount: new Decimal(sale.deferredAmount).negated(),
+                description: `إلغاء فاتورة بيع: ${sale.itemName}`
+              }
+            });
+          }
+          const prod = await tx.product.findFirst({ where: { tenantId, name: { contains: sale.itemName } } });
+          if (prod && prod.isStockItem) {
+            await tx.product.update({ where: { id: prod.id }, data: { stockQuantity: prod.stockQuantity + sale.quantity } });
+          }
+          return { success: true, resultText: `✅ تم إلغاء فاتورة البيع (${sale.itemName} - ${sale.total} جنيه) بنجاح.` };
+        } else if (target.type === "purchase") {
+          const purchase = target.record;
+          await (tx as any).purchase.update({
+            where: { id: purchase.id },
+            data: { voided: true, voidedAt: new Date(), voidedBy: telegramMessageId?.toString() || "system" }
+          });
+          const prod = await tx.product.findFirst({ where: { tenantId, name: { contains: purchase.itemName } } });
+          if (prod && prod.isStockItem) {
+            const newQty = Math.max(0, prod.stockQuantity - (purchase.quantity || 1));
+            await tx.product.update({ where: { id: prod.id }, data: { stockQuantity: newQty } });
+          }
+          return { success: true, resultText: `✅ تم إلغاء فاتورة المشتريات (${purchase.itemName} - ${purchase.totalAmount} جنيه) بنجاح.` };
+        } else {
+          const exp = target.record;
+          await (tx as any).expense.update({
+            where: { id: exp.id },
+            data: { voided: true, voidedAt: new Date(), voidedBy: telegramMessageId?.toString() || "system" }
+          });
+          return { success: true, resultText: `✅ تم إلغاء المصروف (${exp.description} - ${exp.amount} جنيه) بنجاح.` };
+        }
+      });
+    }
+
+    if (name === "correct_last_transaction") {
+      if (!tenantId) {
+        return { success: false, resultText: "عذراً، يلزم تحديد هوية النشاط لتعديل المعاملة." };
+      }
+
+      const corrections = Array.isArray(args?.corrections) ? args.corrections : [];
+      if (corrections.length === 0) {
+        return { success: false, resultText: "من فضلك حدد الحقل والقيمة الجديدة المراد تعديلها." };
+      }
+
+      const windowStart = new Date(Date.now() - 30 * 60 * 1000);
+      const lastSale = await (prisma as any).sale.findFirst({ where: { tenantId, voided: false, createdAt: { gte: windowStart } }, orderBy: { createdAt: "desc" } });
+      const lastPurchase = await (prisma as any).purchase.findFirst({ where: { tenantId, voided: false, createdAt: { gte: windowStart } }, orderBy: { createdAt: "desc" } });
+
+      let record: any = null;
+      let recordType: "sale" | "purchase" = "sale";
+
+      if (lastSale && lastPurchase) {
+        if (lastSale.createdAt.getTime() >= lastPurchase.createdAt.getTime()) {
+          record = lastSale;
+          recordType = "sale";
+        } else {
+          record = lastPurchase;
+          recordType = "purchase";
+        }
+      } else if (lastSale) {
+        record = lastSale;
+        recordType = "sale";
+      } else if (lastPurchase) {
+        record = lastPurchase;
+        recordType = "purchase";
+      }
+
+      if (!record) {
+        return { success: false, resultText: "لم نجد أي عملية حديثة (آخر 30 دقيقة) قابلة للتعديل." };
+      }
+
+      const updateData: any = {};
+      let updatedFieldsLog: string[] = [];
+
+      for (const item of corrections) {
+        const { field, new_value } = item;
+        if (!field || new_value === undefined) continue;
+
+        if (field === "price") {
+          const newPriceDec = new Decimal(new_value).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+          updateData.price = newPriceDec;
+          const qty = updateData.quantity || record.quantity || 1;
+          updateData.total = newPriceDec.mul(new Decimal(qty)).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+          updatedFieldsLog.push(`السعر: ${newPriceDec} جنيه`);
+        } else if (field === "total_amount") {
+          const newTotalDec = new Decimal(new_value).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+          if (recordType === "sale") updateData.total = newTotalDec;
+          else updateData.totalAmount = newTotalDec;
+          updatedFieldsLog.push(`الإجمالي: ${newTotalDec} جنيه`);
+        } else if (field === "quantity") {
+          const newQty = parseInt(String(new_value), 10) || 1;
+          updateData.quantity = newQty;
+          const priceDec = updateData.price ? new Decimal(updateData.price) : new Decimal(record.price || record.totalAmount);
+          updateData[recordType === "sale" ? "total" : "totalAmount"] = priceDec.mul(new Decimal(newQty)).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+          updatedFieldsLog.push(`الكمية: ${newQty}`);
+        } else if (field === "customer_name") {
+          updateData.customerName = String(new_value).trim();
+          updatedFieldsLog.push(`العميل: ${new_value}`);
+        } else if (field === "supplier_name") {
+          updatedFieldsLog.push(`المورد: ${new_value}`);
+        }
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        return { success: false, resultText: "لم تتغير أي بيانات في العملية الأخيرة." };
+      }
+
+      if (recordType === "sale") {
+        await (prisma as any).sale.update({ where: { id: record.id }, data: updateData });
+      } else {
+        await (prisma as any).purchase.update({ where: { id: record.id }, data: updateData });
+      }
+
+      return {
+        success: true,
+        resultText: `✅ تم تصحيح البيانات في آخر فاتورة ${recordType === "sale" ? "بيع" : "مشتريات"} بنجاح:\n- ${updatedFieldsLog.join("\n- ")}`
       };
     }
 

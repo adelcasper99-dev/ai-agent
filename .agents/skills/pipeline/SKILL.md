@@ -29,6 +29,8 @@ When triggered with `/pipeline <task description>` or `/casper-pipeline <task de
 5. Execute **Block B** autonomously (Stages 3 → 3b → 4 → 5).
 6. ⛔ **CHECKPOINT BETA** — Present full results summary. Await user approval.
 7. Execute **Stage 6** Compliance Verification.
+8. ⛔ **CHECKPOINT GAMMA** — Present Stage 6 Compliance & ask if user wants to double-check or proceed to deploy.
+9. Upon approval (`Deploy` / `Proceed` / `/deploy-hq`), execute **`/deploy-hq`** (`python scripts/rebuild_vps_dashboard.py`).
 
 ---
 
@@ -147,8 +149,32 @@ When triggered with `/pipeline <task description>` or `/casper-pipeline <task de
   1. Read `.agents/stage_log.json` — verify `COMPLETED` entries for ALL stages: `0a`, `0b`, `1`, `2ab`, `3`, `3b`, `4`, `5`.
   2. Verify files on disk: `ironclad_review_*.md`, `task.md` (all `[x]`), `code_review_report.md`, `walkthrough.md`.
   3. Cross-reference: every stage in log must have a corresponding artifact.
+  4. Write `pipeline_completion_report.md`.
 - **Pass**: `✅ PIPELINE COMPLIANCE: PASSED — All stages verified via stage_log.json + filesystem.`
 - **Fail**: `🚨 PIPELINE COMPLIANCE: FAILED. Missing: [exact list]. Re-run missing stage(s). Do NOT merge until resolved.`
+
+---
+
+## ⛔ CHECKPOINT GAMMA — Pre-Deployment Gate & HQ Deployment (`/deploy-hq`)
+
+**Present to user:**
+- Final Stage 6 Compliance Verification status
+- Link to [pipeline_completion_report.md](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/pipeline_completion_report.md)
+- Link to [walkthrough.md](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/walkthrough.md)
+
+**Mandatory Stop & Double-Check Prompt:**
+> *"Stage 6 Compliance Audit complete! Would you like to double-check and review the code/artifacts once more, or type **Deploy** (or **Proceed**) to launch `/deploy-hq` and publish live to HQ VPS server (`109.123.247.119`)?"*
+
+> **CRITICAL RULE**: ALWAYS stop at Checkpoint Gamma. Do NOT auto-deploy without explicit user confirmation.
+
+**Automated Deployment Execution (`deploy-hq`)**:
+When the user approves with `Deploy`, `Proceed`, or `/deploy-hq`:
+1. Invoke the `deploy-hq` skill:
+   ```bash
+   python scripts/rebuild_vps_dashboard.py
+   ```
+2. Monitor background deployment task to completion.
+3. Report final PM2 status output to user.
 
 ---
 

@@ -103,6 +103,9 @@ model Expense {
   amount      Decimal
   description String
   category    String   @default("عام")
+  voided      Boolean  @default(false)
+  voidedAt    DateTime?
+  voidedBy    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
 
@@ -141,6 +144,9 @@ model Sale {
   deferredAmount Decimal    @default(0)
   idempotencyKey String?
   isNegativeStockSale Boolean @default(false)
+  voided         Boolean  @default(false)
+  voidedAt       DateTime?
+  voidedBy       String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
 
@@ -177,6 +183,10 @@ model Purchase {
   paidAmount     Decimal    @default(0)
   deferredAmount Decimal    @default(0)
   notes          String   @default("")
+  quantity       Int      @default(1)
+  voided         Boolean  @default(false)
+  voidedAt       DateTime?
+  voidedBy       String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
 

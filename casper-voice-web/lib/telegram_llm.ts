@@ -2964,7 +2964,7 @@ export async function processTelegramMessageWithLLM(
               args.price = amount;
               args.price_per_unit = amount;
               args.total_amount = totalIfUnit;
-              confirmedMsg = `${msgText} سعر الكرتونة ${amount}`;
+              confirmedMsg = `${msgText} سعر الكرتونة ${amount} بإجمالي ${totalIfUnit}`;
             }
             const res = await executeTool(toolName, args, tenantId, confirmedMsg);
             resolvedReply = res.resultText;

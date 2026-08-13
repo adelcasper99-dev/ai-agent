@@ -2472,15 +2472,15 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         return { success: false, resultText: "العملية دي اتلغت بالفعل 🚫" };
       }
 
-      return await prisma.$transaction(async (tx) => {
+      const txResult = await (prisma as any).$transaction(async (tx: any) => {
         if (target.type === "sale") {
           const sale = target.record;
-          await (tx as any).sale.update({
+          await tx.sale.update({
             where: { id: sale.id },
             data: { voided: true, voidedAt: new Date(), voidedBy: telegramMessageId?.toString() || "system" }
           });
           if (sale.customerId && Number(sale.deferredAmount) > 0) {
-            await (tx as any).customerLedgerEntry.create({
+            await tx.customerLedgerEntry.create({
               data: {
                 tenantId,
                 customerId: sale.customerId,
@@ -2498,7 +2498,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
           return { success: true, resultText: `✅ تم إلغاء فاتورة البيع (${sale.itemName} - ${sale.total} جنيه) بنجاح.` };
         } else if (target.type === "purchase") {
           const purchase = target.record;
-          await (tx as any).purchase.update({
+          await tx.purchase.update({
             where: { id: purchase.id },
             data: { voided: true, voidedAt: new Date(), voidedBy: telegramMessageId?.toString() || "system" }
           });
@@ -2510,13 +2510,15 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
           return { success: true, resultText: `✅ تم إلغاء فاتورة المشتريات (${purchase.itemName} - ${purchase.totalAmount} جنيه) بنجاح.` };
         } else {
           const exp = target.record;
-          await (tx as any).expense.update({
+          await tx.expense.update({
             where: { id: exp.id },
             data: { voided: true, voidedAt: new Date(), voidedBy: telegramMessageId?.toString() || "system" }
           });
           return { success: true, resultText: `✅ تم إلغاء المصروف (${exp.description} - ${exp.amount} جنيه) بنجاح.` };
         }
       });
+
+      return txResult as { success: boolean; resultText: string };
     }
 
     if (name === "correct_last_transaction") {

@@ -143,14 +143,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={href}
                 href={href}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
-                style={{
-                  background: isActive ? "var(--primary)" : "transparent",
-                  color: isActive ? "var(--primary-foreground)" : "rgba(248,250,252,0.7)",
-                }}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
+                  isActive 
+                    ? "bg-cyan-500 text-black font-extrabold shadow-[0_0_15px_rgba(6,182,212,0.4)]" 
+                    : "text-zinc-400 hover:text-white hover:bg-white/5 font-semibold"
+                }`}
               >
-                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-sm font-semibold">{label}</span>
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} className={isActive ? "text-black" : "text-zinc-400"} />
+                <span className="text-sm tracking-wide">{label}</span>
               </Link>
             );
           })}

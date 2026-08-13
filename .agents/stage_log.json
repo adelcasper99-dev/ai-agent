@@ -7,5 +7,6 @@
   { "stage": "3b-audit", "status": "COMPLETED", "timestamp": "2026-08-13T15:17:13Z", "artifacts": ["code_review_report.md"] },
   { "stage": "4-test", "status": "COMPLETED", "timestamp": "2026-08-13T15:17:39Z", "artifacts": ["test_results.txt"] },
   { "stage": "5-accept", "status": "COMPLETED", "timestamp": "2026-08-13T15:17:50Z", "artifacts": ["walkthrough.md"] },
-  { "stage": "6-compliance", "status": "COMPLETED", "timestamp": "2026-08-13T15:26:20Z", "artifacts": ["pipeline_completion_report.md"] }
+  { "stage": "Stage 5: Showcase & Walkthrough", "status": "COMPLETED", "timestamp": "2026-08-13T17:24:24Z", "artifacts": ["walkthrough.md"] },
+  { "stage": "Stage 6: Compliance Verification", "status": "COMPLETED", "timestamp": "2026-08-13T17:24:28Z", "artifacts": ["pipeline_completion_report.md"] }
 ]

@@ -123,35 +123,40 @@ export default function KeysPage() {
   }[variant]);
 
   return (
-    <div className="space-y-6 max-w-4xl pb-10">
+    <div className="space-y-6 max-w-4xl pb-10" dir="rtl">
+      <div className="flex items-center justify-between bg-zinc-900/50 p-6 rounded-3xl border border-white/5 backdrop-blur-md shadow-2xl mb-6">
+        <h2 className="text-2xl font-extrabold text-white flex items-center gap-2">
+          <span className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">🔑</span>
+          المفاتيح والاستخدام
+        </h2>
+      </div>
+
       <UsageIndicator />
 
       {/* ── AI API Keys ── */}
-      <div className="space-y-3">
-        <h3 className="font-bold text-base text-gray-800 dark:text-gray-100 flex items-center gap-2">
+      <div className="space-y-4">
+        <h3 className="font-bold text-lg text-white flex items-center gap-2">
           🔑 مفاتيح الذكاء الاصطناعي (AI API Keys)
         </h3>
 
         {FIELDS.filter(f => f.group !== "LIVEKIT").map((f) => (
-          <div key={f.key} className="nested-card p-4 space-y-2">
+          <div key={f.key} className="bg-zinc-900/40 backdrop-blur-md border border-white/10 rounded-3xl p-5 space-y-3 shadow-2xl">
             <div className="flex justify-between items-center">
-              <label className="block text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
+              <label className="block text-sm font-bold text-zinc-200">
                 {f.label}
               </label>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => toggleShowKey(f.key)}
-                  className="text-xs px-2 py-1 rounded font-bold transition-all"
-                  style={actionBtn("default")}
+                  className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10"
                 >
                   {showKey[f.key] ? "🙈 إخفاء" : "👁️ إظهار"}
                 </button>
                 <button
                   type="button"
                   onClick={() => copyToClipboard(f.key, safeValues[f.key] || "")}
-                  className="text-xs px-2 py-1 rounded font-bold transition-all"
-                  style={actionBtn("success")}
+                  className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white"
                 >
                   {copiedKey === f.key ? "تم النسخ ✓" : "📋 نسخ"}
                 </button>
@@ -159,8 +164,7 @@ export default function KeysPage() {
                   type="button"
                   onClick={() => verifyKey(f.group)}
                   disabled={checking[f.group]}
-                  className="text-xs px-2 py-1 rounded font-bold transition-all disabled:opacity-50"
-                  style={actionBtn("brand")}
+                  className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500 hover:text-black disabled:opacity-50"
                 >
                   {checking[f.group] ? "جاري الفحص..." : "فحص المفتاح"}
                 </button>
@@ -170,16 +174,15 @@ export default function KeysPage() {
               type={showKey[f.key] ? "text" : "password"}
               value={safeValues[f.key] || ""}
               onChange={(e) => setValues({ ...safeValues, [f.key]: e.target.value })}
-              className="glass-input font-mono text-sm"
+              className="w-full h-12 px-4 bg-zinc-900/50 border border-white/10 text-white font-mono text-sm rounded-2xl outline-none focus:border-white transition-all"
             />
             {checkStatus[f.group] && (
               <div
-                className="p-2 rounded-lg text-xs font-bold flex items-center justify-between"
-                style={{
-                  background: checkStatus[f.group].valid ? "#ecfdf5" : "#fef2f2",
-                  border: `1px solid ${checkStatus[f.group].valid ? "#a7f3d0" : "#fca5a5"}`,
-                  color: checkStatus[f.group].valid ? "#059669" : "#dc2626",
-                }}
+                className={`p-3 rounded-2xl text-xs font-bold flex items-center justify-between border ${
+                  checkStatus[f.group].valid
+                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                    : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                }`}
               >
                 <span>{checkStatus[f.group].message}</span>
                 <span>{checkStatus[f.group].valid ? "✅" : "🚨"}</span>
@@ -190,17 +193,16 @@ export default function KeysPage() {
       </div>
 
       {/* ── LiveKit Keys ── */}
-      <div className="space-y-3 pt-4">
-        <div className="flex justify-between items-center border-t border-gray-200 dark:border-gray-800 pt-4">
-          <h3 className="font-bold text-base text-gray-800 dark:text-gray-100 flex items-center gap-2">
+      <div className="space-y-4 pt-4">
+        <div className="flex justify-between items-center border-t border-white/10 pt-6">
+          <h3 className="font-bold text-lg text-white flex items-center gap-2">
             📡 مفاتيح خادم LiveKit (LiveKit Server Keys)
           </h3>
           <button
             type="button"
             onClick={() => verifyKey("LIVEKIT")}
             disabled={checking["LIVEKIT"]}
-            className="text-xs px-3 py-1.5 rounded-full font-bold transition-all disabled:opacity-50"
-            style={actionBtn("brand")}
+            className="text-xs px-4 py-2 rounded-xl font-bold transition-all bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500 hover:text-black disabled:opacity-50"
           >
             {checking["LIVEKIT"] ? "جاري فحص اتصال LiveKit..." : "فحص جودة الاتصال بـ LiveKit"}
           </button>
@@ -208,30 +210,28 @@ export default function KeysPage() {
 
         {checkStatus["LIVEKIT"] && (
           <div
-            className="p-2.5 rounded-xl text-sm font-bold"
-            style={{
-              background: checkStatus["LIVEKIT"].valid ? "#ecfdf5" : "#fef2f2",
-              border: `1px solid ${checkStatus["LIVEKIT"].valid ? "#a7f3d0" : "#fca5a5"}`,
-              color: checkStatus["LIVEKIT"].valid ? "#059669" : "#dc2626",
-            }}
+            className={`p-3 rounded-2xl text-sm font-bold border ${
+              checkStatus["LIVEKIT"].valid
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+            }`}
           >
             {checkStatus["LIVEKIT"].message}
           </div>
         )}
 
         {FIELDS.filter(f => f.group === "LIVEKIT").map((f) => (
-          <div key={f.key} className="nested-card p-4 space-y-2">
+          <div key={f.key} className="bg-zinc-900/40 backdrop-blur-md border border-white/10 rounded-3xl p-5 space-y-3 shadow-2xl">
             <div className="flex justify-between items-center">
-              <label className="block text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
+              <label className="block text-sm font-bold text-zinc-200">
                 {f.label}
               </label>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 {f.key.includes("SECRET") && (
                   <button
                     type="button"
                     onClick={() => toggleShowKey(f.key)}
-                    className="text-xs px-2 py-1 rounded font-bold transition-all"
-                    style={actionBtn("default")}
+                    className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10"
                   >
                     {showKey[f.key] ? "🙈 إخفاء" : "👁️ إظهار"}
                   </button>
@@ -239,8 +239,7 @@ export default function KeysPage() {
                 <button
                   type="button"
                   onClick={() => copyToClipboard(f.key, safeValues[f.key] || "")}
-                  className="text-xs px-2 py-1 rounded font-bold transition-all"
-                  style={actionBtn("success")}
+                  className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white"
                 >
                   {copiedKey === f.key ? "تم النسخ ✓" : "📋 نسخ"}
                 </button>
@@ -250,7 +249,7 @@ export default function KeysPage() {
               type={f.key.includes("SECRET") && !showKey[f.key] ? "password" : "text"}
               value={safeValues[f.key] || ""}
               onChange={(e) => setValues({ ...safeValues, [f.key]: e.target.value })}
-              className="glass-input font-mono text-sm"
+              className="w-full h-12 px-4 bg-zinc-900/50 border border-white/10 text-white font-mono text-sm rounded-2xl outline-none focus:border-white transition-all"
             />
           </div>
         ))}
@@ -260,16 +259,12 @@ export default function KeysPage() {
       <button
         onClick={save}
         disabled={saving}
-        className="w-full px-4 py-3 rounded-xl font-bold transition-all disabled:opacity-50 shadow-md"
-        style={{
-          background: "var(--color-brand)",
-          color: "#fff",
-        }}
+        className="w-full h-14 rounded-2xl font-black transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(245,158,11,0.4)] text-black bg-amber-500 hover:bg-amber-400 text-sm"
       >
         {saving ? "جاري حفظ المفاتيح..." : "حفظ المفاتيح والتغييرات 🔑"}
       </button>
       {saved && (
-        <p className="text-center font-bold text-sm text-emerald-600">
+        <p className="text-center font-bold text-sm text-emerald-400 animate-pulse">
           تم حفظ المفاتيح بنجاح ✓
         </p>
       )}

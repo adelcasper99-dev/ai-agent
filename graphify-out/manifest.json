@@ -795,8 +795,8 @@
     "semantic_hash": ""
   },
   ".agents/stage_log.json": {
-    "mtime": 1786592350.9439135,
-    "ast_hash": "6e0d17e1037e8502dedd702d36b9751c",
+    "mtime": 1786631070.3473759,
+    "ast_hash": "940adfc71c7e431b3c6f0fe61041a7d5",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -810,8 +810,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/appointments/route.ts": {
-    "mtime": 1785831588.3909369,
-    "ast_hash": "3d22338a19787cca75e16f301d87b6df",
+    "mtime": 1786623391.1117632,
+    "ast_hash": "2b60c8520eae39a32dd2c1dec88cc9a5",
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/chat/route.ts": {
@@ -825,8 +825,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/expenses/route.ts": {
-    "mtime": 1785831588.3809364,
-    "ast_hash": "1ac4ce40ce27dab1c955c781810a5c9a",
+    "mtime": 1786623383.736813,
+    "ast_hash": "605c11a5925c10010a682c354a0ca454",
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/knowledge/route.ts": {
@@ -860,18 +860,18 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/reports/summary/route.ts": {
-    "mtime": 1786403094.1008842,
-    "ast_hash": "ff4b5817326ce1e99cb6a5dcf29c1ca8",
+    "mtime": 1786623355.3889866,
+    "ast_hash": "616ba88011fc7d41ef58468b19a0d0fb",
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/reports/suppliers/route.ts": {
-    "mtime": 1786403102.2515707,
-    "ast_hash": "6fb58763149f66db5eaef2f28fea7d2e",
+    "mtime": 1786623349.0635574,
+    "ast_hash": "046f722e943d6115f19afb7999826c7e",
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/sales/route.ts": {
-    "mtime": 1786177960.0295126,
-    "ast_hash": "9376051ea18ac91a1c360ad71f2e1756",
+    "mtime": 1786623375.19101,
+    "ast_hash": "aef0f992bafd9da009f611845fc934cd",
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/settings/route.ts": {
@@ -915,8 +915,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/dashboard/layout.tsx": {
-    "mtime": 1786075440.027597,
-    "ast_hash": "ea7233d68ceb8da6f395bba4bd1d7978",
+    "mtime": 1786630834.067314,
+    "ast_hash": "7ed3b8c6c0de2609d91801b7f79e12a2",
     "semantic_hash": ""
   },
   "casper-voice-web/app/dashboard/logs/page.tsx": {
@@ -930,13 +930,13 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/dashboard/reports/page.tsx": {
-    "mtime": 1785829670.9845479,
-    "ast_hash": "e9b7e52a019e5ddd50ddd5125e9a9641",
+    "mtime": 1786623417.5673175,
+    "ast_hash": "a61407c96d5129be8136dc21aeb58cbb",
     "semantic_hash": ""
   },
   "casper-voice-web/app/dashboard/settings/page.tsx": {
-    "mtime": 1786103609.5380256,
-    "ast_hash": "66209f5ba24516b7155c1e0ec6f93e37",
+    "mtime": 1786630868.9585733,
+    "ast_hash": "7ae94adacd9f29d4957e725d7d10696f",
     "semantic_hash": ""
   },
   "casper-voice-web/app/layout.tsx": {
@@ -2405,8 +2405,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/telegram/webhook/route.ts": {
-    "mtime": 1786592211.9257393,
-    "ast_hash": "0863ab1a3af33e2dd3d1ab8a90e92d3c",
+    "mtime": 1786593038.8996024,
+    "ast_hash": "0332d02a64118cb690d6de045a0c5b79",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram.ts": {
@@ -2420,33 +2420,33 @@
     "semantic_hash": ""
   },
   "code_review_report.md": {
-    "mtime": 1786592178.3216345,
-    "ast_hash": "c11440376cf1e3b654b478853aad6bae",
+    "mtime": 1786623432.2270794,
+    "ast_hash": "03f1776fa2f70a896585b967247f2163",
     "semantic_hash": ""
   },
   "ironclad_review_implementation_plan.md": {
-    "mtime": 1786592028.688729,
-    "ast_hash": "bce6a25b3bd2c238247a52bfe5fdb552",
+    "mtime": 1786623173.6363502,
+    "ast_hash": "e98263f381ce9e90337bdf520a34b1a0",
     "semantic_hash": ""
   },
   "research_findings.md": {
-    "mtime": 1786592013.808903,
-    "ast_hash": "fe27f831f49afd143acfa9c85bfe5405",
+    "mtime": 1786623151.3155615,
+    "ast_hash": "dd573a2ee97078c751ff8fb9e14cd625",
     "semantic_hash": ""
   },
   "task.md": {
-    "mtime": 1786592085.3248668,
-    "ast_hash": "643d1729236b7acc68e5cde4e6094b86",
+    "mtime": 1786623422.563689,
+    "ast_hash": "b31fedfef7bd3900cd793b7e972e2fd9",
     "semantic_hash": ""
   },
   "test_results.txt": {
-    "mtime": 1786592330.8699665,
-    "ast_hash": "44daa4b629e90693148aadf2eaff7f43",
+    "mtime": 1786623457.0699291,
+    "ast_hash": "377a6aeb70daf6a1e9eccb4f0d2fccb6",
     "semantic_hash": ""
   },
   "walkthrough.md": {
-    "mtime": 1786592340.265294,
-    "ast_hash": "3c7463c04402b61e6d47fbb814457cdf",
+    "mtime": 1786623466.9215796,
+    "ast_hash": "247cd4b609ca39f5c04b26f2aaef634e",
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/tenants/approve/route.ts": {
@@ -2475,8 +2475,8 @@
     "semantic_hash": ""
   },
   ".antigravity/condense-state.yaml": {
-    "mtime": 1786431461.9806519,
-    "ast_hash": "c1731fc59ff84a66940d2470c158232c",
+    "mtime": 1786616844.9652574,
+    "ast_hash": "bbc538ea6bdd3b8dfba08f4256a34d0c",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/phone-sanitizer.ts": {
@@ -2555,8 +2555,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/dashboard/tenants/page.tsx": {
-    "mtime": 1786107600.549355,
-    "ast_hash": "c5a3e23924553d51be867b8f451df009",
+    "mtime": 1786630892.6476252,
+    "ast_hash": "2f8a397cc507d3103cd86f6d268295ff",
     "semantic_hash": ""
   },
   "voice_service/ecosystem.config.js": {
@@ -2600,8 +2600,8 @@
     "semantic_hash": ""
   },
   "implementation_plan.md": {
-    "mtime": 1786592021.3524663,
-    "ast_hash": "43125c4b78b6e878ed373641924bc724",
+    "mtime": 1786623165.2272613,
+    "ast_hash": "b46058b0ede66391e462ab808bb1efe1",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/auth.ts": {
@@ -2610,8 +2610,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram_llm.ts": {
-    "mtime": 1786592314.582783,
-    "ast_hash": "a367559a54c8f1aad47591cf64b0e79a",
+    "mtime": 1786625890.3915434,
+    "ast_hash": "a3bbcd7c5ac0f60f83e9abf63d915eba",
     "semantic_hash": ""
   },
   "casper-voice-web/app/telegram-voice/page.tsx": {
@@ -2640,8 +2640,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/dashboard/api-keys/page.tsx": {
-    "mtime": 1785830006.804669,
-    "ast_hash": "a4c097042a009c3d5382c83ffe592358",
+    "mtime": 1786630902.07294,
+    "ast_hash": "323c9c5e30c54b17954aa255277d24bf",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/apiKeyManager.ts": {
@@ -2710,13 +2710,13 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/reports/aged-receivables/route.ts": {
-    "mtime": 1785829612.9678109,
-    "ast_hash": "2a477d7fad348c12673e7ec66aa8884d",
+    "mtime": 1786623367.887556,
+    "ast_hash": "5babcd1355263cb3dc3a4f6fc4c62e28",
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/reports/sales-analysis/route.ts": {
-    "mtime": 1785829597.3476982,
-    "ast_hash": "6112b5e5da21c883c2fbe7294b1daa6d",
+    "mtime": 1786623361.4540942,
+    "ast_hash": "9dcbd95df170e506ac77db019adf0d22",
     "semantic_hash": ""
   },
   "casper-voice-web/components/ui/flatpickr-range-picker.tsx": {
@@ -2760,13 +2760,13 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/dashboard/keys/page.tsx": {
-    "mtime": 1786074306.980849,
-    "ast_hash": "06cf84553b3031a2aab20186434a4a0c",
+    "mtime": 1786630883.8363137,
+    "ast_hash": "46f924e8988bde999f6490d2634fff94",
     "semantic_hash": ""
   },
   "casper-voice-web/app/dashboard/voice/page.tsx": {
-    "mtime": 1786075408.7129872,
-    "ast_hash": "85f0adb15afb372e32dc67c0f80e8064",
+    "mtime": 1786630876.2475061,
+    "ast_hash": "8f8069029823f011157f361240fab98a",
     "semantic_hash": ""
   },
   "casper-voice-web/components/TelegramSetupCard.tsx": {
@@ -3235,13 +3235,63 @@
     "semantic_hash": ""
   },
   "pipeline_completion_report.md": {
-    "mtime": 1786588862.678725,
-    "ast_hash": "7842b7c74ae91df57c2574bc73b1fe0d",
+    "mtime": 1786623990.7850237,
+    "ast_hash": "b0ab63f9faad480659629d9c1389278c",
     "semantic_hash": ""
   },
   "casper-voice-web/test_telegram_keyboards.ts": {
     "mtime": 1786592302.2524874,
     "ast_hash": "9b7a659a7ecfaec0e8d14e69306fe9fb",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/app/api/tenants/list/route.ts": {
+    "mtime": 1786623342.1341991,
+    "ast_hash": "8037e4763c19fd69c62123ec304c45d0",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/components/ui/glass-card.tsx": {
+    "mtime": 1786630820.3127434,
+    "ast_hash": "1518cd420e720a143099884bb7529f38",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/scripts/manual-sim/test_concurrency_and_idempotency.ts": {
+    "mtime": 1786627934.637656,
+    "ast_hash": "7e1d1ca7a6cacaef70083f3f523f5521",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/scripts/manual-sim/test_csat_and_escalation.ts": {
+    "mtime": 1786628052.993498,
+    "ast_hash": "4a9eacfcf2a7fa4a5fcf062964ab885d",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/scripts/manual-sim/test_merchant_memory_system.ts": {
+    "mtime": 1786628120.5255976,
+    "ast_hash": "ae535bef036866464541a0b453e65383",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/scripts/manual-sim/test_onboarding_flow.ts": {
+    "mtime": 1786627788.4599662,
+    "ast_hash": "ffdf8b03e031815b335b3e2704356f79",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/scripts/manual-sim/test_vision_invoice.ts": {
+    "mtime": 1786627992.8453646,
+    "ast_hash": "56ddb9ac25a26fa23fe625bf4fc6cf55",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/test_chaos_dialogue_coverage.ts": {
+    "mtime": 1786621649.1277213,
+    "ast_hash": "cfc141f4e7ca48901759c1e23d2cb0f6",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/test_chaos_purchase_returns.ts": {
+    "mtime": 1786616816.8335311,
+    "ast_hash": "ccda9a3e38e9136e30852bfb7cddfc36",
+    "semantic_hash": ""
+  },
+  "scripts/vps_wipe_tenants.py": {
+    "mtime": 1786626167.1511755,
+    "ast_hash": "347335a7c2aa4e9e2ad1c2830a8c2b3c",
     "semantic_hash": ""
   }
 }

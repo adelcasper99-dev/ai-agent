@@ -795,8 +795,8 @@
     "semantic_hash": ""
   },
   ".agents/stage_log.json": {
-    "mtime": 1786588858.2861865,
-    "ast_hash": "353a96afa9679068603a64469f9ce0fa",
+    "mtime": 1786592350.9439135,
+    "ast_hash": "6e0d17e1037e8502dedd702d36b9751c",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -940,8 +940,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/layout.tsx": {
-    "mtime": 1785816482.499817,
-    "ast_hash": "aa3404a50f4cc32cad0bb6a63ab91e24",
+    "mtime": 1786591860.6788452,
+    "ast_hash": "47f8287df1637a629b66ffd0f1ef2073",
     "semantic_hash": ""
   },
   "casper-voice-web/app/page.tsx": {
@@ -2405,8 +2405,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/telegram/webhook/route.ts": {
-    "mtime": 1786532414.4799893,
-    "ast_hash": "025f7fbc87c4e7e2ab25876dc9d8a784",
+    "mtime": 1786592211.9257393,
+    "ast_hash": "0863ab1a3af33e2dd3d1ab8a90e92d3c",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram.ts": {
@@ -2420,33 +2420,33 @@
     "semantic_hash": ""
   },
   "code_review_report.md": {
-    "mtime": 1786588785.213395,
-    "ast_hash": "c25ed4b0fe10e0d95df2c12a5e8d8822",
+    "mtime": 1786592178.3216345,
+    "ast_hash": "c11440376cf1e3b654b478853aad6bae",
     "semantic_hash": ""
   },
   "ironclad_review_implementation_plan.md": {
-    "mtime": 1786562550.6283755,
-    "ast_hash": "91d8bdba7d6c58d65c94765a4df28655",
+    "mtime": 1786592028.688729,
+    "ast_hash": "bce6a25b3bd2c238247a52bfe5fdb552",
     "semantic_hash": ""
   },
   "research_findings.md": {
-    "mtime": 1786588531.4853866,
-    "ast_hash": "34e6725a90755f92e440494887b051d9",
+    "mtime": 1786592013.808903,
+    "ast_hash": "fe27f831f49afd143acfa9c85bfe5405",
     "semantic_hash": ""
   },
   "task.md": {
-    "mtime": 1786588781.6190329,
-    "ast_hash": "871f7e7e9862ff72dad22171d9048b7a",
+    "mtime": 1786592085.3248668,
+    "ast_hash": "643d1729236b7acc68e5cde4e6094b86",
     "semantic_hash": ""
   },
   "test_results.txt": {
-    "mtime": 1786588835.5944471,
-    "ast_hash": "6b7725a73a6beacaddbbe3494c993684",
+    "mtime": 1786592330.8699665,
+    "ast_hash": "44daa4b629e90693148aadf2eaff7f43",
     "semantic_hash": ""
   },
   "walkthrough.md": {
-    "mtime": 1786588840.3220923,
-    "ast_hash": "f8c9f6f1b721416fbf313a253d872a06",
+    "mtime": 1786592340.265294,
+    "ast_hash": "3c7463c04402b61e6d47fbb814457cdf",
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/tenants/approve/route.ts": {
@@ -2600,8 +2600,8 @@
     "semantic_hash": ""
   },
   "implementation_plan.md": {
-    "mtime": 1786562546.3268578,
-    "ast_hash": "f1e76e05d7c38ac2909d6ba3b2465862",
+    "mtime": 1786592021.3524663,
+    "ast_hash": "43125c4b78b6e878ed373641924bc724",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/auth.ts": {
@@ -2610,8 +2610,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram_llm.ts": {
-    "mtime": 1786591150.4002285,
-    "ast_hash": "ea342d9cce8c29e0ce56fa3cec247dcc",
+    "mtime": 1786592314.582783,
+    "ast_hash": "a367559a54c8f1aad47591cf64b0e79a",
     "semantic_hash": ""
   },
   "casper-voice-web/app/telegram-voice/page.tsx": {
@@ -3237,6 +3237,11 @@
   "pipeline_completion_report.md": {
     "mtime": 1786588862.678725,
     "ast_hash": "7842b7c74ae91df57c2574bc73b1fe0d",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/test_telegram_keyboards.ts": {
+    "mtime": 1786592302.2524874,
+    "ast_hash": "9b7a659a7ecfaec0e8d14e69306fe9fb",
     "semantic_hash": ""
   }
 }

@@ -163,103 +163,114 @@ export default function TenantsPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pb-10" dir="rtl">
+    <div className="w-full max-w-7xl mx-auto space-y-8 pb-10" dir="rtl">
+      {/* Page Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-zinc-900/50 p-6 rounded-3xl border border-white/5 backdrop-blur-md shadow-2xl">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
+            <span className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">🏢</span>
+            طلبات الشركات والتفعيل
+          </h1>
+          <p className="text-zinc-400 text-sm mt-1 font-medium">إدارة اشتراكات وحسابات الشركات والمتاجر على المنصة</p>
+        </div>
+      </div>
+
       {/* Top Metrics Bento Bar */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bento-card p-4 bg-white shadow-sm border-l-4 border-gray-400">
-          <p className="text-xs text-gray-500 font-bold">إجمالي الشركات</p>
-          <p className="text-2xl font-black mt-1 text-gray-800">{data.length}</p>
+        <div className="bg-zinc-900/40 border border-white/5 rounded-2xl p-5 relative overflow-hidden backdrop-blur-xl group hover:border-white/10 transition-colors shadow-2xl">
+          <p className="text-xs text-zinc-400 font-bold">إجمالي الشركات</p>
+          <p className="text-3xl font-extrabold text-white tracking-tight tabular-nums mt-2">{data.length}</p>
         </div>
-        <div className="bento-card p-4 bg-emerald-50 shadow-sm border-l-4 border-emerald-500">
-          <p className="text-xs text-emerald-700 font-bold">النشطة</p>
-          <p className="text-2xl font-black mt-1 text-emerald-900">{activeCount}</p>
+        <div className="bg-zinc-900/40 border border-emerald-500/20 rounded-2xl p-5 relative overflow-hidden backdrop-blur-xl group hover:border-emerald-500/30 transition-colors shadow-2xl">
+          <p className="text-xs text-emerald-400 font-bold">النشطة</p>
+          <p className="text-3xl font-extrabold text-emerald-400 tracking-tight tabular-nums mt-2">{activeCount}</p>
         </div>
-        <div className="bento-card p-4 bg-blue-50 shadow-sm border-l-4 border-blue-500">
-          <p className="text-xs text-blue-700 font-bold">فترة تجريبية</p>
-          <p className="text-2xl font-black mt-1 text-blue-900">{trialCount}</p>
+        <div className="bg-zinc-900/40 border border-blue-500/20 rounded-2xl p-5 relative overflow-hidden backdrop-blur-xl group hover:border-blue-500/30 transition-colors shadow-2xl">
+          <p className="text-xs text-blue-400 font-bold">فترة تجريبية</p>
+          <p className="text-3xl font-extrabold text-blue-400 tracking-tight tabular-nums mt-2">{trialCount}</p>
         </div>
-        <div className="bento-card p-4 bg-amber-50 shadow-sm border-l-4 border-amber-500">
-          <p className="text-xs text-amber-700 font-bold">طلبات معلقة</p>
-          <p className="text-2xl font-black mt-1 text-amber-900">{pendingCount}</p>
+        <div className="bg-zinc-900/40 border border-amber-500/20 rounded-2xl p-5 relative overflow-hidden backdrop-blur-xl group hover:border-amber-500/30 transition-colors shadow-2xl">
+          <p className="text-xs text-amber-400 font-bold">طلبات معلقة</p>
+          <p className="text-3xl font-extrabold text-amber-400 tracking-tight tabular-nums mt-2">{pendingCount}</p>
         </div>
-        <div className="bento-card p-4 bg-red-50 shadow-sm border-l-4 border-red-500">
-          <p className="text-xs text-red-700 font-bold">موقوفة</p>
-          <p className="text-2xl font-black mt-1 text-red-900">{suspendedCount}</p>
+        <div className="bg-zinc-900/40 border border-rose-500/20 rounded-2xl p-5 relative overflow-hidden backdrop-blur-xl group hover:border-rose-500/30 transition-colors shadow-2xl">
+          <p className="text-xs text-rose-400 font-bold">موقوفة</p>
+          <p className="text-3xl font-extrabold text-rose-400 tracking-tight tabular-nums mt-2">{suspendedCount}</p>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="bento-card p-4 flex flex-col md:flex-row gap-4 justify-between items-center bg-white shadow-sm">
+      <div className="bg-zinc-900/40 backdrop-blur-md border border-white/10 rounded-3xl p-5 flex flex-col md:flex-row gap-4 justify-between items-center shadow-2xl">
         <input 
           type="text" 
           placeholder="بحث بالاسم، الجوال، معرف التليجرام..." 
-          className="glass-input w-full md:w-1/2 text-sm"
+          className="w-full md:w-1/2 h-12 px-4 bg-zinc-900/50 border border-white/10 text-white placeholder:text-zinc-500 focus:border-white transition-all font-bold text-sm rounded-2xl outline-none"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <select 
-          className="glass-input w-full md:w-1/4 text-sm font-bold bg-white"
+          className="w-full md:w-1/4 h-12 px-4 bg-zinc-900/50 border border-white/10 text-white font-bold text-sm rounded-2xl outline-none cursor-pointer"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
         >
-          <option value="all">كل الحالات</option>
-          <option value="active">🟢 نشط</option>
-          <option value="trial">🟦 تجريبي</option>
-          <option value="pending">⏳ طلبات معلقة</option>
-          <option value="suspended">🔴 موقوف</option>
+          <option value="all" className="bg-zinc-900 text-white">كل الحالات</option>
+          <option value="active" className="bg-zinc-900 text-white">🟢 نشط</option>
+          <option value="trial" className="bg-zinc-900 text-white">🟦 تجريبي</option>
+          <option value="pending" className="bg-zinc-900 text-white">⏳ طلبات معلقة</option>
+          <option value="suspended" className="bg-zinc-900 text-white">🔴 موقوف</option>
         </select>
       </div>
 
       {/* Interactive Data Table */}
-      <div className="bento-card overflow-hidden bg-white shadow-sm border border-gray-100">
+      <div className="bg-zinc-900/40 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-right text-sm text-gray-600">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-100">
+          <table className="w-full text-right text-sm">
+            <thead className="bg-white/5 border-b border-white/10">
               <tr>
-                <th className="px-6 py-4 font-bold">الشركة / العميل</th>
-                <th className="px-6 py-4 font-bold">رقم الهاتف</th>
-                <th className="px-6 py-4 font-bold">Telegram ID</th>
-                <th className="px-6 py-4 font-bold">الحالة</th>
-                <th className="px-6 py-4 font-bold">الخطة والمتبقي</th>
-                <th className="px-6 py-4 font-bold">تاريخ الانتهاء</th>
-                <th className="px-6 py-4 font-bold text-center">الإجراءات</th>
+                <th className="px-6 py-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">الشركة / العميل</th>
+                <th className="px-6 py-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">رقم الهاتف</th>
+                <th className="px-6 py-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Telegram ID</th>
+                <th className="px-6 py-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">الحالة</th>
+                <th className="px-6 py-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">الخطة والمتبقي</th>
+                <th className="px-6 py-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">تاريخ الانتهاء</th>
+                <th className="px-6 py-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest text-center">الإجراءات</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-white/5">
               {filteredData.map(d => (
-                <tr key={d.id} className="border-b border-gray-50 hover:bg-blue-50/50 transition-colors">
-                  <td className="px-6 py-4 font-bold text-gray-900">{d.name || d.customerName || "بدون اسم"}</td>
-                  <td className="px-6 py-4 font-mono">{d.phoneNumber || <span className="text-red-400 text-xs font-bold">بدون رقم</span>}</td>
-                  <td className="px-6 py-4 font-mono">{d.telegramChatId || "-"}</td>
+                <tr key={d.id} className="transition-all hover:bg-cyan-500/10 even:bg-white/[0.02]">
+                  <td className="px-6 py-4 font-black text-white">{d.name || d.customerName || "بدون اسم"}</td>
+                  <td className="px-6 py-4 font-mono text-zinc-300">{d.phoneNumber || <span className="text-rose-400 text-xs font-bold">بدون رقم</span>}</td>
+                  <td className="px-6 py-4 font-mono text-zinc-400">{d.telegramChatId || "-"}</td>
                   <td className="px-6 py-4">{renderStatus(d)}</td>
                   <td className="px-6 py-4">{renderPlan(d)}</td>
-                  <td className="px-6 py-4 text-xs font-mono">{d.expiresAt ? new Date(d.expiresAt).toLocaleDateString("ar-EG") : "-"}</td>
+                  <td className="px-6 py-4 text-xs font-mono text-zinc-400">{d.expiresAt ? new Date(d.expiresAt).toLocaleDateString("ar-EG") : "-"}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
                       {d.type === "request" && d.status === "pending" && (
                         <>
-                          <button onClick={() => openModal("approve", d)} className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded text-xs font-bold hover:bg-emerald-200">
+                          <button onClick={() => openModal("approve", d)} className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all border border-emerald-500/20">
                             موافقة وتفعيل
                           </button>
-                          <button onClick={() => handleManageAction("delete_request", d.id)} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700">
+                          <button onClick={() => handleManageAction("delete_request", d.id)} className="bg-white/5 text-zinc-400 hover:bg-rose-500/20 hover:text-rose-400 px-3 py-1.5 rounded-xl text-xs font-bold transition-all">
                             🗑️ حذف
                           </button>
                         </>
                       )}
                       {d.type === "tenant" && (
                         <>
-                          <button onClick={() => openModal("edit", d)} className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-xs font-bold hover:bg-blue-200">
+                          <button onClick={() => openModal("edit", d)} className="bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all border border-blue-500/20">
                             تعديل
                           </button>
-                          <button onClick={() => openModal("extend", d)} className="bg-purple-100 text-purple-700 px-3 py-1 rounded text-xs font-bold hover:bg-purple-200">
+                          <button onClick={() => openModal("extend", d)} className="bg-purple-500/10 text-purple-400 hover:bg-purple-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all border border-purple-500/20">
                             تمديد
                           </button>
                           {d.state === "active" || d.state === "trial" ? (
-                            <button onClick={() => handleManageAction("suspend", d.id)} className="bg-red-100 text-red-700 px-3 py-1 rounded text-xs font-bold hover:bg-red-200">
+                            <button onClick={() => handleManageAction("suspend", d.id)} className="bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all border border-rose-500/20">
                               إيقاف
                             </button>
                           ) : (
-                            <button onClick={() => handleManageAction("reactivate", d.id)} className="bg-amber-100 text-amber-700 px-3 py-1 rounded text-xs font-bold hover:bg-amber-200">
+                            <button onClick={() => handleManageAction("reactivate", d.id)} className="bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all border border-amber-500/20">
                               إعادة تنشيط
                             </button>
                           )}
@@ -267,7 +278,7 @@ export default function TenantsPage() {
                             if (confirm("هل أنت تأكد من حذف هذه الشركة تماماً لإعادة تسجيلها من جديد؟")) {
                               handleManageAction("delete", d.id);
                             }
-                          }} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold hover:bg-red-100 hover:text-red-700">
+                          }} className="bg-white/5 text-zinc-400 hover:bg-rose-500/20 hover:text-rose-400 px-3 py-1.5 rounded-xl text-xs font-bold transition-all">
                             🗑️ حذف
                           </button>
                         </>
@@ -278,7 +289,7 @@ export default function TenantsPage() {
               ))}
               {filteredData.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-10 text-center font-bold text-gray-400">لا توجد بيانات مطابقة</td>
+                  <td colSpan={7} className="px-6 py-12 text-center font-bold text-zinc-500">لا توجد بيانات مطابقة</td>
                 </tr>
               )}
             </tbody>

@@ -5,43 +5,43 @@
    LAYER 1 — CASPER POS DESKTOP (PREMIUM VANILLA)
    ============================================================ */
 :root {
-  /* Background: Crisp Warm White (Slate-50-ish but refined) */
-  --background: #f8fafc;
-  --foreground: #0f172a; /* Deep Slate for richness */
+  /* Background: Deep Cosmos Dark */
+  --background: #050508;
+  --foreground: #f4f4f5;
 
-  /* Card/panel surfaces: pure white */
-  --card: #ffffff;
-  --card-foreground: #0f172a;
+  /* Card/panel surfaces: glass opacity */
+  --card: rgba(24, 24, 27, 0.4);
+  --card-foreground: #ffffff;
 
-  /* Primary Action (Vibrant Ghost Cyan) */
-  --primary: #0891b2;
-  --primary-foreground: #ffffff;
+  /* Primary Action (Cyber Cyan) */
+  --primary: #06b6d4;
+  --primary-foreground: #000000;
 
   /* Secondary */
-  --secondary: #f1f5f9;
-  --secondary-foreground: #1e293b;
+  --secondary: rgba(255, 255, 255, 0.05);
+  --secondary-foreground: #f4f4f5;
 
   /* Muted */
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b; 
+  --muted: rgba(255, 255, 255, 0.05);
+  --muted-foreground: #a1a1aa; 
 
   /* Warning / Caution (Amber) */
-  --accent: #f59e0b;
-  --accent-foreground: #ffffff;
+  --accent: #fbbf24;
+  --accent-foreground: #000000;
 
-  /* Danger (Rose/Ruby) */
-  --destructive: #e11d48;
+  /* Danger (Rose) */
+  --destructive: #f43f5e;
   --destructive-foreground: #ffffff;
 
-  /* Borders / Details: Precise Slate */
-  --border: #e2e8f0;
-  --input: #ffffff;
-  --ring: #0891b2;
+  /* Borders / Details */
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(24, 24, 27, 0.5);
+  --ring: #06b6d4;
 
   /* Sidebar */
-  --sidebar-bg: #0f172a;
-  --sidebar-border: #1e293b;
-  --sidebar-text: #f8fafc;
+  --sidebar-bg: #09090d;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-text: #e4e4e7;
 
   /* Topbar height & layout */
   --topbar-h: 88px;

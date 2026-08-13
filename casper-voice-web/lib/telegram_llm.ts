@@ -1584,6 +1584,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         const unitMatch = msgText.match(/\b(طن|كيلو|شكارة|كرتونة|متر|علبة|قطعة|جرام)\b/i);
         if (unitMatch) detectedUnitSale = unitMatch[1];
       }
+      const saleUnitStr = detectedUnitSale ? `${detectedUnitSale} ` : "";
       const unitWordsPattern = /^(كرتونة|كرتونه|كراتين|علبة|علبه|علب|شكارة|شكاره|شكاير|قطعة|قطعه|قطع|طن|أطنان|اطنان|كيلو|كيلوات|متر|أمتار|امتار|جرام|جرامات)\s+/i;
       let displaySaleItem = saleResult.itemName.replace(unitWordsPattern, '').trim();
       if (detectedUnitSale && displaySaleItem.startsWith(detectedUnitSale)) {

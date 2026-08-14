@@ -102,6 +102,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, message: "Details updated" });
     }
 
+    if (action === "update_llm_limit" && tenant) {
+      const newLimit = Number(data.dailyLlmLimit);
+      if (isNaN(newLimit) || newLimit <= 0) {
+        return NextResponse.json({ error: "Invalid dailyLlmLimit" }, { status: 400 });
+      }
+      await (prisma as any).tenant.update({
+        where: { id: tenant.id },
+        data: { dailyLlmLimit: newLimit },
+      });
+      return NextResponse.json({ success: true, message: `LLM limit updated to ${newLimit}`, dailyLlmLimit: newLimit });
+    }
+
     if (action === "delete") {
       if (tenant) {
         const chatId = tenant.telegramChatId;

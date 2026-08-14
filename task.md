@@ -1,12 +1,8 @@
-# 📝 Surgical Build Task Log
+# Stage 3 Task Checklist — Tenant LLM Quota Engine
 
-- [x] Create GET /api/tenants/list endpoint for active tenants.
-- [x] Update GET /api/reports/suppliers to parse optional `tenantId` query param.
-- [x] Update GET /api/reports/summary to parse optional `tenantId` query param.
-- [x] Update GET /api/reports/sales-analysis to parse optional `tenantId` query param.
-- [x] Update GET /api/reports/aged-receivables to parse optional `tenantId` query param.
-- [x] Update GET /api/sales to support optional `tenantId` query param.
-- [x] Update GET /api/expenses to support optional `tenantId` query param.
-- [x] Update GET /api/appointments to support optional `tenantId` query param.
-- [x] Add dynamic Tenant Selector state and UI dropdown to `app/dashboard/reports/page.tsx`.
-- [x] Re-fetch all reports APIs dynamically when selected tenant changes.
+- [x] 1. Update `prisma/schema.prisma` with `dailyLlmLimit`, `dailyLlmUsage`, `lastLlmReset`, `alert80SentDate`, `alert100SentDate`
+- [x] 2. Run `npx prisma db push` to synchronize database schema
+- [x] 3. Create `lib/tenant-quota.ts` for atomic daily reset, quota checks, and Telegram alert triggers
+- [x] 4. Update `app/api/telegram/webhook/route.ts` with tenant quota interceptor & Arabic response card
+- [x] 5. Update `app/api/tenants/manage/route.ts` with `update_llm_limit` action
+- [x] 6. Create `tests/tenant_quota.test.ts` automated vitest test suite

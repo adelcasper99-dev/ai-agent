@@ -26,6 +26,26 @@ import { correctTranscriptWithLLM } from "@/lib/llm_correction";
 import { transcribeVoiceNote, processImage } from "@/lib/conversation.service";
 
 import { buildWhisperPrompt } from "@/lib/whisper_prompt";
+import { sanitizeEgyptianPhone } from "@/lib/phone-sanitizer";
+import { checkAndIncrementTenantLlmQuota } from "@/lib/tenant-quota";
+
+async function sendProfileConfirmationCard(chatId: string, merchantName: string, phoneNumber: string, msgId?: number) {
+  await sendTelegramAlert({
+    chatId,
+    text: `📋 *تأكيد بيانات حسابك الشخصي:*\n\n👤 *الاسم:* ${merchantName}\n📱 *رقم الموبايل:* \`${phoneNumber}\`\n\nهل البيانات صحيحة أم ترغب في تعديلها؟`,
+    idempotencyKey: `onboarding:confirm_card:${chatId}:${msgId || Date.now()}`,
+    replyMarkup: {
+      inline_keyboard: [
+        [{ text: "✅ تأكيد واستمرار", callback_data: "confirm_profile:ok" }],
+        [
+          { text: "✏️ تعديل الاسم", callback_data: "edit_profile:name" },
+          { text: "✏️ تعديل الرقم", callback_data: "edit_profile:phone" },
+        ],
+      ],
+    },
+  });
+}
+
 
 
 export async function POST(req: NextRequest) {
@@ -175,19 +195,87 @@ export async function POST(req: NextRequest) {
       }
 
       if (data === "agree_terms") {
-        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        let tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
         if (tenant && tenant.state === "pending_agreement") {
-          await (prisma as any).tenant.update({
+          const rawName = `${callback.from?.first_name || ''} ${callback.from?.last_name || ''}`.trim() || 'التاجر';
+          const cleanName = rawName.replace(/^(مستر|أستاذ|استاذ)\s+/, '').trim();
+          tenant = await (prisma as any).tenant.update({
             where: { id: tenant.id },
-            data: { state: "onboarding_merchant_name" },
+            data: { merchantName: cleanName, state: "onboarding_phone" },
           });
           await sendTelegramAlert({
             chatId: callbackChatId,
-            text: "تمام! نتعرف بحضرتك الأول، اسمك إيه؟ (مثال: محمود)",
-            idempotencyKey: `onboarding:merchant_name_prompt:${callbackChatId}`,
+            text: `أهلاً بك أستاذ/ة *${cleanName}*! 😊\n\nيرجى مشاركة رقم الموبايل بضغطة واحدة من الزر أدناه لتأكيد حسابك:`,
+            idempotencyKey: `onboarding:phone_prompt:${callbackChatId}`,
+            replyMarkup: {
+              keyboard: [
+                [{ text: "📱 مشاركة رقم الموبايل بضغطة واحدة", request_contact: true }]
+              ],
+              resize_keyboard: true,
+              one_time_keyboard: true,
+            },
           });
         }
         await answerCallback("تم القبول!");
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data === "confirm_profile:ok") {
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (tenant) {
+          await (prisma as any).tenant.update({
+            where: { id: tenant.id },
+            data: { state: "onboarding_name" },
+          });
+          await sendTelegramAlert({
+            chatId: callbackChatId,
+            text: `ممتاز جداً أستاذ/ة *${tenant.merchantName || "التاجر"}*! 🏢\nاحكيلي بسرعة عن بيزنسك/شركتك اسمها ايه؟`,
+            idempotencyKey: `onboarding:name_prompt:${callbackChatId}`,
+            replyMarkup: { remove_keyboard: true },
+          });
+        }
+        await answerCallback("تم التأكيد!");
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data === "edit_profile:name") {
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (tenant) {
+          await (prisma as any).tenant.update({
+            where: { id: tenant.id },
+            data: { state: "onboarding_edit_merchant_name" },
+          });
+          await sendTelegramAlert({
+            chatId: callbackChatId,
+            text: "تمام يا فندم، يرجى كتابة اسمك الجديد الآن:",
+            idempotencyKey: `onboarding:edit_name_prompt:${callbackChatId}`,
+          });
+        }
+        await answerCallback("يرجى كتابة الاسم الجديد");
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data === "edit_profile:phone") {
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (tenant) {
+          await (prisma as any).tenant.update({
+            where: { id: tenant.id },
+            data: { state: "onboarding_edit_phone" },
+          });
+          await sendTelegramAlert({
+            chatId: callbackChatId,
+            text: "تمام يا فندم، يرجى مشاركة أو كتابة رقم الموبايل الجديد الآن:",
+            idempotencyKey: `onboarding:edit_phone_prompt:${callbackChatId}`,
+            replyMarkup: {
+              keyboard: [
+                [{ text: "📱 مشاركة رقم الموبايل بضغطة واحدة", request_contact: true }]
+              ],
+              resize_keyboard: true,
+              one_time_keyboard: true,
+            },
+          });
+        }
+        await answerCallback("يرجى كتابة أو مشاركة الرقم الجديد");
         return NextResponse.json({ ok: true });
       }
 
@@ -331,7 +419,7 @@ export async function POST(req: NextRequest) {
             if (adminChatId) {
               await sendTelegramAlert({
                 chatId: adminChatId,
-                text: `📋 *طلب تفعيل شركة جديد عبر البوت!*\n\n🏢 *الشركة:* ${updatedTenant.name}\n💼 *النشاط:* ${updatedTenant.businessType || "عام"}\n⏰ *المواعيد:* ${fullHoursStr}\n🆔 *Chat ID:* \`${callbackChatId}\``,
+                text: `📋 *طلب تفعيل شركة جديد عبر البوت!*\n\n👤 *التاجر:* ${updatedTenant.merchantName || "غير محدد"}\n📱 *الموبايل:* \`${updatedTenant.phoneNumber || "غير محدد"}\`\n🏢 *الشركة:* ${updatedTenant.name}\n💼 *النشاط:* ${updatedTenant.businessType || "عام"}\n⏰ *المواعيد:* ${fullHoursStr}\n🆔 *Chat ID:* \`${callbackChatId}\``,
                 idempotencyKey: `admin_approval_tenant:${updatedTenant.id}`,
                 replyMarkup: {
                   inline_keyboard: [
@@ -885,12 +973,77 @@ export async function POST(req: NextRequest) {
     let tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: chatId } });
 
     if (tenant && tenant.state !== "active" && tenant.state !== "pending_agreement") {
-      if (!text) {
+      const contactMsg = (message as any).contact;
+      const isContactMsg = Boolean(contactMsg && contactMsg.phone_number);
+
+      if (!text && !isContactMsg) {
         await sendTelegramAlert({
           chatId,
-          text: "⚠️ من فضلك اكتب النص المطلوب للاستمرار في الإعداد.",
+          text: "⚠️ من فضلك اكتب النص المطلوب أو شارك رقم الموبايل للاستمرار في الإعداد.",
           idempotencyKey: `onboarding:validation:${chatId}:${message.message_id}`,
         });
+        return NextResponse.json({ ok: true });
+      }
+
+      // Handle Phone Number Input (from contact button OR manual text input during phone step)
+      if (tenant.state === "onboarding_phone" || tenant.state === "onboarding_edit_phone" || isContactMsg) {
+        const rawPhone = (contactMsg?.phone_number as string) || text;
+        const sanitized = sanitizeEgyptianPhone(rawPhone);
+
+        if (!sanitized.isValid || !sanitized.normalized) {
+          await sendTelegramAlert({
+            chatId,
+            text: `❌ *${sanitized.error || "رقم الموبايل غير صحيح."}*\n\nيرجى إدخال رقم موبايل مصري صحيح (مثال: 01012345678) أو إرساله بضغطة واحدة من الزر أدناه:`,
+            idempotencyKey: `onboarding:phone_invalid:${chatId}:${message.message_id}`,
+            replyMarkup: {
+              keyboard: [
+                [{ text: "📱 مشاركة رقم الموبايل بضغطة واحدة", request_contact: true }]
+              ],
+              resize_keyboard: true,
+              one_time_keyboard: true,
+            },
+          });
+          return NextResponse.json({ ok: true });
+        }
+
+        const validPhone = sanitized.normalized;
+
+        // Check if phone number is already registered under a DIFFERENT tenant
+        const existingTenantWithPhone = await (prisma as any).tenant.findUnique({
+          where: { phoneNumber: validPhone },
+        });
+        if (existingTenantWithPhone && existingTenantWithPhone.id !== tenant.id) {
+          await sendTelegramAlert({
+            chatId,
+            text: `⚠️ *تنبيه:* رقم الموبايل هذا (\`${validPhone}\`) مسجل بالفعل لحساب شركة آخر. يرجى إدخال رقم موبايل آخر أو التواصل مع الدعم الفني.`,
+            idempotencyKey: `onboarding:phone_dup:${chatId}:${message.message_id}`,
+          });
+          return NextResponse.json({ ok: true });
+        }
+
+        tenant = await (prisma as any).tenant.update({
+          where: { id: tenant.id },
+          data: {
+            phoneNumber: validPhone,
+            state: "onboarding_confirm_profile",
+          },
+        });
+
+        await sendProfileConfirmationCard(chatId, tenant.merchantName || message.from?.first_name || "التاجر", validPhone, message.message_id);
+        return NextResponse.json({ ok: true });
+      }
+
+      if (tenant.state === "onboarding_edit_merchant_name") {
+        const cleanName = text.replace(/^(مستر|أستاذ|استاذ)\s+/, '').trim();
+        tenant = await (prisma as any).tenant.update({
+          where: { id: tenant.id },
+          data: {
+            merchantName: cleanName,
+            state: "onboarding_confirm_profile",
+          },
+        });
+
+        await sendProfileConfirmationCard(chatId, cleanName, tenant.phoneNumber || "غير محدد", message.message_id);
         return NextResponse.json({ ok: true });
       }
 
@@ -898,13 +1051,25 @@ export async function POST(req: NextRequest) {
         const cleanName = text.replace(/^(مستر|أستاذ|استاذ)\s+/, '').trim();
         tenant = await (prisma as any).tenant.update({
           where: { id: tenant.id },
-          data: { merchantName: cleanName, state: "onboarding_name" },
+          data: { merchantName: cleanName, state: "onboarding_phone" },
         });
         await sendTelegramAlert({
           chatId,
-          text: `أهلاً بيك يا مستر ${cleanName}! 😊 قولي اسم بيزنسك ايه؟`,
-          idempotencyKey: `onboarding:name_prompt:${chatId}:${message.message_id}`,
+          text: `أهلاً بك يا أستاذ/ة *${cleanName}*! 😊\n\nيرجى مشاركة رقم الموبايل بضغطة واحدة من الزر أدناه لتأكيد حسابك:`,
+          idempotencyKey: `onboarding:phone_prompt:${chatId}:${message.message_id}`,
+          replyMarkup: {
+            keyboard: [
+              [{ text: "📱 مشاركة رقم الموبايل بضغطة واحدة", request_contact: true }]
+            ],
+            resize_keyboard: true,
+            one_time_keyboard: true,
+          },
         });
+        return NextResponse.json({ ok: true });
+      }
+
+      if (tenant.state === "onboarding_confirm_profile") {
+        await sendProfileConfirmationCard(chatId, tenant.merchantName || "التاجر", tenant.phoneNumber || "غير محدد", message.message_id);
         return NextResponse.json({ ok: true });
       }
 
@@ -1028,7 +1193,7 @@ export async function POST(req: NextRequest) {
         if (adminChatId) {
           await sendTelegramAlert({
             chatId: adminChatId,
-            text: `📋 *طلب تفعيل شركة جديد عبر البوت!*\n\n🏢 *الشركة:* ${tenant.name}\n💼 *النشاط:* ${tenant.businessType || "عام"}\n⏰ *المواعيد:* ${fullHoursStr}\n🆔 *Chat ID:* \`${chatId}\``,
+            text: `📋 *طلب تفعيل شركة جديد عبر البوت!*\n\n👤 *التاجر:* ${tenant.merchantName || "غير محدد"}\n📱 *الموبايل:* \`${tenant.phoneNumber || "غير محدد"}\`\n🏢 *الشركة:* ${tenant.name}\n💼 *النشاط:* ${tenant.businessType || "عام"}\n⏰ *المواعيد:* ${fullHoursStr}\n🆔 *Chat ID:* \`${chatId}\``,
             idempotencyKey: `admin_approval_tenant_custom:${tenant.id}`,
             replyMarkup: {
               inline_keyboard: [
@@ -1206,6 +1371,23 @@ export async function POST(req: NextRequest) {
       }
 
       // 2. Direct Text Message Routing to LLM Pipeline
+      if (tenant?.id) {
+        const quota = await checkAndIncrementTenantLlmQuota(tenant.id);
+        if (!quota.allowed) {
+          await sendTelegramAlert({
+            chatId,
+            text: `❌ *عفواً أستاذنا، تم الوصول للحد الأقصى اليومي لاستخدام الذكاء الاصطناعي (${quota.usage}/${quota.limit} طلب).*\n\nيتجدد حسابك تلقائياً الساعة 12 منتصف الليل، أو يمكنك التواصل مع الدعم الفني لترقية باقتك ورَفْع الحد اليومي.`,
+            idempotencyKey: `quota_blocked:${chatId}:${message.message_id}`,
+            replyMarkup: {
+              inline_keyboard: [
+                [{ text: "📞 التواصل مع الدعم الفني", url: "https://t.me/CasperErpSupportBot" }]
+              ]
+            }
+          });
+          return NextResponse.json({ ok: true });
+        }
+      }
+
       const llmResult = await processTelegramMessageWithLLM(
         text,
         tenant?.id,

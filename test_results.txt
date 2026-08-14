@@ -1,18 +1,25 @@
-# 🧪 Test & QA Results: Multi-Tenant Tenant Selector
+==========================================================================
+📊 AUTOMATED VERIFICATION EVIDENCE — TENANT QUOTA ENGINE
+==========================================================================
 
-## 📊 Summary
-- **Unit Tests**: `tests/telegram.test.ts` PASSED
-- **TypeScript Compilation**: PASSED (zero syntax/type errors in `app/dashboard/reports/page.tsx` and `/api/reports/*`)
-- **API Endpoint Verification**:
-  - `GET /api/tenants/list` -> Returns active tenant list `[{ id, name }]`
-  - `GET /api/reports/suppliers?tenantId=...` -> Filters suppliers by tenantId
-  - `GET /api/reports/summary?tenantId=...` -> Filters summary KPIs by tenantId
-  - `GET /api/reports/sales-analysis?tenantId=...` -> Filters sales analysis by tenantId
-  - `GET /api/reports/aged-receivables?tenantId=...` -> Filters aged receivables by tenantId
-  - `GET /api/sales?tenantId=...` -> Filters sales history by tenantId
-  - `GET /api/expenses?tenantId=...` -> Filters expenses history by tenantId
-  - `GET /api/appointments?tenantId=...` -> Filters appointments by tenantId
+1. Vitest Unit Suite (tests/tenant_quota.test.ts):
+--------------------------------------------------
+ ✓ tests/tenant_quota.test.ts (4 tests) 322ms
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
 
----
+Test Cases Passed:
+- 1. Correctly formats Cairo date string in YYYY-MM-DD
+- 2. Increments daily LLM usage atomically
+- 3. Blocks requests and triggers quota exhaustion when limit (5/5) is reached
+- 4. Resets usage automatically if lastLlmReset was yesterday
 
-## 🚀 Final Status: PASSED (100%)
+2. Vitest Registration Suite (tests/tenant_registration.test.ts):
+------------------------------------------------------------------
+ ✓ tests/tenant_registration.test.ts (6 tests) 377ms
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+
+3. E2E Onboarding Simulation (scripts/manual-sim/test_onboarding_flow.ts):
+---------------------------------------------------------------------------
+🎉 ONBOARDING FLOW TEST PASSED 100%! Exit Code 0.

@@ -28,6 +28,11 @@ model Tenant {
   expiresAt      DateTime?
   businessType   String?
   workingHours   String?
+  dailyLlmLimit  Int      @default(200)
+  dailyLlmUsage  Int      @default(0)
+  lastLlmReset   DateTime @default(now())
+  alert80SentDate  String?
+  alert100SentDate String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
   diagnostics    InteractionDiagnostics[]

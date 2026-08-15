@@ -3136,7 +3136,7 @@ export async function processTelegramMessageWithLLM(
 
   // Format history for Gemini SDK & ensure history starts with user role
   // Single-turn tool isolation: Clear history when active tools match explicit action keywords to prevent argument bleeding
-  const isExplicitActionCmd = /(اشتريت|اشترى|شراء|بعت|بيع|رجعت|دفعت|سددت|أضف|اضف|ضيف|ادخل|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد)/i.test(normalizedText);
+  const isExplicitActionCmd = /(اشتريت|اشترى|هنشتري|نشتري|شراء|بعت|بيع|هنبيع|نبيع|رجعت|دفعت|سددت|أضف|اضف|ضيف|ادخل|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد)/i.test(normalizedText);
 
   if (isExplicitActionCmd && tenantId) {
     await (prisma as any).conversationState.deleteMany({

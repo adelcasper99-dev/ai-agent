@@ -1,51 +1,41 @@
-# 📋 Implementation Plan: Multi-Tenant Tenant Selector & Reports Filtering
+# 🛠️ Implementation Plan: Telegram Action Verb Isolation & State Machine Fix
 
-Implement dynamic tenant filtering across the Casper Admin Reports Dashboard (`app/dashboard/reports/page.tsx`) and underlying API endpoints to allow Super Admins to filter reports by specific company or view overall platform metrics.
+## 📌 Goal Description
+Fix Telegram bot repetitive clarification loops (`"عشان أسجلك الفاتورة بدقة..."`) and Grounding Guard rejections (`supplier_name` not present in prompt) by expanding `isExplicitActionCmd` to cover all imperative and command-form Arabic verbs, auto-clearing stale `pending_choice` states on new action commands, and writing a comprehensive Vitest regression test suite.
 
 ---
 
 ## 🎯 Proposed Changes
 
-### Backend API Layer
+### `casper-voice-web/lib/telegram_llm.ts`
 
-#### [NEW] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/tenants/list/route.ts)
-- Implement `GET /api/tenants/list` to return active tenants `[{ id, name }]`.
+#### [MODIFY] [`telegram_llm.ts`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)
+1. **Expand `isExplicitActionCmd` Regex:**
+   Expand line 3127 from:
+   `/(اشتريت|رجعت|دفعت|سددت|بعت|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد)/i`
+   to:
+   `/(اشتريت|اشترى|شراء|بعت|بيع|رجعت|دفعت|سددت|أضف|اضف|ضيف|ادخل|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد)/i`
 
-#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/reports/suppliers/route.ts)
-- Parse optional `tenantId` query parameter.
-- Filter `prisma.supplier.findMany` with `where: tenantId && tenantId !== "all" ? { tenantId } : {}`.
-
-#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/reports/summary/route.ts)
-- Parse optional `tenantId` query parameter.
-- Filter sales, expenses, and purchases by `tenantId`.
-
-#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/sales/route.ts)
-- Accept optional `tenantId` parameter when requested from admin reports context.
-
-#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/expenses/route.ts)
-- Accept optional `tenantId` parameter when requested from admin reports context.
-
-#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/appointments/route.ts)
-- Accept optional `tenantId` parameter when requested from admin reports context.
+2. **Auto-Purge Pending Choice on Action Command:**
+   In `processTelegramMessageWithLLM`, if `isExplicitActionCmd` is true and a `pending_choice` state exists in `conversationState`, delete the pending state so the user is not trapped in an old clarification loop.
 
 ---
 
-### Frontend Dashboard Layer
+### `casper-voice-web/tests/telegram_action_isolation.test.ts`
 
-#### [MODIFY] [page.tsx](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/dashboard/reports/page.tsx)
-- Add state `selectedTenantId` (default `"all"`).
-- Fetch tenant list on mount from `/api/tenants/list`.
-- Render a dynamic `Tenant Selector` dropdown in the page header with building icon `Building2`.
-- Update report fetch hooks (`/api/reports/suppliers`, `/api/sales`, `/api/expenses`, `/api/appointments`, `/api/reports/summary`) to pass `?tenantId=${selectedTenantId}` whenever `selectedTenantId` changes.
+#### [NEW] [`telegram_action_isolation.test.ts`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/tests/telegram_action_isolation.test.ts)
+Add Vitest regression tests for all 4 screenshot test cases:
+1. `اشترى 10 طن فراخ من أبوتريكة الطن ب 20000`
+2. `20000 القطعه وضيف الفراخ للكتالوج`
+3. `اشترى 10 طن فراخ من أبوتريكة اجمالي ب 20000`
+4. `بيع ب 5000 2 طن اسمنت`
 
 ---
 
 ## 🧪 Verification Plan
 
 ### Automated Tests
-- Run `node scripts/check-casper-rules.js` to ensure zero native float math and strict TypeScript safety.
-- Run `npx vitest run` to verify API and tenant route integrity.
-- Run `npm run build` inside `casper-voice-web` to guarantee clean TypeScript compilation.
-
-### Manual Verification
-- Test selecting "جميع الشركات" vs specific tenant (e.g., "شركة محلات الشروق") and verify that all KPIs, charts, suppliers, and sales update dynamically.
+- Run `npx vitest run tests/telegram_action_isolation.test.ts`
+- Run `npx vitest run tests/prevention_guardrails.test.ts`
+- Run `node scripts/check-casper-rules.js`
+- Run `npm run build` inside `casper-voice-web`

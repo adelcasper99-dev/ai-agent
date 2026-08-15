@@ -1,30 +1,15 @@
-# 🔬 Research Findings: Multi-Tenant Report Filtering & Tenant Selector
+# 🔬 Best-Practice Research Findings: Telegram Bot Action Isolation & State Machine Management
 
-## 1. Context & Architecture
-In Casper POS & ERP Admin Dashboard (`app/dashboard/reports/page.tsx`), reports currently display data fetched from `/api/reports/suppliers`, `/api/reports/summary`, `/api/expenses`, `/api/sales`, and `/api/appointments`.
+## 1. Single-Turn Tool Isolation in LLM Agents
+- **Pattern:** When an autonomous LLM bot processes user commands containing explicit transaction intent (e.g. "buy X", "sell Y"), injecting long conversation histories causes parameter hallucination and argument bleeding across turns.
+- **Industry Standard:** Production conversational interfaces (such as WhatsApp/Telegram POS bots) reset conversational history (`history = []`) upon recognizing explicit action keywords. This forces the LLM to extract parameters strictly from the *current* user input, satisfying strict Grounding Guards.
 
-To allow the Admin to view report metrics for specific companies or all companies combined, we need:
-1. A **Tenant Selector Dropdown** in the header of `ReportsPage` (`app/dashboard/reports/page.tsx`).
-2. An API endpoint to list active tenants (`/api/tenants/list`).
-3. Parameterized report endpoints that accept optional `tenantId` query parameter.
+## 2. Arabic Imperative & Verb Morphology in NLP/POS Engines
+- **Pattern:** Egyptian Arabic and Modern Standard Arabic use diverse verb forms for transactional requests:
+  - Imperative / Command: `اشترى` (Buy!), `شراء`, `بيع` (Sell!), `أضف`, `اضف`, `ضيف` (Add!)
+  - Past Tense: `اشتريت` (I bought), `بعت` (I sold), `دفعت` (I paid), `سددت`
+- **Industry Standard:** Keyword match regexes must explicitly group past, present, and imperative forms (`/(اشتريت|اشترى|شراء|بعت|بيع|رجعت|دفعت|سددت|أضف|اضف|ضيف|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد)/i`).
 
-## 2. Multi-Tenant API Design Pattern
-For each report endpoint (`/api/reports/suppliers`, `/api/reports/summary`, `/api/reports/sales-analysis`, `/api/reports/aged-receivables`):
-```typescript
-const { searchParams } = new URL(req.url);
-const tenantId = searchParams.get("tenantId");
-
-const tenantFilter = tenantId && tenantId !== "all" ? { tenantId } : {};
-const where = { ...baseFilter, ...tenantFilter };
-```
-
-## 3. Data Integrity & Decimal.js Guardrails
-- Financial calculations (Sales totals, Expense totals, Supplier debts, Net profit) MUST use `Decimal.js` for all aggregations.
-- Zero floating-point math permitted.
-- Tenant isolation enforced: if `tenantId` is specified, all DB queries strictly append `where: { tenantId }`.
-
-## 4. UX & Frontend State Management
-- In `app/dashboard/reports/page.tsx`:
-  - `selectedTenantId` state initialized to `"all"`.
-  - Fetch list of tenants on mount from `/api/tenants/list`.
-  - Re-fetch report APIs (`/api/reports/suppliers`, `/api/sales`, `/api/expenses`, `/api/appointments`, `/api/reports/summary`) whenever `selectedTenantId` changes.
+## 3. ConversationState & Pending Choice Invalidation Protocol
+- **Pattern:** When a bot enters a clarifying state (`pending_choice`) asking about ambiguous prices or payment methods, subsequent messages from the user can either be a direct answer OR a completely new action command.
+- **Industry Standard:** Before attempting to process a message against `pending_choice`, the engine should evaluate if the new message is an explicit action command. If true, the stale `pending_choice` state must be purged from DB immediately to prevent clarification loops.

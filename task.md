@@ -1,8 +1,5 @@
-# Stage 3 Task Checklist — Tenant LLM Quota Engine
+# 📋 Task Execution Checklist
 
-- [x] 1. Update `prisma/schema.prisma` with `dailyLlmLimit`, `dailyLlmUsage`, `lastLlmReset`, `alert80SentDate`, `alert100SentDate`
-- [x] 2. Run `npx prisma db push` to synchronize database schema
-- [x] 3. Create `lib/tenant-quota.ts` for atomic daily reset, quota checks, and Telegram alert triggers
-- [x] 4. Update `app/api/telegram/webhook/route.ts` with tenant quota interceptor & Arabic response card
-- [x] 5. Update `app/api/tenants/manage/route.ts` with `update_llm_limit` action
-- [x] 6. Create `tests/tenant_quota.test.ts` automated vitest test suite
+- [x] **Expand `isExplicitActionCmd` regex:** Updated `telegram_llm.ts` to include imperative verbs (`اشترى`, `شراء`, `بيع`, `أضف`, `اضف`, `ضيف`, `ادخل`).
+- [x] **Auto-purge stale `pending_choice` state:** Added database state deletion when an explicit action command is received.
+- [x] **Create Vitest regression test suite:** Added `telegram_action_isolation.test.ts` to verify all imperative action keywords.

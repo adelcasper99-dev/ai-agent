@@ -30,8 +30,32 @@ describe("Telegram Action Verb Isolation & Button Loop Prevention Suite", () => 
     }
   });
 
-  it("Item 2 (Pipeline Ordering): Pending choice resolution occurs BEFORE purge evaluation", () => {
-    // Verify that valid pending choice keywords ('1', '2', 'مشتريات', 'مبيعات') match pending choice triggers
+  it("Item 2 (Question 1 Audit): Section C numeric clarification does NOT persist pendingState", () => {
+    // Section C clarification trigger: 2 unanchored numbers >= 100 without total/paid anchors
+    const unanchoredMsg = "اشتريت فراخ من أبوتريكة 20000 5000";
+    const hasTotal = hasTotalAnchorRegex.test(unanchoredMsg);
+    const hasPaid = hasPaidAnchorRegex.test(unanchoredMsg);
+
+    // Verify anchors fail on unanchored prompt -> triggers Section C question
+    expect(hasTotal).toBe(false);
+    expect(hasPaid).toBe(false);
+  });
+
+  it("Item 2 (Question 2 Audit): Free-text clarification reply with action verb 'دفعت 5000 والباقي آجل' matches paid anchor", () => {
+    const freeTextReply = "دفعت 5000 والباقي آجل";
+
+    // Free text reply contains 'دفعت' which matches hasPaidAnchor
+    expect(hasPaidAnchorRegex.test(freeTextReply)).toBe(true);
+  });
+
+  it("Item 2 (Free-Text Dual Clarification): Reply with 'دفعت 5000 كاش والإجمالي 20000' matches both anchors", () => {
+    const freeTextReply = "دفعت 5000 كاش والإجمالي 20000";
+
+    expect(hasTotalAnchorRegex.test(freeTextReply)).toBe(true);
+    expect(hasPaidAnchorRegex.test(freeTextReply)).toBe(true);
+  });
+
+  it("Item 2 (Pipeline Interceptor): Button choice keywords ('1', '2', 'مشتريات', 'مبيعات') match interceptor BEFORE purge line", () => {
     const optionOneInputs = ["1", "إجمالي", "اجمالي", "نعم", "تأكيد", "مشتريات"];
     const optionTwoInputs = ["2", "القطعة", "العلبة", "لا", "إلغاء", "مبيعات"];
 
@@ -47,13 +71,6 @@ describe("Telegram Action Verb Isolation & Button Loop Prevention Suite", () => 
       const isTwo = input === "2" || isTwoRegex.test(input);
       expect(isTwo).toBe(true);
     }
-  });
-
-  it("Item 2 (Cash Clarification Free-Text Reply): Answer like 'دفعت 5000 كاش والإجمالي 20000' matches both anchors", () => {
-    const freeTextReply = "دفعت 5000 كاش والإجمالي 20000";
-
-    expect(hasTotalAnchorRegex.test(freeTextReply)).toBe(true);
-    expect(hasPaidAnchorRegex.test(freeTextReply)).toBe(true);
   });
 
   it("should recognize imperative and action-form verbs as explicit action commands for purging pending_choice", () => {

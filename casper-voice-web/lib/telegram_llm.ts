@@ -3135,16 +3135,17 @@ export async function processTelegramMessageWithLLM(
   console.log(`[TokenRouter] Input: "${normalizedText.slice(0, 35)}..." | Active Clusters: [${activeClusters.join(', ')}] | Tools Sent: ${activeTools.length}/${ALL_TOOLS.length}`);
 
   // Format history for Gemini SDK & ensure history starts with user role
-  // Single-turn tool isolation: Clear history when active tools match explicit action keywords to prevent argument bleeding
-  const isExplicitActionCmd = /(اشتريت|اشترى|هنشتري|نشتري|شراء|بعت|بيع|هنبيع|نبيع|رجعت|دفعت|سددت|أضف|اضف|ضيف|ادخل|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد)/i.test(normalizedText);
+  // Single-turn tool isolation: Clear history only when active tools match explicit new transaction keywords to prevent argument bleeding
+  const isNewTransactionCmd = /(اشتريت|اشترى|هنشتري|نشتري|شراء|بعت|بيع|هنبيع|نبيع|أضف|اضف|ضيف|احجز|رجعت)/i.test(normalizedText);
+  const isPendingChoicePurgeCmd = /(اشتريت|اشترى|هنشتري|نشتري|شراء|بعت|بيع|هنبيع|نبيع|رجعت|أضف|اضف|ضيف|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد)/i.test(normalizedText);
 
-  if (isExplicitActionCmd && tenantId) {
+  if (isPendingChoicePurgeCmd && tenantId) {
     await (prisma as any).conversationState.deleteMany({
       where: { tenantId, currentFlow: "pending_choice" }
     }).catch(() => null);
   }
 
-  let geminiHistory = isExplicitActionCmd ? [] : rawHistory.map(h => ({
+  let geminiHistory = isNewTransactionCmd ? [] : rawHistory.map(h => ({
     role: h.role === "assistant" ? "model" : "user",
     parts: [{ text: h.text }]
   }));

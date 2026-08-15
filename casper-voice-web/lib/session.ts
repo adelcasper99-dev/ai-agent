@@ -100,3 +100,57 @@ export async function verifyCustomerSession(token: string): Promise<string | nul
   return signature === expectedSignature ? customerId : null;
 }
 
+/**
+ * Hashes a numeric/alphanumeric PIN with a customer-specific or system salt.
+ */
+export async function hashPin(pin: string, salt: string = "casper-salt"): Promise<string> {
+  return await computeHmacHex(`pin:${salt}:${pin}`);
+}
+
+/**
+ * Verifies if the provided PIN matches the stored hash.
+ */
+export async function verifyPin(pin: string, storedHash: string, salt: string = "casper-salt"): Promise<boolean> {
+  const computed = await hashPin(pin, salt);
+  if (computed.length !== storedHash.length) return false;
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const crypto = require('crypto');
+    return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(storedHash));
+  } catch {
+    return computed === storedHash;
+  }
+}
+
+/**
+ * Signs an expiring Magic Link for Telegram / Instant Web Login.
+ * Defaults to 15 minutes expiration.
+ */
+export async function signMagicLink(customerId: string, expiresInMinutes: number = 15): Promise<string> {
+  const expiresAt = Date.now() + expiresInMinutes * 60 * 1000;
+  const payload = `${customerId}.${expiresAt}`;
+  const signature = await computeHmacHex(`magic:${payload}`);
+  return `${payload}.${signature}`;
+}
+
+/**
+ * Verifies a Magic Link token. Returns customerId if valid and not expired.
+ */
+export async function verifyMagicLink(token: string): Promise<string | null> {
+  if (!token || !token.includes('.')) return null;
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+
+  const [customerId, expiresAtStr, signature] = parts;
+  const expiresAt = parseInt(expiresAtStr, 10);
+  if (isNaN(expiresAt) || Date.now() > expiresAt) {
+    return null; // Expired or invalid timestamp
+  }
+
+  const payload = `${customerId}.${expiresAtStr}`;
+  const expectedSignature = await computeHmacHex(`magic:${payload}`);
+  return signature === expectedSignature ? customerId : null;
+}
+
+

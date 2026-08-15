@@ -3,12 +3,16 @@ import crypto from "crypto";
 import { 
   signTenantSession, verifyTenantSession, 
   signAdminSession, verifyAdminSession,
-  signCustomerSession, verifyCustomerSession
+  signCustomerSession, verifyCustomerSession,
+  hashPin, verifyPin,
+  signMagicLink, verifyMagicLink
 } from "./session";
 export { 
   signTenantSession, verifyTenantSession, 
   signAdminSession, verifyAdminSession,
-  signCustomerSession, verifyCustomerSession 
+  signCustomerSession, verifyCustomerSession,
+  hashPin, verifyPin,
+  signMagicLink, verifyMagicLink
 };
 
 

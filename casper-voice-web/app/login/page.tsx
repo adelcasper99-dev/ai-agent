@@ -5,23 +5,28 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
   ShieldCheck, User, Lock, Phone, ArrowLeft, 
-  Sparkles, Loader2, AlertCircle, Building2, CheckCircle2 
+  Sparkles, Loader2, AlertCircle, CheckCircle2,
+  KeyRound, ArrowRight, UserCheck
 } from "lucide-react";
 
 export default function LoginPage() {
   const [mode, setMode] = useState<"admin" | "customer">("admin");
   
-  // Admin form
+  // Admin form state
   const [adminPassword, setAdminPassword] = useState("");
   
-  // Customer form
+  // Customer multi-step state: "phone" | "enter_pin" | "setup_pin"
+  const [customerStep, setCustomerStep] = useState<"phone" | "enter_pin" | "setup_pin">("phone");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [customerPin, setCustomerPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
+  // ── Admin Login Handler ──
   const handleAdminSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -51,10 +56,12 @@ export default function LoginPage() {
     }
   };
 
-  const handleCustomerSubmit = async (e: React.FormEvent) => {
+  // ── Step 1: Customer Phone Check ──
+  const handleCustomerPhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!customerPhone.trim() || customerPhone.trim().length < 8) {
+    const cleanedPhone = customerPhone.trim();
+    if (!cleanedPhone || cleanedPhone.length < 8) {
       setError("يرجى إدخال رقم هاتف صحيح (8 أرقام على الأقل)");
       return;
     }
@@ -65,8 +72,47 @@ export default function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          phone: cleanedPhone,
+          checkOnly: true,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        if (data.exists && data.hasPin) {
+          setCustomerName(data.customerName || "");
+          setCustomerStep("enter_pin");
+        } else {
+          setCustomerName(data.customerName || "");
+          setCustomerStep("setup_pin");
+        }
+      } else {
+        setError(data.error || "فشل التحقق من رقم الهاتف");
+      }
+    } catch (err: any) {
+      setError(err?.message || "تعذر الاتصال بالخادم");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Step 2a: Customer PIN Login ──
+  const handleCustomerPinLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!customerPin.trim()) {
+      setError("يرجى إدخال الرمز السري");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/customer-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           phone: customerPhone,
-          name: customerName,
+          pin: customerPin,
         }),
       });
 
@@ -74,7 +120,54 @@ export default function LoginPage() {
       if (res.ok && data.success) {
         router.push("/customer/dashboard");
       } else {
-        setError(data.error || "فشل تسجيل دخول العميل");
+        if (data.requiresSetup) {
+          setCustomerStep("setup_pin");
+          setError("يرجى تعيين رمز سري لحسابك أولاً");
+        } else {
+          setError(data.error || "الرمز السري غير صحيح");
+        }
+      }
+    } catch (err: any) {
+      setError(err?.message || "تعذر الاتصال بالخادم");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Step 2b: Customer Onboarding & PIN Setup ──
+  const handleCustomerOnboardingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!customerName.trim()) {
+      setError("يرجى إدخال اسمك الكريم");
+      return;
+    }
+    if (customerPin.length < 4 || customerPin.length > 8) {
+      setError("الرمز السري يجب أن يكون بين 4 إلى 8 أرقام");
+      return;
+    }
+    if (customerPin !== confirmPin) {
+      setError("الرمز السري وتأكيد الرمز غير متطابقين");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/customer-setup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: customerPhone,
+          name: customerName,
+          pin: customerPin,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        router.push("/customer/dashboard");
+      } else {
+        setError(data.error || "فشل تهيئة الحساب");
       }
     } catch (err: any) {
       setError(err?.message || "تعذر الاتصال بالخادم");
@@ -130,7 +223,7 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => { setMode("customer"); setError(""); }}
+              onClick={() => { setMode("customer"); setError(""); setCustomerStep("phone"); }}
               className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 ${
                 mode === "customer"
                   ? "bg-emerald-500 text-zinc-950 shadow-lg shadow-emerald-500/25"
@@ -185,53 +278,174 @@ export default function LoginPage() {
             </form>
           )}
 
-          {/* ── Customer Login Form ── */}
+          {/* ── Customer Portal State Machine ── */}
           {mode === "customer" && (
-            <form onSubmit={handleCustomerSubmit} className="space-y-4 animate-in fade-in duration-300">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-black text-zinc-300">رقم الهاتف المسجل *</label>
-                <div className="relative">
-                  <Phone className="absolute start-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                  <input
-                    type="tel"
-                    placeholder="010XXXXXXXX"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    autoFocus
-                    className="w-full h-12 ps-11 pe-4 bg-zinc-950/80 border border-white/10 text-white placeholder:text-zinc-600 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl font-mono text-sm outline-none transition-all"
-                  />
-                </div>
-              </div>
+            <div className="space-y-4 animate-in fade-in duration-300">
+              
+              {/* ── Step 1: Enter Phone Number ── */}
+              {customerStep === "phone" && (
+                <form onSubmit={handleCustomerPhoneSubmit} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-black text-zinc-300">رقم الهاتف المسجل *</label>
+                    <div className="relative">
+                      <Phone className="absolute start-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                      <input
+                        type="tel"
+                        placeholder="010XXXXXXXX"
+                        value={customerPhone}
+                        onChange={(e) => setCustomerPhone(e.target.value)}
+                        autoFocus
+                        className="w-full h-12 ps-11 pe-4 bg-zinc-950/80 border border-white/10 text-white placeholder:text-zinc-600 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl font-mono text-sm outline-none transition-all"
+                      />
+                    </div>
+                  </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-zinc-400">الاسم (اختياري للعملاء الجدد)</label>
-                <div className="relative">
-                  <User className="absolute start-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                  <input
-                    type="text"
-                    placeholder="أدخل اسمك"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full h-12 ps-11 pe-4 bg-zinc-950/80 border border-white/10 text-white placeholder:text-zinc-600 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl text-sm font-bold outline-none transition-all"
-                  />
-                </div>
-              </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-zinc-950 font-black rounded-2xl text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                  >
+                    {loading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>
+                        <span>متابعة</span>
+                        <ArrowLeft className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-zinc-950 font-black rounded-2xl text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-50 mt-2 cursor-pointer"
-              >
-                {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    <span>دخول بوابة العميل</span>
-                    <ArrowLeft className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
+              {/* ── Step 2a: Enter PIN for Existing Customer ── */}
+              {customerStep === "enter_pin" && (
+                <form onSubmit={handleCustomerPinLogin} className="space-y-4">
+                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-black text-white">{customerName || "عميل كاسبر"}</p>
+                      <p className="text-[11px] text-zinc-400 font-mono">{customerPhone}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setCustomerStep("phone"); setError(""); setCustomerPin(""); }}
+                      className="text-[10px] text-emerald-400 hover:underline font-bold"
+                    >
+                      تغيير الرقم
+                    </button>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-black text-zinc-300">أدخل الرمز السري (PIN) *</label>
+                    <div className="relative">
+                      <KeyRound className="absolute start-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                      <input
+                        type="password"
+                        placeholder="••••"
+                        maxLength={8}
+                        value={customerPin}
+                        onChange={(e) => setCustomerPin(e.target.value)}
+                        autoFocus
+                        className="w-full h-12 ps-11 pe-4 bg-zinc-950/80 border border-white/10 text-white placeholder:text-zinc-600 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl font-mono text-center tracking-widest text-lg outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-zinc-950 font-black rounded-2xl text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                  >
+                    {loading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>
+                        <span>تسجيل الدخول</span>
+                        <ArrowLeft className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {/* ── Step 2b: Onboarding & PIN Setup ── */}
+              {customerStep === "setup_pin" && (
+                <form onSubmit={handleCustomerOnboardingSubmit} className="space-y-3.5">
+                  <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="w-4 h-4 text-cyan-400" />
+                      <div>
+                        <p className="text-xs font-black text-white">تهيئة الحساب لأول مرة</p>
+                        <p className="text-[10px] text-zinc-400 font-mono">{customerPhone}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setCustomerStep("phone"); setError(""); setCustomerPin(""); }}
+                      className="text-[10px] text-cyan-400 hover:underline font-bold"
+                    >
+                      تغيير
+                    </button>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-black text-zinc-300">الاسم الكامل *</label>
+                    <input
+                      type="text"
+                      placeholder="أدخل اسمك الكريم"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      required
+                      className="w-full h-11 px-4 bg-zinc-950/80 border border-white/10 text-white placeholder:text-zinc-600 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-xs font-bold outline-none transition-all"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className="block text-[11px] font-black text-zinc-300">الرمز السري (PIN) *</label>
+                      <input
+                        type="password"
+                        placeholder="••••"
+                        maxLength={8}
+                        value={customerPin}
+                        onChange={(e) => setCustomerPin(e.target.value)}
+                        required
+                        className="w-full h-11 px-3 bg-zinc-950/80 border border-white/10 text-white placeholder:text-zinc-600 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl font-mono text-center tracking-wider text-sm outline-none transition-all"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-[11px] font-black text-zinc-300">تأكيد الرمز *</label>
+                      <input
+                        type="password"
+                        placeholder="••••"
+                        maxLength={8}
+                        value={confirmPin}
+                        onChange={(e) => setConfirmPin(e.target.value)}
+                        required
+                        className="w-full h-11 px-3 bg-zinc-950/80 border border-white/10 text-white placeholder:text-zinc-600 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl font-mono text-center tracking-wider text-sm outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-zinc-500">اختر رمزاً سهلاً من 4 إلى 8 أرقام لتسجيل دخولك لاحقاً.</p>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 bg-gradient-to-l from-emerald-500 to-cyan-500 hover:opacity-90 active:scale-[0.99] text-zinc-950 font-black rounded-2xl text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer mt-1"
+                  >
+                    {loading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>
+                        <span>تفعيل الحساب والدخول</span>
+                        <ArrowLeft className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+
+            </div>
           )}
 
           {/* ── Feature Highlights ── */}

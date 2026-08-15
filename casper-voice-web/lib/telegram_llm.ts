@@ -1280,12 +1280,12 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       args = { customer_name: customerName, amount: extractedAmount || args.paid_amount };
     }
 
-    if (name === "log_sale" && /(?:\s|^)دفعت\s+(?:ل|لـ|ل للمورد)?/i.test(msgText)) {
+    if ((name === "log_sale" || name === "log_purchase") && /(?:\s|^)دفعت\s+(?:ل|لـ|ل للمورد)?/i.test(msgText)) {
       const userNums = extractAllNumbersFromText(msgText);
       const extractedAmount = userNums.pop();
       const suppMatch = msgText.match(/دفعت\s+(?:ل|لـ|ل للمورد)?\s*([أ-ي\s]{2,20}?)\s+\d+/i);
-      const supplierName = suppMatch ? suppMatch[1].trim() : (args.customer_name || "مورد");
-      console.log(`[Tool Router Correction] Redirecting erroneously called log_sale to log_supplier_payment for text: "${userMessageText}"`);
+      const supplierName = suppMatch ? suppMatch[1].trim() : (args.supplier_name || args.customer_name || "مورد");
+      console.log(`[Tool Router Correction] Redirecting erroneously called ${name} to log_supplier_payment for text: "${userMessageText}"`);
       name = "log_supplier_payment";
       args = { supplier_name: supplierName, amount: extractedAmount || args.paid_amount };
     }

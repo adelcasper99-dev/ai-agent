@@ -8,5 +8,5 @@
   { "stage": "4-test", "status": "COMPLETED", "timestamp": "2026-08-15T17:29:21Z", "artifacts": ["tests/merchant_memory.test.ts", "test_results.txt"] },
   { "stage": "5-accept", "status": "COMPLETED", "timestamp": "2026-08-15T17:29:28Z", "artifacts": ["walkthrough.md"] },
   { "stage": "6-compliance", "status": "COMPLETED", "timestamp": "2026-08-15T17:30:25Z", "artifacts": ["stage_log.json"] },
-  { "stage": "7-deploy", "status": "STARTED", "timestamp": "2026-08-15T17:30:26Z" }
+  { "stage": "7-deploy", "status": "COMPLETED", "timestamp": "2026-08-15T17:32:10Z", "artifacts": ["pipeline_completion_report.md"] }
 ]

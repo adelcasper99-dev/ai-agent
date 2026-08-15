@@ -1,7 +1,15 @@
 import { NextRequest } from "next/server";
 import crypto from "crypto";
-import { signTenantSession, verifyTenantSession, signAdminSession, verifyAdminSession } from "./session";
-export { signTenantSession, verifyTenantSession, signAdminSession, verifyAdminSession };
+import { 
+  signTenantSession, verifyTenantSession, 
+  signAdminSession, verifyAdminSession,
+  signCustomerSession, verifyCustomerSession
+} from "./session";
+export { 
+  signTenantSession, verifyTenantSession, 
+  signAdminSession, verifyAdminSession,
+  signCustomerSession, verifyCustomerSession 
+};
 
 
 

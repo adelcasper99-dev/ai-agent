@@ -79,3 +79,24 @@ export async function verifyAdminSession(token: string): Promise<boolean> {
   const expectedSignature = await computeHmacHex(`admin:${role}`);
   return signature === expectedSignature;
 }
+
+/**
+ * Signs a customerId into a signed token for customer_session cookie.
+ */
+export async function signCustomerSession(customerId: string): Promise<string> {
+  const signature = await computeHmacHex(`customer:${customerId}`);
+  return `${customerId}.${signature}`;
+}
+
+/**
+ * Verifies the customer_session cookie value and returns customerId.
+ */
+export async function verifyCustomerSession(token: string): Promise<string | null> {
+  if (!token || !token.includes('.')) return null;
+  const [customerId, signature] = token.split('.');
+  if (!customerId || !signature) return null;
+
+  const expectedSignature = await computeHmacHex(`customer:${customerId}`);
+  return signature === expectedSignature ? customerId : null;
+}
+

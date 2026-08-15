@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminSession } from '@/lib/session';
+import { verifyAdminSession, verifyCustomerSession } from '@/lib/session';
 
-// المسارات اللي لازم تفضل مفتوحة من غير login (تليجرام لازم يوصلها من برا)
-const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/telegram/webhook', '/telegram-voice', '/api/livekit/token', '/api/health/voice'];
+// المسارات اللي لازم تفضل مفتوحة من غير login (تليجرام واللوجين العام)
+const PUBLIC_PATHS = [
+  '/login', 
+  '/api/auth/login', 
+  '/api/auth/customer-login',
+  '/api/auth/logout',
+  '/api/telegram/webhook', 
+  '/telegram-voice', 
+  '/api/livekit/token', 
+  '/api/health/voice'
+];
 
 function isInternalSecretValid(headerSecret: string | null): boolean {
   if (!headerSecret) return false;
@@ -46,6 +55,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // 3. مسارات بوابة العميل
+  if (pathname.startsWith('/customer') || pathname.startsWith('/api/customer')) {
+    const customerCookie = request.cookies.get('customer_session');
+    if (!customerCookie || !(await verifyCustomerSession(customerCookie.value))) {
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json({ error: 'غير مصرح - يرجى تسجيل الدخول' }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // 4. مسارات لوحة الإدارة
   const session = request.cookies.get('admin_session');
 
   if (!session || !(await verifyAdminSession(session.value))) {

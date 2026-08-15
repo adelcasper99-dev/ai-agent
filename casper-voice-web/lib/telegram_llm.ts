@@ -317,6 +317,26 @@ const saveMerchantMemoryTool: FunctionDeclaration = {
   }
 };
 
+const MONEY_PATTERN = /\d+(\.\d+)?\s*(جنيه|EGP|LE|ج\.م)?/;
+
+export function validateMemoryFact(value: string): void {
+  if (value && MONEY_PATTERN.test(value) && /\d{2,}/.test(value)) {
+    throw new Error("Rejected: Financial/monetary values not allowed in memory facts");
+  }
+}
+
+const lookupMerchantMemoryTool: FunctionDeclaration = {
+  name: "lookup_merchant_memory",
+  description: "البحث في ذاكرة التاجر لحل الألقاب الشفهية وتفضيلات العملاء والموردين بدقة قبل الاستعلام عن الفواتير",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      query: { type: SchemaType.STRING, description: "اللقب أو الاسم الشفهي المراد البحث عنه (مثال: 'أبوتريكة')" }
+    },
+    required: ["query"]
+  }
+};
+
 const getMerchantMemoryTool: FunctionDeclaration = {
   name: "get_merchant_memory",
   description: "الاستعلام عن ذاكرة التاجر لمعرفة ألقاب العملاء/الموردين أو تفضيلات العمل المسجلة سابقا",
@@ -380,7 +400,7 @@ const correctLastTransactionTool: FunctionDeclaration = {
 // ==================== DYNAMIC TOOL ROUTING & CLUSTERS ====================
 
 export const ALL_TOOLS: FunctionDeclaration[] = [
-  logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool,
+  lookupMerchantMemoryTool, logSaleTool, logExpenseTool, bookAppointmentTool, logPurchaseTool,
   getFinancialSummaryTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool,
   reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool,
   getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool, addProductTool,
@@ -390,11 +410,11 @@ export const ALL_TOOLS: FunctionDeclaration[] = [
 
 export type ClusterKey = 'SALES' | 'PURCHASES' | 'APPOINTMENTS' | 'INVENTORY' | 'FINANCE_META';
 
-const SALES_TOOLS: FunctionDeclaration[] = [logSaleTool, addCustomerTool, logSalesReturnTool, logCustomerPaymentTool, getCustomerBalanceTool, cancelLastTransactionTool, correctLastTransactionTool];
-const PURCHASE_TOOLS: FunctionDeclaration[] = [logPurchaseTool, logSupplierPaymentTool, getSupplierBalanceTool, logPurchaseReturnTool, cancelLastTransactionTool, correctLastTransactionTool];
+const SALES_TOOLS: FunctionDeclaration[] = [lookupMerchantMemoryTool, logSaleTool, addCustomerTool, logSalesReturnTool, logCustomerPaymentTool, getCustomerBalanceTool, cancelLastTransactionTool, correctLastTransactionTool];
+const PURCHASE_TOOLS: FunctionDeclaration[] = [lookupMerchantMemoryTool, logPurchaseTool, logSupplierPaymentTool, getSupplierBalanceTool, logPurchaseReturnTool, cancelLastTransactionTool, correctLastTransactionTool];
 const APPOINTMENT_TOOLS: FunctionDeclaration[] = [bookAppointmentTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool];
 const INVENTORY_TOOLS: FunctionDeclaration[] = [addProductTool, updateStockTool];
-const FINANCE_META_TOOLS: FunctionDeclaration[] = [logExpenseTool, getFinancialSummaryTool, reportMissingFeatureTool, saveMerchantMemoryTool, getMerchantMemoryTool, cancelLastTransactionTool, correctLastTransactionTool];
+const FINANCE_META_TOOLS: FunctionDeclaration[] = [lookupMerchantMemoryTool, logExpenseTool, getFinancialSummaryTool, reportMissingFeatureTool, saveMerchantMemoryTool, getMerchantMemoryTool, cancelLastTransactionTool, correctLastTransactionTool];
 
 const CLUSTER_KEYWORDS: Record<ClusterKey, string[]> = {
   SALES: ["بيع", "بعت", "كاش", "آجل", "عميل", "حساب عميل", "رصيد عميل", "قبضت", "سدد", "مرتجع مبيعات", "رجع من", "تليفون عميل", "ديون عميل", "بعت مش اشتريت", "الغى", "إلغاء", "خطأ", "تعديل"],
@@ -2935,6 +2955,81 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         success: true,
         resultText: `✅ تم تصحيح البيانات في آخر فاتورة ${recordType === "sale" ? "بيع" : "مشتريات"} بنجاح:\n- ${updatedFieldsLog.join("\n- ")}`
       };
+    }
+
+    if (name === "lookup_merchant_memory") {
+      if (!tenantId) return { success: false, resultText: "يلزم تحديد هوية النشاط." };
+      const q = String(args?.query || "").trim();
+      if (!q) return { success: false, resultText: "يرجى كتابة الاسم أو اللقب المراد استرجاعه." };
+
+      validateMemoryFact(q);
+
+      const facts = await (prisma as any).merchantMemoryFact.findMany({
+        where: {
+          tenantId,
+          supersededById: null,
+          OR: [
+            { aliasOrKey: { contains: q } },
+            { entityName: { contains: q } }
+          ]
+        },
+        take: 5
+      });
+
+      if (facts.length === 0) {
+        return { success: false, resultText: `لم نجد أي ذاكرة مسجلة للقب '${q}'.` };
+      }
+
+      const mapped = facts.map((f: any) => `- اللقب '${f.aliasOrKey}' ➔ الاسم الرسمي: ${f.entityName} (${f.value})`).join("\n");
+      return { success: true, resultText: `✅ تم استرجاع تفاصيل اللقب من ذاكرة التاجر:\n${mapped}` };
+    }
+
+    if (name === "save_merchant_memory") {
+      if (!tenantId) return { success: false, resultText: "يلزم تحديد هوية النشاط." };
+      const { category, key, value } = args || {};
+      const k = String(key || "").trim();
+      const v = String(value || "").trim();
+      if (!k || !v) return { success: false, resultText: "يرجى تحديد اللقب/المفتاح والقيمة المراد حفظها." };
+
+      validateMemoryFact(v);
+
+      await (prisma as any).merchantMemoryFact.create({
+        data: {
+          tenantId,
+          factType: category || "alias",
+          entityName: v,
+          aliasOrKey: k,
+          value: v,
+          sourceMessageId: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
+        }
+      });
+
+      return { success: true, resultText: `✅ تم حفظ اللقب (${k} ➔ ${v}) في ذاكرة التاجر بنجاح!` };
+    }
+
+    if (name === "get_merchant_memory") {
+      if (!tenantId) return { success: false, resultText: "يلزم تحديد هوية النشاط." };
+      const k = String(args?.key || "").trim();
+      const facts = await (prisma as any).merchantMemoryFact.findMany({
+        where: {
+          tenantId,
+          supersededById: null,
+          ...(k && {
+            OR: [
+              { aliasOrKey: { contains: k } },
+              { entityName: { contains: k } }
+            ]
+          })
+        },
+        take: 10
+      });
+
+      if (facts.length === 0) {
+        return { success: false, resultText: "لا توجد حقائق مسجلة في ذاكرة التاجر حتى الآن." };
+      }
+
+      const mapped = facts.map((f: any) => `- [${f.factType}] ${f.aliasOrKey} ➔ ${f.entityName}`).join("\n");
+      return { success: true, resultText: `📋 ذاكرة التاجر المسجلة:\n${mapped}` };
     }
 
     return { success: false, resultText: `أداة غير معروفة: ${name}` };

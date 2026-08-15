@@ -1048,7 +1048,7 @@ function groundingCheck(
   if ((toolName === "log_purchase" || toolName === "log_sale") && !isExplicitCredit && options?.resolvedAmbiguity !== "NUMERIC_AMBIGUITY") {
     const rawNums = extractAllNumbersFromText(msg).filter((n) => n >= 100);
     if (rawNums.length >= 2) {
-      const hasTotalAnchor = /(?:\s|^)(?:ب|بـ|سعر|إجمالي|اجمالي|بإجمالي|باجمالي|بالإجمالي|بالاجمالي|بقيمة|ثمن|المجموع)\s*(?:\d+|ألف|الف|مية|ميه|مليون)/i.test(msg);
+      const hasTotalAnchor = /(?:\s|^)(?:ب|بـ|سعر|إجمالي|اجمالي|بإجمالي|باجمالي|بالإجمالي|بالاجمالي|والإجمالي|والاجمالي|وإجمالي|واجمالي|بقيمة|ثمن|المجموع)\s*(?:\d+|ألف|الف|مية|ميه|مليون)/i.test(msg);
       const hasPaidAnchor = /(?:\s|^)(?:دفع|دفعت|ادفع|سددت|مقدم|عربون|كاش|بالكاش|بـكاش|نقدا|نقداً|مسدد|مدفوع)/i.test(msg);
       if (!hasTotalAnchor && !hasPaidAnchor) {
         return { 
@@ -1071,7 +1071,7 @@ function groundingCheck(
       // Check for explicit unit-price anchors ("الكرتونة بـ", "الواحدة", "للحبة", "كل كرتونة")
       const hasUnitAnchor = /(الكرتون[ةه]|الحب[ةه]|الواحد[ةه]|للقطع[ةه]|كل\s+\w+\s+بـ?|للكيلو|للطن|للمتر)/i.test(msg);
       // Check for explicit total anchors ("إجمالي", "الكل", "كلهم", "المجموع")
-      const hasTotalAnchor2 = /(إجمالي|اجمالي|بإجمالي|باجمالي|بالإجمالي|بالاجمالي|الكل|كلهم|المجموع|بالكامل|الإجمالي)/i.test(msg);
+      const hasTotalAnchor2 = /(إجمالي|اجمالي|بإجمالي|باجمالي|بالإجمالي|بالاجمالي|والإجمالي|والاجمالي|وإجمالي|واجمالي|الكل|كلهم|المجموع|بالكامل|الإجمالي)/i.test(msg);
       
       if (hasOnlyOneAmount && !hasUnitAnchor && !hasTotalAnchor2) {
         const amount = significantNums[0];

@@ -1,28 +1,27 @@
-session_intent: "Refactor Telegram LLM tool execution for fuzzy entity resolution, centralize supplier balance reports, implement strict multi-match disambiguation, and execute chaos testing."
+session_intent: "Implement MerchantMemoryFact engine with tenant isolation, trigram fuzzy matching, financial guardrails, and weekly consolidation"
 decisions:
-  - "Use Groq llama-3.1-8b-instant fallback for appointment tools when llama-3.3-70b-versatile returns tool_use_failed"
-  - "Hardcode dynamic prefix resolution in ApiKeyManager as `${normProvider.toUpperCase()}_API_KEY`"
-  - "Support comma and newline separated composite key strings in ApiKeyManager (`GROQ_API_KEYS=\"k1,k2\"`)"
-  - "Maintain in-memory key exhaustion set with DB fallback and 24h automatic reset"
-  - "Enforce strict fuzzy entity resolution with mandatory error throwing on multiple candidate matches in findCustomerFuzzy and findSupplierFuzzy"
-  - "Centralize manual supplier payment aggregation inside get_supplier_balance"
-  - "Implemented single-turn tool context isolation in processTelegramMessageWithLLM for explicit action commands"
-  - "Verified log_purchase_return partial, full, and multi-purchase FIFO debt reduction with 100% passing 13-assertion chaos test suite"
+  - "Used Prisma MerchantMemoryFact model linked to Tenant with supersededById relation for non-destructive history"
+  - "Added validateMemoryFact to aggressively block float math and financial values (EGP, LE, etc.) from being memorized"
+  - "Created consolidate_merchant_memories.ts to run weekly, keeping the newest alias fact and superseding older ones"
+  - "Registered lookup_merchant_memory, save_merchant_memory, get_merchant_memory as priority tools in telegram_llm.ts router"
+  - "Passed 16/16 Vitest tests and deployed directly to production (109.123.247.119) via deploy-hq"
 files_modified:
+  - path: "casper-voice-web/prisma/schema.prisma"
+    why: "Added MerchantMemoryFact model"
   - path: "casper-voice-web/lib/telegram_llm.ts"
-    why: "added single-turn tool context isolation for action commands, expanded Grounding Guard text placeholders (بضاعة, صنف)"
-  - path: "casper-voice-web/test_chaos_purchase_returns.ts"
-    why: "created 13-assertion chaos test suite for purchase returns (100% PASS)"
+    why: "Added memory tools, validateMemoryFact guard, and tool router integration"
+  - path: "casper-voice-web/scripts/consolidate_merchant_memories.ts"
+    why: "Added weekly deduplication job"
+  - path: "casper-voice-web/tests/merchant_memory.test.ts"
+    why: "Full test suite for memory and financial guards"
 active_goals:
-  - "implement response trimming template in main Telegram message handler"
+  - "none"
 next_steps:
-  - "implement response trimming template in main Telegram message handler"
-  - "verify merchantMemory state consistency after entity resolution retry"
+  - "none"
 failed_approaches:
-  - "attempted OpenAI SDK rewrite for all providers in telegram_llm.ts — rejected, native SDKs already handle Gemini FunctionDeclarations correctly"
-  - "automated supplier reporting without manual payment aggregation — fixed by centralizing in get_supplier_balance"
+  - "none"
 last_condense:
-  timestamp: "2026-08-13T10:28:00Z"
-  tokens_before: 175000
-  tokens_after: 32000
-  reduction_pct: 81
+  timestamp: "2026-08-15T17:58:30Z"
+  tokens_before: 185000
+  tokens_after: 8500
+  reduction_pct: 95

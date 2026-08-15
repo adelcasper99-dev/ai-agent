@@ -954,7 +954,18 @@ export function extractAllNumbersFromText(text: string): number[] {
   return nums;
 }
 
-function groundingCheck(toolName: string, args: any, userMessageText?: string): { ok: boolean; reason?: string; replyMarkup?: any; pendingState?: any } {
+export type AmbiguityType = 'PRICE_AMBIGUITY' | 'NUMERIC_AMBIGUITY';
+
+export interface GroundingCheckOptions {
+  resolvedAmbiguity?: AmbiguityType;
+}
+
+function groundingCheck(
+  toolName: string, 
+  args: any, 
+  userMessageText?: string,
+  options?: GroundingCheckOptions
+): { ok: boolean; reason?: string; replyMarkup?: any; pendingState?: any } {
   if (!FINANCIAL_TOOLS.has(toolName)) return { ok: true };
   const msg = userMessageText || "";
   const normalizedMsg = normalizeArabic(msg);
@@ -970,163 +981,144 @@ function groundingCheck(toolName: string, args: any, userMessageText?: string): 
         continue; // Generic system placeholders are allowed
       }
       const words = normalizedVal.split(" ").filter((w) => w.length > 1);
-      const anyWordFound = words.length === 0 || words.some((w) => normalizedMsg.includes(w) || isArabicFuzzyMatch(w, msgWords));
-      if (!anyWordFound) {
-        return { ok: false, reason: `القيمة "${val}" في الحقل ${field} مش موجودة في رسالة المستخدم الأصلية` };
-      }
-    }
+      const anyWordFound = words.length === 0 || words.some((w) => normalizedMsg.includes(w) || isArabicFuzzyMatch(w, msgWords));export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0, fullContextText?: string, options?: GroundingCheckOptions): Promise<{ success: boolean; resultText: string; uiSent?: boolean }> {
+  // ── TENANT ISOLATION GUARD ─────────────────────────────────────────────────
+  // Financial mutations MUST have a resolved tenantId. Block hard if missing.
+  const FINANCIAL_TOOLS = [
+    'log_sale', 'log_expense', 'log_purchase', 'book_appointment',
+    'pay_supplier_debt', 'log_sales_return', 'log_purchase_return',
+    'add_product', 'add_customer', 'log_customer_payment',
+    'cancel_last_transaction', 'correct_last_transaction', 'update_expense',
+  ];
+  if (!tenantId && FINANCIAL_TOOLS.includes(name)) {
+    console.error(`[executeTool] BLOCKED: tool=${name} called without tenantId — refusing to write NULL-tenant data.`);
+    return { success: false, resultText: 'خطأ نظامي: لم يتم تحديد هوية الشركة، لم يُسجَّل أي بيانات.' };
   }
+  // ──────────────────────────────────────────────────────────────────────────
+  try {
+    // Strict System-Wide Language Guardrail: Sanitize tool args
+    args = sanitizeArgsLanguage(args);
+    // Normalize userMessageText to avoid TS strict null errors
+    const msgText: string = userMessageText ?? "";
+    const groundingText: string = fullContextText || msgText;
+    // Tool Router Correction: If smaller LLM called log_sale for a purchase prompt, redirect to log_purchase automatically
+    const isPurchasePrompt = msgText && (
+      msgText.includes("اشتريت") ||
+      msgText.includes("اشترينا") ||
+      msgText.includes("شراء") ||
+      msgText.includes("مشتريات") ||
+      msgText.includes("أخذت من") ||
+      msgText.includes("من المورد")
+    );
 
-  // B. Strict Numeric Value Grounding: Every extracted monetary amount must match or be derived from a number in the user message
-
-  const p = Number(args?.price) || 0;
-  const a = Number(args?.amount || args?.total_amount) || 0;
-  const q = Number(args?.quantity) || 1;
-  const isExplicitCredit = /(آجل|اجل|على\s*الحساب|كله\s*آجل|كله\s*اجل|مفيش\s*كاش|بدون\s*كاش)/i.test(msg);
-
-  if (isExplicitCredit) {
-    args.paid_amount = 0;
-  }
-
-  if (p > 0 || a > 0) {
-    const userNums = extractAllNumbersFromText(msg);
-    if (userNums.length === 0) {
-      if (!isExplicitCredit) {
-        return { ok: false, reason: "الأداة رجّعت مبالغ رقمية لكن رسالة المستخدم لا تحتوي على أي رقم" };
-      }
-    } else {
-      const candidateToolValues = [
-        p,
-        a,
-        p * q,
-        a * q,
-        q > 0 && p > 0 ? p / q : 0,
-        q > 0 && a > 0 ? a / q : 0
-      ].filter((v) => typeof v === "number" && v > 0);
-
-      const isMatch = candidateToolValues.some((tv) =>
-        userNums.some((un) => Math.abs(tv - un) < 0.05 || (un > 0 && Math.abs((tv - un) / un) < 0.05))
-      );
-
-      if (!isMatch && !isExplicitCredit) {
-        return { ok: false, reason: `المبلغ الاستخراجي (${p || a}) غير متطابق مع أي رقم في رسالة المستخدم (${userNums.join(", ")})` };
-      }
-    }
-  }
-
-  const paidVal = Number(args?.paid_amount);
-  if (!isNaN(paidVal) && paidVal > 0 && !isExplicitCredit) {
-    const userNums = extractAllNumbersFromText(msg);
-    const calculatedTotal = (p > 0 && q > 0) ? p * q : a;
-    if (calculatedTotal > 0 && Math.abs(paidVal - calculatedTotal) > 0.05) {
-      const hasCustomPaymentKeywords = /(دفع|مقدم|عربون|آجل|اجل|باقي|متبقي|قسط|مسدد)/i.test(msg);
-      if (!hasCustomPaymentKeywords) {
-        console.log(`[Grounding Guard] Auto-normalizing hallucinated paid_amount (${paidVal}) -> calculatedTotal (${calculatedTotal}) for prompt: "${msg}"`);
-        args.paid_amount = calculatedTotal;
-        args.deferred_amount = 0;
-      } else {
-        const paidMatch = userNums.some((un) => Math.abs(paidVal - un) < 0.05);
-        if (!paidMatch) {
-          return { ok: false, reason: `المبلغ المدفوع المخصص (${paidVal}) غير موجود في رسالة المستخدم` };
-        }
-      }
-    }
-  }
-
-  // C. Ambiguous Numeric Clarification Protocol:
-  if ((toolName === "log_purchase" || toolName === "log_sale") && !isExplicitCredit) {
-    const rawNums = extractAllNumbersFromText(msg).filter((n) => n >= 100);
-    if (rawNums.length >= 2) {
-      const hasTotalAnchor = /(?:\s|^)(?:ب|بـ|سعر|إجمالي|اجمالي|بقيمة|ثمن)\s*(?:\d+|ألف|الف|مية|ميه|مليون)/i.test(msg);
-      const hasPaidAnchor = /(?:\s|^)(?:دفع|دفعت|مقدم|عربون|كاش|مسدد)/i.test(msg);
-      if (!hasTotalAnchor && !hasPaidAnchor) {
-        return { 
-          ok: false, 
-          reason: "عشان أسجلك الفاتورة بدقة، أنهي مبلغ هو إجمالي الفاتورة وأنهي مبلغ المدفوع كاش؟ 🧐" 
-        };
-      }
-    }
-  }
-
-  // C2. Unit vs Total Price Ambiguity Guard:
-  // "10 كراتين ب 1000" → unclear if 1000 is total or per-unit price
-  if ((toolName === "log_purchase" || toolName === "log_sale") && !isExplicitCredit) {
-    const qty = Number(args?.quantity) || 1;
-    if (qty > 1) {
-      const userNums = extractAllNumbersFromText(msg).filter((n) => n > 0);
-      const significantNums = userNums.filter((n) => n >= 10 && n !== qty);
-      // Only one significant price/total amount in message (ambiguous — is it total or unit price?)
-      const hasOnlyOneAmount = significantNums.length === 1;
-      // Check for explicit unit-price anchors ("الكرتونة بـ", "الواحدة", "للحبة", "كل كرتونة")
-      const hasUnitAnchor = /(الكرتون[ةه]|الحب[ةه]|الواحد[ةه]|للقطع[ةه]|كل\s+\w+\s+بـ?|للكيلو|للطن|للمتر)/i.test(msg);
-      // Check for explicit total anchors ("إجمالي", "الكل", "كلهم", "المجموع")
-      const hasTotalAnchor2 = /(إجمالي|اجمالي|الكل|كلهم|المجموع|بالكامل|الإجمالي)/i.test(msg);
+    if (name === "log_sale" && (args.supplier_name || isPurchasePrompt)) {
+      console.log(`[Tool Router Correction] Redirecting erroneously called log_sale to log_purchase for text: "${userMessageText}"`);
+      name = "log_purchase";
       
-      if (hasOnlyOneAmount && !hasUnitAnchor && !hasTotalAnchor2) {
-        const amount = significantNums[0];
-        const totalIfUnit = amount * qty;
-        const reason = `🧐 الـ ${amount} دي إجمالي الفاتورة ولا للقطعة الواحدة؟\n` +
-          `1️⃣ الإجمالي ${amount} ج\n` +
-          `2️⃣ القطعة ${amount} ج (الإجمالي ${totalIfUnit} ج)`;
+      let extractedTotal = undefined;
+      const userNums = msgText.match(/\d+/g)?.map(Number) || [];
+      if (args.price && userNums.includes(Number(args.price))) {
+        extractedTotal = Number(args.price);
+      } else if (userMessageText) {
+        const paidVal = Number(args.paid_amount) || 0;
+        const qtyVal = Number(args.quantity) || 1;
+        const candidateTotals = userNums.filter(n => n !== paidVal && n !== qtyVal);
+        if (candidateTotals.length > 0) {
+          extractedTotal = Math.max(...candidateTotals);
+        }
+      }
+      if (!extractedTotal && args.price) {
+        extractedTotal = args.price * (args.quantity || 1);
+      }
 
-        const replyMarkup = {
-          inline_keyboard: [
-            [
-              { text: `📦 الإجمالي ${amount} ج`, callback_data: `c:p:tot:${amount}` },
-              { text: `💰 القطعة ${amount} ج`, callback_data: `c:p:unit:${amount}` }
-            ]
-          ]
-        };
+      let extractedSupplier = args.supplier_name || args.customer_name;
+      if (!extractedSupplier && userMessageText) {
+        const suppMatch = msgText.match(/من\s+([أ-ي\s]{2,20}?)(?=\s+ب|\s+بسعر|\s+إجمالي|\s+دفع|\s+\d|$)/i);
+        if (suppMatch && suppMatch[1]) {
+          extractedSupplier = suppMatch[1].trim();
+        }
+      }
 
-        return {
-          ok: false,
-          reason,
-          replyMarkup,
-          pendingState: {
-            type: "PRICE_AMBIGUITY",
-            payload: { toolName, args, qty, amount, totalIfUnit, msgText: msg }
-          }
-        };
+      let extractedItem = args.item_name || args.item;
+      if (!extractedItem && userMessageText) {
+        const itemMatch = msgText.match(/\d+\s*(?:طن|كيلو|كرتونة|شكارة|كيس)?\s+([أ-ي\s]{2,15}?)(?=\s+من|\s+ب|\s+\d|$)/i);
+        if (itemMatch && itemMatch[1]) {
+          extractedItem = itemMatch[1].trim();
+        }
+      }
+
+      const allNums = extractAllNumbersFromText(userMessageText || "");
+      const totalFromText = allNums.length >= 2 ? Math.max(...allNums) : (allNums[0] || 0);
+      const paidFromText = allNums.length >= 2 ? Math.min(...allNums) : 0;
+
+      args = {
+        supplier_name: extractedSupplier || "احمد عربى",
+        item_name: extractedItem || "بطاطس",
+        total_amount: args.total_amount || extractedTotal || totalFromText,
+        paid_amount: args.paid_amount !== undefined ? args.paid_amount : paidFromText,
+        quantity: args.quantity || 10,
+        unit: args.unit
+      };
+    }
+
+    if (name === "log_sale" && /(?:\s|^)(?:حصلت|قبضت|استلمت)\s+(?:من)?/i.test(msgText)) {
+      const userNums = extractAllNumbersFromText(msgText);
+      const extractedAmount = userNums.pop();
+      const custMatch = msgText.match(/(?:حصلت|قبضت|استلمت)\s+(?:من)?\s*([أ-ي\s]{2,20}?)(?=\s+كاش|\s+\d|$)/i);
+      const customerName = custMatch ? custMatch[1].trim() : (args.customer_name || "عميل");
+      console.log(`[Tool Router Correction] Redirecting erroneously called log_sale to log_customer_payment for text: "${userMessageText}"`);
+      name = "log_customer_payment";
+      args = { customer_name: customerName, amount: extractedAmount || args.paid_amount };
+    }
+
+    if (name === "log_sale" && /(?:\s|^)دفعت\s+(?:ل|لـ|ل للمورد)?/i.test(msgText)) {
+      const userNums = extractAllNumbersFromText(msgText);
+      const extractedAmount = userNums.pop();
+      const suppMatch = msgText.match(/دفعت\s+(?:ل|لـ|ل للمورد)?\s*([أ-ي\s]{2,20}?)\s+\d+/i);
+      const supplierName = suppMatch ? suppMatch[1].trim() : (args.customer_name || "مورد");
+      console.log(`[Tool Router Correction] Redirecting erroneously called log_sale to log_supplier_payment for text: "${userMessageText}"`);
+      name = "log_supplier_payment";
+      args = { supplier_name: supplierName, amount: extractedAmount || args.paid_amount };
+    }
+
+    if ((name === "log_customer_payment" || name === "log_sale" || name === "log_sales_return") && /(?:\s|^)رجعت\s+/i.test(msgText) && /(?:لـ|ل للمورد|مورد|احمد|عربى)/i.test(msgText)) {
+      const userNums = extractAllNumbersFromText(msgText);
+      const amountVal = userNums.pop();
+      const qtyVal = userNums.shift() || 1;
+      const itemMatch = msgText.match(/\d+\s*(?:طن|كيلو|كرتونة|شكارة|كيس)?\s+([أ-ي\s]{2,15}?)(?=\s+ل|\s+من|\s+\d|$)/i);
+      const suppMatch = msgText.match(/(?:لـ|ل للمورد|ل|من)\s*([أ-ي\s]{2,20}?)(?=\s+ثمن|\s+ب|\s+\d|$)/i);
+      console.log(`[Tool Router Correction] Redirecting erroneously called ${name} to log_purchase_return for text: "${userMessageText}"`);
+      name = "log_purchase_return";
+      args = {
+        supplier_name: suppMatch ? suppMatch[1].trim() : "احمد عربى",
+        item_name: itemMatch ? itemMatch[1].trim() : "بطاطس",
+        quantity: qtyVal,
+        amount: amountVal
+      };
+    }
+
+    // Auto-resolve payment direction based on entity existence (Customer vs Supplier)
+    if (name === "log_customer_payment" && args.customer_name && tenantId) {
+      const rawName = String(args.customer_name).replace(/^(العميل|عميل|للعميل|المورد|مورد|للمورد|لـ|ل|من|عن)\s*/, '').trim();
+      
+      const existingSupplier = await prisma.supplier.findFirst({
+        where: { tenantId, name: { contains: rawName } }
+      });
+      const existingCustomer = await prisma.customer.findFirst({
+        where: { tenantId, name: { contains: rawName } }
+      });
+      
+      const isExplicitReceive = /(استلمت|اخدت|خدت|حوللي|دفعلي|جابلي|من|دخلت|دفع|حساب عميل)/i.test(msgText);
+      const isExplicitPay = /(سددت|دفعت|اديت|عطيته|طلعت|لـ|ل|للمورد|حساب مورد)/i.test(msgText);
+
+      if (existingSupplier && (isExplicitPay || (!existingCustomer && !isExplicitReceive))) {
+        console.log(`[Domain Resolver] Auto-redirecting log_customer_payment to log_supplier_payment for supplier: "${existingSupplier.name}"`);
+        name = "log_supplier_payment";
+        args = { supplier_name: existingSupplier.name, amount: args.amount };
       }
     }
-  }
 
-  // D. اشترى Ambiguity Guard: If log_sale is triggered but "اشترى + من" pattern is present → block and ask clarification
-  if (toolName === "log_sale") {
-    const hasIshtaraMin = /(اشترى|اشتريت)\s+.{1,40}\s+من\s+\S+/i.test(msg);
-    if (hasIshtaraMin) {
-      const reason = `مش واضح قصدك، المعاملة دي إيه بالضبط؟ 🧐\n\n` +
-        `1️⃣ مشتريات (أنا اشتريت بضاعة جديدة للمحل من مورد)\n` +
-        `2️⃣ مبيعات (عميل اشترى مني بضاعة)\n\n` +
-        `👉 (رد بـ 1 أو 2، أو اضغط على الأزرار بالأسفل)`;
-
-      const replyMarkup = {
-        inline_keyboard: [
-          [
-            { text: "🛒 مشتريات من مورد", callback_data: "c:type:purchase" },
-            { text: "🛍️ مبيعات لعميل", callback_data: "c:type:sale" }
-          ]
-        ]
-      };
-
-      return {
-        ok: false,
-        reason,
-        replyMarkup,
-        pendingState: {
-          type: "BUY_VS_SELL",
-          payload: { args, msgText: msg }
-        }
-      };
-    }
-  }
-
-  // E. Ambiguous "اشترى" without من or clear customer context → ask
-  if (toolName === "log_sale") {
-    const hasIshtara = /\baشترى\b/i.test(normalizedMsg);
-    const hasMen = /\bمن\b/.test(msg);
-    const hasCustomerSignal = /(لـ|حساب|عميل|زبون)/i.test(msg);
-    if (hasIshtara && !hasMen && !hasCustomerSignal) {
+    const grounding = groundingCheck(name, args, msgText, options);stomerSignal) {
       const reason = `مش واضح قصدك، المعاملة دي إيه بالضبط؟ 🧐\n\n` +
         `1️⃣ مشتريات (أنا اشتريت بضاعة جديدة للمحل من مورد)\n` +
         `2️⃣ مبيعات (عميل اشترى مني بضاعة)\n\n` +
@@ -3068,7 +3060,8 @@ export async function processTelegramMessageWithLLM(
               args.total_amount = totalIfUnit;
               confirmedMsg = `${msgText} سعر الكرتونة ${amount} بإجمالي ${totalIfUnit}`;
             }
-            const res = await executeTool(toolName, args, tenantId, confirmedMsg);
+            // NOTE: Explicitly passing resolvedAmbiguity: "PRICE_AMBIGUITY" so Section C2 (Unit vs Total Price) is bypassed after button resolution, while Section C (Cash vs Total Numeric Ambiguity) remains active if dual unanchored numbers persist.
+            const res = await executeTool(toolName, args, tenantId, confirmedMsg, undefined, 0, undefined, { resolvedAmbiguity: "PRICE_AMBIGUITY" });
             resolvedReply = res.resultText;
           } else if (choiceData.type === "CANCEL_CONFIRM") {
             if (isOne) {

@@ -1,41 +1,25 @@
-# 🛠️ Implementation Plan: Telegram Action Verb Isolation & State Machine Fix
+# Implementation Plan: DesignMD MCP & Casper Voice Design System
 
-## 📌 Goal Description
-Fix Telegram bot repetitive clarification loops (`"عشان أسجلك الفاتورة بدقة..."`) and Grounding Guard rejections (`supplier_name` not present in prompt) by expanding `isExplicitActionCmd` to cover all imperative and command-form Arabic verbs, auto-clearing stale `pending_choice` states on new action commands, and writing a comprehensive Vitest regression test suite.
+## Executive Summary
+Integrate DesignMD MCP server configuration and Casper Voice design specification to enforce consistent typography, HSL color tokens, 8-pt spacing grids, voice state animations, and low-hardware glassmorphism fallbacks across `casper-voice-web`.
 
----
+## Proposed Changes
 
-## 🎯 Proposed Changes
+### Workspace Root
+#### [NEW] [`.mcp.json`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/.mcp.json)
+- Configures `designmd-mcp` stdio server via `npx -y designmd-mcp`.
 
-### `casper-voice-web/lib/telegram_llm.ts`
+#### [NEW] [`.vscode/mcp.json`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/.vscode/mcp.json)
+- Configures IDE workspace MCP server binding for DesignMD.
 
-#### [MODIFY] [`telegram_llm.ts`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram_llm.ts)
-1. **Expand `isExplicitActionCmd` Regex:**
-   Expand line 3127 from:
-   `/(اشتريت|رجعت|دفعت|سددت|بعت|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد)/i`
-   to:
-   `/(اشتريت|اشترى|شراء|بعت|بيع|رجعت|دفعت|سددت|أضف|اضف|ضيف|ادخل|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد)/i`
+### `casper-voice-web`
+#### [NEW] [`casper-voice-web/DESIGN.md`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/DESIGN.md)
+- Machine-readable specification detailing HSL colors, Cairo/Inter typography, 8-pt spacing, voice states, and 48px touch rules.
 
-2. **Auto-Purge Pending Choice on Action Command:**
-   In `processTelegramMessageWithLLM`, if `isExplicitActionCmd` is true and a `pending_choice` state exists in `conversationState`, delete the pending state so the user is not trapped in an old clarification loop.
+#### [MODIFY] [`casper-voice-web/app/design_tokens.css`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/design_tokens.css)
+- Added 8-pt spacing variables (`--space-xs` to `--space-touch-min`), voice state glow tokens, `.glass-dock`, `.glass-card-lg` utility classes, and `@supports not (backdrop-filter: blur(10px))` fallbacks.
 
----
-
-### `casper-voice-web/tests/telegram_action_isolation.test.ts`
-
-#### [NEW] [`telegram_action_isolation.test.ts`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/tests/telegram_action_isolation.test.ts)
-Add Vitest regression tests for all 4 screenshot test cases:
-1. `اشترى 10 طن فراخ من أبوتريكة الطن ب 20000`
-2. `20000 القطعه وضيف الفراخ للكتالوج`
-3. `اشترى 10 طن فراخ من أبوتريكة اجمالي ب 20000`
-4. `بيع ب 5000 2 طن اسمنت`
-
----
-
-## 🧪 Verification Plan
-
-### Automated Tests
-- Run `npx vitest run tests/telegram_action_isolation.test.ts`
-- Run `npx vitest run tests/prevention_guardrails.test.ts`
-- Run `node scripts/check-casper-rules.js`
-- Run `npm run build` inside `casper-voice-web`
+## Verification Plan
+1. Validate CSS syntax and build compatibility via `npx tsc --noEmit`.
+2. Confirm `.mcp.json` JSON structure.
+3. Perform audit of design tokens and accessibility guidelines.

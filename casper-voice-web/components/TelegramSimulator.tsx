@@ -225,7 +225,7 @@ export default function TelegramSimulator() {
   }
 
   return (
-    <div className="flex flex-col h-[650px] max-w-2xl mx-auto bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl" dir="rtl">
+    <div className="flex flex-col h-[650px] max-w-2xl mx-auto glass-card-lg border border-slate-700/60 rounded-3xl overflow-hidden shadow-2xl" dir="rtl">
       {/* Telegram Top Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
         <div className="flex items-center gap-3">

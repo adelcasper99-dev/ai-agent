@@ -128,39 +128,26 @@ export function UsageIndicator() {
   ];
 
   return (
-    <div className="bento-card p-6 space-y-5">
+    <div className="glass-card-lg border border-slate-700/60 rounded-2xl p-6 space-y-5 shadow-xl">
 
       {/* ── Header ── */}
-      <div
-        className="flex items-center justify-between pb-4"
-        style={{ borderBottom: '1px solid var(--color-border-glass)' }}
-      >
+      <div className="flex items-center justify-between pb-4 border-b border-slate-700/50">
         <div className="flex items-center gap-3">
           {/* Left-side: title + connected pill */}
           <div>
-            <h3
-              className="text-base font-bold flex items-center gap-2 flex-wrap"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
+            <h3 className="text-base font-extrabold flex items-center gap-2 flex-wrap text-slate-100">
               الاستخدام الحالي
-              <span
-                className="text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1"
-                style={{
-                  background: 'rgba(21,132,110,0.14)',
-                  color: '#1fc9a4',
-                  border: '1px solid rgba(21,132,110,0.28)',
-                }}
-              >
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <CheckCircle2 size={10} />
                 متصل بـ AI Studio
               </span>
               {/* Live pulse */}
-              <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: '#1fc9a4' }}>
-                <span className="pulse-dot" style={{ background: '#1fc9a4' }} />
+              <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
                 مباشر
               </span>
             </h3>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-xs mt-0.5 text-slate-400">
               تحديث لحظي — ({data.dateStr})
             </p>
           </div>
@@ -170,18 +157,12 @@ export function UsageIndicator() {
         <button
           onClick={fetchUsage}
           disabled={refreshing}
-          className="w-9 h-9 flex items-center justify-center rounded-lg transition-all"
-          style={{
-            color: 'var(--color-text-muted)',
-            border: '1px solid var(--color-border-glass)',
-            background: 'transparent',
-          }}
+          className="w-9 h-9 flex items-center justify-center rounded-xl transition-all border border-slate-700/60 bg-slate-800/40 hover:bg-slate-700/50 text-slate-300"
           title="تحديث"
         >
           <RefreshCw
             size={14}
-            className={refreshing ? 'animate-spin' : ''}
-            style={{ color: refreshing ? 'var(--color-brand)' : 'var(--color-text-muted)' }}
+            className={refreshing ? 'animate-spin text-cyan-400' : 'text-slate-400'}
           />
         </button>
       </div>
@@ -189,7 +170,7 @@ export function UsageIndicator() {
       {/* ── Provider Cards Grid ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {providers.map((p) => (
-          <div key={p.data.name} className="nested-card p-4 space-y-3">
+          <div key={p.data.name} className="glass-card-lg p-4 space-y-3 rounded-xl border border-slate-700/50 hover:border-cyan-500/40 transition-all">
 
             {/* Badge + external link */}
             <div className="flex items-center justify-between">
@@ -203,8 +184,7 @@ export function UsageIndicator() {
                 href={p.data.dashboardUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors"
-                style={{ color: 'var(--color-text-muted)' }}
+                className="text-slate-400 hover:text-cyan-400 transition-colors"
                 title="فتح لوحة التحكم"
               >
                 <ExternalLink size={13} />
@@ -212,16 +192,13 @@ export function UsageIndicator() {
             </div>
 
             {/* Provider name */}
-            <h4
-              className="text-sm font-bold leading-snug"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
+            <h4 className="text-sm font-extrabold leading-snug text-slate-100">
               {p.data.name}
             </h4>
 
             {/* Stat row above bar */}
             <div className="flex justify-between items-center text-xs">
-              <span style={{ color: 'var(--color-text-muted)' }}>{p.statLabel}</span>
+              <span className="text-slate-400">{p.statLabel}</span>
               <span
                 className="font-bold tabular-nums"
                 style={{ color: p.accentColor }}
@@ -231,7 +208,7 @@ export function UsageIndicator() {
             </div>
 
             {/* Progress bar */}
-            <div className="progress-track">
+            <div className="progress-track bg-slate-800">
               <div
                 className="progress-fill"
                 style={{
@@ -242,7 +219,7 @@ export function UsageIndicator() {
             </div>
 
             {/* Sub-stat below bar */}
-            <p className="text-xs tabular-nums" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-xs tabular-nums text-slate-400">
               {p.sub}
             </p>
           </div>

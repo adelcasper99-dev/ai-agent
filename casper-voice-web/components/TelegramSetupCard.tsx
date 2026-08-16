@@ -47,7 +47,7 @@ export default function TelegramSetupCard({
   return (
     <div
       dir="rtl"
-      className="w-full max-w-4xl mx-auto rounded-2xl p-6 sm:p-7 space-y-6 bg-zinc-900/70 backdrop-blur-md border border-zinc-800 hover:border-zinc-700 transition-colors shadow-xl"
+      className="w-full max-w-4xl mx-auto rounded-2xl p-6 sm:p-7 space-y-6 glass-card-lg border border-slate-700/60 shadow-2xl transition-all duration-200"
     >
       {/* ── 1. Header Area ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-5">

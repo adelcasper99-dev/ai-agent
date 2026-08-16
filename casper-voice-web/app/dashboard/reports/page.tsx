@@ -27,7 +27,7 @@ function Tabs({ activeTab, onChange, children }: any) {
 }
 function TabsList({ children }: any) {
   return (
-    <div className="bg-zinc-900 border border-white/10 inline-flex p-1 rounded-xl shadow-lg">
+    <div className="glass-dock border border-slate-700/60 inline-flex p-1.5 rounded-2xl shadow-xl">
       {children}
     </div>
   );
@@ -52,7 +52,7 @@ function TabsContent({ active, children }: any) {
 // ── KPI Card Component ──
 function KPICard({ title, value, icon, trend, color, accentColor, negative }: any) {
   return (
-    <div className="bg-zinc-900/40 border border-white/5 rounded-2xl p-5 relative overflow-hidden backdrop-blur-xl group hover:border-white/10 transition-colors shadow-2xl">
+    <div className="glass-card-lg border border-slate-700/60 rounded-2xl p-5 relative overflow-hidden group hover:border-cyan-500/40 transition-all duration-200 hover:scale-[1.01] shadow-xl">
       <div 
         className="absolute top-0 right-0 w-24 h-24 rounded-full blur-[60px] -mr-10 -mt-10 opacity-30 group-hover:opacity-50 transition-opacity"
         style={{ background: accentColor }}
@@ -395,13 +395,13 @@ export default function ReportsPage() {
   return (
     <div 
       className="-m-8 p-8 min-h-[calc(100vh-var(--topbar-h))]" 
-      style={{ background: "#050508", color: "#e4e4e7" }}
+      style={{ background: "transparent", color: "var(--foreground)" }}
       dir="rtl"
     >
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* ── Page Header & Filters ── */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-zinc-900/50 p-4 rounded-2xl border border-white/5 backdrop-blur-md">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 glass-card-lg p-6 rounded-2xl border border-slate-700/60 shadow-xl">
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
               <BarChart2 className="text-cyan-400" />

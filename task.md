@@ -1,5 +1,7 @@
-# 📋 Task Execution Checklist
+# Task List: DesignMD MCP & Casper Voice Design System
 
-- [x] **Expand `isExplicitActionCmd` regex:** Updated `telegram_llm.ts` to include imperative verbs (`اشترى`, `شراء`, `بيع`, `أضف`, `اضف`, `ضيف`, `ادخل`).
-- [x] **Auto-purge stale `pending_choice` state:** Added database state deletion when an explicit action command is received.
-- [x] **Create Vitest regression test suite:** Added `telegram_action_isolation.test.ts` to verify all imperative action keywords.
+- [x] Configure `.mcp.json` in workspace root (`designmd-mcp`).
+- [x] Configure `.vscode/mcp.json` for IDE integration.
+- [x] Generate `casper-voice-web/DESIGN.md` design system spec.
+- [x] Update `casper-voice-web/app/design_tokens.css` with 8-pt spacing, voice state animation glow tokens, and low-hardware glass fallbacks.
+- [x] Pass TypeScript & CSS validation checks.

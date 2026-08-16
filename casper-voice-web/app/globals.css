@@ -5,28 +5,29 @@
    LAYER 1 — CASPER POS DESKTOP (PREMIUM VANILLA)
    ============================================================ */
 :root {
-  /* Background: Deep Cosmos Dark */
-  --background: #050508;
-  --foreground: #f4f4f5;
+  /* Background: Rich Slate Charcoal Obsidian System */
+  --background: #0f172a;
+  --background-gradient: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 60%, #0b0f19 100%);
+  --foreground: #f8fafc;
 
   /* Card/panel surfaces: glass opacity */
-  --card: rgba(24, 24, 27, 0.4);
-  --card-foreground: #ffffff;
+  --card: rgba(30, 41, 59, 0.7);
+  --card-foreground: #f8fafc;
 
   /* Primary Action (Cyber Cyan) */
   --primary: #06b6d4;
   --primary-foreground: #000000;
 
   /* Secondary */
-  --secondary: rgba(255, 255, 255, 0.05);
-  --secondary-foreground: #f4f4f5;
+  --secondary: rgba(255, 255, 255, 0.08);
+  --secondary-foreground: #f8fafc;
 
   /* Muted */
-  --muted: rgba(255, 255, 255, 0.05);
-  --muted-foreground: #a1a1aa; 
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: #94a3b8; 
 
   /* Warning / Caution (Amber) */
-  --accent: #fbbf24;
+  --accent: #f59e0b;
   --accent-foreground: #000000;
 
   /* Danger (Rose) */
@@ -34,14 +35,14 @@
   --destructive-foreground: #ffffff;
 
   /* Borders / Details */
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(24, 24, 27, 0.5);
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(30, 41, 59, 0.75);
   --ring: #06b6d4;
 
   /* Sidebar */
-  --sidebar-bg: #09090d;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-text: #e4e4e7;
+  --sidebar-bg: #0b0f19;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-text: #f1f5f9;
 
   /* Topbar height & layout */
   --topbar-h: 88px;
@@ -75,7 +76,8 @@ html {
 
 body {
   font-family: var(--pr-font-primary);
-  background-color: var(--background);
+  background: var(--background-gradient, var(--background));
+  background-attachment: fixed;
   color: var(--foreground);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;

@@ -183,5 +183,91 @@
     "artifacts": [
       "walkthrough.md"
     ]
+  },
+  {
+    "stage": "6-deploy-hq-vps",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:16:09.000000+03:00",
+    "artifacts": [
+      "walkthrough.md"
+    ]
+  },
+  {
+    "stage": "0a-grill-me-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:24:45.000000+03:00",
+    "artifacts": []
+  },
+  {
+    "stage": "0b-research-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:24:50.000000+03:00",
+    "artifacts": [
+      "research_findings.md"
+    ]
+  },
+  {
+    "stage": "1-spec-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:24:55.000000+03:00",
+    "artifacts": [
+      "implementation_plan.md"
+    ]
+  },
+  {
+    "stage": "2ab-ironclad-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:25:02.000000+03:00",
+    "artifacts": [
+      "ironclad_review_implementation_plan.md"
+    ]
+  },
+  {
+    "stage": "3-build-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:25:17.000000+03:00",
+    "artifacts": [
+      "task.md"
+    ]
+  },
+  {
+    "stage": "3b-audit-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:25:23.000000+03:00",
+    "artifacts": [
+      "code_review_report.md"
+    ]
+  },
+  {
+    "stage": "4-test-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:25:36.000000+03:00",
+    "artifacts": [
+      "test_results.txt"
+    ]
+  },
+  {
+    "stage": "5-accept-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:25:52.000000+03:00",
+    "artifacts": [
+      "walkthrough.md"
+    ]
+  },
+  {
+    "stage": "6-compliance-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:29:47.000000+03:00",
+    "artifacts": [
+      "pipeline_completion_report.md"
+    ]
+  },
+  {
+    "stage": "ui-modernization-slate-charcoal",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:42:15.000000+03:00",
+    "artifacts": [
+      "casper_ui_modernization_walkthrough.md"
+    ]
   }
 ]

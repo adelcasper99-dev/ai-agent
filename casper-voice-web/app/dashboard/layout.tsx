@@ -106,7 +106,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer border-0 transition-all duration-200 whitespace-nowrap";
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "var(--background)" }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: "var(--background-gradient, var(--background))" }}>
       {/* ════════════════════════════════════════════
           ICON RAIL — Solid Sidebar (Right edge in RTL)
       ════════════════════════════════════════════ */}
@@ -114,7 +114,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         className="flex-shrink-0 flex flex-col z-40 overflow-y-auto"
         style={{
           width: "var(--sidebar-w)",
-          background: "var(--sidebar-bg)",
+          background: "rgba(11, 15, 25, 0.85)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
           borderLeft: "1px solid var(--sidebar-border)",
           color: "var(--sidebar-text)"
         }}
@@ -126,7 +128,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         >
           <div className="flex items-center gap-3">
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-lg"
+              className="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-lg shadow-md"
               style={{ background: "#ffffff", color: "#000000", fontFamily: "var(--pr-font-primary)" }}
             >
               C
@@ -143,13 +145,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                   isActive 
-                    ? "bg-cyan-500 text-black font-extrabold shadow-[0_0_15px_rgba(6,182,212,0.4)]" 
-                    : "text-zinc-400 hover:text-white hover:bg-white/5 font-semibold"
+                    ? "bg-cyan-500 text-black font-extrabold shadow-[0_4px_20px_rgba(6,182,212,0.35)] scale-[1.02]" 
+                    : "text-slate-400 hover:text-white hover:bg-white/5 font-semibold"
                 }`}
               >
-                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} className={isActive ? "text-black" : "text-zinc-400"} />
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} className={isActive ? "text-black" : "text-slate-400"} />
                 <span className="text-sm tracking-wide">{label}</span>
               </Link>
             );
@@ -177,7 +179,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           className="flex-shrink-0 flex items-center justify-between px-8 z-30"
           style={{
             height: "var(--topbar-h)",
-            background: "var(--background)",
+            background: "rgba(15, 23, 42, 0.55)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
             borderBottom: "1px solid var(--border)",
           }}
         >
@@ -191,7 +195,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* Test voice assistant — Solid cyan button */}
             <button
               onClick={() => setIsVoiceOpen(true)}
-              className={btnBase + " shadow-sm"}
+              className={btnBase + " shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all"}
               style={{
                 background: "var(--primary)",
                 color: "var(--primary-foreground)",
@@ -205,21 +209,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* Live diagnostics */}
             <button
               onClick={runDiagnostics}
-              className={btnBase + " solid-card hover:bg-slate-50"}
+              className={btnBase + " solid-card hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98] transition-all"}
               style={{
                 color: "var(--foreground)",
                 padding: "10px 20px",
                 border: "1px solid var(--border)",
               }}
             >
-              <Stethoscope size={16} className="text-blue-500" />
+              <Stethoscope size={16} className="text-cyan-400" />
               <span className="hidden sm:inline">تشخيص الصوت اللحظي</span>
             </button>
           </div>
         </header>
 
         {/* SCROLLABLE BODY */}
-        <main className="flex-1 overflow-y-auto p-8" style={{ background: "var(--background)" }}>
+        <main className="flex-1 overflow-y-auto p-8" style={{ background: "transparent" }}>
           <div className="casper-fade-up max-w-[1400px] mx-auto">
             {children}
           </div>

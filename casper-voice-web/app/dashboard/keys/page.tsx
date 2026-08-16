@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Key, Eye, EyeOff, Copy, Check, Activity, Radio, Sparkles, CheckCircle2 } from "lucide-react";
 import { UsageIndicator } from "@/components/UsageIndicator";
 
 const FIELDS = [
@@ -94,9 +95,9 @@ export default function KeysPage() {
   if (loading) {
     return (
       <div className="space-y-4 max-w-4xl">
-        <div className="bento-card p-6 space-y-4">
-          <div className="shimmer h-4 w-48 rounded-full" style={{ background: "#e2e8f0" }} />
-          {[1,2,3].map(i => <div key={i} className="shimmer h-10 w-full rounded-xl" style={{ background: "#f1f5f9" }} />)}
+        <div className="glass-card-lg p-6 space-y-4 animate-pulse">
+          <div className="h-5 w-48 rounded-full bg-slate-700/50" />
+          {[1,2,3].map(i => <div key={i} className="h-12 w-full rounded-xl bg-slate-700/30" />)}
         </div>
       </div>
     );
@@ -104,29 +105,13 @@ export default function KeysPage() {
 
   const safeValues = values || {};
 
-  const actionBtn = (variant: "default" | "success" | "brand") => ({
-    default: {
-      background: "#fff",
-      color: "var(--color-text-secondary)",
-      border: "1px solid var(--color-border-subtle)",
-    },
-    success: {
-      background: "#ecfdf5",
-      color: "#059669",
-      border: "1px solid #a7f3d0",
-    },
-    brand: {
-      background: "#eff6ff",
-      color: "var(--color-brand)",
-      border: "1px solid #bfdbfe",
-    },
-  }[variant]);
-
   return (
     <div className="space-y-6 max-w-4xl pb-10" dir="rtl">
-      <div className="flex items-center justify-between bg-zinc-900/50 p-6 rounded-3xl border border-white/5 backdrop-blur-md shadow-2xl mb-6">
-        <h2 className="text-2xl font-extrabold text-white flex items-center gap-2">
-          <span className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">🔑</span>
+      <div className="flex items-center justify-between glass-card-lg p-6 rounded-2xl border border-slate-700/60 shadow-xl mb-6">
+        <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-3">
+          <span className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <Key className="w-5 h-5" />
+          </span>
           المفاتيح والاستخدام
         </h2>
       </div>
@@ -135,38 +120,42 @@ export default function KeysPage() {
 
       {/* ── AI API Keys ── */}
       <div className="space-y-4">
-        <h3 className="font-bold text-lg text-white flex items-center gap-2">
-          🔑 مفاتيح الذكاء الاصطناعي (AI API Keys)
+        <h3 className="font-extrabold text-lg text-slate-100 flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-cyan-400" />
+          مفاتيح الذكاء الاصطناعي (AI API Keys)
         </h3>
 
         {FIELDS.filter(f => f.group !== "LIVEKIT").map((f) => (
-          <div key={f.key} className="bg-zinc-900/40 backdrop-blur-md border border-white/10 rounded-3xl p-5 space-y-3 shadow-2xl">
+          <div key={f.key} className="glass-card-lg border border-slate-700/60 rounded-2xl p-5 space-y-3 shadow-xl">
             <div className="flex justify-between items-center">
-              <label className="block text-sm font-bold text-zinc-200">
+              <label className="block text-sm font-bold text-slate-200">
                 {f.label}
               </label>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => toggleShowKey(f.key)}
-                  className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10"
+                  className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 flex items-center gap-1.5"
                 >
-                  {showKey[f.key] ? "🙈 إخفاء" : "👁️ إظهار"}
+                  {showKey[f.key] ? <EyeOff size={14} /> : <Eye size={14} />}
+                  <span>{showKey[f.key] ? "إخفاء" : "إظهار"}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => copyToClipboard(f.key, safeValues[f.key] || "")}
-                  className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white"
+                  className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white flex items-center gap-1.5"
                 >
-                  {copiedKey === f.key ? "تم النسخ ✓" : "📋 نسخ"}
+                  {copiedKey === f.key ? <Check size={14} /> : <Copy size={14} />}
+                  <span>{copiedKey === f.key ? "تم النسخ ✓" : "نسخ"}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => verifyKey(f.group)}
                   disabled={checking[f.group]}
-                  className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500 hover:text-black disabled:opacity-50"
+                  className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500 hover:text-black disabled:opacity-50 flex items-center gap-1.5"
                 >
-                  {checking[f.group] ? "جاري الفحص..." : "فحص المفتاح"}
+                  <Activity size={14} className={checking[f.group] ? "animate-spin" : ""} />
+                  <span>{checking[f.group] ? "جاري الفحص..." : "فحص المفتاح"}</span>
                 </button>
               </div>
             </div>
@@ -174,11 +163,11 @@ export default function KeysPage() {
               type={showKey[f.key] ? "text" : "password"}
               value={safeValues[f.key] || ""}
               onChange={(e) => setValues({ ...safeValues, [f.key]: e.target.value })}
-              className="w-full h-12 px-4 bg-zinc-900/50 border border-white/10 text-white font-mono text-sm rounded-2xl outline-none focus:border-white transition-all"
+              className="glass-input font-mono text-sm"
             />
             {checkStatus[f.group] && (
               <div
-                className={`p-3 rounded-2xl text-xs font-bold flex items-center justify-between border ${
+                className={`p-3 rounded-xl text-xs font-bold flex items-center justify-between border ${
                   checkStatus[f.group].valid
                     ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                     : "bg-rose-500/10 border-rose-500/30 text-rose-400"
@@ -194,23 +183,25 @@ export default function KeysPage() {
 
       {/* ── LiveKit Keys ── */}
       <div className="space-y-4 pt-4">
-        <div className="flex justify-between items-center border-t border-white/10 pt-6">
-          <h3 className="font-bold text-lg text-white flex items-center gap-2">
-            📡 مفاتيح خادم LiveKit (LiveKit Server Keys)
+        <div className="flex justify-between items-center border-t border-slate-700/60 pt-6">
+          <h3 className="font-extrabold text-lg text-slate-100 flex items-center gap-2">
+            <Radio className="w-5 h-5 text-cyan-400" />
+            مفاتيح خادم LiveKit (LiveKit Server Keys)
           </h3>
           <button
             type="button"
             onClick={() => verifyKey("LIVEKIT")}
             disabled={checking["LIVEKIT"]}
-            className="text-xs px-4 py-2 rounded-xl font-bold transition-all bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500 hover:text-black disabled:opacity-50"
+            className="text-xs px-4 py-2 rounded-xl font-bold transition-all bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500 hover:text-black disabled:opacity-50 flex items-center gap-1.5"
           >
-            {checking["LIVEKIT"] ? "جاري فحص اتصال LiveKit..." : "فحص جودة الاتصال بـ LiveKit"}
+            <Activity size={14} className={checking["LIVEKIT"] ? "animate-spin" : ""} />
+            <span>{checking["LIVEKIT"] ? "جاري فحص اتصال LiveKit..." : "فحص جودة الاتصال بـ LiveKit"}</span>
           </button>
         </div>
 
         {checkStatus["LIVEKIT"] && (
           <div
-            className={`p-3 rounded-2xl text-sm font-bold border ${
+            className={`p-3.5 rounded-xl text-xs font-bold border ${
               checkStatus["LIVEKIT"].valid
                 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                 : "bg-rose-500/10 border-rose-500/30 text-rose-400"
@@ -221,9 +212,9 @@ export default function KeysPage() {
         )}
 
         {FIELDS.filter(f => f.group === "LIVEKIT").map((f) => (
-          <div key={f.key} className="bg-zinc-900/40 backdrop-blur-md border border-white/10 rounded-3xl p-5 space-y-3 shadow-2xl">
+          <div key={f.key} className="glass-card-lg border border-slate-700/60 rounded-2xl p-5 space-y-3 shadow-xl">
             <div className="flex justify-between items-center">
-              <label className="block text-sm font-bold text-zinc-200">
+              <label className="block text-sm font-bold text-slate-200">
                 {f.label}
               </label>
               <div className="flex items-center gap-2">
@@ -231,17 +222,19 @@ export default function KeysPage() {
                   <button
                     type="button"
                     onClick={() => toggleShowKey(f.key)}
-                    className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10"
+                    className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 flex items-center gap-1.5"
                   >
-                    {showKey[f.key] ? "🙈 إخفاء" : "👁️ إظهار"}
+                    {showKey[f.key] ? <EyeOff size={14} /> : <Eye size={14} />}
+                    <span>{showKey[f.key] ? "إخفاء" : "إظهار"}</span>
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={() => copyToClipboard(f.key, safeValues[f.key] || "")}
-                  className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white"
+                  className="text-xs px-3 py-1.5 rounded-xl font-bold transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white flex items-center gap-1.5"
                 >
-                  {copiedKey === f.key ? "تم النسخ ✓" : "📋 نسخ"}
+                  {copiedKey === f.key ? <Check size={14} /> : <Copy size={14} />}
+                  <span>{copiedKey === f.key ? "تم النسخ ✓" : "نسخ"}</span>
                 </button>
               </div>
             </div>
@@ -249,7 +242,7 @@ export default function KeysPage() {
               type={f.key.includes("SECRET") && !showKey[f.key] ? "password" : "text"}
               value={safeValues[f.key] || ""}
               onChange={(e) => setValues({ ...safeValues, [f.key]: e.target.value })}
-              className="w-full h-12 px-4 bg-zinc-900/50 border border-white/10 text-white font-mono text-sm rounded-2xl outline-none focus:border-white transition-all"
+              className="glass-input font-mono text-sm"
             />
           </div>
         ))}
@@ -259,12 +252,13 @@ export default function KeysPage() {
       <button
         onClick={save}
         disabled={saving}
-        className="w-full h-14 rounded-2xl font-black transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(245,158,11,0.4)] text-black bg-amber-500 hover:bg-amber-400 text-sm"
+        className="w-full h-12 rounded-xl font-extrabold transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(6,182,212,0.4)] text-black bg-cyan-500 hover:bg-cyan-400 text-sm hover:scale-[1.01] active:scale-[0.99]"
       >
         {saving ? "جاري حفظ المفاتيح..." : "حفظ المفاتيح والتغييرات 🔑"}
       </button>
       {saved && (
-        <p className="text-center font-bold text-sm text-emerald-400 animate-pulse">
+        <p className="text-center font-bold text-sm text-emerald-400 flex items-center justify-center gap-1.5">
+          <CheckCircle2 className="w-4 h-4" />
           تم حفظ المفاتيح بنجاح ✓
         </p>
       )}

@@ -465,7 +465,13 @@
   "463": "test_live_interaction_demo.ts",
   "464": "test_real_user_slang_scenarios.ts",
   "465": "🛡️ Pipeline Stage 6 — Compliance Verification Report",
+  "466": "designmd",
   "467": "telegram_action_isolation.test.ts",
+  "468": "test_real_user_slang_scenarios.ts",
+  "469": "resolveLiveTemplateExtensions",
   "470": "resolveLiveTemplateExtensions",
-  "471": "vps_wipe_tenants.py"
+  "471": "vps_wipe_tenants.py",
+  "472": "selectAvailablePendingEvent",
+  "473": "test_advanced_edge_cases.ts",
+  "474": "test_live_interaction_demo.ts"
 }

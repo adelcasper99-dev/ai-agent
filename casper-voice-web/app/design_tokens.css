@@ -1,25 +1,44 @@
 /* app/design_tokens.css - Casper POS Royal Obsidian Blue Design Tokens */
 :root {
-  /* HSL Color Primitives */
-  --hsl-bg-base: 240 10% 4%;         /* #09090b */
-  --hsl-bg-card: 240 6% 9%;          /* #161618 */
+  /* HSL Color Primitives - Slate Charcoal Obsidian System */
+  --hsl-bg-base: 222 47% 7%;         /* #0b0f19 rich deep slate */
+  --hsl-bg-card: 217 33% 12%;        /* #141c2e charcoal slate */
   --hsl-brand-blue: 217 91% 60%;     /* #2563eb */
   --hsl-brand-emerald: 158 64% 52%;  /* #10b981 */
   --hsl-brand-amber: 38 92% 50%;     /* #f59e0b */
-  --hsl-text-primary: 0 0% 98%;      /* #fafafa */
-  --hsl-text-muted: 240 5% 65%;      /* #a1a1aa */
+  --hsl-text-primary: 210 40% 98%;    /* #f8fafc */
+  --hsl-text-muted: 215 20% 65%;     /* #94a3b8 */
 
   /* Semantic Design Tokens */
-  --color-bg-main: hsl(var(--hsl-bg-base));
-  --color-card-bg: rgba(22, 22, 24, 0.85);
-  --color-card-border: #27272a;      /* zinc-800 */
-  --color-card-border-hover: #3f3f46;/* zinc-700 */
+  --color-bg-main: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 55%, #080c14 100%);
+  --color-card-bg: rgba(30, 41, 59, 0.65);
+  --color-card-border: rgba(255, 255, 255, 0.12);
+  --color-card-border-hover: rgba(59, 130, 246, 0.45);
   --color-brand-accent: #2563eb;
   --color-brand-accent-hover: #1d4ed8;
 
   /* Typography Scale */
   --font-arabic: 'Cairo', 'Inter', system-ui, sans-serif;
   --font-code: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Voice State Glow Tokens */
+  --voice-glow-listening: rgba(16, 185, 129, 0.4);
+  --voice-glow-processing: rgba(37, 99, 235, 0.5);
+  --voice-glow-speaking: rgba(245, 158, 11, 0.4);
+
+  /* 8-pt Modular Spacing Scale */
+  --space-xs: 0.25rem;        /* 4px */
+  --space-sm: 0.5rem;         /* 8px */
+  --space-md: 1rem;           /* 16px */
+  --space-lg: 1.5rem;         /* 24px */
+  --space-xl: 2rem;           /* 32px */
+  --space-touch-min: 3rem;    /* 48px minimum touch bound */
+
+  /* Glassmorphism Blur Presets */
+  --glass-blur-sm: blur(8px);
+  --glass-blur-md: blur(16px);
+  --glass-blur-lg: blur(24px);
+  --glass-border-alpha: rgba(255, 255, 255, 0.08);
 }
 
 .glass-bento-card {
@@ -31,5 +50,72 @@
 
 .glass-bento-card:hover {
   border-color: var(--color-card-border-hover);
+}
+
+/* Voice State Utility Classes */
+.voice-state-listening {
+  border-color: hsl(var(--hsl-brand-emerald)) !important;
+  box-shadow: 0 0 20px var(--voice-glow-listening);
+  animation: voice-pulse-listening 1.5s infinite ease-in-out;
+}
+
+.voice-state-processing {
+  border-color: hsl(var(--hsl-brand-blue)) !important;
+  box-shadow: 0 0 25px var(--voice-glow-processing);
+  animation: voice-pulse-processing 1.2s infinite ease-in-out;
+}
+
+.voice-state-speaking {
+  border-color: hsl(var(--hsl-brand-amber)) !important;
+  box-shadow: 0 0 20px var(--voice-glow-speaking);
+}
+
+@keyframes voice-pulse-listening {
+  0%, 100% { box-shadow: 0 0 15px var(--voice-glow-listening); }
+  50% { box-shadow: 0 0 30px var(--voice-glow-listening); }
+}
+
+@keyframes voice-pulse-processing {
+  0%, 100% { box-shadow: 0 0 15px var(--voice-glow-processing); }
+  50% { box-shadow: 0 0 35px var(--voice-glow-processing); }
+}
+
+/* Glassmorphism Utility Presets - Google/Apple Slate System */
+.glass-dock {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  backdrop-filter: var(--glass-blur-md);
+  -webkit-backdrop-filter: var(--glass-blur-md);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-dock:hover {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.4);
+}
+
+.glass-card-lg {
+  background: rgba(30, 41, 59, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.5rem;
+  backdrop-filter: var(--glass-blur-md);
+  -webkit-backdrop-filter: var(--glass-blur-md);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-card-lg:hover {
+  transform: translateY(-2px);
+  border-color: rgba(59, 130, 246, 0.45);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.5);
+}
+
+/* Low-Hardware POS Terminal Fallback */
+@supports not (backdrop-filter: blur(10px)) {
+  .glass-dock,
+  .glass-card-lg,
+  .glass-bento-card {
+    background: rgba(15, 23, 42, 0.96) !important;
+  }
 }
 

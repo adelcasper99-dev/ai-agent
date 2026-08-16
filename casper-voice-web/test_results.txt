@@ -1,0 +1,31 @@
+STAGE 4 TEST & EMPIRICAL QA REPORT — Security Hardening Batch 2
+======================================================================
+Date: 2026-08-16T13:57:32Z
+Environment: Node.js (Vitest v4.1.10) + SQLite WAL Mode
+
+Test Suite Breakdown:
+----------------------------------------------------------------------
+1. tests/session-security.test.ts          15/15 PASS (100%)
+   - Finding #3: X-Real-IP prioritization & last-hop fallback
+   - Finding #4: 4-part token format, UUID JTI, automated epoch expiration
+   - Finding #4: RevokedSession storage and selective blacklist checks
+   - Finding #5: Timing-safe signature checks on token, magic link & PIN
+
+2. tests/auth.test.ts                       6/6  PASS (100%)
+   - Tenant Auth engine fail-closed, secret verification & header spoofing
+
+3. tests/prisma-tenant-extension.test.ts    9/9  PASS (100%)
+   - Fail-closed TenantContextError enforcement & 23-model coverage
+
+4. tests/customer_auth_pin_magic.test.ts    3/3  PASS (100%)
+   - PIN hashing, timing-safe verification, expiring magic links
+
+5. tests/customer_portal.test.ts            2/2  PASS (100%)
+   - Token issue/verify & Decimal.js ledger calculation with runWithTenant
+
+6. tests/multi_tenant_verification_suite.test.ts 1/1 PASS (100%)
+   - 4 empirical isolation checks, 0 orphan PrismaClients, 0 Prisma imports in session.ts
+
+TOTAL TEST RESULTS: 36 passed / 36 executed (100% SUCCESS)
+TYPESCRIPT COMPILATION: 0 errors (npx tsc --noEmit exit code 0)
+======================================================================

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import { prisma } from "@/lib/prisma";
+import { runWithTenant } from "@/lib/prisma-tenant-extension";
 import { signCustomerSession, verifyCustomerSession } from "@/lib/session";
 import Decimal from "decimal.js";
 
@@ -16,61 +17,65 @@ describe("Customer Portal & Auth Suite", () => {
       create: { id: testTenantId, name: "شركة تجريبية للبوابة" },
     });
 
-    // 2. Clean up old test data
-    await (prisma as any).customerLedgerEntry.deleteMany({ where: { tenantId: testTenantId } });
-    await (prisma as any).appointment.deleteMany({ where: { tenantId: testTenantId } });
-    await (prisma as any).sale.deleteMany({ where: { tenantId: testTenantId } });
-    await (prisma as any).customer.deleteMany({ where: { tenantId: testTenantId } });
+    await runWithTenant(testTenantId, async () => {
+      // 2. Clean up old test data
+      await (prisma as any).customerLedgerEntry.deleteMany({ where: { tenantId: testTenantId } });
+      await (prisma as any).appointment.deleteMany({ where: { tenantId: testTenantId } });
+      await (prisma as any).sale.deleteMany({ where: { tenantId: testTenantId } });
+      await (prisma as any).customer.deleteMany({ where: { tenantId: testTenantId } });
 
-    // 3. Seed Customer
-    const cust = await (prisma as any).customer.create({
-      data: {
-        name: "عميل تجريبي للبوابة",
-        phone: testPhone,
-        tenantId: testTenantId,
-      },
-    });
-    customerId = cust.id;
+      // 3. Seed Customer
+      const cust = await (prisma as any).customer.create({
+        data: {
+          name: "عميل تجريبي للبوابة",
+          phone: testPhone,
+          tenantId: testTenantId,
+        },
+      });
+      customerId = cust.id;
 
-    // 4. Seed Appointments
-    await (prisma as any).appointment.create({
-      data: {
-        customerId,
-        tenantId: testTenantId,
-        customerName: "عميل تجريبي للبوابة",
-        date: "2026-08-20",
-        time: "03:00 PM",
-        status: "مؤكد",
-      },
-    });
+      // 4. Seed Appointments
+      await (prisma as any).appointment.create({
+        data: {
+          customerId,
+          tenantId: testTenantId,
+          customerName: "عميل تجريبي للبوابة",
+          date: "2026-08-20",
+          time: "03:00 PM",
+          status: "مؤكد",
+        },
+      });
 
-    // 5. Seed Ledger Entries
-    await (prisma as any).customerLedgerEntry.create({
-      data: {
-        customerId,
-        tenantId: testTenantId,
-        entryType: "SALE_DEBIT",
-        amount: "1500.00",
-        description: "فاتورة مشتريات بضاعة",
-      },
-    });
+      // 5. Seed Ledger Entries
+      await (prisma as any).customerLedgerEntry.create({
+        data: {
+          customerId,
+          tenantId: testTenantId,
+          entryType: "SALE_DEBIT",
+          amount: "1500.00",
+          description: "فاتورة مشتريات بضاعة",
+        },
+      });
 
-    await (prisma as any).customerLedgerEntry.create({
-      data: {
-        customerId,
-        tenantId: testTenantId,
-        entryType: "PAYMENT_CREDIT",
-        amount: "500.00",
-        description: "سداد دفعة نقدية",
-      },
+      await (prisma as any).customerLedgerEntry.create({
+        data: {
+          customerId,
+          tenantId: testTenantId,
+          entryType: "PAYMENT_CREDIT",
+          amount: "500.00",
+          description: "سداد دفعة نقدية",
+        },
+      });
     });
   });
 
   afterAll(async () => {
-    await (prisma as any).customerLedgerEntry.deleteMany({ where: { tenantId: testTenantId } });
-    await (prisma as any).appointment.deleteMany({ where: { tenantId: testTenantId } });
-    await (prisma as any).sale.deleteMany({ where: { tenantId: testTenantId } });
-    await (prisma as any).customer.deleteMany({ where: { tenantId: testTenantId } });
+    await runWithTenant(testTenantId, async () => {
+      await (prisma as any).customerLedgerEntry.deleteMany({ where: { tenantId: testTenantId } });
+      await (prisma as any).appointment.deleteMany({ where: { tenantId: testTenantId } });
+      await (prisma as any).sale.deleteMany({ where: { tenantId: testTenantId } });
+      await (prisma as any).customer.deleteMany({ where: { tenantId: testTenantId } });
+    });
     await (prisma as any).tenant.deleteMany({ where: { id: testTenantId } });
   });
 
@@ -86,12 +91,14 @@ describe("Customer Portal & Auth Suite", () => {
   });
 
   it("2. Accurately calculates customer balance with Decimal.js (Debit - Credit = 1000.00)", async () => {
-    const customer = await (prisma as any).customer.findUnique({
-      where: { id: customerId },
-      include: {
-        appointments: true,
-        ledgers: true,
-      },
+    const customer = await runWithTenant(testTenantId, async () => {
+      return (prisma as any).customer.findUnique({
+        where: { id: customerId },
+        include: {
+          appointments: true,
+          ledgers: true,
+        },
+      });
     });
 
     expect(customer).not.toBeNull();

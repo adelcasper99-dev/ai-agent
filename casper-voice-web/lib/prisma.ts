@@ -22,3 +22,18 @@ function buildPrisma() {
 export const prisma = globalForPrisma.prisma ?? buildPrisma();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma as any;
+
+/**
+ * System-level Prisma client with NO tenant filter extension.
+ *
+ * ⚠️  INTERNAL USE ONLY. Only use this in:
+ *   - /api/admin/* Super Admin routes that must see all tenants
+ *   - scripts/cron-*.ts scheduled jobs
+ *   - Internal health-check aggregates
+ *
+ * NEVER pass `prismaSystem` to tenant-facing API handlers.
+ * Use `prisma` (with tenant extension) for all user-facing routes.
+ */
+export const prismaSystem = new PrismaClient({
+  log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+});

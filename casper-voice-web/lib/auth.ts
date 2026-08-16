@@ -1,21 +1,22 @@
 import { NextRequest } from "next/server";
 import crypto from "crypto";
 import { 
-  signTenantSession, verifyTenantSession, 
-  signAdminSession, verifyAdminSession,
-  signCustomerSession, verifyCustomerSession,
+  signTenantSession, verifyTenantSession, verifyTenantSessionRaw,
+  signAdminSession, verifyAdminSession, verifyAdminSessionRaw,
+  signCustomerSession, verifyCustomerSession, verifyCustomerSessionRaw,
+  extractSessionDetails,
   hashPin, verifyPin,
   signMagicLink, verifyMagicLink
 } from "./session";
+
 export { 
-  signTenantSession, verifyTenantSession, 
-  signAdminSession, verifyAdminSession,
-  signCustomerSession, verifyCustomerSession,
+  signTenantSession, verifyTenantSession, verifyTenantSessionRaw,
+  signAdminSession, verifyAdminSession, verifyAdminSessionRaw,
+  signCustomerSession, verifyCustomerSession, verifyCustomerSessionRaw,
+  extractSessionDetails,
   hashPin, verifyPin,
   signMagicLink, verifyMagicLink
 };
-
-
 
 export async function getResolvedTenantId(req: NextRequest): Promise<string | undefined> {
   // 1. Internal service authentication (e.g. Telegram webhook bot)
@@ -68,5 +69,3 @@ export function isInternalAuthValid(req: NextRequest): boolean {
     return crypto.timingSafeEqual(providedBuffer, secretBuffer);
   });
 }
-
-

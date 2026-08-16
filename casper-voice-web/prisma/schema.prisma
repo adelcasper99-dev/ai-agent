@@ -501,5 +501,11 @@ model MerchantMemoryFact {
   @@unique([tenantId, sourceMessageId])
 }
 
+// ── الجلسات الملغاة (Session Blacklist / Revocation) ────────────────
+model RevokedSession {
+  jti       String   @id
+  revokedAt DateTime @default(now())
+  expiresAt DateTime
 
-
+  @@index([expiresAt])
+}

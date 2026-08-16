@@ -62,10 +62,22 @@ export function rateLimit(ip: string, options: RateLimitOptions): RateLimitResul
 
 /**
  * Extract real client IP from Next.js request headers.
- * Respects X-Forwarded-For set by reverse proxy (nginx on VPS).
+ * Prefers X-Real-IP (set directly by nginx from $remote_addr) to prevent
+ * client-spoofed X-Forwarded-For headers from bypassing rate limits.
  */
 export function getClientIp(req: Request): string {
+  const realIp = req.headers.get('x-real-ip');
+  if (realIp && realIp.trim()) return realIp.trim();
+
   const forwarded = req.headers.get('x-forwarded-for');
-  if (forwarded) return forwarded.split(',')[0].trim();
-  return req.headers.get('x-real-ip') ?? '127.0.0.1';
+  if (forwarded) {
+    const parts = forwarded.split(',').map((p) => p.trim()).filter(Boolean);
+    if (parts.length > 0) {
+      // Last entry in the chain is appended by the nearest trusted reverse proxy
+      return parts[parts.length - 1];
+    }
+  }
+
+  return '127.0.0.1';
 }
+

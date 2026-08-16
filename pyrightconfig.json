@@ -1,0 +1,13 @@
+{
+  "venvPath": "voice_service",
+  "venv": "venv",
+  "executionEnvironments": [
+    {
+      "root": "voice_service",
+      "extraPaths": [
+        "voice_service",
+        "voice_service/venv/Lib/site-packages"
+      ]
+    }
+  ]
+}

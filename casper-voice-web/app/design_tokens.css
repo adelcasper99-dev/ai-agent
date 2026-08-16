@@ -1,0 +1,35 @@
+/* app/design_tokens.css - Casper POS Royal Obsidian Blue Design Tokens */
+:root {
+  /* HSL Color Primitives */
+  --hsl-bg-base: 240 10% 4%;         /* #09090b */
+  --hsl-bg-card: 240 6% 9%;          /* #161618 */
+  --hsl-brand-blue: 217 91% 60%;     /* #2563eb */
+  --hsl-brand-emerald: 158 64% 52%;  /* #10b981 */
+  --hsl-brand-amber: 38 92% 50%;     /* #f59e0b */
+  --hsl-text-primary: 0 0% 98%;      /* #fafafa */
+  --hsl-text-muted: 240 5% 65%;      /* #a1a1aa */
+
+  /* Semantic Design Tokens */
+  --color-bg-main: hsl(var(--hsl-bg-base));
+  --color-card-bg: rgba(22, 22, 24, 0.85);
+  --color-card-border: #27272a;      /* zinc-800 */
+  --color-card-border-hover: #3f3f46;/* zinc-700 */
+  --color-brand-accent: #2563eb;
+  --color-brand-accent-hover: #1d4ed8;
+
+  /* Typography Scale */
+  --font-arabic: 'Cairo', 'Inter', system-ui, sans-serif;
+  --font-code: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.glass-bento-card {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  border-radius: 1.25rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-bento-card:hover {
+  border-color: var(--color-card-border-hover);
+}
+

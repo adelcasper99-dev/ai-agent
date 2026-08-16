@@ -36,6 +36,24 @@ def run_remote(cmd):
         sys.exit(res.returncode)
     return res
 
+def sync_via_ssh_bundle():
+    print("[SYNC] Transferring commits directly via SSH bundle...")
+    bundle_name = "deploy.bundle"
+    run_local(f"git bundle create {bundle_name} HEAD~15..HEAD")
+    scp_cmd = f"scp -o StrictHostKeyChecking=no {bundle_name} {VPS_HOST}:{REMOTE_DIR}/{bundle_name}"
+    run_local(scp_cmd)
+    apply_cmd = (
+        f"cd {REMOTE_DIR} && "
+        f"git fetch {bundle_name} HEAD:main-deploy && "
+        f"git reset --hard main-deploy && "
+        f"git branch -D main-deploy && "
+        f"rm -f {bundle_name}"
+    )
+    subprocess.run(["ssh", "-o", "StrictHostKeyChecking=no", VPS_HOST, apply_cmd], check=True)
+    if os.path.exists(bundle_name):
+        os.remove(bundle_name)
+    print("[SYNC] SSH Bundle applied successfully on VPS.")
+
 def main():
     print("==================================================")
     print("AUTOMATED FULL-STACK VPS DEPLOYMENT PIPELINE")
@@ -43,7 +61,7 @@ def main():
     print("==================================================")
 
     # Step 1: Local Git Commit & Push
-    print("\nSTEP 1: Syncing Local Changes to GitHub...")
+    print("\nSTEP 1: Syncing Local Changes...")
     status_res = run_local("git status --porcelain")
     if status_res.stdout and status_res.stdout.strip():
         commit_msg = f"Auto-deploy update: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
@@ -52,13 +70,11 @@ def main():
         run_local(f'git commit -m "{commit_msg}"')
 
     run_local("git push origin main --force")
-    push_res = run_local("git push support-agent main --force")
-    if push_res.returncode != 0:
-        print("Warning: git push had non-zero exit code. Attempting remote pull anyway...")
+    run_local("git push support-agent main --force")
 
-    # Step 2: Remote Pull & Clean Bytecode
-    print("\nSTEP 2: Remote Pull & Bytecode Purge on VPS...")
-    run_remote("git fetch origin && git reset --hard origin/main")
+    # Step 2: Sync to VPS
+    print("\nSTEP 2: Synchronizing & Purging Bytecode on VPS...")
+    sync_via_ssh_bundle()
     run_remote("python3 voice_service/clean_cache.py voice_service || true")
 
     # Step 3: Dependencies & Prisma Build

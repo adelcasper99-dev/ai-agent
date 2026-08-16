@@ -213,88 +213,88 @@ export default function ApiKeysPage() {
       </div>
 
       {/* ── Keys Table ── */}
-      <div className="float-panel border shadow-sm bg-white overflow-hidden" style={{ borderColor: "var(--border)" }}>
-        <div className="px-6 py-4 border-b bg-slate-50 flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
-          <h3 className="font-bold text-lg flex items-center gap-2" style={{ color: "var(--foreground)" }}>
-            <Key size={18} className="text-cyan-500" /> المفاتيح المسجلة
+      <div className="glass-card-lg border border-slate-700/60 rounded-3xl overflow-hidden shadow-2xl">
+        <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md flex items-center justify-between">
+          <h3 className="font-bold text-lg flex items-center gap-2 text-white">
+            <Key size={18} className="text-cyan-400" /> المفاتيح المسجلة
           </h3>
         </div>
         
         {loading ? (
           <div className="p-12 flex justify-center">
-            <RefreshCw className="w-8 h-8 animate-spin text-cyan-500" />
+            <RefreshCw className="w-8 h-8 animate-spin text-cyan-400" />
           </div>
         ) : keys.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 font-semibold">
+          <div className="p-12 text-center text-slate-400 font-semibold">
             لا يوجد مفاتيح مسجلة. النظام يقرأ المفاتيح من ملف .env تلقائياً إذا وجدت.
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="zebra-table">
+            <table className="w-full text-right border-collapse">
               <thead>
-                <tr>
-                  <th>المزود</th>
-                  <th>المفتاح</th>
-                  <th>الحالة</th>
-                  <th>تاريخ الإضافة</th>
-                  <th className="text-center">إجراء</th>
+                <tr className="border-b border-slate-800 bg-slate-950/60 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4">المزود</th>
+                  <th className="px-6 py-4">المفتاح</th>
+                  <th className="px-6 py-4">الحالة</th>
+                  <th className="px-6 py-4">تاريخ الإضافة</th>
+                  <th className="px-6 py-4 text-center">إجراء</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-800/60 text-sm">
                 {keys.map((k) => (
-                  <tr key={k.id}>
-                    <td>
+                  <tr key={k.id} className="hover:bg-slate-800/40 transition-colors">
+                    <td className="px-6 py-4">
                       {k.provider?.toLowerCase() === "groq" ? (
-                        <span className="inline-flex items-center gap-1 font-bold text-purple-700 bg-purple-50 px-3 py-1 rounded-md text-xs border border-purple-200">
+                        <span className="inline-flex items-center gap-1 font-bold text-purple-300 bg-purple-950/60 px-3 py-1 rounded-xl text-xs border border-purple-800/60 shadow-sm">
                           ⚡ Groq
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-md text-xs border border-blue-200">
+                        <span className="inline-flex items-center gap-1 font-bold text-sky-300 bg-sky-950/60 px-3 py-1 rounded-xl text-xs border border-sky-800/60 shadow-sm">
                           💎 Gemini
                         </span>
                       )}
                     </td>
-                    <td className="font-mono text-sm text-slate-600 text-left dir-ltr">
+                    <td className="px-6 py-4 font-mono text-sm text-slate-300 text-left dir-ltr">
                       {k.keyString.substring(0, 8)}...{k.keyString.slice(-4)}
                     </td>
-                    <td>
+                    <td className="px-6 py-4">
                       {k.isExhausted ? (
                         <div>
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200">
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold text-rose-300 bg-rose-950/60 border border-rose-800/60">
                             🔴 مستنفد (429)
                           </span>
                           {k.exhaustedAt && (
-                            <div className="text-[10px] mt-1 text-slate-400">
+                            <div className="text-[10px] mt-1 text-slate-500">
                               منذ: {new Date(k.exhaustedAt).toLocaleTimeString("ar-EG")}
                             </div>
                           )}
                         </div>
                       ) : !k.isActive ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold text-slate-400 bg-slate-800/80 border border-slate-700">
                           ⚫ غير مفعل
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold text-emerald-300 bg-emerald-950/60 border border-emerald-800/60">
                           🟢 متاح وشغال
                         </span>
                       )}
                     </td>
-                    <td className="text-sm text-slate-500 font-medium">
+                    <td className="px-6 py-4 text-sm text-slate-400 font-medium">
                       {new Date(k.addedAt).toLocaleDateString("ar-EG")}
                     </td>
-                    <td>
+                    <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleTestKey(k.id, k.keyString, k.provider)}
                           disabled={testingId === k.id}
-                          className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-md transition-all bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                          className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl transition-all bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200"
                         >
-                          {testingId === k.id ? <RefreshCw size={14} className="animate-spin" /> : <CheckCircle2 size={14} className="text-cyan-600" />}
+                          {testingId === k.id ? <RefreshCw size={14} className="animate-spin" /> : <CheckCircle2 size={14} className="text-cyan-400" />}
                           فحص
                         </button>
                         <button
                           onClick={() => handleDelete(k.id)}
-                          className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-md transition-all bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                          className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl transition-all bg-rose-950/40 border border-rose-800/50 text-rose-300 hover:bg-rose-900/60"
                         >
                           <Trash2 size={14} /> حذف
                         </button>
@@ -309,11 +309,11 @@ export default function ApiKeysPage() {
       </div>
 
       {/* ── Info Box ── */}
-      <div className="bg-cyan-50/50 p-5 rounded-xl border border-cyan-100 text-sm text-cyan-800 shadow-sm">
+      <div className="glass-card-lg p-5 rounded-3xl border border-cyan-500/30 text-sm text-cyan-200 shadow-xl">
         <p className="flex items-start gap-3">
           <span className="text-xl">ℹ️</span>
           <span className="leading-relaxed font-medium">
-            <strong className="text-cyan-900">كيف يعمل مجمّع المفاتيح الذكي:</strong> يبدأ النظام بمفاتيح 💎 <strong>Gemini</strong> المتاحة. وفي حال مواجهة خطأ 429 (انتهاء الكوتا اليومية)، ينتقل النظام تلقائياً لمفتاح Gemini التالي. وعند انتهاء جميع مفاتيح Gemini، يتحول تدريجياً لمفاتيح ⚡ <strong>Groq (Llama 3.3)</strong> الدائرية لضمان استمرارية الخدمة. لا يتم اللجوء لوضع القوائم الطارئ إلا إذا استُنفِذت جميع المفاتيح معاً.
+            <strong className="text-cyan-100">كيف يعمل مجمّع المفاتيح الذكي:</strong> يبدأ النظام بمفاتيح 💎 <strong>Gemini</strong> المتاحة. وفي حال مواجهة خطأ 429 (انتهاء الكوتا اليومية)، ينتقل النظام تلقائياً لمفتاح Gemini التالي. وعند انتهاء جميع مفاتيح Gemini، يتحول تدريجياً لمفاتيح ⚡ <strong>Groq (Llama 3.3)</strong> الدائرية لضمان استمرارية الخدمة. لا يتم اللجوء لوضع القوائم الطارئ إلا إذا استُنفِذت جميع المفاتيح معاً.
           </span>
         </p>
       </div>

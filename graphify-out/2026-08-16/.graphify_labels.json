@@ -471,5 +471,7 @@
   "469": "resolveLiveTemplateExtensions",
   "470": "resolveLiveTemplateExtensions",
   "471": "vps_wipe_tenants.py",
-  "472": "selectAvailablePendingEvent"
+  "472": "selectAvailablePendingEvent",
+  "473": "test_advanced_edge_cases.ts",
+  "474": "test_live_interaction_demo.ts"
 }

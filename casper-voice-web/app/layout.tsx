@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./vercel_tokens.css";
 
 export const metadata: Metadata = {
   title: "لوحة تحكم كاسبر | Casper Admin",

@@ -795,8 +795,8 @@
     "semantic_hash": ""
   },
   ".agents/stage_log.json": {
-    "mtime": 1786872588.2216353,
-    "ast_hash": "fc559d4eb3a1e387ffbe7b7f8982e697",
+    "mtime": 1786873332.9863987,
+    "ast_hash": "3d000b253a219e53bd7111725e5bae11",
     "semantic_hash": ""
   },
   ".vscode/settings.json": {
@@ -940,8 +940,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/layout.tsx": {
-    "mtime": 1786591860.6788452,
-    "ast_hash": "47f8287df1637a629b66ffd0f1ef2073",
+    "mtime": 1786874650.7252011,
+    "ast_hash": "c89a99b329e49c3fcff7be53c42cbd19",
     "semantic_hash": ""
   },
   "casper-voice-web/app/page.tsx": {
@@ -3385,8 +3385,13 @@
     "semantic_hash": ""
   },
   "casper-voice-web/DESIGN.md": {
-    "mtime": 1786872076.7511642,
-    "ast_hash": "c91b846702ee767114f25bf431c44abf",
+    "mtime": 1786874657.822376,
+    "ast_hash": "997b9447eacfae458259b28e20a01c37",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/VERCEL_DESIGN.md": {
+    "mtime": 1786874582.4221058,
+    "ast_hash": "b1b611ddf683235c1724af44ef002b55",
     "semantic_hash": ""
   }
 }

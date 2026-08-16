@@ -58,3 +58,16 @@
 ### RTL / LTR Direction Rules
 - Default Direction: `dir="rtl"` for Arabic interface.
 - Action Buttons & Floating Voice Dock: Positioned at bottom center / bottom start for single-hand cashier accessibility.
+
+---
+
+## 6. Vercel Design System Tokens (`vercel_tokens.css`)
+
+### Core Philosophy
+Integrated Vercel developer-platform design specification (`vercel-DESIGN.md`):
+- **Stark Canvas & Ink**: High-contrast slate charcoal backdrop with stark `#171717` ink primary target.
+- **Mesh Gradients**: Multi-stop atmospheric mesh gradients (`develop`, `preview`, `ship`) at hero and band scale.
+- **100px Pill CTAs**: Primary action buttons use 100px pill radius (`.vercel-btn-primary`, `.vercel-btn-secondary`).
+- **Stacked Elevation**: Multi-offset stacked shadows (`--shadow-vercel-level1` to `level3`) with 1px inset hairline borders.
+- **Negative Headline Tracking**: Aggressive negative tracking (`-2.4px` for display-xl, `-1.28px` for display-lg).
+

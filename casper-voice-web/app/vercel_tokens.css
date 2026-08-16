@@ -1,0 +1,192 @@
+/* ============================================================
+   VERCEL DESIGN SYSTEM TOKENS & UTILITIES
+   ============================================================ */
+
+:root {
+  /* Colors */
+  --vercel-primary: #171717;
+  --vercel-on-primary: #ffffff;
+  --vercel-ink: #171717;
+  --vercel-body: #4d4d4d;
+  --vercel-mute: #888888;
+  --vercel-hairline: #ebebeb;
+  --vercel-hairline-strong: #a1a1a1;
+  --vercel-canvas: #ffffff;
+  --vercel-canvas-soft: #fafafa;
+  --vercel-canvas-soft-2: #f5f5f5;
+  --vercel-link: #0070f3;
+  --vercel-link-deep: #0761d1;
+  --vercel-error: #ee0000;
+  --vercel-warning: #f5a623;
+
+  /* Mesh Gradient Pairs */
+  --vercel-gradient-develop: linear-gradient(135deg, #007cf0 0%, #00dfd8 100%);
+  --vercel-gradient-preview: linear-gradient(135deg, #7928ca 0%, #ff0080 100%);
+  --vercel-gradient-ship: linear-gradient(135deg, #ff4d4d 0%, #f9cb28 100%);
+  --vercel-gradient-mesh: radial-gradient(at 0% 0%, #007cf0 0px, transparent 50%),
+                          radial-gradient(at 100% 0%, #7928ca 0px, transparent 50%),
+                          radial-gradient(at 50% 100%, #ff0080 0px, transparent 50%),
+                          radial-gradient(at 100% 100%, #00dfd8 0px, transparent 50%);
+
+  /* Typography Fonts */
+  --font-vercel-sans: 'Inter', Geist, system-ui, -apple-system, sans-serif;
+  --font-vercel-mono: 'JetBrains Mono', 'Geist Mono', ui-monospace, monospace;
+
+  /* Border Radii */
+  --radius-vercel-xs: 4px;
+  --radius-vercel-sm: 6px;
+  --radius-vercel-md: 8px;
+  --radius-vercel-lg: 12px;
+  --radius-vercel-xl: 16px;
+  --radius-vercel-pill-sm: 64px;
+  --radius-vercel-pill: 100px;
+
+  /* Stacked Shadows */
+  --shadow-vercel-level1: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  --shadow-vercel-level2: 0px 1px 1px rgba(0, 0, 0, 0.05), 0px 2px 2px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-vercel-level3: 0px 2px 2px rgba(0, 0, 0, 0.08), 0px 8px 16px -4px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================
+   VERCEL UTILITY CLASSES
+   ============================================================ */
+
+/* Headlines with negative tracking */
+.vercel-display-xl {
+  font-family: var(--font-vercel-sans);
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 48px;
+  letter-spacing: -2.4px;
+}
+
+.vercel-display-lg {
+  font-family: var(--font-vercel-sans);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 40px;
+  letter-spacing: -1.28px;
+}
+
+.vercel-display-md {
+  font-family: var(--font-vercel-sans);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  letter-spacing: -0.96px;
+}
+
+.vercel-caption-mono {
+  font-family: var(--font-vercel-mono);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vercel-code {
+  font-family: var(--font-vercel-mono);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+/* 100px Pill Buttons */
+.vercel-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--vercel-primary);
+  color: var(--vercel-on-primary);
+  font-family: var(--font-vercel-sans);
+  font-size: 14px;
+  font-weight: 500;
+  height: 44px;
+  padding: 0 24px;
+  border-radius: var(--radius-vercel-pill);
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+.vercel-btn-primary:hover {
+  background-color: #000000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.vercel-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--vercel-canvas);
+  color: var(--vercel-ink);
+  font-family: var(--font-vercel-sans);
+  font-size: 14px;
+  font-weight: 500;
+  height: 44px;
+  padding: 0 24px;
+  border-radius: var(--radius-vercel-pill);
+  border: 1px solid var(--vercel-hairline-strong);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+.vercel-btn-secondary:hover {
+  background-color: var(--vercel-canvas-soft);
+  border-color: var(--vercel-ink);
+  transform: translateY(-1px);
+}
+
+/* Vercel Marketing Cards */
+.vercel-card {
+  background-color: var(--vercel-canvas);
+  color: var(--vercel-ink);
+  border-radius: var(--radius-vercel-lg);
+  padding: 24px;
+  border: 1px solid var(--vercel-hairline);
+  box-shadow: var(--shadow-vercel-level2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.vercel-card:hover {
+  border-color: var(--vercel-hairline-strong);
+  box-shadow: var(--shadow-vercel-level3);
+  transform: translateY(-2px);
+}
+
+/* Polarity Flipped Featured Card */
+.vercel-card-featured {
+  background-color: var(--vercel-primary);
+  color: var(--vercel-on-primary);
+  border-radius: var(--radius-vercel-lg);
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-vercel-level3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.vercel-card-featured:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Vercel Mesh Backdrop Hero Component */
+.vercel-mesh-hero {
+  position: relative;
+  background-color: var(--vercel-canvas);
+  overflow: hidden;
+  padding: 64px 24px;
+}
+.vercel-mesh-hero::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1000px;
+  height: 400px;
+  background: var(--vercel-gradient-mesh);
+  opacity: 0.15;
+  filter: blur(80px);
+  pointer-events: none;
+}

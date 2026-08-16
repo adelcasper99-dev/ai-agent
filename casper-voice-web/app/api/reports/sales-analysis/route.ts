@@ -1,86 +1,111 @@
 // app/api/reports/sales-analysis/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { parseMoney, Decimal } from "@/lib/financial";
 
-type GroupByOption = "category" | "product" | "salesman";
+type GroupByOption = "product" | "customer";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const groupBy = (searchParams.get("groupBy") || "category") as GroupByOption;
+    const groupBy = (searchParams.get("groupBy") || "product") as GroupByOption;
     const tenantId = searchParams.get("tenantId");
 
-    const where: any = { status: { not: "RETURNED" } };
+    const where: any = { voided: false };
     if (tenantId && tenantId !== "all") {
       where.tenantId = tenantId;
     }
 
-    // Try to fetch real data; fall back to empty on any error
-    let results: any[] = [];
-    let totalRevenue = 0;
-    let totalProfit = 0;
-    let totalSales = 0;
+    const salesRaw = await prisma.sale.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
 
-    try {
-      // Check if the Sale model exists in prisma
-      const salesRaw = await (prisma as any).sale?.findMany({
-        include: {
-          items: { include: { product: { include: { category: true } } } },
-          createdBy: true,
-        },
-        where,
-      });
-
-      if (salesRaw && salesRaw.length > 0) {
-        const groupMap: Record<string, { name: string; quantity: number; revenue: number; profit: number; transactionCount: number }> = {};
-
-        for (const sale of salesRaw) {
-          const items = sale.items || [];
-          for (const item of items) {
-            let key = "";
-            let name = "";
-
-            if (groupBy === "category") {
-              key = item.product?.category?.id || "unknown";
-              name = item.product?.category?.name || "غير مصنف";
-            } else if (groupBy === "product") {
-              key = item.product?.id || "unknown";
-              name = item.product?.name || "منتج غير معروف";
-            } else if (groupBy === "salesman") {
-              key = sale.createdById || "unknown";
-              name = sale.createdBy?.name || "غير محدد";
-            }
-
-            if (!groupMap[key]) {
-              groupMap[key] = { name, quantity: 0, revenue: 0, profit: 0, transactionCount: 0 };
-            }
-
-            const qty = Number(item.quantity ?? 0);
-            const price = Number(item.unitPrice ?? 0);
-            const cost = Number(item.costPrice ?? 0);
-
-            groupMap[key].quantity += qty;
-            groupMap[key].revenue += qty * price;
-            groupMap[key].profit += qty * (price - cost);
-            groupMap[key].transactionCount += 1;
-          }
-        }
-
-        results = Object.values(groupMap).sort((a, b) => b.revenue - a.revenue);
-        totalRevenue = results.reduce((acc, r) => acc + r.revenue, 0);
-        totalProfit = results.reduce((acc, r) => acc + r.profit, 0);
-        totalSales = results.reduce((acc, r) => acc + r.quantity, 0);
+    const groupMap: Record<
+      string,
+      {
+        name: string;
+        quantity: number;
+        revenueDec: Decimal;
+        paidDec: Decimal;
+        deferredDec: Decimal;
+        transactionCount: number;
       }
-    } catch {
-      // Model doesn't exist or schema mismatch — return empty structure
+    > = {};
+
+    for (const sale of salesRaw) {
+      let key = "";
+      let name = "";
+
+      if (groupBy === "customer") {
+        key = sale.customerName?.trim() || "عميل نقدي";
+        name = key;
+      } else {
+        // default: group by product / item name
+        key = sale.itemName?.trim() || "غير محدد";
+        name = key;
+      }
+
+      if (!groupMap[key]) {
+        groupMap[key] = {
+          name,
+          quantity: 0,
+          revenueDec: new Decimal(0),
+          paidDec: new Decimal(0),
+          deferredDec: new Decimal(0),
+          transactionCount: 0,
+        };
+      }
+
+      const itemTotal = parseMoney(sale.total.toString());
+      const itemPaid = parseMoney(sale.paidAmount.toString());
+      const itemDeferred = parseMoney(sale.deferredAmount.toString());
+
+      groupMap[key].quantity += sale.quantity || 1;
+      groupMap[key].revenueDec = groupMap[key].revenueDec.plus(itemTotal);
+      groupMap[key].paidDec = groupMap[key].paidDec.plus(itemPaid);
+      groupMap[key].deferredDec = groupMap[key].deferredDec.plus(itemDeferred);
+      groupMap[key].transactionCount += 1;
+    }
+
+    const results = Object.values(groupMap)
+      .map((g) => ({
+        name: g.name,
+        quantity: g.quantity,
+        revenue: g.revenueDec.toNumber(),
+        paidAmount: g.paidDec.toNumber(),
+        deferredAmount: g.deferredDec.toNumber(),
+        transactionCount: g.transactionCount,
+      }))
+      .sort((a, b) => b.revenue - a.revenue);
+
+    let totalRevenueDec = new Decimal(0);
+    let totalPaidDec = new Decimal(0);
+    let totalDeferredDec = new Decimal(0);
+    let totalQuantity = 0;
+
+    for (const g of Object.values(groupMap)) {
+      totalRevenueDec = totalRevenueDec.plus(g.revenueDec);
+      totalPaidDec = totalPaidDec.plus(g.paidDec);
+      totalDeferredDec = totalDeferredDec.plus(g.deferredDec);
+      totalQuantity += g.quantity;
     }
 
     return NextResponse.json({
       results,
-      summary: { totalRevenue, totalProfit, totalSales },
+      summary: {
+        totalRevenue: totalRevenueDec.toNumber(),
+        totalPaid: totalPaidDec.toNumber(),
+        totalDeferred: totalDeferredDec.toNumber(),
+        totalSalesCount: salesRaw.length,
+        totalQuantity,
+      },
     });
   } catch (err) {
-    console.error("[sales-analysis]", err);
-    return NextResponse.json({ results: [], summary: { totalRevenue: 0, totalProfit: 0, totalSales: 0 } });
+    console.error("[sales-analysis error]", err);
+    return NextResponse.json({
+      results: [],
+      summary: { totalRevenue: 0, totalPaid: 0, totalDeferred: 0, totalSalesCount: 0, totalQuantity: 0 },
+    });
   }
 }

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { fireAndForgetTelegramAlert } from "@/lib/telegram";
 import { getResolvedTenantId, isInternalAuthValid } from "@/lib/auth";
+import { runWithTenant } from "@/lib/prisma-tenant-extension";
 
 
 export async function POST(req: NextRequest) {
@@ -94,28 +95,104 @@ export async function PUT(req: NextRequest) {
     if (!isInternalAuthValid(req)) {
       return NextResponse.json({ error: "غير مصرح (Unauthorized)" }, { status: 401 });
     }
-
-    // G4: Idempotency-Key check for Appointments
-    const idempotencyKey = req.headers.get("idempotency-key");
-    const now = Date.now();
-    if (idempotencyKey) {
-      const cached = appointmentIdempotencyMap.get(idempotencyKey);
-      if (cached && now - cached.timestamp < 60000) {
-        return NextResponse.json({ ...cached.response, cached: true });
-      }
+    const resolvedTenantId = await getResolvedTenantId(req);
+    if (!resolvedTenantId) {
+      return NextResponse.json({ error: "غير مصرح (Missing Tenant ID)" }, { status: 401 });
     }
 
-    const { id, customer_name, new_date, new_time, current_date, notes, status, updatedAt } = await req.json();
-
-    // Direct update by ID if known
-    if (id) {
-      const existing = await prisma.appointment.findUnique({ where: { id } });
-      if (!existing) {
-        return NextResponse.json({ error: "الميعاد غير موجود" }, { status: 404 });
+    return await runWithTenant(resolvedTenantId, async () => {
+      // G4: Idempotency-Key check for Appointments
+      const idempotencyKey = req.headers.get("idempotency-key");
+      const now = Date.now();
+      if (idempotencyKey) {
+        const cached = appointmentIdempotencyMap.get(idempotencyKey);
+        if (cached && now - cached.timestamp < 60000) {
+          return NextResponse.json({ ...cached.response, cached: true });
+        }
       }
 
+      const { id, customer_name, new_date, new_time, current_date, notes, status, updatedAt } = await req.json();
+
+      // Direct update by ID if known
+      if (id) {
+        const existing = await prisma.appointment.findUnique({ where: { id } });
+        if (!existing) {
+          return NextResponse.json({ error: "الميعاد غير موجود" }, { status: 404 });
+        }
+
+        // G5: Optimistic Concurrency Check
+        if (updatedAt && existing.updatedAt.toISOString() !== updatedAt) {
+          return NextResponse.json(
+            { success: false, conflict: true, error: "تم تعديل الميعاد بواسطة مستخدم آخر. يرجى إعادة التحميل." },
+            { status: 409 }
+          );
+        }
+
+        const updated = await prisma.appointment.update({
+          where: { id },
+          data: {
+            ...(new_date && { date: new_date.trim() }),
+            ...(new_time && { time: new_time.trim() }),
+            ...(notes && { notes: notes.trim() }),
+            ...(status && { status: status.trim() }),
+          },
+        });
+        const resPayload = { success: true, updated };
+        if (idempotencyKey) appointmentIdempotencyMap.set(idempotencyKey, { timestamp: now, response: resPayload });
+        return NextResponse.json(resPayload);
+      }
+
+      if (!customer_name) {
+        return NextResponse.json({ error: "يلزم تحديد اسم العميل أو المعرف (ID)" }, { status: 400 });
+      }
+
+      // Search for appointments matching customer_name
+      let matches = await prisma.appointment.findMany({
+        where: {
+          customerName: { contains: customer_name.trim() },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (matches.length === 0) {
+        return NextResponse.json(
+          { error: `عفواً، مفيش أي ميعاد مسجل باسم (${customer_name}) للتعديل.` },
+          { status: 404 }
+        );
+      }
+
+      // If current_date is provided, narrow down matches
+      if (current_date && matches.length > 1) {
+        const filtered = matches.filter((m) => m.date.includes(current_date.trim()));
+        if (filtered.length > 0) matches = filtered;
+      }
+
+      // Multi-match Disambiguation
+      if (matches.length > 1) {
+        const candidates = matches.map((m) => ({
+          id: m.id,
+          customerName: m.customerName,
+          date: m.date,
+          time: m.time,
+          notes: m.notes,
+          updatedAt: m.updatedAt.toISOString(),
+        }));
+        return NextResponse.json(
+          {
+            ambiguous: true,
+            count: matches.length,
+            message: `فيه ${matches.length} مواعيد مسجلة لـ ${customer_name}. يرجى تحديد أي ميعاد للتعديل.`,
+            candidates,
+          },
+          { status: 400 }
+        );
+      }
+
+      // Single match found: update
+      const target = matches[0];
+
       // G5: Optimistic Concurrency Check
-      if (updatedAt && existing.updatedAt.toISOString() !== updatedAt) {
+      if (updatedAt && target.updatedAt.toISOString() !== updatedAt) {
         return NextResponse.json(
           { success: false, conflict: true, error: "تم تعديل الميعاد بواسطة مستخدم آخر. يرجى إعادة التحميل." },
           { status: 409 }
@@ -123,7 +200,7 @@ export async function PUT(req: NextRequest) {
       }
 
       const updated = await prisma.appointment.update({
-        where: { id },
+        where: { id: target.id },
         data: {
           ...(new_date && { date: new_date.trim() }),
           ...(new_time && { time: new_time.trim() }),
@@ -131,90 +208,20 @@ export async function PUT(req: NextRequest) {
           ...(status && { status: status.trim() }),
         },
       });
-      const resPayload = { success: true, updated };
-      if (idempotencyKey) appointmentIdempotencyMap.set(idempotencyKey, { timestamp: now, response: resPayload });
-      return NextResponse.json(resPayload);
-    }
 
-    if (!customer_name) {
-      return NextResponse.json({ error: "يلزم تحديد اسم العميل أو المعرف (ID)" }, { status: 400 });
-    }
+      const responsePayload = {
+        success: true,
+        oldDate: target.date,
+        oldTime: target.time,
+        updated,
+      };
 
-    // Search for appointments matching customer_name
-    let matches = await prisma.appointment.findMany({
-      where: {
-        customerName: { contains: customer_name.trim() },
-      },
-      orderBy: { createdAt: "desc" },
+      if (idempotencyKey) {
+        appointmentIdempotencyMap.set(idempotencyKey, { timestamp: now, response: responsePayload });
+      }
+
+      return NextResponse.json(responsePayload);
     });
-
-    if (matches.length === 0) {
-      return NextResponse.json(
-        { error: `عفواً، مفيش أي ميعاد مسجل باسم (${customer_name}) للتعديل.` },
-        { status: 404 }
-      );
-    }
-
-    // If current_date is provided, narrow down matches
-    if (current_date && matches.length > 1) {
-      const filtered = matches.filter((m) => m.date.includes(current_date.trim()));
-      if (filtered.length > 0) matches = filtered;
-    }
-
-    // Multi-match Disambiguation
-    if (matches.length > 1) {
-      const candidates = matches.map((m) => ({
-        id: m.id,
-        customerName: m.customerName,
-        date: m.date,
-        time: m.time,
-        notes: m.notes,
-        updatedAt: m.updatedAt.toISOString(),
-      }));
-      return NextResponse.json(
-        {
-          ambiguous: true,
-          count: matches.length,
-          message: `فيه ${matches.length} مواعيد مسجلة لـ ${customer_name}. يرجى تحديد أي ميعاد للتعديل.`,
-          candidates,
-        },
-        { status: 400 }
-      );
-    }
-
-    // Single match found: update
-    const target = matches[0];
-
-    // G5: Optimistic Concurrency Check
-    if (updatedAt && target.updatedAt.toISOString() !== updatedAt) {
-      return NextResponse.json(
-        { success: false, conflict: true, error: "تم تعديل الميعاد بواسطة مستخدم آخر. يرجى إعادة التحميل." },
-        { status: 409 }
-      );
-    }
-
-    const updated = await prisma.appointment.update({
-      where: { id: target.id },
-      data: {
-        ...(new_date && { date: new_date.trim() }),
-        ...(new_time && { time: new_time.trim() }),
-        ...(notes && { notes: notes.trim() }),
-        ...(status && { status: status.trim() }),
-      },
-    });
-
-    const responsePayload = {
-      success: true,
-      oldDate: target.date,
-      oldTime: target.time,
-      updated,
-    };
-
-    if (idempotencyKey) {
-      appointmentIdempotencyMap.set(idempotencyKey, { timestamp: now, response: responsePayload });
-    }
-
-    return NextResponse.json(responsePayload);
   } catch (err) {
     console.error("[Appointments PUT Error]", err);
     return NextResponse.json({ error: "حصل خطأ في تعديل الميعاد" }, { status: 500 });
@@ -226,39 +233,45 @@ export async function DELETE(req: NextRequest) {
     if (!isInternalAuthValid(req)) {
       return NextResponse.json({ error: "غير مصرح (Unauthorized)" }, { status: 401 });
     }
-
-    const { id, customer_name, date } = await req.json();
-
-    if (id) {
-      const deleted = await prisma.appointment.delete({ where: { id } });
-      return NextResponse.json({ success: true, deleted });
+    const resolvedTenantId = await getResolvedTenantId(req);
+    if (!resolvedTenantId) {
+      return NextResponse.json({ error: "غير مصرح (Missing Tenant ID)" }, { status: 401 });
     }
 
-    if (!customer_name) {
-      return NextResponse.json({ error: "يلزم اسم العميل أو المعرف (ID) لإلغاء الميعاد" }, { status: 400 });
-    }
+    return await runWithTenant(resolvedTenantId, async () => {
+      const { id, customer_name, date } = await req.json();
 
-    let matches = await prisma.appointment.findMany({
-      where: { customerName: { contains: customer_name.trim() } },
-      orderBy: { createdAt: "desc" },
-    });
+      if (id) {
+        const deleted = await prisma.appointment.delete({ where: { id } });
+        return NextResponse.json({ success: true, deleted });
+      }
 
-    if (matches.length === 0) {
-      return NextResponse.json({ error: `عفواً، مفيش أي ميعاد مسجل باسم (${customer_name}) للإلغاء.` }, { status: 404 });
-    }
+      if (!customer_name) {
+        return NextResponse.json({ error: "يلزم اسم العميل أو المعرف (ID) لإلغاء الميعاد" }, { status: 400 });
+      }
 
-    if (date && matches.length > 1) {
-      const filtered = matches.filter((m) => m.date.includes(date.trim()));
-      if (filtered.length > 0) matches = filtered;
-    }
+      let matches = await prisma.appointment.findMany({
+        where: { customerName: { contains: customer_name.trim() } },
+        orderBy: { createdAt: "desc" },
+      });
 
-    const target = matches[0];
-    const deleted = await prisma.appointment.delete({ where: { id: target.id } });
+      if (matches.length === 0) {
+        return NextResponse.json({ error: `عفواً، مفيش أي ميعاد مسجل باسم (${customer_name}) للإلغاء.` }, { status: 404 });
+      }
 
-    return NextResponse.json({
-      success: true,
-      message: `تم إلغاء ميعاد ${target.customerName} (يوم ${target.date} الساعة ${target.time}) بنجاح.`,
-      deleted,
+      if (date && matches.length > 1) {
+        const filtered = matches.filter((m) => m.date.includes(date.trim()));
+        if (filtered.length > 0) matches = filtered;
+      }
+
+      const target = matches[0];
+      const deleted = await prisma.appointment.delete({ where: { id: target.id } });
+
+      return NextResponse.json({
+        success: true,
+        message: `تم إلغاء ميعاد ${target.customerName} (يوم ${target.date} الساعة ${target.time}) بنجاح.`,
+        deleted,
+      });
     });
   } catch (err) {
     console.error("[Appointments DELETE Error]", err);

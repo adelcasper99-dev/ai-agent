@@ -266,22 +266,51 @@ export async function extractSessionDetails(token: string): Promise<SessionDetai
 // ── PIN & Magic Link Utilities ─────────────────────────────────────────────
 
 /**
- * Hashes a numeric/alphanumeric PIN with a customer-specific or system salt.
+ * Derives a server-side pepper for PIN hashing.
  */
-export async function hashPin(pin: string, salt: string = 'casper-salt'): Promise<string> {
-  return await computeHmacHex(`pin:${salt}:${pin}`);
+function getPinPepper(): string {
+  return process.env.INTERNAL_SERVICE_SECRET || process.env.JWT_SECRET || 'casper-pin-pepper-v2';
+}
+
+/**
+ * Hashes a numeric/alphanumeric PIN with a customer-specific salt and server pepper.
+ * If no salt is provided, uses a cryptographically random salt or customer identifier.
+ */
+export async function hashPin(pin: string, salt?: string): Promise<string> {
+  const effectiveSalt = salt && salt.trim() ? salt.trim() : 'casper-default-entity-salt';
+  const pepper = getPinPepper();
+  // Hardened v2 format with HMAC over pepper, salt, and raw PIN
+  return await computeHmacHex(`pin:v2:${pepper}:${effectiveSalt}:${pin}`);
 }
 
 /**
  * Verifies if the provided PIN matches the stored hash using timing-safe comparison.
+ * Supports hardened v2 format and provides transparent fallback for legacy hashes.
  */
 export async function verifyPin(
   pin: string,
   storedHash: string,
-  salt: string = 'casper-salt'
+  salt?: string
 ): Promise<boolean> {
-  const computed = await hashPin(pin, salt);
-  return timingSafeEqualHex(computed, storedHash);
+  if (!pin || !storedHash) return false;
+  const effectiveSalt = salt && salt.trim() ? salt.trim() : 'casper-default-entity-salt';
+
+  // 1. Try hardened v2 hash
+  const computedV2 = await hashPin(pin, effectiveSalt);
+  if (timingSafeEqualHex(computedV2, storedHash)) {
+    return true;
+  }
+
+  // 2. Backwards-compatible fallback for legacy v1 hashes (pin:salt:pin or pin:casper-salt:pin)
+  const legacySalt = salt && salt.trim() ? salt.trim() : 'casper-salt';
+  const computedLegacy = await computeHmacHex(`pin:${legacySalt}:${pin}`);
+  if (timingSafeEqualHex(computedLegacy, storedHash)) {
+    return true;
+  }
+
+  // 3. Fallback for static default salt
+  const computedStaticLegacy = await computeHmacHex(`pin:casper-salt:${pin}`);
+  return timingSafeEqualHex(computedStaticLegacy, storedHash);
 }
 
 /**

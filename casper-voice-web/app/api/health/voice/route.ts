@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { RoomServiceClient } from "livekit-server-sdk";
 import { enforceSubscriptionExpiry } from "@/lib/subscription-guard";
+import { resolveDecryptedSettings } from "@/lib/crypto";
 
 export async function GET() {
   void enforceSubscriptionExpiry();
@@ -19,9 +20,7 @@ export async function GET() {
   let settings: Record<string, string> = {};
   try {
     const rows = await prisma.setting.findMany();
-    for (const r of rows) {
-      if (r.value) settings[r.key] = r.value;
-    }
+    settings = resolveDecryptedSettings(rows);
     diagnostics["DATABASE"] = { status: "OK", detail: `تم الاتصال بقاعدة البيانات (${rows.length} إعداد مسجل)` };
   } catch (e: any) {
     diagnostics["DATABASE"] = { status: "FAIL", detail: `فشل الاتصال بقاعدة البيانات: ${e.message}` };

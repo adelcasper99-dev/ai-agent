@@ -19,18 +19,11 @@ export {
 };
 
 export async function getResolvedTenantId(req: NextRequest): Promise<string | undefined> {
-  // 1. Internal service authentication (e.g. Telegram webhook bot)
-  const reqSecret = req.headers.get("x-internal-secret");
-  const expectedSecret = process.env.INTERNAL_SERVICE_SECRET;
-
-  if (reqSecret && expectedSecret) {
-    const reqBuffer = Buffer.from(reqSecret);
-    const expectedBuffer = Buffer.from(expectedSecret);
-    if (
-      reqBuffer.length === expectedBuffer.length &&
-      crypto.timingSafeEqual(reqBuffer, expectedBuffer)
-    ) {
-      return req.headers.get("x-tenant-id") || undefined;
+  // 1. Internal service authentication (e.g. Telegram webhook bot, voice agent, API keys)
+  if (isInternalAuthValid(req)) {
+    const tenantHeader = req.headers.get("x-tenant-id");
+    if (tenantHeader) {
+      try { return decodeURIComponent(tenantHeader); } catch { return tenantHeader; }
     }
   }
 

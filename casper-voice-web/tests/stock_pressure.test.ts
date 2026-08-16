@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { PrismaClient } from "@prisma/client";
+import { prismaSystem } from "../lib/prisma";
 import { executeTool } from "../lib/telegram_llm";
 
-const prisma = new PrismaClient();
+const prisma = prismaSystem;
 const TENANT_ID = "stock-pressure-tenant";
 const CUSTOMER_NAME = "عميل الضغط";
 const CUSTOMER_PHONE = "01088888888";
@@ -39,11 +39,10 @@ describe("Network Pressure & Races (Stock Constraints)", () => {
 
   afterAll(async () => {
     await prisma.customerLedgerEntry.deleteMany({ where: { customerId } });
+    await prisma.journalEntry.deleteMany({ where: { tenantId: TENANT_ID } });
     await prisma.sale.deleteMany({ where: { tenantId: TENANT_ID } });
     await prisma.customer.deleteMany({ where: { tenantId: TENANT_ID } });
     await prisma.product.deleteMany({ where: { tenantId: TENANT_ID } });
-    await prisma.tenant.deleteMany({ where: { id: TENANT_ID } });
-    await prisma.$disconnect();
   });
 
   it("fires 20 concurrent sales for a stock of 5, exactly 5 succeed and 15 reject", async () => {

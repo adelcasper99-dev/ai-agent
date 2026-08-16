@@ -1,8 +1,6 @@
 import { prisma } from "@/lib/prisma";
-// app/api/reports/summary/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
-
+import { parseMoney, calculateNetProfit, Decimal } from "@/lib/financial";
 
 export async function GET(req: NextRequest) {
   try {
@@ -25,41 +23,48 @@ export async function GET(req: NextRequest) {
       dateFilter = { gte: startOfMonth };
     }
 
-    const whereClause: any = dateFilter.gte ? { createdAt: dateFilter } : {};
+    const whereClause: any = { voided: false };
+    if (dateFilter.gte) {
+      whereClause.createdAt = dateFilter;
+    }
     if (tenantId && tenantId !== "all") {
       whereClause.tenantId = tenantId;
     }
 
     // 1. Sales
     const sales = await prisma.sale.findMany({ where: whereClause });
-    const totalSales = sales.reduce((acc, s) => acc.plus(s.total), new Prisma.Decimal(0));
-    const totalPaidSales = sales.reduce((acc, s) => acc.plus(s.paidAmount), new Prisma.Decimal(0));
-    const totalCustomerCredit = sales.reduce((acc, s) => acc.plus(s.deferredAmount), new Prisma.Decimal(0));
+    const totalSales = sales.reduce((acc, s) => acc.plus(parseMoney(s.total.toString())), new Decimal(0));
+    const totalPaidSales = sales.reduce((acc, s) => acc.plus(parseMoney(s.paidAmount.toString())), new Decimal(0));
+    const totalCustomerCredit = sales.reduce((acc, s) => acc.plus(parseMoney(s.deferredAmount.toString())), new Decimal(0));
 
     // 2. Expenses
     const expenses = await prisma.expense.findMany({ where: whereClause });
-    const totalExpenses = expenses.reduce((acc, e) => acc.plus(e.amount), new Prisma.Decimal(0));
+    const totalExpenses = expenses.reduce((acc, e) => acc.plus(parseMoney(e.amount.toString())), new Decimal(0));
 
     // 3. Purchases
     const purchases = await prisma.purchase.findMany({ where: whereClause });
-    const totalPurchases = purchases.reduce((acc, p) => acc.plus(p.totalAmount), new Prisma.Decimal(0));
-    const totalPaidPurchases = purchases.reduce((acc, p) => acc.plus(p.paidAmount), new Prisma.Decimal(0));
-    const totalSupplierDebt = purchases.reduce((acc, p) => acc.plus(p.deferredAmount), new Prisma.Decimal(0));
+    const totalPurchases = purchases.reduce((acc, p) => acc.plus(parseMoney(p.totalAmount.toString())), new Decimal(0));
+    const totalPaidPurchases = purchases.reduce((acc, p) => acc.plus(parseMoney(p.paidAmount.toString())), new Decimal(0));
+    const totalSupplierDebt = purchases.reduce((acc, p) => acc.plus(parseMoney(p.deferredAmount.toString())), new Decimal(0));
 
     // 4. Net Profit
-    const netProfit = totalSales.minus(totalExpenses).minus(totalPurchases);
+    const netProfit = calculateNetProfit(totalSales, totalExpenses, totalPurchases);
 
     return NextResponse.json({
       period,
       summary: {
-        totalSales,
-        totalPaidSales,
-        totalCustomerCredit,
-        totalExpenses,
-        totalPurchases,
-        totalPaidPurchases,
-        totalSupplierDebt,
-        netProfit,
+        totalSales: totalSales.toNumber(),
+        totalSalesStr: totalSales.toFixed(2),
+        totalPaidSales: totalPaidSales.toNumber(),
+        totalCustomerCredit: totalCustomerCredit.toNumber(),
+        totalExpenses: totalExpenses.toNumber(),
+        totalExpensesStr: totalExpenses.toFixed(2),
+        totalPurchases: totalPurchases.toNumber(),
+        totalPurchasesStr: totalPurchases.toFixed(2),
+        totalPaidPurchases: totalPaidPurchases.toNumber(),
+        totalSupplierDebt: totalSupplierDebt.toNumber(),
+        netProfit: netProfit.toNumber(),
+        netProfitStr: netProfit.toFixed(2),
         salesCount: sales.length,
         expensesCount: expenses.length,
         purchasesCount: purchases.length,

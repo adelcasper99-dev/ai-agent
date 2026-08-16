@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "app/dashboard/layout.tsx": {
-    "mtime": 1786885666.6957614,
-    "ast_hash": "4322e7553c213af5fbdae3fdb88db506",
+    "mtime": 1786873059.7167726,
+    "ast_hash": "43213360ea511be0c03452c135c29ecb",
     "semantic_hash": ""
   },
   "app/dashboard/logs/page.tsx": {
@@ -1117,21 +1117,6 @@
   "test_results.txt": {
     "mtime": 1786880482.400226,
     "ast_hash": "3513da033cbbd44a46af510a9056a4f5",
-    "semantic_hash": ""
-  },
-  "app/api/auth/me/route.ts": {
-    "mtime": 1786885601.0358894,
-    "ast_hash": "503da782b4ee234716a5810ad76a701e",
-    "semantic_hash": ""
-  },
-  "components/UserProfileMenu.tsx": {
-    "mtime": 1786885622.5585716,
-    "ast_hash": "43e2d512ccee69f0ee8f738055ae939a",
-    "semantic_hash": ""
-  },
-  "tests/auth_me.test.ts": {
-    "mtime": 1786885676.9248974,
-    "ast_hash": "6c2216fd161c5d82a9d98679fcfc1b01",
     "semantic_hash": ""
   }
 }

@@ -14,11 +14,11 @@
 //      - Total ledger entries = 5 (no more, no less)
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { PrismaClient } from "@prisma/client";
+import { prismaSystem } from "../lib/prisma";
 import Decimal from "decimal.js";
 import { executeTool } from "../lib/telegram_llm";
 
-const prisma = new PrismaClient();
+const prisma = prismaSystem;
 
 const TENANT_ID = "concurrent-stress-tenant";
 const CUSTOMER_NAME = "رضا التجربة المتزامنة";
@@ -71,14 +71,11 @@ describe("Concurrent Financial Stress Test", () => {
   });
 
   afterAll(async () => {
-    // Cleanup test data
-    await prisma.customerLedgerEntry.deleteMany({ where: { customerId } });
-    await prisma.sale.deleteMany({ where: { tenantId: TENANT_ID } });
+    await prisma.customerLedgerEntry.deleteMany({ where: { tenantId: TENANT_ID } });
     await prisma.journalEntry.deleteMany({ where: { tenantId: TENANT_ID } });
+    await prisma.sale.deleteMany({ where: { tenantId: TENANT_ID } });
     await prisma.customer.deleteMany({ where: { tenantId: TENANT_ID } });
     await prisma.product.deleteMany({ where: { tenantId: TENANT_ID } });
-    await prisma.tenant.deleteMany({ where: { id: TENANT_ID } });
-    await prisma.$disconnect();
   });
 
   it("C1 — 3 concurrent sales + 2 concurrent payments settle with correct ledger math", async () => {

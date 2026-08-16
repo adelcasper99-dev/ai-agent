@@ -9,10 +9,13 @@ import { PUT as updatePurchase } from "../app/api/purchases/route";
 
 const prisma = new PrismaClient();
 
+if (!process.env.INTERNAL_SERVICE_SECRET) {
+  process.env.INTERNAL_SERVICE_SECRET = "test-internal-secret-key-123";
+}
 if (!process.env.INTERNAL_API_KEY) {
   process.env.INTERNAL_API_KEY = "test-internal-secret-key-123";
 }
-const VALID_TOKEN = process.env.INTERNAL_API_KEY;
+const VALID_TOKEN = process.env.INTERNAL_SERVICE_SECRET;
 
 function makePutRequest(url: string, body: unknown, headers: Record<string, string> = {}) {
   return new NextRequest(url, {
@@ -24,6 +27,11 @@ function makePutRequest(url: string, body: unknown, headers: Record<string, stri
     body: JSON.stringify(body),
   });
 }
+
+const AUTH_HEADERS = {
+  Authorization: `Bearer ${VALID_TOKEN}`,
+  "x-tenant-id": "test-tenant-id",
+};
 
 describe("Update Routes Test Suite", () => {
   beforeAll(async () => {
@@ -55,8 +63,8 @@ describe("Update Routes Test Suite", () => {
     it("G2.1 & G2.2: Appointments 404 fallback", async () => {
       const req = makePutRequest(
         "http://localhost/api/appointments",
-        { customer_name: "عميل غير موجود قطعاً 999", new_date: "2026-08-01" },
-        { Authorization: `Bearer ${VALID_TOKEN}` }
+        { customer_name: "عميل غير موجود نهائيا", new_time: "12:00" },
+        AUTH_HEADERS
       );
       const res = await updateAppointment(req);
       const json = await res.json();
@@ -67,8 +75,8 @@ describe("Update Routes Test Suite", () => {
     it("G2.3 & G2.4: Expenses 404 fallback", async () => {
       const req = makePutRequest(
         "http://localhost/api/expenses",
-        { description: "مصروف وهمي غير موجود 999", new_amount: 50 },
-        { Authorization: `Bearer ${VALID_TOKEN}` }
+        { description: "مصروف غير موجود نهائيا", new_amount: 500 },
+        AUTH_HEADERS
       );
       const res = await updateExpense(req);
       const json = await res.json();
@@ -125,16 +133,16 @@ describe("Update Routes Test Suite", () => {
     it("G1.1 - G1.3: Appointment Disambiguation", async () => {
       await prisma.appointment.deleteMany({ where: { customerName: "عميل تكرار موثق" } });
       const appt1 = await prisma.appointment.create({
-        data: { customerName: "عميل تكرار موثق", date: "2026-08-01", time: "10:00", notes: "اختبار 1" },
+        data: { tenantId: "test-tenant-id", customerName: "عميل تكرار موثق", date: "2026-08-01", time: "10:00", notes: "اختبار 1" },
       });
       const appt2 = await prisma.appointment.create({
-        data: { customerName: "عميل تكرار موثق", date: "2026-08-02", time: "14:00", notes: "اختبار 2" },
+        data: { tenantId: "test-tenant-id", customerName: "عميل تكرار موثق", date: "2026-08-02", time: "14:00", notes: "اختبار 2" },
       });
 
       const req = makePutRequest(
         "http://localhost/api/appointments",
         { customer_name: "عميل تكرار موثق", new_time: "15:00" },
-        { Authorization: `Bearer ${VALID_TOKEN}` }
+        AUTH_HEADERS
       );
       const res = await updateAppointment(req);
       const json = await res.json();
@@ -159,6 +167,7 @@ describe("Update Routes Test Suite", () => {
       });
       const purchase = await prisma.purchase.create({
         data: {
+          tenantId: "test-tenant-id",
           supplierId: supplier.id,
           itemName: "صنف اختبار idempotency",
           totalAmount: 1000,
@@ -172,14 +181,14 @@ describe("Update Routes Test Suite", () => {
       const payPayload = { supplier_name: uniqueName, payment_amount: 100 };
 
       const req1 = makePutRequest("http://localhost/api/purchases", payPayload, {
-        Authorization: `Bearer ${VALID_TOKEN}`,
+        ...AUTH_HEADERS,
         "idempotency-key": idempotencyKeyPurch,
       });
       const res1 = await updatePurchase(req1);
       const json1 = await res1.json();
 
       const req2 = makePutRequest("http://localhost/api/purchases", payPayload, {
-        Authorization: `Bearer ${VALID_TOKEN}`,
+        ...AUTH_HEADERS,
         "idempotency-key": idempotencyKeyPurch,
       });
       const res2 = await updatePurchase(req2);
@@ -193,20 +202,20 @@ describe("Update Routes Test Suite", () => {
 
     it("G4.3: Appointments Idempotency Cache Guard", async () => {
       const appt = await prisma.appointment.create({
-        data: { customerName: "عميل ايدمبوتنسي", date: "2026-08-05", time: "11:00" },
+        data: { tenantId: "test-tenant-id", customerName: "عميل ايدمبوتنسي", date: "2026-08-05", time: "11:00" },
       });
 
       const idempotencyKeyAppt = `test-uuid-appt-${Date.now()}`;
       const apptPayload = { id: appt.id, new_time: "16:00" };
 
       const req1 = makePutRequest("http://localhost/api/appointments", apptPayload, {
-        Authorization: `Bearer ${VALID_TOKEN}`,
+        ...AUTH_HEADERS,
         "idempotency-key": idempotencyKeyAppt,
       });
       await updateAppointment(req1);
 
       const req2 = makePutRequest("http://localhost/api/appointments", apptPayload, {
-        Authorization: `Bearer ${VALID_TOKEN}`,
+        ...AUTH_HEADERS,
         "idempotency-key": idempotencyKeyAppt,
       });
       const res2 = await updateAppointment(req2);
@@ -221,14 +230,14 @@ describe("Update Routes Test Suite", () => {
   describe("[Group 6] G5: Optimistic Concurrency Conflict", () => {
     it("G5.1 & G5.2: Optimistic Concurrency Check (updatedAt mismatch)", async () => {
       const appt = await prisma.appointment.create({
-        data: { customerName: "عميل تضارب", date: "2026-08-05", time: "11:00" },
+        data: { tenantId: "test-tenant-id", customerName: "عميل تضارب", date: "2026-08-05", time: "11:00" },
       });
 
       const staleUpdatedAt = "2020-01-01T00:00:00.000Z";
       const req = makePutRequest(
         "http://localhost/api/appointments",
         { id: appt.id, new_date: "2026-08-10", updatedAt: staleUpdatedAt },
-        { Authorization: `Bearer ${VALID_TOKEN}` }
+        AUTH_HEADERS
       );
       const res = await updateAppointment(req);
       const json = await res.json();
@@ -243,12 +252,17 @@ describe("Update Routes Test Suite", () => {
   describe("[Group 7] G7: Appointment Cancellation (DELETE)", () => {
     it("G7.1 & G7.2: Appointment Cancellation (DELETE)", async () => {
       const appt = await prisma.appointment.create({
-        data: { customerName: "عميل إلغاء", date: "2026-08-05", time: "11:00" },
+        data: { tenantId: "test-tenant-id", customerName: "عميل إلغاء", date: "2026-08-05", time: "11:00" },
       });
 
       const reqDelete = new NextRequest("http://localhost/api/appointments", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${VALID_TOKEN}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${VALID_TOKEN}`,
+          "x-internal-secret": process.env.INTERNAL_SERVICE_SECRET || "test-internal-secret-key-123",
+          "x-tenant-id": "test-tenant-id",
+        },
         body: JSON.stringify({ id: appt.id }),
       });
       const resDelete = await deleteAppointment(reqDelete);

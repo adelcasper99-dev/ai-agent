@@ -1,9 +1,8 @@
 import { prisma } from "@/lib/prisma";
-// app/api/purchases/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getResolvedTenantId, isInternalAuthValid } from "@/lib/auth";
-import Decimal from "decimal.js";
-
+import { calculatePurchaseTotals, parseMoney, Decimal } from "@/lib/financial";
+import { runWithTenant } from "@/lib/prisma-tenant-extension";
 
 // Simple in-memory idempotency cache (60 seconds)
 const idempotencyMap = new Map<string, { timestamp: number; response: any }>();
@@ -18,15 +17,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { supplier_name, item_name, total_amount, paid_amount = 0, notes = "" } = body;
 
-    if (!supplier_name || !item_name || typeof total_amount !== "number" || total_amount <= 0) {
+    const totalDec = parseMoney(total_amount);
+    if (!supplier_name || !item_name || totalDec.isZero() || !totalDec.isPositive()) {
       return NextResponse.json(
         { error: "بيانات المشتريات غير مكتملة (اسم المورد + الصنف + المبلغ الإجمالي مطلوبين)" },
         { status: 400 }
       );
     }
 
-    const paid = typeof paid_amount === "number" ? paid_amount : 0;
-    const deferred = Math.max(0, total_amount - paid);
+    const financials = calculatePurchaseTotals(totalDec, paid_amount);
 
     // 1. Find or create Supplier by tenantId & name
     const supplierNameStr = supplier_name.trim();
@@ -44,10 +43,11 @@ export async function POST(req: NextRequest) {
       data: {
         supplierId: supplier.id,
         itemName: item_name.trim(),
-        totalAmount: total_amount,
-        paidAmount: paid,
-        deferredAmount: deferred,
+        totalAmount: financials.totalAmountStr,
+        paidAmount: financials.paidAmountStr,
+        deferredAmount: financials.deferredAmountStr,
         notes: notes.trim(),
+        tenantId: resolvedTenantId,
       },
     });
 
@@ -55,7 +55,8 @@ export async function POST(req: NextRequest) {
       success: true,
       purchase,
       supplierName: supplier.name,
-      deferredAmount: deferred,
+      deferredAmount: financials.deferredAmount.toNumber(),
+      deferredAmountStr: financials.deferredAmountStr,
     });
   } catch (err) {
     console.error("[Purchases POST Error]", err);
@@ -83,83 +84,93 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "غير مصرح (Unauthorized)" }, { status: 401 });
     }
 
-    // Idempotency check
-    const idempotencyKey = req.headers.get("idempotency-key");
-    const now = Date.now();
-    if (idempotencyKey) {
-      const cached = idempotencyMap.get(idempotencyKey);
-      if (cached && now - cached.timestamp < 60000) {
-        return NextResponse.json({ ...cached.response, cached: true });
+    const resolvedTenantId = await getResolvedTenantId(req);
+    if (!resolvedTenantId) {
+      return NextResponse.json({ error: "غير مصرح (Missing Tenant ID)" }, { status: 401 });
+    }
+
+    return await runWithTenant(resolvedTenantId, async () => {
+      // Idempotency check
+      const idempotencyKey = req.headers.get("idempotency-key");
+      const now = Date.now();
+      if (idempotencyKey) {
+        const cached = idempotencyMap.get(idempotencyKey);
+        if (cached && now - cached.timestamp < 60000) {
+          return NextResponse.json({ ...cached.response, cached: true });
+        }
       }
-    }
 
-    const { id, supplier_name, payment_amount, notes } = await req.json();
+      const { id, supplier_name, payment_amount, notes } = await req.json();
 
-    if (!supplier_name && !id) {
-      return NextResponse.json({ error: "يلزم تحديد اسم المورد أو المعرف (ID)" }, { status: 400 });
-    }
+      if (!supplier_name && !id) {
+        return NextResponse.json({ error: "يلزم تحديد اسم المورد أو المعرف (ID)" }, { status: 400 });
+      }
 
-    // Locate purchase record
-    let purchaseRecord = null;
-    if (id) {
-      purchaseRecord = await prisma.purchase.findUnique({ where: { id }, include: { supplier: true } });
-    } else {
-      const supplier = await prisma.supplier.findFirst({
-        where: { name: { contains: supplier_name.trim() } },
-        include: {
-          purchases: {
-            where: { deferredAmount: { gt: 0 } },
-            orderBy: { createdAt: "desc" },
+      // Locate purchase record
+      let purchaseRecord = null;
+      if (id) {
+        purchaseRecord = await prisma.purchase.findUnique({ where: { id }, include: { supplier: true } });
+      } else {
+        const supplier = await prisma.supplier.findFirst({
+          where: { name: { contains: supplier_name.trim() } },
+          include: {
+            purchases: {
+              where: { deferredAmount: { gt: 0 } },
+              orderBy: { createdAt: "desc" },
+            },
           },
+        });
+
+        if (!supplier || supplier.purchases.length === 0) {
+          return NextResponse.json(
+            { error: `عفواً، مفيش أي متبقي آجل مسجل للمورد (${supplier_name}) للتسديد.` },
+            { status: 404 }
+          );
+        }
+        purchaseRecord = supplier.purchases[0];
+      }
+
+      if (!purchaseRecord) {
+        return NextResponse.json({ error: "سجل المشتريات غير موجود" }, { status: 404 });
+      }
+
+      const paymentDec = parseMoney(payment_amount);
+      if (!paymentDec.isPositive() || paymentDec.isZero()) {
+        return NextResponse.json({ error: "مبلغ السداد يجب أن يكون أكبر من الصفر" }, { status: 400 });
+      }
+
+      // ⚡ DECIMAL.JS Financial Math Guarantee
+      const currentTotal = parseMoney(purchaseRecord.totalAmount.toString());
+      const currentPaid = parseMoney(purchaseRecord.paidAmount.toString());
+      const newPaidDecimal = currentPaid.plus(paymentDec);
+      const newDeferredDecimal = Decimal.max(0, currentTotal.minus(newPaidDecimal));
+
+      const updated = await prisma.purchase.update({
+        where: { id: purchaseRecord.id },
+        data: {
+          paidAmount: newPaidDecimal.toFixed(2),
+          deferredAmount: newDeferredDecimal.toFixed(2),
+          ...(notes && { notes: notes.trim() }),
         },
       });
 
-      if (!supplier || supplier.purchases.length === 0) {
-        return NextResponse.json(
-          { error: `عفواً، مفيش أي متبقي آجل مسجل للمورد (${supplier_name}) للتسديد.` },
-          { status: 404 }
-        );
+      const responsePayload = {
+        success: true,
+        supplierName: supplier_name || "المورد",
+        paymentApplied: paymentDec.toNumber(),
+        remainingDebt: newDeferredDecimal.toNumber(),
+        remainingDebtStr: newDeferredDecimal.toFixed(2),
+        updated,
+      };
+
+      if (idempotencyKey) {
+        idempotencyMap.set(idempotencyKey, { timestamp: now, response: responsePayload });
       }
-      purchaseRecord = supplier.purchases[0];
-    }
 
-    if (!purchaseRecord) {
-      return NextResponse.json({ error: "سجل المشتريات غير موجود" }, { status: 404 });
-    }
-
-    const payment = typeof payment_amount === "number" && payment_amount > 0 ? payment_amount : 0;
-
-    // ⚡ DECIMAL.JS Financial Math Guarantee
-    const currentTotal = new Decimal(purchaseRecord.totalAmount);
-    const currentPaid = new Decimal(purchaseRecord.paidAmount);
-    const newPaidDecimal = currentPaid.plus(payment);
-    const newDeferredDecimal = Decimal.max(0, currentTotal.minus(newPaidDecimal));
-
-    const updated = await prisma.purchase.update({
-      where: { id: purchaseRecord.id },
-      data: {
-        paidAmount: newPaidDecimal.toNumber(),
-        deferredAmount: newDeferredDecimal.toNumber(),
-        ...(notes && { notes: notes.trim() }),
-      },
+      return NextResponse.json(responsePayload);
     });
-
-    const responsePayload = {
-      success: true,
-      supplierName: supplier_name || "المورد",
-      paymentApplied: payment,
-      remainingDebt: newDeferredDecimal.toNumber(),
-      updated,
-    };
-
-    if (idempotencyKey) {
-      idempotencyMap.set(idempotencyKey, { timestamp: now, response: responsePayload });
-    }
-
-    return NextResponse.json(responsePayload);
   } catch (err) {
     console.error("[Purchases PUT Error]", err);
     return NextResponse.json({ error: "حصل خطأ في تسديد مستحقات المورد" }, { status: 500 });
   }
 }
-

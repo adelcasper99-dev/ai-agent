@@ -1,11 +1,11 @@
 # Graph Report - casper-voice-web  (2026-08-16)
 
 ## Corpus Check
-- 221 files · ~115,135 words
+- 218 files · ~113,570 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 878 nodes · 1554 edges · 95 communities (49 shown, 46 thin omitted)
+- 871 nodes · 1533 edges · 89 communities (44 shown, 45 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
@@ -90,12 +90,6 @@
 - [[_COMMUNITY_test_onboarding_name_persistence.ts|test_onboarding_name_persistence.ts]]
 - [[_COMMUNITY_test_product_variant_ambiguity.ts|test_product_variant_ambiguity.ts]]
 - [[_COMMUNITY_test_service_vs_product.ts|test_service_vs_product.ts]]
-- [[_COMMUNITY_groundingCheck|groundingCheck]]
-- [[_COMMUNITY_merchant_memory.test.ts|merchant_memory.test.ts]]
-- [[_COMMUNITY_test_financial_sanity_and_grounding.js|test_financial_sanity_and_grounding.js]]
-- [[_COMMUNITY_simulate_customer.ts|simulate_customer.ts]]
-- [[_COMMUNITY_concurrent_stress.test.ts|concurrent_stress.test.ts]]
-- [[_COMMUNITY_sync_conflict.test.ts|sync_conflict.test.ts]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `processTelegramMessageWithLLM()` - 88 edges
@@ -110,41 +104,37 @@
 10. `getClientIp()` - 16 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `runFinancialSanityTests()` --calls--> `executeTool()`  [EXTRACTED]
-  scripts/manual-sim/test_financial_sanity_and_grounding.js → lib/telegram_llm.ts
-- `run()` --calls--> `processTelegramMessageWithLLM()`  [EXTRACTED]
-  simulate_customer.ts → lib/telegram_llm.ts
 - `GET()` --calls--> `maskSecret()`  [EXTRACTED]
   app/api/admin/api-keys/route.ts → lib/crypto.ts
 - `POST()` --calls--> `getResolvedTenantId()`  [EXTRACTED]
   app/api/ai/chat/route.ts → lib/auth.ts
 - `POST()` --calls--> `fireAndForgetTelegramAlert()`  [EXTRACTED]
   app/api/appointments/route.ts → lib/telegram.ts
+- `GET()` --calls--> `getResolvedTenantId()`  [EXTRACTED]
+  app/api/appointments/route.ts → lib/auth.ts
+- `POST()` --calls--> `getResolvedTenantId()`  [EXTRACTED]
+  app/api/chat/route.ts → lib/auth.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (95 total, 46 thin omitted)
+## Communities (89 total, 45 thin omitted)
 
 ### Community 0 - "telegram.ts"
 Cohesion: 0.07
-Nodes (44): handleCustomerMessage(), POST(), sendAsBusinessOwner(), sendProfileConfirmationCard(), PhoneValidationResult, sanitizeEgyptianPhone(), approveDirectTenant(), approveTenantRequest() (+36 more)
+Nodes (48): POST(), POST(), handleCustomerMessage(), POST(), sendAsBusinessOwner(), sendProfileConfirmationCard(), correctTranscriptWithLLM(), PhoneValidationResult (+40 more)
 
 ### Community 1 - "telegram_llm.ts"
 Cohesion: 0.05
-Nodes (38): addCustomerTool, addProductTool, ALL_TOOLS, AmbiguityType, APPOINTMENT_TOOLS, bookAppointmentTool, cancelAppointmentTool, cancelLastTransactionTool (+30 more)
+Nodes (40): addCustomerTool, addProductTool, ALL_TOOLS, AmbiguityType, APPOINTMENT_TOOLS, ARABIC_NUMBER_WORDS, bookAppointmentTool, cancelAppointmentTool (+32 more)
 
 ### Community 2 - "dependencies"
 Cohesion: 0.05
 Nodes (39): dependencies, clsx, date-fns, decimal.js, flatpickr, @google/generative-ai, groq-sdk, livekit-client (+31 more)
 
-### Community 3 - "prisma.ts"
-Cohesion: 0.06
-Nodes (4): paySupplierSchema, globalForPrisma, main(), setupUnitData()
-
 ### Community 4 - "route.ts"
-Cohesion: 0.06
-Nodes (51): appointmentIdempotencyMap, DELETE(), GET(), POST(), PUT(), POST(), GET(), POST() (+43 more)
+Cohesion: 0.05
+Nodes (58): appointmentIdempotencyMap, DELETE(), GET(), POST(), PUT(), POST(), GET(), POST() (+50 more)
 
 ### Community 5 - "compilerOptions"
 Cohesion: 0.10
@@ -159,8 +149,8 @@ Cohesion: 0.32
 Nodes (5): createAuditLog(), LogAuditParams, RAGSearchResult, searchKnowledgeBase(), prisma
 
 ### Community 8 - "VoiceCallModal.tsx"
-Cohesion: 0.12
-Nodes (9): DiagData, DiagItem, PAGE_TITLES, TABS, Message, UserProfileData, UserProfileMenuProps, ChatMessage (+1 more)
+Cohesion: 0.15
+Nodes (7): DiagData, DiagItem, PAGE_TITLES, TABS, Message, ChatMessage, VoiceCallModalProps
 
 ### Community 9 - "page.tsx"
 Cohesion: 0.32
@@ -180,11 +170,11 @@ Nodes (5): compilerOptions, types, exclude, extends, include
 
 ### Community 15 - "middleware.ts"
 Cohesion: 0.07
-Nodes (23): main(), buildActivePrompt(), enforceArabicEnglishOnly(), processTelegramMessageWithLLM(), resolveActiveTools(), sanitizeNonToolReply(), saveChatMessage(), main() (+15 more)
+Nodes (25): main(), buildActivePrompt(), enforceArabicEnglishOnly(), processTelegramMessageWithLLM(), resolveActiveTools(), sanitizeNonToolReply(), saveChatMessage(), main() (+17 more)
 
 ### Community 16 - "route.ts"
 Cohesion: 0.08
-Nodes (53): genAI, POST(), customerLoginSchema, POST(), customerSetupSchema, POST(), POST(), POST() (+45 more)
+Nodes (50): genAI, POST(), customerLoginSchema, POST(), customerSetupSchema, POST(), POST(), POST() (+42 more)
 
 ### Community 18 - "route.ts"
 Cohesion: 0.35
@@ -199,8 +189,8 @@ Cohesion: 0.10
 Nodes (19): Affected functions in `session.ts`, Architecture constraint, Architecture Decision: Token Format, Callers that sign (must be updated), Callers that verify (must check expiry + blacklist), Chosen pattern, Current broken code, Finding #3 — XFF Spoofing (10-minute fix) (+11 more)
 
 ### Community 29 - "executeTool"
-Cohesion: 0.11
-Nodes (19): cleanArabicTimeStr(), executeTool(), findSupplierFuzzy(), logRejectedToolCall(), resolveRelativeArabicDate(), sanitizeArgsLanguage(), main(), prisma (+11 more)
+Cohesion: 0.06
+Nodes (34): cleanArabicTimeStr(), executeTool(), extractAllNumbersFromText(), FINANCIAL_TOOLS, findProductFuzzy(), findSupplierFuzzy(), groundingCheck(), isArabicFuzzyMatch() (+26 more)
 
 ### Community 30 - "correctTranscriptWithLLM"
 Cohesion: 0.12
@@ -211,8 +201,8 @@ Cohesion: 0.13
 Nodes (14): Actual Vulnerabilities Found in Source (Empirical, Not AI-Generated), Fix Strategy: Typed `bypassTenantFilter` Flag, Industry Standard: Prisma Multi-Tenant Fail-Closed (2024–2026), Legitimate Callers That Need a Real Bypass, Pattern A: Application-Level Throw (Our Target Pattern), Pattern B: PostgreSQL RLS (Not applicable here), Research Findings — Tenant Filter Fail-Closed Hardening, Test Coverage Gap (+6 more)
 
 ### Community 42 - "route.ts"
-Cohesion: 0.14
-Nodes (18): GET(), POST(), GET(), GET(), KNOWN_KEYS, POST(), SENSITIVE_KEYS, decryptField() (+10 more)
+Cohesion: 0.20
+Nodes (14): GET(), POST(), GET(), GET(), KNOWN_KEYS, POST(), SENSITIVE_KEYS, decryptField() (+6 more)
 
 ### Community 52 - "test_gemini.py"
 Cohesion: 0.60
@@ -250,41 +240,25 @@ Nodes (3): main(), runServiceTest(), setupData()
 Cohesion: 0.83
 Nodes (3): main(), runTestCase(), setupTestData()
 
-### Community 81 - "test_multi_unit_conversion.ts"
-Cohesion: 0.46
-Nodes (4): POST(), POST(), correctTranscriptWithLLM(), buildWhisperPrompt()
-
-### Community 86 - "groundingCheck"
-Cohesion: 0.29
-Nodes (8): ARABIC_NUMBER_WORDS, extractAllNumbersFromText(), FINANCIAL_TOOLS, findProductFuzzy(), groundingCheck(), isArabicFuzzyMatch(), messageHasAnyNumber(), normalizeArabic()
-
-### Community 90 - "merchant_memory.test.ts"
-Cohesion: 0.40
-Nodes (4): validateMemoryFact(), consolidateMerchantMemories(), prisma, prisma
-
-### Community 91 - "test_financial_sanity_and_grounding.js"
-Cohesion: 0.40
-Nodes (4): { executeTool }, prisma, { PrismaClient }, runFinancialSanityTests()
-
 ## Knowledge Gaps
-- **297 isolated node(s):** `genAI`, `appointmentIdempotencyMap`, `customerLoginSchema`, `customerSetupSchema`, `Message` (+292 more)
+- **296 isolated node(s):** `genAI`, `appointmentIdempotencyMap`, `customerLoginSchema`, `customerSetupSchema`, `Message` (+291 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **46 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **45 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `prisma` connect `dependencies` to `prisma.ts`?**
-  _High betweenness centrality (0.052) - this node is a cross-community bridge._
-- **Why does `processTelegramMessageWithLLM()` connect `middleware.ts` to `telegram.ts`, `telegram_llm.ts`, `prisma.ts`, `route.ts`, `processTelegramMessageWithLLM`, `route.ts`, `executeTool`, `test_gemini.py`, `route.ts`, `route.ts`, `route.ts`, `route.ts`, `reset_sim_tenant.ts`, `route.ts`, `test_ambiguity_and_arabic_numerals.ts`, `test_implicit_service_prompts.ts`, `test_onboarding_name_persistence.ts`, `test_product_variant_ambiguity.ts`, `test_service_vs_product.ts`, `simulate_customer.ts`?**
-  _High betweenness centrality (0.034) - this node is a cross-community bridge._
+  _High betweenness centrality (0.053) - this node is a cross-community bridge._
+- **Why does `processTelegramMessageWithLLM()` connect `middleware.ts` to `telegram.ts`, `telegram_llm.ts`, `prisma.ts`, `route.ts`, `processTelegramMessageWithLLM`, `route.ts`, `executeTool`, `test_gemini.py`, `route.ts`, `route.ts`, `route.ts`, `route.ts`, `reset_sim_tenant.ts`, `route.ts`, `test_ambiguity_and_arabic_numerals.ts`, `test_implicit_service_prompts.ts`, `test_multi_unit_conversion.ts`, `test_onboarding_name_persistence.ts`, `test_product_variant_ambiguity.ts`, `test_service_vs_product.ts`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `processTelegramMessageWithLLM()` (e.g. with `getValidApiKey()` and `markKeyExhausted()`) actually correct?**
   _`processTelegramMessageWithLLM()` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `genAI`, `appointmentIdempotencyMap`, `customerLoginSchema` to the rest of the system?**
-  _297 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _296 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `telegram.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.07431693989071038 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06564364876385337 - nodes in this community are weakly interconnected._
 - **Should `telegram_llm.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.05263157894736842 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05121951219512195 - nodes in this community are weakly interconnected._
 - **Should `dependencies` be split into smaller, more focused modules?**
   _Cohesion score 0.05 - nodes in this community are weakly interconnected._

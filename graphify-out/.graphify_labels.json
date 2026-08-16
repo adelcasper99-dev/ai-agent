@@ -471,5 +471,8 @@
   "469": "resolveLiveTemplateExtensions",
   "470": "resolveLiveTemplateExtensions",
   "471": "vps_wipe_tenants.py",
-  "472": "selectAvailablePendingEvent"
+  "472": "selectAvailablePendingEvent",
+  "475": "resolveObjectImageRect",
+  "477": "checkElementRadialSpotlightDOM",
+  "480": "preflight_check.py"
 }

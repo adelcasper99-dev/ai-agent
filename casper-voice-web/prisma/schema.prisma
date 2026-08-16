@@ -104,8 +104,8 @@ model KnowledgeItem {
 // ── المصروفات ────────────────────────────────────────────
 model Expense {
   id          String   @id @default(cuid())
-  tenantId    String?
-  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
   amount      Decimal
   description String
   category    String   @default("عام")
@@ -137,8 +137,8 @@ model Product {
 // ── المبيعات ─────────────────────────────────────────────
 model Sale {
   id             String   @id @default(cuid())
-  tenantId       String?
-  tenant         Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
   customerId     String?
   customer       Customer? @relation(fields: [customerId], references: [id])
   itemName       String
@@ -165,8 +165,8 @@ model Sale {
 // ── الموردين والمشتريات ─────────────────────────────────────
 model Supplier {
   id        String            @id @default(cuid())
-  tenantId  String?
-  tenant    Tenant?           @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  tenant    Tenant            @relation(fields: [tenantId], references: [id])
   name      String
   phone     String            @default("")
   createdAt DateTime          @default(now())
@@ -180,8 +180,8 @@ model Supplier {
 
 model Purchase {
   id             String   @id @default(cuid())
-  tenantId       String?
-  tenant         Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
   supplierId     String
   supplier       Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   itemName       String
@@ -201,8 +201,8 @@ model Purchase {
 
 model SupplierPayment {
   id         String   @id @default(cuid())
-  tenantId   String?
-  tenant     Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
   supplierId String
   supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   amount      Decimal
@@ -216,8 +216,8 @@ model SupplierPayment {
 // ── المواعيد ─────────────────────────────────────────────
 model Appointment {
   id           String   @id @default(cuid())
-  tenantId     String?
-  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
   customerId   String?
   customer     Customer? @relation(fields: [customerId], references: [id])
   customerName String
@@ -234,8 +234,8 @@ model Appointment {
 // ── العملاء وحسابات الآجل (Customer Ledger) ──────────────
 model Customer {
   id        String   @id @default(cuid())
-  tenantId  String?
-  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
   name      String
   phone     String?
   pinHash   String?
@@ -254,8 +254,8 @@ model Customer {
 
 model CustomerLedgerEntry {
   id          String   @id @default(cuid())
-  tenantId    String?
-  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
   customerId  String
   customer    Customer @relation(fields: [customerId], references: [id])
   saleId      String?
@@ -277,8 +277,8 @@ model CustomerLedgerEntry {
 // ── قيود اليومية (General Ledger) ─────────────────────────
 model JournalEntry {
   id          String   @id @default(cuid())
-  tenantId    String?
-  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
   
   accountCode String   // e.g. "CASH", "ACCOUNTS_RECEIVABLE", "SALES_REVENUE"
   debit       Decimal    @default(0)

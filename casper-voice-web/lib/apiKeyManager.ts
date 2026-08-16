@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { decryptField } from "./crypto";
 
 // Track in-memory exhausted ENV keys (e.g. "gemini:KEY", "groq:KEY")
 const _exhaustedEnvKeys = new Set<string>();
@@ -49,7 +50,7 @@ export async function getValidApiKey(provider: string = "gemini"): Promise<strin
   }
 
   if (validKeyRecord) {
-    return validKeyRecord.keyString;
+    return decryptField(validKeyRecord.keyString);
   }
 
   // 2. Scan ENV Variables pool (e.g. GROQ_API_KEY, GROQ_API_KEY_1, GROQ_API_KEYS="key1,key2"...)
@@ -80,12 +81,13 @@ export async function markKeyExhausted(keyString: string, provider: string = "ge
   _exhaustedEnvKeys.add(`${normProvider}:${trimmedKey}`);
 
   try {
-    const existing = await prisma.apiKeyPool.findUnique({
-      where: { keyString: trimmedKey }
+    const keys = await prisma.apiKeyPool.findMany({
+      where: { provider: { equals: normProvider } }
     });
-    if (existing) {
+    const match = keys.find(k => decryptField(k.keyString) === trimmedKey || k.keyString === trimmedKey);
+    if (match) {
       await prisma.apiKeyPool.update({
-        where: { keyString: trimmedKey },
+        where: { id: match.id },
         data: {
           isExhausted: true,
           exhaustedAt: new Date()

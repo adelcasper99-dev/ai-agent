@@ -1,11 +1,7 @@
 import { prisma } from "@/lib/prisma";
-// app/api/sales/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import Decimal from "decimal.js";
 import { getResolvedTenantId } from "@/lib/auth";
-
-Decimal.set({ rounding: Decimal.ROUND_HALF_UP });
-
+import { calculateSaleTotals, parseMoney } from "@/lib/financial";
 
 // In-memory idempotency cache (60 seconds)
 const salesIdempotencyMap = new Map<string, { timestamp: number; response: any }>();
@@ -37,37 +33,33 @@ export async function POST(req: NextRequest) {
     const { item_name, price, quantity = 1, customer_name = "", paid_amount, idempotency_key: bodyKey } = body;
     const effectiveKey = idempotencyKey || (bodyKey ? String(bodyKey) : undefined);
 
-    if (!item_name || typeof price !== "number" || price <= 0) {
+    const priceDec = parseMoney(price);
+    if (!item_name || priceDec.isZero() || !priceDec.isPositive()) {
       return NextResponse.json({ error: "item_name و price مطلوبين (السعر يجب أن يكون أكبر من صفر)" }, { status: 400 });
     }
 
-    const qty = quantity && quantity > 0 ? quantity : 1;
-    const priceDecimal = new Decimal(price).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-    const totalDecimal = priceDecimal.times(qty).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-    const total = totalDecimal.toNumber();
-
-    const paidDecimal = typeof paid_amount === "number" 
-      ? new Decimal(paid_amount).toDecimalPlaces(2, Decimal.ROUND_HALF_UP) 
-      : totalDecimal;
-    const paid = paidDecimal.toNumber();
-    const deferredDecimal = Decimal.max(0, totalDecimal.minus(paidDecimal)).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-    const deferred = deferredDecimal.toNumber();
+    const financials = calculateSaleTotals(priceDec, quantity, paid_amount);
 
     const sale = await prisma.sale.create({
       data: {
         itemName: item_name.trim(),
-        price: priceDecimal.toNumber(),
-        quantity: qty,
-        total,
+        price: financials.priceStr,
+        quantity: financials.quantity,
+        total: financials.totalStr,
         customerName: customer_name ? customer_name.trim() : "عميل نقدي",
-        paidAmount: paid,
-        deferredAmount: deferred,
+        paidAmount: financials.paidAmountStr,
+        deferredAmount: financials.deferredAmountStr,
         ...(effectiveKey && { idempotencyKey: effectiveKey }),
         tenantId: resolvedTenantId,
       },
     });
 
-    const responsePayload = { success: true, sale, deferredAmount: deferred };
+    const responsePayload = {
+      success: true,
+      sale,
+      deferredAmount: financials.deferredAmount.toNumber(),
+      deferredAmountStr: financials.deferredAmountStr,
+    };
 
     if (effectiveKey) {
       salesIdempotencyMap.set(effectiveKey, { timestamp: now, response: responsePayload });
@@ -97,4 +89,3 @@ export async function GET(req: NextRequest) {
   });
   return NextResponse.json({ sales });
 }
-

@@ -1,10 +1,11 @@
-import { prisma } from "@/lib/prisma";
+import { prismaSystem } from "@/lib/prisma";
 import { sendTelegramAlert } from "@/lib/telegram";
 
-export async function enforceSubscriptionExpiry(): Promise<void> {
+export async function enforceSubscriptionExpiry(): Promise<number> {
+  let transitionedCount = 0;
   try {
     const now = new Date();
-    const expiredTenants = await (prisma as any).tenant.findMany({
+    const expiredTenants = await prismaSystem.tenant.findMany({
       where: {
         expiresAt: { lt: now },
         state: { in: ["active", "trial"] },
@@ -12,10 +13,11 @@ export async function enforceSubscriptionExpiry(): Promise<void> {
     });
 
     for (const tenant of expiredTenants) {
-      await (prisma as any).tenant.update({
+      await prismaSystem.tenant.update({
         where: { id: tenant.id },
         data: { state: "past_due_silent" },
       });
+      transitionedCount++;
 
       if (tenant.telegramChatId) {
         await sendTelegramAlert({
@@ -28,4 +30,5 @@ export async function enforceSubscriptionExpiry(): Promise<void> {
   } catch (err) {
     console.error("[enforceSubscriptionExpiry Error]:", err);
   }
+  return transitionedCount;
 }

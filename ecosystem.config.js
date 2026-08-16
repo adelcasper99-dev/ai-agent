@@ -67,5 +67,19 @@ module.exports = {
         GEMINI_API_KEY: process.env.GEMINI_API_KEY,
       },
     },
+    {
+      name: 'casper-subscription-cron',
+      script: 'node_modules/tsx/dist/cli.mjs',
+      args: 'scripts/cron-subscription-expiry.ts',
+      cwd: './casper-voice-web',
+      cron_restart: '0 * * * *', // Run every hour
+      autorestart: false,
+      env: {
+        NODE_ENV: 'production',
+        DATABASE_URL: process.env.DATABASE_URL,
+        INTERNAL_SERVICE_SECRET: process.env.INTERNAL_SERVICE_SECRET,
+        TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+      },
+    },
   ],
 };

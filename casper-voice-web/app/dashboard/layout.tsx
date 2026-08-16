@@ -10,6 +10,7 @@ import {
   Mic, Stethoscope, RefreshCw, Settings,
 } from "lucide-react";
 import VoiceCallModal from "@/components/VoiceCallModal";
+import UserProfileMenu from "@/components/UserProfileMenu";
 
 // ── Tab routing — matches existing file-based routes exactly ──────────────────
 const TABS = [
@@ -219,6 +220,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Stethoscope size={16} className="text-cyan-400" />
               <span className="hidden sm:inline">تشخيص الصوت اللحظي</span>
             </button>
+
+            {/* Subtle Divider */}
+            <div className="h-6 w-[1px] bg-white/10 mx-1 hidden sm:block" />
+
+            {/* Profile Avatar & Session Dropdown Menu */}
+            <UserProfileMenu isDark={isDark} toggleTheme={toggleTheme} />
           </div>
         </header>
 

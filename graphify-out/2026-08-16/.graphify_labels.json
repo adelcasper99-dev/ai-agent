@@ -472,6 +472,12 @@
   "470": "resolveLiveTemplateExtensions",
   "471": "vps_wipe_tenants.py",
   "472": "selectAvailablePendingEvent",
-  "473": "test_advanced_edge_cases.ts",
-  "474": "test_live_interaction_demo.ts"
+  "473": "browser-script-parts.mjs",
+  "474": "readConfig",
+  "475": "resolveObjectImageRect",
+  "476": "test_live_interaction_demo.ts",
+  "477": "checkElementRadialSpotlightDOM",
+  "478": "test_gibberish_input.ts",
+  "479": "test_ambiguity_and_arabic_numerals.ts",
+  "480": "preflight_check.py"
 }

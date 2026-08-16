@@ -1,31 +1,37 @@
-STAGE 4 TEST & EMPIRICAL QA REPORT — Security Hardening Batch 2
-======================================================================
-Date: 2026-08-16T13:57:32Z
+STAGE 4 TEST & EMPIRICAL QA REPORT — Finding #2: Financial Precision Architecture
+====================================================================================
+Date: 2026-08-16T14:41:20Z
 Environment: Node.js (Vitest v4.1.10) + SQLite WAL Mode
 
 Test Suite Breakdown:
-----------------------------------------------------------------------
-1. tests/session-security.test.ts          15/15 PASS (100%)
-   - Finding #3: X-Real-IP prioritization & last-hop fallback
-   - Finding #4: 4-part token format, UUID JTI, automated epoch expiration
-   - Finding #4: RevokedSession storage and selective blacklist checks
-   - Finding #5: Timing-safe signature checks on token, magic link & PIN
+------------------------------------------------------------------------------------
+1. tests/financial_precision.test.ts        13/13 PASS (100%)
+   - parseMoney with strings, commas, Arabic symbols, and null fallbacks
+   - Commercial rounding enforcement (ROUND_HALF_UP at 2 decimals)
+   - Exact integer Piastres (قرش × 100) bidirectional conversion
+   - calculateSaleTotals with cash, credit, partial payments, and overpayment capping
+   - calculatePurchaseTotals and supplier debt calculation
+   - calculateNetProfit with revenue, expenses, purchases, and loss scenarios
+   - High-volume summation invariance (10,000 items with zero drift)
 
-2. tests/auth.test.ts                       6/6  PASS (100%)
-   - Tenant Auth engine fail-closed, secret verification & header spoofing
+2. tests/session-security.test.ts          15/15 PASS (100%)
+   - Anti-spoofing, 4-part tokens, JTI revocation, timing-safe compare
 
-3. tests/prisma-tenant-extension.test.ts    9/9  PASS (100%)
-   - Fail-closed TenantContextError enforcement & 23-model coverage
+3. tests/auth.test.ts                       6/6  PASS (100%)
+   - Tenant Auth Engine fail-closed and internal secret authentication
 
-4. tests/customer_auth_pin_magic.test.ts    3/3  PASS (100%)
+4. tests/prisma-tenant-extension.test.ts    9/9  PASS (100%)
+   - Fail-closed TenantContextError enforcement across all 23 models
+
+5. tests/customer_auth_pin_magic.test.ts    3/3  PASS (100%)
    - PIN hashing, timing-safe verification, expiring magic links
 
-5. tests/customer_portal.test.ts            2/2  PASS (100%)
+6. tests/customer_portal.test.ts            2/2  PASS (100%)
    - Token issue/verify & Decimal.js ledger calculation with runWithTenant
 
-6. tests/multi_tenant_verification_suite.test.ts 1/1 PASS (100%)
+7. tests/multi_tenant_verification_suite.test.ts 1/1 PASS (100%)
    - 4 empirical isolation checks, 0 orphan PrismaClients, 0 Prisma imports in session.ts
 
-TOTAL TEST RESULTS: 36 passed / 36 executed (100% SUCCESS)
+TOTAL TEST RESULTS: 49 passed / 49 executed (100% SUCCESS)
 TYPESCRIPT COMPILATION: 0 errors (npx tsc --noEmit exit code 0)
-======================================================================
+====================================================================================

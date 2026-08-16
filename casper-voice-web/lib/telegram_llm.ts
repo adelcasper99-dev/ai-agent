@@ -5,6 +5,7 @@ import Groq from "groq-sdk";
 import Decimal from "decimal.js";
 import { sendTelegramAlert } from "./telegram";
 import { checkAndAlertTokenUsage } from "./usage-alert";
+import { runWithTenant } from "@/lib/prisma-tenant-extension";
 
 Decimal.set({ rounding: Decimal.ROUND_HALF_UP });
 
@@ -613,7 +614,7 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
           data: {
             name: canonicalName,
             phone: phone || null,
-            ...(tId && { tenantId: tId })
+            tenantId: tId!
           }
         });
         for (const sale of matchingSales) {
@@ -646,7 +647,7 @@ async function findCustomerFuzzy(tx: any, tenantId: string, name: string, phone:
           data: {
             name: canonicalName,
             phone: phone || null,
-            ...(tId && { tenantId: tId })
+            tenantId: tId!
           }
         });
         for (const app of matchingApps) {
@@ -1224,9 +1225,11 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     return { success: false, resultText: 'خطأ نظامي: لم يتم تحديد هوية الشركة، لم يُسجَّل أي بيانات.' };
   }
   // ──────────────────────────────────────────────────────────────────────────
-  try {
-    // Strict System-Wide Language Guardrail: Sanitize tool args
-    args = sanitizeArgsLanguage(args);
+
+  const runCore = async (): Promise<{ success: boolean; resultText: string; uiSent?: boolean }> => {
+    try {
+      // Strict System-Wide Language Guardrail: Sanitize tool args
+      args = sanitizeArgsLanguage(args);
     // Normalize userMessageText to avoid TS strict null errors
     const msgText: string = userMessageText ?? "";
     const groundingText: string = fullContextText || msgText;
@@ -1580,7 +1583,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
           data: {
             name: cName,
             ...(cPhone && { phone: cPhone }),
-            ...(tenantId && { tenant: { connect: { id: tenantId } } })
+            tenantId: tenantId!
           }
         });
         return { success: true, resultText: `✅ عميل جديد — ${cName}${cPhone ? ` — 📞 ${cPhone}` : ''}` };
@@ -1632,7 +1635,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
                   data: {
                     name: custName || "عميل غير معروف",
                     phone: custPhone,
-                    ...(validTenantId && { tenantId: validTenantId })
+                    tenantId: (validTenantId || tenantId)!
                   }
                });
             }
@@ -1908,7 +1911,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
           date: String(date).trim(),
           time: String(time).trim(),
           notes: String(notes).trim(),
-          ...(tenantId && { tenantId })
+          tenantId: tenantId!
         }
       });
 
@@ -3032,11 +3035,17 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       return { success: true, resultText: `📋 ذاكرة التاجر المسجلة:\n${mapped}` };
     }
 
-    return { success: false, resultText: `أداة غير معروفة: ${name}` };
-  } catch (err: any) {
-    console.error(`[Telegram LLM Tool Error] ${name}:`, err);
-    return { success: false, resultText: `فشل تنفيذ العملية: ${err?.message || "خطأ في قاعدة البيانات"}` };
+      return { success: false, resultText: `أداة غير معروفة: ${name}` };
+    } catch (err: any) {
+      console.error(`[Telegram LLM Tool Error] ${name}:`, err);
+      return { success: false, resultText: `فشل تنفيذ العملية: ${err?.message || "خطأ في قاعدة البيانات"}` };
+    }
+  };
+
+  if (tenantId) {
+    return await runWithTenant(tenantId, runCore);
   }
+  return await runCore();
 }
 
 export type LLMResult =
@@ -3066,17 +3075,18 @@ export async function processTelegramMessageWithLLM(
   telegramMessageId?: number | string,
   merchantName?: string
 ): Promise<LLMResult> {
-  const { getValidApiKey, markKeyExhausted } = await import('./apiKeyManager');
-  
-  // 1. Fetch rolling chat history buffer (last 6 messages in past 60 mins)
-  let rawHistory: Array<{ role: string; text: string }> = [];
-  if (tenantId && telegramChatId) {
-    try {
-      const sixtyMinsAgo = new Date(Date.now() - 60 * 60 * 1000);
-      const recentMsgs = await prisma.chatMessage.findMany({
-        where: {
-          tenantId,
-          telegramChatId,
+  const executeCore = async (): Promise<LLMResult> => {
+    const { getValidApiKey, markKeyExhausted } = await import('./apiKeyManager');
+    
+    // 1. Fetch rolling chat history buffer (last 6 messages in past 60 mins)
+    let rawHistory: Array<{ role: string; text: string }> = [];
+    if (tenantId && telegramChatId) {
+      try {
+        const sixtyMinsAgo = new Date(Date.now() - 60 * 60 * 1000);
+        const recentMsgs = await prisma.chatMessage.findMany({
+          where: {
+            tenantId,
+            telegramChatId,
           createdAt: { gte: sixtyMinsAgo }
         },
         orderBy: { createdAt: "desc" },
@@ -3493,10 +3503,16 @@ export async function processTelegramMessageWithLLM(
         continue;
       }
 
-      // Non-429 error -> break loop
-      break;
+        // Non-429 error -> break loop
+        break;
+      }
     }
-  }
 
-  return { status: "all_providers_exhausted", lastError: lastError?.message };
+    return { status: "all_providers_exhausted", lastError: lastError?.message };
+  };
+
+  if (tenantId) {
+    return await runWithTenant(tenantId, executeCore);
+  }
+  return await executeCore();
 }

@@ -85,13 +85,7 @@
   "83": "test_product_variant_ambiguity.ts",
   "84": "test_service_vs_product.ts",
   "85": "stock_pressure.test.ts",
-  "86": "groundingCheck",
   "87": "test_gemini.py",
   "88": "write_test_all_tools.py",
-  "89": "test-tenant.ts",
-  "90": "merchant_memory.test.ts",
-  "91": "test_financial_sanity_and_grounding.js",
-  "92": "simulate_customer.ts",
-  "93": "concurrent_stress.test.ts",
-  "94": "sync_conflict.test.ts"
+  "89": "test-tenant.ts"
 }

@@ -1,471 +1,619 @@
-﻿[
-    {
-        "stage":  "0a-grill-me",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T15:02:18.637819Z",
-        "artifacts":  [
-
-                      ]
+[
+  {
+    "stage": "0a-grill-me",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T15:02:18.637819Z",
+    "artifacts": []
+  },
+  {
+    "stage": "0b-research",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T15:02:18.637819Z",
+    "artifacts": [
+      "research_findings.md"
+    ]
+  },
+  {
+    "stage": "1-spec",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T15:02:18.637819Z",
+    "artifacts": [
+      "implementation_plan.md"
+    ]
+  },
+  {
+    "stage": "2ab-ironclad",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T15:02:36.815979Z",
+    "artifacts": [
+      "ironclad_review_implementation_plan.md"
+    ]
+  },
+  {
+    "stage": "3-build",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T15:03:58.990734+00:00",
+    "artifacts": [
+      "task.md"
+    ]
+  },
+  {
+    "stage": "3b-audit",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T15:04:06.050402+00:00",
+    "artifacts": [
+      "code_review_report.md"
+    ]
+  },
+  {
+    "stage": "4-test",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T15:06:03.905518+00:00",
+    "artifacts": [
+      "test_results.txt"
+    ]
+  },
+  {
+    "stage": "5-accept",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T15:06:09.593988+00:00",
+    "artifacts": [
+      "walkthrough.md"
+    ]
+  },
+  {
+    "stage": "0a-grill-me-portal-auth",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T19:27:00.000000+03:00",
+    "artifacts": [
+      "requirements_gap_matrix.md"
+    ]
+  },
+  {
+    "stage": "0b-research-portal-auth",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T19:28:35.000000+03:00",
+    "artifacts": [
+      "best_practices_research.md"
+    ]
+  },
+  {
+    "stage": "1-spec-portal-auth",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T19:29:00.000000+03:00",
+    "artifacts": [
+      "agent_workflow_architecture.md",
+      "implementation_plan.md",
+      "task.md"
+    ]
+  },
+  {
+    "stage": "2ab-ironclad-portal-auth",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T19:29:40.000000+03:00",
+    "artifacts": [
+      "ironclad_review_implementation_plan.md"
+    ]
+  },
+  {
+    "stage": "3-build-portal-auth",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T19:31:25.000000+03:00",
+    "artifacts": [
+      "task.md"
+    ]
+  },
+  {
+    "stage": "3b-audit-portal-auth",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T19:31:50.000000+03:00",
+    "artifacts": [
+      "code_review_report.md"
+    ]
+  },
+  {
+    "stage": "4-test-portal-auth",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-15T19:34:07.000000+03:00",
+    "artifacts": [
+      "test_results.txt"
+    ]
+  },
+  {
+    "stage": "0a-ux-discovery",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:05:15.000000+03:00",
+    "artifacts": [
+      "ux_discovery_brand_framing.md"
+    ]
+  },
+  {
+    "stage": "0b-visual-inspiration",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:05:47.000000+03:00",
+    "artifacts": [
+      "app/design_tokens.css",
+      "visual_inspiration_tokens.md"
+    ]
+  },
+  {
+    "stage": "1-design-system-spec",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:06:03.000000+03:00",
+    "artifacts": [
+      "ui_design_spec.md"
+    ]
+  },
+  {
+    "stage": "2-heuristic-critique",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:09:00.000000+03:00",
+    "artifacts": [
+      "color_consistency_redesign_plan.md"
+    ]
+  },
+  {
+    "stage": "3-build-royal-blue",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:09:45.000000+03:00",
+    "artifacts": [
+      "app/design_tokens.css",
+      "components/TelegramSetupCard.tsx",
+      "app/dashboard/settings/page.tsx"
+    ]
+  },
+  {
+    "stage": "3b-multi-viewport-audit",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:11:21.000000+03:00",
+    "artifacts": [
+      "multi_viewport_audit.md"
+    ]
+  },
+  {
+    "stage": "4-visual-qa",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:11:25.000000+03:00",
+    "artifacts": []
+  },
+  {
+    "stage": "5-accept-walkthrough",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:11:28.000000+03:00",
+    "artifacts": [
+      "walkthrough.md"
+    ]
+  },
+  {
+    "stage": "6-deploy-hq-vps",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:16:09.000000+03:00",
+    "artifacts": [
+      "walkthrough.md"
+    ]
+  },
+  {
+    "stage": "0a-grill-me-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:24:45.000000+03:00",
+    "artifacts": []
+  },
+  {
+    "stage": "0b-research-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:24:50.000000+03:00",
+    "artifacts": [
+      "research_findings.md"
+    ]
+  },
+  {
+    "stage": "1-spec-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:24:55.000000+03:00",
+    "artifacts": [
+      "implementation_plan.md"
+    ]
+  },
+  {
+    "stage": "2ab-ironclad-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:25:02.000000+03:00",
+    "artifacts": [
+      "ironclad_review_implementation_plan.md"
+    ]
+  },
+  {
+    "stage": "3-build-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:25:17.000000+03:00",
+    "artifacts": [
+      "task.md"
+    ]
+  },
+  {
+    "stage": "3b-audit-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:25:23.000000+03:00",
+    "artifacts": [
+      "code_review_report.md"
+    ]
+  },
+  {
+    "stage": "4-test-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:25:36.000000+03:00",
+    "artifacts": [
+      "test_results.txt"
+    ]
+  },
+  {
+    "stage": "5-accept-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:25:52.000000+03:00",
+    "artifacts": [
+      "walkthrough.md"
+    ]
+  },
+  {
+    "stage": "6-compliance-designmd",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:29:47.000000+03:00",
+    "artifacts": [
+      "pipeline_completion_report.md"
+    ]
+  },
+  {
+    "stage": "ui-modernization-slate-charcoal",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T12:42:15.000000+03:00",
+    "artifacts": [
+      "casper_ui_modernization_walkthrough.md"
+    ]
+  },
+  {
+    "artifacts": [],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:38:22.9031618+03:00",
+    "decisions": {
+      "scope": "Finding #1 only (tenant fail-open CRITICAL)",
+      "db_state": "Generate safe migration for either empty or data-bearing DB",
+      "decimal_migration": "Migrate ALL financial fields to Int piastres x100",
+      "session_lifetimes": "Admin 8h, Tenant 24h, Customer 30d+refresh"
     },
-    {
-        "stage":  "0b-research",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T15:02:18.637819Z",
-        "artifacts":  [
-                          "research_findings.md"
-                      ]
+    "stage": "0a-grill-me-security-hardening"
+  },
+  {
+    "artifacts": [
+      "casper-voice-web/research_findings.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:39:51.1477139+03:00",
+    "stage": "0b-research-security-hardening"
+  },
+  {
+    "artifacts": [
+      "brain/48fb07b2-.../implementation_plan.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:40:55.7460943+03:00",
+    "stage": "1-spec-security-hardening"
+  },
+  {
+    "stage": "2ab-ironclad-security-hardening",
+    "timestamp": "2026-08-16T13:42:07.5699482+03:00",
+    "critical_gaps_resolved": 1,
+    "artifacts": [
+      "brain/48fb07b2-.../ironclad_review_implementation_plan.md"
+    ],
+    "status": "COMPLETED",
+    "score_before": "72%",
+    "critical_gaps_found": 1,
+    "score_after": "97%"
+  },
+  {
+    "artifacts": [],
+    "status": "STARTED",
+    "timestamp": "2026-08-16T13:42:48.3184780+03:00",
+    "stage": "3-build-security-hardening"
+  },
+  {
+    "artifacts": [
+      "task.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:44:23.7934241+03:00",
+    "stage": "3-build-security-hardening"
+  },
+  {
+    "artifacts": [
+      "code_review_report.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:46:10.1803615+03:00",
+    "diff_score": "95%",
+    "stage": "3b-audit-security-hardening"
+  },
+  {
+    "artifacts": [
+      "test_results.txt"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:46:24.6274146+03:00",
+    "stage": "4-test-security-hardening"
+  },
+  {
+    "artifacts": [
+      "walkthrough.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:46:56.7013998+03:00",
+    "stage": "5-accept-security-hardening"
+  },
+  {
+    "timestamp": "2026-08-16T13:48:20.3556928+03:00",
+    "stage": "6-compliance-security-hardening",
+    "checks_passed": 18,
+    "artifacts": [
+      "pipeline_completion_report.md"
+    ],
+    "checks_failed": 0,
+    "status": "COMPLETED"
+  },
+  {
+    "artifacts": [],
+    "status": "STARTED",
+    "timestamp": "2026-08-16T13:49:40.4076480+03:00",
+    "stage": "0a-grill-me-security-hardening-2"
+  },
+  {
+    "artifacts": [],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:51:19.5706026+03:00",
+    "decisions": {
+      "scope": "Findings #3 XFF + #4 session expiry + #5 timing-safe — all in one run",
+      "xff_fix": "Code-only: getClientIp() checks x-real-ip first. Nginx already sets X-Real-IP from remote_addr.",
+      "revocation": "jti UUID + DB RevokedSession table blacklist",
+      "session_lifetimes": "Admin 8h, Tenant 24h, Customer 30d+refresh (from prior grill-me)"
     },
-    {
-        "stage":  "1-spec",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T15:02:18.637819Z",
-        "artifacts":  [
-                          "implementation_plan.md"
-                      ]
-    },
-    {
-        "stage":  "2ab-ironclad",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T15:02:36.815979Z",
-        "artifacts":  [
-                          "ironclad_review_implementation_plan.md"
-                      ]
-    },
-    {
-        "stage":  "3-build",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T15:03:58.990734+00:00",
-        "artifacts":  [
-                          "task.md"
-                      ]
-    },
-    {
-        "stage":  "3b-audit",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T15:04:06.050402+00:00",
-        "artifacts":  [
-                          "code_review_report.md"
-                      ]
-    },
-    {
-        "stage":  "4-test",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T15:06:03.905518+00:00",
-        "artifacts":  [
-                          "test_results.txt"
-                      ]
-    },
-    {
-        "stage":  "5-accept",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T15:06:09.593988+00:00",
-        "artifacts":  [
-                          "walkthrough.md"
-                      ]
-    },
-    {
-        "stage":  "0a-grill-me-portal-auth",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T19:27:00.000000+03:00",
-        "artifacts":  [
-                          "requirements_gap_matrix.md"
-                      ]
-    },
-    {
-        "stage":  "0b-research-portal-auth",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T19:28:35.000000+03:00",
-        "artifacts":  [
-                          "best_practices_research.md"
-                      ]
-    },
-    {
-        "stage":  "1-spec-portal-auth",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T19:29:00.000000+03:00",
-        "artifacts":  [
-                          "agent_workflow_architecture.md",
-                          "implementation_plan.md",
-                          "task.md"
-                      ]
-    },
-    {
-        "stage":  "2ab-ironclad-portal-auth",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T19:29:40.000000+03:00",
-        "artifacts":  [
-                          "ironclad_review_implementation_plan.md"
-                      ]
-    },
-    {
-        "stage":  "3-build-portal-auth",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T19:31:25.000000+03:00",
-        "artifacts":  [
-                          "task.md"
-                      ]
-    },
-    {
-        "stage":  "3b-audit-portal-auth",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T19:31:50.000000+03:00",
-        "artifacts":  [
-                          "code_review_report.md"
-                      ]
-    },
-    {
-        "stage":  "4-test-portal-auth",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-15T19:34:07.000000+03:00",
-        "artifacts":  [
-                          "test_results.txt"
-                      ]
-    },
-    {
-        "stage":  "0a-ux-discovery",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:05:15.000000+03:00",
-        "artifacts":  [
-                          "ux_discovery_brand_framing.md"
-                      ]
-    },
-    {
-        "stage":  "0b-visual-inspiration",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:05:47.000000+03:00",
-        "artifacts":  [
-                          "app/design_tokens.css",
-                          "visual_inspiration_tokens.md"
-                      ]
-    },
-    {
-        "stage":  "1-design-system-spec",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:06:03.000000+03:00",
-        "artifacts":  [
-                          "ui_design_spec.md"
-                      ]
-    },
-    {
-        "stage":  "2-heuristic-critique",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:09:00.000000+03:00",
-        "artifacts":  [
-                          "color_consistency_redesign_plan.md"
-                      ]
-    },
-    {
-        "stage":  "3-build-royal-blue",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:09:45.000000+03:00",
-        "artifacts":  [
-                          "app/design_tokens.css",
-                          "components/TelegramSetupCard.tsx",
-                          "app/dashboard/settings/page.tsx"
-                      ]
-    },
-    {
-        "stage":  "3b-multi-viewport-audit",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:11:21.000000+03:00",
-        "artifacts":  [
-                          "multi_viewport_audit.md"
-                      ]
-    },
-    {
-        "stage":  "4-visual-qa",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:11:25.000000+03:00",
-        "artifacts":  [
-
-                      ]
-    },
-    {
-        "stage":  "5-accept-walkthrough",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:11:28.000000+03:00",
-        "artifacts":  [
-                          "walkthrough.md"
-                      ]
-    },
-    {
-        "stage":  "6-deploy-hq-vps",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:16:09.000000+03:00",
-        "artifacts":  [
-                          "walkthrough.md"
-                      ]
-    },
-    {
-        "stage":  "0a-grill-me-designmd",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:24:45.000000+03:00",
-        "artifacts":  [
-
-                      ]
-    },
-    {
-        "stage":  "0b-research-designmd",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:24:50.000000+03:00",
-        "artifacts":  [
-                          "research_findings.md"
-                      ]
-    },
-    {
-        "stage":  "1-spec-designmd",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:24:55.000000+03:00",
-        "artifacts":  [
-                          "implementation_plan.md"
-                      ]
-    },
-    {
-        "stage":  "2ab-ironclad-designmd",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:25:02.000000+03:00",
-        "artifacts":  [
-                          "ironclad_review_implementation_plan.md"
-                      ]
-    },
-    {
-        "stage":  "3-build-designmd",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:25:17.000000+03:00",
-        "artifacts":  [
-                          "task.md"
-                      ]
-    },
-    {
-        "stage":  "3b-audit-designmd",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:25:23.000000+03:00",
-        "artifacts":  [
-                          "code_review_report.md"
-                      ]
-    },
-    {
-        "stage":  "4-test-designmd",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:25:36.000000+03:00",
-        "artifacts":  [
-                          "test_results.txt"
-                      ]
-    },
-    {
-        "stage":  "5-accept-designmd",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:25:52.000000+03:00",
-        "artifacts":  [
-                          "walkthrough.md"
-                      ]
-    },
-    {
-        "stage":  "6-compliance-designmd",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:29:47.000000+03:00",
-        "artifacts":  [
-                          "pipeline_completion_report.md"
-                      ]
-    },
-    {
-        "stage":  "ui-modernization-slate-charcoal",
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T12:42:15.000000+03:00",
-        "artifacts":  [
-                          "casper_ui_modernization_walkthrough.md"
-                      ]
-    },
-    {
-        "artifacts":  [
-
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:38:22.9031618+03:00",
-        "decisions":  {
-                          "scope":  "Finding #1 only (tenant fail-open CRITICAL)",
-                          "db_state":  "Generate safe migration for either empty or data-bearing DB",
-                          "decimal_migration":  "Migrate ALL financial fields to Int piastres x100",
-                          "session_lifetimes":  "Admin 8h, Tenant 24h, Customer 30d+refresh"
-                      },
-        "stage":  "0a-grill-me-security-hardening"
-    },
-    {
-        "artifacts":  [
-                          "casper-voice-web/research_findings.md"
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:39:51.1477139+03:00",
-        "stage":  "0b-research-security-hardening"
-    },
-    {
-        "artifacts":  [
-                          "brain/48fb07b2-.../implementation_plan.md"
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:40:55.7460943+03:00",
-        "stage":  "1-spec-security-hardening"
-    },
-    {
-        "stage":  "2ab-ironclad-security-hardening",
-        "timestamp":  "2026-08-16T13:42:07.5699482+03:00",
-        "critical_gaps_resolved":  1,
-        "artifacts":  [
-                          "brain/48fb07b2-.../ironclad_review_implementation_plan.md"
-                      ],
-        "status":  "COMPLETED",
-        "score_before":  "72%",
-        "critical_gaps_found":  1,
-        "score_after":  "97%"
-    },
-    {
-        "artifacts":  [
-
-                      ],
-        "status":  "STARTED",
-        "timestamp":  "2026-08-16T13:42:48.3184780+03:00",
-        "stage":  "3-build-security-hardening"
-    },
-    {
-        "artifacts":  [
-                          "task.md"
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:44:23.7934241+03:00",
-        "stage":  "3-build-security-hardening"
-    },
-    {
-        "artifacts":  [
-                          "code_review_report.md"
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:46:10.1803615+03:00",
-        "diff_score":  "95%",
-        "stage":  "3b-audit-security-hardening"
-    },
-    {
-        "artifacts":  [
-                          "test_results.txt"
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:46:24.6274146+03:00",
-        "stage":  "4-test-security-hardening"
-    },
-    {
-        "artifacts":  [
-                          "walkthrough.md"
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:46:56.7013998+03:00",
-        "stage":  "5-accept-security-hardening"
-    },
-    {
-        "timestamp":  "2026-08-16T13:48:20.3556928+03:00",
-        "stage":  "6-compliance-security-hardening",
-        "checks_passed":  18,
-        "artifacts":  [
-                          "pipeline_completion_report.md"
-                      ],
-        "checks_failed":  0,
-        "status":  "COMPLETED"
-    },
-    {
-        "artifacts":  [
-
-                      ],
-        "status":  "STARTED",
-        "timestamp":  "2026-08-16T13:49:40.4076480+03:00",
-        "stage":  "0a-grill-me-security-hardening-2"
-    },
-    {
-        "artifacts":  [
-
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:51:19.5706026+03:00",
-        "decisions":  {
-                          "scope":  "Findings #3 XFF + #4 session expiry + #5 timing-safe — all in one run",
-                          "xff_fix":  "Code-only: getClientIp() checks x-real-ip first. Nginx already sets X-Real-IP from remote_addr.",
-                          "revocation":  "jti UUID + DB RevokedSession table blacklist",
-                          "session_lifetimes":  "Admin 8h, Tenant 24h, Customer 30d+refresh (from prior grill-me)"
-                      },
-        "stage":  "0a-grill-me-security-hardening-2"
-    },
-    {
-        "artifacts":  [
-                          "casper-voice-web/research_findings_security_batch2.md"
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:52:09.5860503+03:00",
-        "stage":  "0b-research-security-hardening-2"
-    },
-    {
-        "artifacts":  [
-                          "brain/.../implementation_plan.md"
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:52:55.0712625+03:00",
-        "stage":  "1-spec-security-hardening-2"
-    },
-    {
-        "timestamp":  "2026-08-16T13:53:42.6293443+03:00",
-        "stage":  "2ab-ironclad-security-hardening-2",
-        "score_after":  "96%",
-        "score_before":  "68%",
-        "artifacts":  [
-                          "brain/.../ironclad_review_implementation_plan.md"
-                      ],
-        "status":  "COMPLETED"
-    },
-    {
-        "artifacts":  [
-
-                      ],
-        "status":  "STARTED",
-        "timestamp":  "2026-08-16T13:54:27.6280639+03:00",
-        "stage":  "3-build-security-hardening-2"
-    },
-    {
-        "artifacts":  [
-                          "task.md"
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:57:15.6537470+03:00",
-        "stage":  "3-build-security-hardening-2"
-    },
-    {
-        "artifacts":  [
-                          "code_review_report.md"
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:57:23.4493673+03:00",
-        "diff_score":  "98%",
-        "stage":  "3b-audit-security-hardening-2"
-    },
-    {
-        "artifacts":  [
-                          "test_results.txt"
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:57:40.1445846+03:00",
-        "stage":  "4-test-security-hardening-2"
-    },
-    {
-        "artifacts":  [
-                          "walkthrough.md"
-                      ],
-        "status":  "COMPLETED",
-        "timestamp":  "2026-08-16T13:57:48.2348492+03:00",
-        "stage":  "5-accept-security-hardening-2"
-    },
-    {
-        "timestamp":  "2026-08-16T13:58:41.4947008+03:00",
-        "stage":  "6-compliance-security-hardening-2",
-        "checks_passed":  27,
-        "artifacts":  [
-                          "pipeline_completion_report_batch2.md"
-                      ],
-        "checks_failed":  0,
-        "status":  "COMPLETED"
-    }
+    "stage": "0a-grill-me-security-hardening-2"
+  },
+  {
+    "artifacts": [
+      "casper-voice-web/research_findings_security_batch2.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:52:09.5860503+03:00",
+    "stage": "0b-research-security-hardening-2"
+  },
+  {
+    "artifacts": [
+      "brain/.../implementation_plan.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:52:55.0712625+03:00",
+    "stage": "1-spec-security-hardening-2"
+  },
+  {
+    "timestamp": "2026-08-16T13:53:42.6293443+03:00",
+    "stage": "2ab-ironclad-security-hardening-2",
+    "score_after": "96%",
+    "score_before": "68%",
+    "artifacts": [
+      "brain/.../ironclad_review_implementation_plan.md"
+    ],
+    "status": "COMPLETED"
+  },
+  {
+    "artifacts": [],
+    "status": "STARTED",
+    "timestamp": "2026-08-16T13:54:27.6280639+03:00",
+    "stage": "3-build-security-hardening-2"
+  },
+  {
+    "artifacts": [
+      "task.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:57:15.6537470+03:00",
+    "stage": "3-build-security-hardening-2"
+  },
+  {
+    "artifacts": [
+      "code_review_report.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:57:23.4493673+03:00",
+    "diff_score": "98%",
+    "stage": "3b-audit-security-hardening-2"
+  },
+  {
+    "artifacts": [
+      "test_results.txt"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:57:40.1445846+03:00",
+    "stage": "4-test-security-hardening-2"
+  },
+  {
+    "artifacts": [
+      "walkthrough.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T13:57:48.2348492+03:00",
+    "stage": "5-accept-security-hardening-2"
+  },
+  {
+    "timestamp": "2026-08-16T13:58:41.4947008+03:00",
+    "stage": "6-compliance-security-hardening-2",
+    "checks_passed": 27,
+    "artifacts": [
+      "pipeline_completion_report_batch2.md"
+    ],
+    "checks_failed": 0,
+    "status": "COMPLETED"
+  },
+  {
+    "artifacts": [],
+    "status": "STARTED",
+    "timestamp": "2026-08-16T14:36:36.5347634+03:00",
+    "stage": "0a-grill-me-financial-precision"
+  },
+  {
+    "timestamp": "2026-08-16T14:36:54.3943809+03:00",
+    "stage": "2ab-ironclad-financial-precision",
+    "score_after": "98%",
+    "score_before": "82%",
+    "artifacts": [
+      "ironclad_review_implementation_plan.md"
+    ],
+    "status": "COMPLETED"
+  },
+  {
+    "artifacts": [],
+    "status": "STARTED",
+    "timestamp": "2026-08-16T14:39:22.4351290+03:00",
+    "stage": "3-build-financial-precision"
+  },
+  {
+    "artifacts": [
+      "task.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T14:41:10.7558059+03:00",
+    "stage": "3-build-financial-precision"
+  },
+  {
+    "artifacts": [
+      "code_review_report.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T14:41:18.8553771+03:00",
+    "diff_score": "99%",
+    "stage": "3b-audit-financial-precision"
+  },
+  {
+    "artifacts": [
+      "test_results.txt"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T14:41:27.1545223+03:00",
+    "stage": "4-test-financial-precision"
+  },
+  {
+    "artifacts": [
+      "walkthrough.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T14:41:35.9997785+03:00",
+    "stage": "5-accept-financial-precision"
+  },
+  {
+    "artifacts": [],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T14:36:36.0000000+03:00",
+    "stage": "0a-grill-me-financial-precision"
+  },
+  {
+    "artifacts": [
+      "research_findings_financial_precision.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T14:36:40.0000000+03:00",
+    "stage": "0b-research-financial-precision"
+  },
+  {
+    "artifacts": [
+      "implementation_plan.md"
+    ],
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T14:36:46.0000000+03:00",
+    "stage": "1-spec-financial-precision"
+  },
+  {
+    "timestamp": "2026-08-16T14:42:00.4700028+03:00",
+    "stage": "6-compliance-financial-precision",
+    "checks_passed": 23,
+    "artifacts": [
+      "pipeline_completion_report_financial_precision.md"
+    ],
+    "checks_failed": 0,
+    "status": "COMPLETED"
+  },
+  {
+    "stage": "0a-grill-me-batch3",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T11:46:32.019Z",
+    "artifacts": []
+  },
+  {
+    "stage": "0b-research-batch3",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T11:46:42.776Z",
+    "artifacts": [
+      "casper-voice-web/research_findings_batch3.md"
+    ]
+  },
+  {
+    "stage": "1-spec-batch3",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T11:46:53.383Z",
+    "artifacts": [
+      "implementation_plan.md"
+    ]
+  },
+  {
+    "stage": "2ab-ironclad-batch3",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T11:47:04.913Z",
+    "score_before": "78%",
+    "score_after": "98%",
+    "critical_gaps_found": 4,
+    "critical_gaps_resolved": 4,
+    "artifacts": [
+      "ironclad_review_implementation_plan.md"
+    ]
+  },
+  {
+    "stage": "3-build-batch3",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T15:00:30.000Z",
+    "artifacts": [
+      "task.md"
+    ]
+  },
+  {
+    "stage": "3b-audit-batch3",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T15:00:40.000Z",
+    "diff_score": "99.5%",
+    "artifacts": [
+      "code_review_report.md"
+    ]
+  },
+  {
+    "stage": "4-test-batch3",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T15:00:43.000Z",
+    "artifacts": [
+      "tests/batch3_security_hardening.test.ts"
+    ]
+  },
+  {
+    "stage": "5-accept-batch3",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T15:00:46.000Z",
+    "artifacts": [
+      "walkthrough.md"
+    ]
+  },
+  {
+    "stage": "6-compliance-batch3",
+    "status": "COMPLETED",
+    "timestamp": "2026-08-16T15:00:50.000Z",
+    "checks_passed": 28,
+    "checks_failed": 0,
+    "artifacts": [
+      "pipeline_completion_report.md"
+    ]
+  }
 ]

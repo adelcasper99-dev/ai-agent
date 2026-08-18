@@ -1,7 +1,7 @@
 // app/login/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   ShieldCheck, User, Lock, Phone, ArrowLeft, 
@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 export default function LoginPage() {
-  const [mode, setMode] = useState<"admin" | "customer">("admin");
+  const [mode, setMode] = useState<"admin" | "customer">("customer");
   
   // Admin form state
   const [adminPassword, setAdminPassword] = useState("");
@@ -25,6 +25,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("mode") === "admin") {
+        setMode("admin");
+      }
+    }
+  }, []);
 
   // ── Admin Login Handler ──
   const handleAdminSubmit = async (e: React.FormEvent) => {
@@ -211,18 +220,6 @@ export default function LoginPage() {
           <div className="bg-zinc-950/80 p-1.5 rounded-2xl border border-white/5 flex gap-1 shadow-inner">
             <button
               type="button"
-              onClick={() => { setMode("admin"); setError(""); }}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 ${
-                mode === "admin"
-                  ? "bg-cyan-500 text-zinc-950 shadow-lg shadow-cyan-500/25"
-                  : "text-zinc-400 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              <ShieldCheck className="w-4 h-4" />
-              لوحة الإدارة
-            </button>
-            <button
-              type="button"
               onClick={() => { setMode("customer"); setError(""); setCustomerStep("phone"); }}
               className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 ${
                 mode === "customer"
@@ -232,6 +229,18 @@ export default function LoginPage() {
             >
               <User className="w-4 h-4" />
               بوابة العميل
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMode("admin"); setError(""); }}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 ${
+                mode === "admin"
+                  ? "bg-cyan-500 text-zinc-950 shadow-lg shadow-cyan-500/25"
+                  : "text-zinc-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4" />
+              لوحة الإدارة
             </button>
           </div>
 

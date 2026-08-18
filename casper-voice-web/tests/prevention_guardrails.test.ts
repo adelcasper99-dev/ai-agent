@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { processTelegramMessageWithLLM } from "../lib/telegram_llm";
-import { prisma } from "../lib/prisma";
+import { prismaSystem as prisma } from "../lib/prisma";
 
 describe("Permanent Prevention Architecture Suite", () => {
   const tenantId = "sim_tenant_1";

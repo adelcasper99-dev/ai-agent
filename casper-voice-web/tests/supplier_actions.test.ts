@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
-import { prisma } from "@/lib/prisma";
+import { prismaSystem as prisma } from "@/lib/prisma";
 import Decimal from "decimal.js";
 
 describe("Supplier Actions & Reports Buttons API Suite", () => {

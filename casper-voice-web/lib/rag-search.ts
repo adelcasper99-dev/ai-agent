@@ -1,4 +1,4 @@
-import { prisma } from "./prisma";
+import { prismaSystem as prisma } from "./prisma";
 
 export interface RAGSearchResult {
   id: string;

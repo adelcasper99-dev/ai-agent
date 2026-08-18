@@ -2,7 +2,7 @@
  * System Audit Trail Logger
  * Records critical actions (Tenant Signup, Login, Prompt Edit, Impersonation, Webhook Approval) for security & tracking.
  */
-import { prisma } from "./prisma";
+import { prismaSystem as prisma } from "./prisma";
 
 export interface LogAuditParams {
   tenantId?: string | null;

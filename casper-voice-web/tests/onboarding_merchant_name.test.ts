@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { processTelegramMessageWithLLM } from '../lib/telegram_llm';
-import { prisma } from '../lib/prisma';
+import { prismaSystem as prisma } from '../lib/prisma';
 
 const TENANT_ID = 'test_merchant_name_tenant';
 const CHAT_ID = 'test_merchant_name_chat';

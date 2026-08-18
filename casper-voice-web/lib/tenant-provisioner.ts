@@ -10,7 +10,7 @@
  *   - Or during self-signup if instant approval is enabled
  */
 
-import { prisma } from "@/lib/prisma";
+import { prismaSystem as prisma } from "@/lib/prisma";
 
 export interface VoiceTenantProvisionOptions {
   name: string;

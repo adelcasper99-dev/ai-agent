@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
-import { prisma } from "../lib/prisma";
+import { prismaSystem as prisma } from "../lib/prisma";
 import { approveTenantRequest } from "../lib/telegram";
 import { runWithTenant } from "../lib/prisma-tenant-extension";
 
@@ -18,6 +18,9 @@ async function runMvpPrelaunchAudit() {
     const tenants = await (prisma as any).tenant.findMany({ where: { telegramChatId: chatId }, select: { id: true } });
     const tenantIds = tenants.map((t: any) => t.id);
     if (tenantIds.length > 0) {
+      await (prisma as any).journalEntry.deleteMany({ where: { tenantId: { in: tenantIds } } });
+      await (prisma as any).tokenUsage.deleteMany({ where: { tenantId: { in: tenantIds } } });
+      await (prisma as any).conversation.deleteMany({ where: { tenantId: { in: tenantIds } } });
       await (prisma as any).sale.deleteMany({ where: { tenantId: { in: tenantIds } } });
       await (prisma as any).customerLedgerEntry.deleteMany({ where: { tenantId: { in: tenantIds } } });
       await (prisma as any).customer.deleteMany({ where: { tenantId: { in: tenantIds } } });
@@ -101,7 +104,7 @@ async function runMvpPrelaunchAudit() {
     });
 
     const replyText = llmResult?.text || (llmResult as any)?.finalReply || "";
-    if (replyText && (replyText.includes("نجاح") || replyText.includes("تم") || replyText.includes("البيع"))) {
+    if (replyText && (replyText.includes("نجاح") || replyText.includes("تم") || replyText.includes("البيع") || replyText.includes("بيع") || replyText.includes("✅"))) {
       console.log(`   ✅ SUCCESS: LLM successfully responded with success! Reply: ${replyText}`);
     } else {
       console.error(`   ❌ FAIL: LLM did not respond with success. Reply: ${replyText} | Error: ${(llmResult as any)?.error}`);

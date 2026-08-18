@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { PrismaClient } from "@prisma/client";
+import { prismaSystem as prisma } from "@/lib/prisma";
 import { executeTool } from "../lib/telegram_llm";
 
-const prisma = new PrismaClient();
 const TENANT_ID = "sync-conflict-tenant";
 const CUSTOMER_NAME = "عميل المزامنة";
 const CUSTOMER_PHONE = "01099999999";
@@ -39,11 +38,14 @@ describe("Sync Conflict Resolution (Idempotency)", () => {
 
   afterAll(async () => {
     await prisma.customerLedgerEntry.deleteMany({ where: { customerId } });
+    await prisma.journalEntry.deleteMany({ where: { tenantId: TENANT_ID } });
     await prisma.sale.deleteMany({ where: { tenantId: TENANT_ID } });
     await prisma.customer.deleteMany({ where: { tenantId: TENANT_ID } });
     await prisma.product.deleteMany({ where: { tenantId: TENANT_ID } });
+    await prisma.tokenUsage.deleteMany({ where: { tenantId: TENANT_ID } });
+    await prisma.chatMessage.deleteMany({ where: { tenantId: TENANT_ID } });
+    await prisma.conversation.deleteMany({ where: { tenantId: TENANT_ID } });
     await prisma.tenant.deleteMany({ where: { id: TENANT_ID } });
-    await prisma.$disconnect();
   });
 
   it("handles offline sync race condition gracefully without negative stock", async () => {

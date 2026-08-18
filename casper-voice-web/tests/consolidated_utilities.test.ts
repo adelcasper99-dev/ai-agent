@@ -1,10 +1,8 @@
 import { describe, it, expect, afterAll } from "vitest";
-import { PrismaClient } from "@prisma/client";
+import { prismaSystem as prisma } from "@/lib/prisma";
 import { createAuditLog } from "../lib/audit-logger";
 import { searchKnowledgeBase } from "../lib/rag-search";
 import { sanitizeEgyptianPhone } from "../lib/phone-sanitizer";
-
-const prisma = new PrismaClient();
 
 describe("Consolidated Utilities Test Suite", () => {
   afterAll(async () => {

@@ -472,10 +472,7 @@
   "470": "resolveLiveTemplateExtensions",
   "471": "vps_wipe_tenants.py",
   "472": "selectAvailablePendingEvent",
-  "473": "checkElementGptBorderShadowDOM",
-  "474": "CSP detection (first-time only)",
   "475": "resolveObjectImageRect",
-  "476": "checkElementHeroEyebrow",
   "477": "checkElementRadialSpotlightDOM",
-  "478": "find_blocking.ts"
+  "480": "preflight_check.py"
 }

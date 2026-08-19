@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { runWithTenant } from "@/lib/prisma-tenant-extension";
 // app/api/telegram/webhook/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import {
@@ -1087,13 +1088,15 @@ export async function POST(req: NextRequest) {
       }
 
       if (tenant.state === "onboarding_description") {
-        await (prisma as any).knowledgeItem.create({
-          data: {
-            tenantId: tenant.id,
-            question: "وصف البيزنس العام والخدمات",
-            answer: text,
-            keywords: "[\"وصف\", \"خدمات\", \"عن البيزنس\"]",
-          },
+        await runWithTenant(tenant.id, async () => {
+          await (prisma as any).knowledgeItem.create({
+            data: {
+              tenantId: tenant.id,
+              question: "وصف البيزنس العام والخدمات",
+              answer: text,
+              keywords: "[\"وصف\", \"خدمات\", \"عن البيزنس\"]",
+            },
+          });
         });
 
         tenant = await (prisma as any).tenant.update({
@@ -1359,78 +1362,82 @@ export async function POST(req: NextRequest) {
 
       const tenantId = tenant.id;
 
-      // 1. Check if active Fallback Flow state machine is in progress
-      if (tenantId) {
-        const state = await getActiveConversationState(chatId, tenantId);
-        if (state && state.currentFlow) {
-          const handled = await processFallbackInput(chatId, tenantId, text, state);
-          if (handled) {
+      return await runWithTenant(tenantId, async () => {
+        // 1. Check if active Fallback Flow state machine is in progress
+        if (tenantId) {
+          const state = await getActiveConversationState(chatId, tenantId);
+          if (state && state.currentFlow) {
+            const handled = await processFallbackInput(chatId, tenantId, text, state);
+            if (handled) {
+              return NextResponse.json({ ok: true });
+            }
+          }
+        }
+
+        // 2. Direct Text Message Routing to LLM Pipeline
+        if (tenant?.id) {
+          const quota = await checkAndIncrementTenantLlmQuota(tenant.id);
+          if (!quota.allowed) {
+            await sendTelegramAlert({
+              chatId,
+              text: `❌ *عفواً أستاذنا، تم الوصول للحد الأقصى اليومي لاستخدام الذكاء الاصطناعي (${quota.usage}/${quota.limit} طلب).*\n\nيتجدد حسابك تلقائياً الساعة 12 منتصف الليل، أو يمكنك التواصل مع الدعم الفني لترقية باقتك ورَفْع الحد اليومي.`,
+              idempotencyKey: `quota_blocked:${chatId}:${message.message_id}`,
+              replyMarkup: {
+                inline_keyboard: [
+                  [{ text: "📞 التواصل مع الدعم الفني", url: "https://t.me/CasperErpSupportBot" }]
+                ]
+              }
+            });
             return NextResponse.json({ ok: true });
           }
         }
-      }
 
-      // 2. Direct Text Message Routing to LLM Pipeline
-      if (tenant?.id) {
-        const quota = await checkAndIncrementTenantLlmQuota(tenant.id);
-        if (!quota.allowed) {
-          await sendTelegramAlert({
-            chatId,
-            text: `❌ *عفواً أستاذنا، تم الوصول للحد الأقصى اليومي لاستخدام الذكاء الاصطناعي (${quota.usage}/${quota.limit} طلب).*\n\nيتجدد حسابك تلقائياً الساعة 12 منتصف الليل، أو يمكنك التواصل مع الدعم الفني لترقية باقتك ورَفْع الحد اليومي.`,
-            idempotencyKey: `quota_blocked:${chatId}:${message.message_id}`,
-            replyMarkup: {
-              inline_keyboard: [
-                [{ text: "📞 التواصل مع الدعم الفني", url: "https://t.me/CasperErpSupportBot" }]
-              ]
-            }
-          });
+        const llmResult = await processTelegramMessageWithLLM(
+          text,
+          tenant?.id,
+          tenant?.name,
+          tenant?.businessType,
+          tenant?.workingHours,
+          chatId,
+          message.message_id,
+          tenant?.merchantName
+        );
+
+        if (llmResult.status === "all_providers_exhausted") {
+          await sendFallbackMainMenu(chatId);
+
+          const adminChatId = process.env.ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
+          if (adminChatId) {
+            await sendTelegramAlert({
+              chatId: adminChatId,
+              text: `⚠️ *تنبيه طوارئ:* جميع مفاتيح والخدمات الخاصة بالذكاء الاصطناعي مستنفدة/متوقفة حالياً. تم تحويل التاجر (${tenant?.name || chatId}) إلى نظام القوائم الطارئة بنجاح.`,
+              idempotencyKey: `emergency_alert:${chatId}:${Date.now()}`,
+            });
+          }
           return NextResponse.json({ ok: true });
         }
-      }
 
-      const llmResult = await processTelegramMessageWithLLM(
-        text,
-        tenant?.id,
-        tenant?.name,
-        tenant?.businessType,
-        tenant?.workingHours,
-        chatId,
-        message.message_id,
-        tenant?.merchantName
-      );
+        const replyText = llmResult.text;
 
-      if (llmResult.status === "all_providers_exhausted") {
-        await sendFallbackMainMenu(chatId);
-
-        const adminChatId = process.env.ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
-        if (adminChatId) {
+        if (replyText) {
           await sendTelegramAlert({
-            chatId: adminChatId,
-            text: `⚠️ *تنبيه طوارئ:* جميع مفاتيح والخدمات الخاصة بالذكاء الاصطناعي مستنفدة/متوقفة حالياً. تم تحويل التاجر (${tenant?.name || chatId}) إلى نظام القوائم الطارئة بنجاح.`,
-            idempotencyKey: `emergency_alert:${chatId}:${Date.now()}`,
+            chatId,
+            text: replyText,
+            idempotencyKey: `llm_reply:${chatId}:${message.message_id}`,
           });
         }
+
+        // Audit Trail Logging in Conversation
+        await prisma.conversation.create({
+          data: {
+            channel: "telegram",
+            transcript: `User (${chatId}): ${text}\nBot: ${replyText}`,
+            summary: `Telegram chat with ${tenant?.name || chatId}`
+          }
+        }).catch((e) => console.error("[Telegram Conversation Log Error]", e));
+
         return NextResponse.json({ ok: true });
-      }
-
-      const replyText = llmResult.text;
-
-      if (replyText) {
-        await sendTelegramAlert({
-          chatId,
-          text: replyText,
-          idempotencyKey: `llm_reply:${chatId}:${message.message_id}`,
-        });
-      }
-
-      // Audit Trail Logging in Conversation
-      await prisma.conversation.create({
-        data: {
-          channel: "telegram",
-          transcript: `User (${chatId}): ${text}\nBot: ${replyText}`,
-          summary: `Telegram chat with ${tenant?.name || chatId}`
-        }
-      }).catch((e) => console.error("[Telegram Conversation Log Error]", e));
+      });
     }
 
     return NextResponse.json({ ok: true });

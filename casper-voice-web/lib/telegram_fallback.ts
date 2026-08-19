@@ -1,7 +1,8 @@
-import { prisma } from "@/lib/prisma";
+import { prisma, prismaSystem } from "@/lib/prisma";
 // lib/telegram_fallback.ts
 import Decimal from "decimal.js";
 import { sendTelegramAlert } from "./telegram";
+import { runWithTenant } from "./prisma-tenant-extension";
 
 
 const STATE_TTL_MINUTES = 60;
@@ -29,19 +30,21 @@ export async function sendTelegramMessageOrEdit(
           reply_markup: replyMarkup,
         }),
       });
-      const data = await res.json();
-      if (data.ok) return;
+      if (!res.ok) {
+        // Fallback to sending fresh message if message is too old to edit
+        await sendTelegramAlert({ chatId, text, replyMarkup, idempotencyKey: `fallback_msg:${chatId}:${Date.now()}` });
+      }
     } catch {
-      // Fallback to sending new message if edit fails
+      await sendTelegramAlert({ chatId, text, replyMarkup, idempotencyKey: `fallback_msg:${chatId}:${Date.now()}` });
     }
+  } else {
+    await sendTelegramAlert({
+      chatId,
+      text,
+      replyMarkup,
+      idempotencyKey: `fallback_msg:${chatId}:${Date.now()}`,
+    });
   }
-
-  await sendTelegramAlert({
-    chatId,
-    text,
-    replyMarkup,
-    idempotencyKey: `fallback_msg:${chatId}:${Date.now()}`,
-  });
 }
 
 export async function sendFallbackMainMenu(chatId: string, messageId?: number) {
@@ -72,39 +75,50 @@ export async function sendFallbackMainMenu(chatId: string, messageId?: number) {
 }
 
 export async function getActiveConversationState(chatId: string, tenantId: string) {
-  let state = await (prisma as any).conversationState.findUnique({
-    where: { telegramChatId: chatId },
-  });
+  return runWithTenant(tenantId, async () => {
+    let state = await (prisma as any).conversationState.findUnique({
+      where: { telegramChatId: chatId },
+    });
 
-  if (state) {
-    // TTL Check: Reset if state is older than 60 minutes
-    const diffMins = (Date.now() - new Date(state.updatedAt).getTime()) / (1000 * 60);
-    if (diffMins > STATE_TTL_MINUTES) {
-      state = await (prisma as any).conversationState.update({
-        where: { id: state.id },
-        data: { currentFlow: null, currentStep: null, collectedData: "{}" },
+    if (state) {
+      // TTL Check: Reset if state is older than 60 minutes
+      const diffMins = (Date.now() - new Date(state.updatedAt).getTime()) / (1000 * 60);
+      if (diffMins > STATE_TTL_MINUTES) {
+        state = await (prisma as any).conversationState.update({
+          where: { id: state.id },
+          data: { currentFlow: null, currentStep: null, collectedData: "{}" },
+        });
+      }
+    } else {
+      state = await (prisma as any).conversationState.create({
+        data: {
+          tenantId,
+          telegramChatId: chatId,
+          currentFlow: null,
+          currentStep: null,
+          collectedData: "{}",
+        },
       });
     }
-  } else {
-    state = await (prisma as any).conversationState.create({
-      data: {
-        tenantId,
-        telegramChatId: chatId,
-        currentFlow: null,
-        currentStep: null,
-        collectedData: "{}",
-      },
-    });
-  }
 
-  return state;
+    return state;
+  });
 }
 
-export async function resetFallbackState(chatId: string) {
-  await (prisma as any).conversationState.updateMany({
-    where: { telegramChatId: chatId },
-    data: { currentFlow: null, currentStep: null, collectedData: "{}" },
-  });
+export async function resetFallbackState(chatId: string, tenantId?: string) {
+  if (tenantId) {
+    await runWithTenant(tenantId, async () => {
+      await (prisma as any).conversationState.updateMany({
+        where: { telegramChatId: chatId },
+        data: { currentFlow: null, currentStep: null, collectedData: "{}" },
+      });
+    });
+  } else {
+    await (prismaSystem as any).conversationState.updateMany({
+      where: { telegramChatId: chatId },
+      data: { currentFlow: null, currentStep: null, collectedData: "{}" },
+    });
+  }
 }
 
 export function tryParseQuickSale(text: string): { success: boolean; data?: any } {
@@ -175,28 +189,30 @@ export async function handleFallbackMenuCallback(
   data: string,
   messageId?: number
 ) {
-  if (data === "menu:soon") {
-    await sendTelegramMessageOrEdit(chatId, "ℹ️ هذه الميزة قيد التطوير وستكون متاحة في وضع الطوارئ قريباً!", undefined, messageId);
-    return;
-  }
+  return runWithTenant(tenantId, async () => {
+    if (data === "menu:soon") {
+      await sendTelegramMessageOrEdit(chatId, "ℹ️ هذه الميزة قيد التطوير وستكون متاحة في وضع الطوارئ قريباً!", undefined, messageId);
+      return;
+    }
 
-  if (data === "menu:sale") {
-    await (prisma as any).conversationState.upsert({
-      where: { telegramChatId: chatId },
-      update: { currentFlow: "sale", currentStep: "customer", collectedData: "{}" },
-      create: { tenantId, telegramChatId: chatId, currentFlow: "sale", currentStep: "customer", collectedData: "{}" },
-    });
+    if (data === "menu:sale") {
+      await (prisma as any).conversationState.upsert({
+        where: { telegramChatId: chatId },
+        update: { currentFlow: "sale", currentStep: "customer", collectedData: "{}" },
+        create: { tenantId, telegramChatId: chatId, currentFlow: "sale", currentStep: "customer", collectedData: "{}" },
+      });
 
-    const text = "💰 *تسجيل مبيعات جديدة*\n\n⚡ *إدخال سريع (سطر واحد):*\nاكتب الجملة كاملة واستلم التعديل والـ Confirm فوراً!\n📌 *أمثلة:* `مفاتيح 300` أو `2 كرتونة مسامير 500 احمد آجل`\n\nأو اضغط زرار (عميل نقدي) للبدء بالتفصيل:";
-    const replyMarkup = {
-      inline_keyboard: [
-        [{ text: "💵 عميل نقدي (بدء التخصيص)", callback_data: "sale:cash_customer" }],
-        [{ text: "❌ إلغاء", callback_data: "sale:cancel" }],
-      ],
-    };
+      const text = "💰 *تسجيل مبيعات جديدة*\n\n⚡ *إدخال سريع (سطر واحد):*\nاكتب الجملة كاملة واستلم التعديل والـ Confirm فوراً!\n📌 *أمثلة:* `مفاتيح 300` أو `2 كرتونة مسامير 500 احمد آجل`\n\nأو اضغط زرار (عميل نقدي) للبدء بالتفصيل:";
+      const replyMarkup = {
+        inline_keyboard: [
+          [{ text: "💵 عميل نقدي (بدء التخصيص)", callback_data: "sale:cash_customer" }],
+          [{ text: "❌ إلغاء", callback_data: "sale:cancel" }],
+        ],
+      };
 
-    await sendTelegramMessageOrEdit(chatId, text, replyMarkup, messageId);
-  }
+      await sendTelegramMessageOrEdit(chatId, text, replyMarkup, messageId);
+    }
+  });
 }
 
 // ── 2. FALLBACK INPUT TEXT PROCESSOR (STATE MACHINE) ──
@@ -206,8 +222,9 @@ export async function processFallbackInput(
   text: string,
   currentState: any
 ): Promise<boolean> {
-  // ⚡ 1. Try Quick 1-Line Sale Parse unconditionally first (even if currentFlow is null)!
-  const quickResult = tryParseQuickSale(text);
+  return runWithTenant(tenantId, async () => {
+    // ⚡ 1. Try Quick 1-Line Sale Parse unconditionally first (even if currentFlow is null)!
+    const quickResult = tryParseQuickSale(text);
   if (quickResult.success && quickResult.data) {
     const qData = quickResult.data;
     if (qData.payment_method === "credit" && (!qData.customer_name || qData.customer_name === "عميل نقدي")) {
@@ -367,7 +384,8 @@ export async function processFallbackInput(
     }
   }
 
-  return false;
+    return false;
+  });
 }
 
 // ── 3. SALE CALLBACK HANDLER ──
@@ -377,7 +395,8 @@ export async function handleFallbackSaleCallback(
   dataStr: string,
   messageId?: number
 ) {
-  const currentState = await getActiveConversationState(chatId, tenantId);
+  return runWithTenant(tenantId, async () => {
+    const currentState = await getActiveConversationState(chatId, tenantId);
   let data: Record<string, any> = {};
   try {
     data = JSON.parse(currentState.collectedData || "{}");
@@ -515,6 +534,7 @@ export async function handleFallbackSaleCallback(
 
     await sendFallbackMainMenu(chatId);
   }
+  });
 }
 
 // ── 4. DB EXECUTION FOR COMPLETED SALE ──

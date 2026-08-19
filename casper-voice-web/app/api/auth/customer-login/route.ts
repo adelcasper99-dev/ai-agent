@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, prismaSystem } from "@/lib/prisma";
 import { signCustomerSession, verifyPin } from "@/lib/session";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { z } from "zod";
@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
     // Normalize arabic digits to standard english digits
     phone = phone.replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d).toString());
 
-    // Find customer by phone
-    const customer = await prisma.customer.findFirst({
+    // Find customer by phone (pre-auth cross-tenant lookup)
+    const customer = await prismaSystem.customer.findFirst({
       where: { phone: { contains: phone } },
     });
 

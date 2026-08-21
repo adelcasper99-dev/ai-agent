@@ -1,9 +1,10 @@
-import { prisma } from "../lib/prisma";
+import { prisma, prismaSystem } from "../lib/prisma";
+import { runWithTenant } from "../lib/prisma-tenant-extension";
 import { extractCleanBusinessName } from "../lib/tenant-name-cleaner";
 
 async function main() {
   console.log("🔍 Scanning for tenants with long or conversational names...");
-  const tenants = await (prisma as any).tenant.findMany();
+  const tenants = await (prismaSystem as any).tenant.findMany();
 
   let updatedCount = 0;
   for (const tenant of tenants) {
@@ -16,31 +17,33 @@ async function main() {
       console.log(`   New: "${cleanName}"`);
 
       // Update tenant name
-      await (prisma as any).tenant.update({
+      await (prismaSystem as any).tenant.update({
         where: { id: tenant.id },
         data: { name: cleanName },
       });
 
       // Save full original description as KnowledgeItem if it contained valuable context
       if (tenant.name.length > cleanName.length + 15) {
-        const existingKb = await (prisma as any).knowledgeItem.findFirst({
-          where: {
-            tenantId: tenant.id,
-            question: "وصف البيزنس العام والخدمات بالتفصيل",
-          },
-        });
-
-        if (!existingKb) {
-          await (prisma as any).knowledgeItem.create({
-            data: {
+        await runWithTenant(tenant.id, async () => {
+          const existingKb = await (prisma as any).knowledgeItem.findFirst({
+            where: {
               tenantId: tenant.id,
               question: "وصف البيزنس العام والخدمات بالتفصيل",
-              answer: tenant.name,
-              keywords: "[\"وصف\", \"خدمات\", \"عن البيزنس\", \"نشاط\"]",
             },
           });
-          console.log(`   💾 Preserved full description as KnowledgeItem!`);
-        }
+
+          if (!existingKb) {
+            await (prisma as any).knowledgeItem.create({
+              data: {
+                tenantId: tenant.id,
+                question: "وصف البيزنس العام والخدمات بالتفصيل",
+                answer: tenant.name,
+                keywords: "[\"وصف\", \"خدمات\", \"عن البيزنس\", \"نشاط\"]",
+              },
+            });
+            console.log(`   💾 Preserved full description as KnowledgeItem!`);
+          }
+        });
       }
 
       updatedCount++;

@@ -48,6 +48,23 @@ async function sendProfileConfirmationCard(chatId: string, merchantName: string,
   });
 }
 
+async function sendBusinessConfirmationCard(chatId: string, companyName: string, merchantName: string, phoneNumber: string, msgId?: number) {
+  await sendTelegramAlert({
+    chatId,
+    text: `📋 *تأكيد بيانات شركتك وحسابك:*\n\n🏢 *اسم الشركة/المحل:* ${companyName}\n👤 *اسم المسؤول:* ${merchantName}\n📱 *رقم الموبايل:* \`${phoneNumber}\`\n\nهل اسم الشركة ورقم الهاتف صحيحين ومظبوطين؟`,
+    idempotencyKey: `onboarding:biz_confirm_card:${chatId}:${msgId || Date.now()}`,
+    replyMarkup: {
+      inline_keyboard: [
+        [{ text: "✅ تمام والبيانات مظبوطة", callback_data: "confirm_biz:ok" }],
+        [
+          { text: "✏️ تعديل اسم الشركة", callback_data: "edit_biz:name" },
+          { text: "✏️ تعديل رقم الموبايل", callback_data: "edit_biz:phone" },
+        ],
+      ],
+    },
+  });
+}
+
 
 
 export async function POST(req: NextRequest) {
@@ -277,7 +294,76 @@ export async function POST(req: NextRequest) {
             },
           });
         }
-        await answerCallback("يرجى كتابة أو مشاركة الرقم الجديد");
+      if (data === "confirm_biz:ok") {
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (tenant) {
+          await (prisma as any).tenant.update({
+            where: { id: tenant.id },
+            data: { state: "onboarding_business_type" },
+          });
+          await sendTelegramAlert({
+            chatId: callbackChatId,
+            text: "ممتاز جداً! اختار نوع النشاط/البيزنس بتاعك من الأزرار أدناه:",
+            idempotencyKey: `onboarding:type_prompt:${callbackChatId}`,
+            replyMarkup: {
+              inline_keyboard: [
+                [
+                  { text: "🍔 مطعم/كافيه", callback_data: "type:restaurant" },
+                  { text: "🏥 عيادة/مركز طبي", callback_data: "type:clinic" },
+                ],
+                [
+                  { text: "🛍️ محل تجاري/ملابس", callback_data: "type:retail" },
+                  { text: "🔧 صيانة/ورشة/خدمات", callback_data: "type:services" },
+                ],
+                [
+                  { text: "✏️ نشاط آخر (كتابة)", callback_data: "type:custom" },
+                ],
+              ],
+            },
+          });
+        }
+        await answerCallback("تم تأكيد اسم الشركة ورقم الهاتف!");
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data === "edit_biz:name") {
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (tenant) {
+          await (prisma as any).tenant.update({
+            where: { id: tenant.id },
+            data: { state: "onboarding_edit_biz_name" },
+          });
+          await sendTelegramAlert({
+            chatId: callbackChatId,
+            text: "تمام يا فندم، يرجى كتابة اسم شركتك/محلك التجاري الجديد الآن 🏢:",
+            idempotencyKey: `onboarding:edit_biz_name_prompt:${callbackChatId}`,
+          });
+        }
+        await answerCallback("يرجى كتابة اسم الشركة الجديد");
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data === "edit_biz:phone") {
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (tenant) {
+          await (prisma as any).tenant.update({
+            where: { id: tenant.id },
+            data: { state: "onboarding_edit_phone" },
+          });
+          await sendTelegramAlert({
+            chatId: callbackChatId,
+            text: "تمام يا فندم، يرجى مشاركة أو كتابة رقم الموبايل الجديد الآن 📱:",
+            idempotencyKey: `onboarding:edit_phone_prompt:${callbackChatId}`,
+            replyMarkup: {
+              keyboard: [
+                [{ text: "📱 مشاركة رقم الموبايل بضغطة واحدة", request_contact: true }]
+              ],
+              resize_keyboard: true,
+              one_time_keyboard: true,
+            },
+          });
+        }
+        await answerCallback("يرجى مشاركة أو كتابة الرقم الجديد");
         return NextResponse.json({ ok: true });
       }
 
@@ -1079,7 +1165,7 @@ export async function POST(req: NextRequest) {
         const { businessName, hasDetailedDescription } = await extractBusinessNameWithLLM(text);
         tenant = await (prisma as any).tenant.update({
           where: { id: tenant.id },
-          data: { name: businessName, state: "onboarding_description" },
+          data: { name: businessName, state: "onboarding_confirm_biz" },
         });
 
         // If the user provided a detailed description right away, preserve it as a KnowledgeItem
@@ -1096,11 +1182,41 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        await sendTelegramAlert({
+        await sendBusinessConfirmationCard(
           chatId,
-          text: `جميل جداً يا فندم! احكيلي بسرعة عن بيزنسك *${businessName}* بتعمل ايه (نوع الخدمة/المنتجات)؟`,
-          idempotencyKey: `onboarding:desc_prompt:${chatId}:${message.message_id}`,
+          businessName,
+          tenant.merchantName || "التاجر",
+          tenant.phoneNumber || "غير محدد",
+          message.message_id
+        );
+        return NextResponse.json({ ok: true });
+      }
+
+      if (tenant.state === "onboarding_edit_biz_name") {
+        const { businessName } = await extractBusinessNameWithLLM(text);
+        tenant = await (prisma as any).tenant.update({
+          where: { id: tenant.id },
+          data: { name: businessName, state: "onboarding_confirm_biz" },
         });
+
+        await sendBusinessConfirmationCard(
+          chatId,
+          businessName,
+          tenant.merchantName || "التاجر",
+          tenant.phoneNumber || "غير محدد",
+          message.message_id
+        );
+        return NextResponse.json({ ok: true });
+      }
+
+      if (tenant.state === "onboarding_confirm_biz") {
+        await sendBusinessConfirmationCard(
+          chatId,
+          tenant.name || "مؤسسة تجارية",
+          tenant.merchantName || "التاجر",
+          tenant.phoneNumber || "غير محدد",
+          message.message_id
+        );
         return NextResponse.json({ ok: true });
       }
 

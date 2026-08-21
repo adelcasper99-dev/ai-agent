@@ -70,3 +70,59 @@ export function extractCleanBusinessName(rawText: string | null | undefined): st
 
   return extracted || "مؤسسة تجارية";
 }
+
+/**
+ * Hybrid LLM + Heuristic Extractor for Onboarding
+ */
+export async function extractBusinessNameWithLLM(rawText: string | null | undefined): Promise<{
+  businessName: string;
+  hasDetailedDescription: boolean;
+}> {
+  if (!rawText || !rawText.trim()) {
+    return { businessName: "شركة غير محددة", hasDetailedDescription: false };
+  }
+
+  const fallbackName = extractCleanBusinessName(rawText);
+
+  // If already concise without conversational text, return directly
+  if (rawText.trim().length <= 30 && !rawText.includes("؟") && !rawText.includes("شغال") && !rawText.includes("إزيك")) {
+    return { businessName: fallbackName, hasDetailedDescription: false };
+  }
+
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (geminiKey) {
+    try {
+      const { GoogleGenAI } = await import("@google/genai");
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      const prompt = `استخرج اسم المحل أو الشركة فقط من هذه الرسالة بالعامية المصرية بدقة واختصار شديد (لا يتجاوز 4 كلمات):\n"${rawText}"\n\nأجب بصيغة JSON فقط: {"businessName": "اسم النشاط أو المحل"}`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          temperature: 0.1,
+        },
+      });
+
+      const parsed = JSON.parse(response.text || "{}");
+      if (parsed.businessName && typeof parsed.businessName === "string" && parsed.businessName.trim()) {
+        let cleanExtracted = parsed.businessName.trim();
+        if (cleanExtracted.length > 40) {
+          cleanExtracted = cleanExtracted.slice(0, 37).trim() + "...";
+        }
+        return {
+          businessName: cleanExtracted,
+          hasDetailedDescription: rawText.length > cleanExtracted.length + 15,
+        };
+      }
+    } catch (e) {
+      console.warn("[extractBusinessNameWithLLM] LLM extraction error, using heuristic fallback:", e);
+    }
+  }
+
+  return {
+    businessName: fallbackName,
+    hasDetailedDescription: rawText.length > fallbackName.length + 15,
+  };
+}

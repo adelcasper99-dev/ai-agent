@@ -28,7 +28,7 @@ import { transcribeVoiceNote, processImage } from "@/lib/conversation.service";
 
 import { buildWhisperPrompt } from "@/lib/whisper_prompt";
 import { sanitizeEgyptianPhone } from "@/lib/phone-sanitizer";
-import { extractCleanBusinessName } from "@/lib/tenant-name-cleaner";
+import { extractCleanBusinessName, extractBusinessNameWithLLM } from "@/lib/tenant-name-cleaner";
 import { checkAndIncrementTenantLlmQuota } from "@/lib/tenant-quota";
 
 async function sendProfileConfirmationCard(chatId: string, merchantName: string, phoneNumber: string, msgId?: number) {
@@ -231,7 +231,7 @@ export async function POST(req: NextRequest) {
           });
           await sendTelegramAlert({
             chatId: callbackChatId,
-            text: `ممتاز جداً أستاذ/ة *${tenant.merchantName || "التاجر"}*! 🏢\nاحكيلي بسرعة عن بيزنسك/شركتك اسمها ايه؟`,
+            text: `ممتاز جداً أستاذ/ة *${tenant.merchantName || "التاجر"}*! 🏢\nما هو *اسم محلك أو شركتك فقط*؟\n(مثال: ورشة النور، مطعم البرنس، صيدلية الأمل)\n\n💡 *ملاحظة:* اذكر الاسم فقط، وسأسألك عن تفاصيل خدماتك ومنتجاتك في الخطوة التالية.`,
             idempotencyKey: `onboarding:name_prompt:${callbackChatId}`,
             replyMarkup: { remove_keyboard: true },
           });
@@ -1076,14 +1076,14 @@ export async function POST(req: NextRequest) {
       }
 
       if (tenant.state === "onboarding_name") {
-        const cleanBusinessName = extractCleanBusinessName(text);
+        const { businessName, hasDetailedDescription } = await extractBusinessNameWithLLM(text);
         tenant = await (prisma as any).tenant.update({
           where: { id: tenant.id },
-          data: { name: cleanBusinessName, state: "onboarding_description" },
+          data: { name: businessName, state: "onboarding_description" },
         });
 
         // If the user provided a detailed description right away, preserve it as a KnowledgeItem
-        if (text.length > cleanBusinessName.length + 15) {
+        if (hasDetailedDescription) {
           await runWithTenant(tenant.id, async () => {
             await (prisma as any).knowledgeItem.create({
               data: {
@@ -1098,7 +1098,7 @@ export async function POST(req: NextRequest) {
 
         await sendTelegramAlert({
           chatId,
-          text: `جميل جداً يا فندم! احكيلي بسرعة عن بيزنسك *${cleanBusinessName}* بتعمل ايه (نوع الخدمة/المنتجات)؟`,
+          text: `جميل جداً يا فندم! احكيلي بسرعة عن بيزنسك *${businessName}* بتعمل ايه (نوع الخدمة/المنتجات)؟`,
           idempotencyKey: `onboarding:desc_prompt:${chatId}:${message.message_id}`,
         });
         return NextResponse.json({ ok: true });

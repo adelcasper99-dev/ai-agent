@@ -482,10 +482,5 @@
   "480": "check_vps_gemini.py",
   "481": "list_google_models.py",
   "482": "test_all_vps_keys.py",
-  "483": "test_vps_gemini_call.py",
-  "484": "resolveObjectImageRect",
-  "485": "TenantProvisioner",
-  "486": "🛠️ Fix Verification & Walkthrough",
-  "487": "resolveLiveTemplateExtensions",
-  "488": "preflight_check.py"
+  "483": "test_vps_gemini_call.py"
 }

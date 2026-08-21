@@ -29,14 +29,18 @@ from livekit.agents import (
     cli,
     function_tool,
 )
-from livekit.plugins import openai, google, silero
+from livekit.plugins import openai, google
+try:
+    from livekit.plugins import silero
+except ImportError:
+    silero = None
 
 load_dotenv()
 
 API_BASE = os.getenv("DASHBOARD_API_URL", "http://localhost:3006/api")
 INTERNAL_SECRET = os.getenv("INTERNAL_SERVICE_SECRET", "casper-voice-internal-secret-9988776655")
 
-def get_internal_headers(extra_headers: dict = None, tenant_id: str = None) -> dict:
+def get_internal_headers(extra_headers: dict | None = None, tenant_id: str | None = None) -> dict:
     headers = {"x-internal-secret": INTERNAL_SECRET}
     if tenant_id:
         headers["x-tenant-id"] = tenant_id
@@ -44,11 +48,11 @@ def get_internal_headers(extra_headers: dict = None, tenant_id: str = None) -> d
         headers.update(extra_headers)
     return headers
 
-def get_api_client(extra_headers: dict = None, tenant_id: str = None):
+def get_api_client(extra_headers: dict | None = None, tenant_id: str | None = None):
     return httpx.AsyncClient(headers=get_internal_headers(extra_headers, tenant_id))
 
 
-def get_system_prompt(tenant_name: str = None) -> str:
+def get_system_prompt(tenant_name: str | None = None) -> str:
     company_str = f"بشركة {tenant_name}" if tenant_name else "بنظامنا الذكي"
     return f"""
 أنت "المساعد الشخصي الذكي" (Personal ERP Assistant) الخاص بمدير أو صاحب العمل {company_str}.
@@ -78,13 +82,14 @@ def get_system_prompt(tenant_name: str = None) -> str:
 """
 
 class CasperAgent(Agent):
-    def __init__(self, room=None, tenant_id=None, tenant_name=None):
+    def __init__(self, room=None, tenant_id: str | None = None, tenant_name: str | None = None):
         super().__init__(instructions=get_system_prompt(tenant_name))
         self.room = room
         self.tenant_id = tenant_id
         self.tenant_name = tenant_name
+        self.last_user_transcript: str | None = None
 
-    def _get_client(self, extra_headers: dict = None):
+    def _get_client(self, extra_headers: dict | None = None):
         return get_api_client(extra_headers, tenant_id=self.tenant_id)
 
     async def _emit_success(self, title: str, text: str):
@@ -132,7 +137,7 @@ class CasperAgent(Agent):
 
 
     @function_tool
-    async def log_sale(self, item_name: str, price: float, quantity: int = 1, customer_name: str = "", paid_amount: float = None):
+    async def log_sale(self, item_name: str, price: float, quantity: int = 1, customer_name: str = "", paid_amount: float | None = None):
         """تسجيل عملية بيع لعميل (كاش أو آجل أو مع تسجيل اسم العميل)"""
         if not item_name or item_name.strip() == "":
             return "بعنا صنف إيه يا فندم؟"
@@ -799,14 +804,14 @@ async def entrypoint(ctx: JobContext):
                 except Exception as e:
                     print(f"[user_input_transcribed] {e}")
     
-            @session.on("user_speech_interrupted")
+            @session.on("user_speech_interrupted")  # type: ignore
             def on_user_speech_interrupted(ev):
                 try:
                     diag.record_vad_cutoff()
                 except Exception as e:
                     print(f"[user_speech_interrupted] {e}")
     
-            @session.on("agent_speech_interrupted")
+            @session.on("agent_speech_interrupted")  # type: ignore
             def on_agent_speech_interrupted(ev):
                 try:
                     diag.record_vad_cutoff()
@@ -892,39 +897,39 @@ async def entrypoint(ctx: JobContext):
                     print("[DB Fallback Error]", dbe)
                 continue
 
-        err_str = str(e)
-        print("CRITICAL AGENT ERROR:", err_str)
-        user_msg = f"حدث خطأ في خادم الصوت: {err_str}"
-        if "GROQ_API_KEY is required" in err_str or "مفقود" in err_str or "GEMINI_API_KEY" in err_str:
-            user_msg = "يرجى إدخال مفتاح الذكاء الاصطناعي (Gemini / Groq) وحفظه في صفحة الإعدادات أولاً."
-        elif "insufficient_quota" in err_str:
-            user_msg = f"انتهت باقة أو رصيد الذكاء الاصطناعي الخاص بـ ({provider.upper()})"
-        elif "1008" in err_str or "not found" in err_str:
-            user_msg = f"الموديل غير متاح أو اسم الموديل غير صحيح لـ ({provider.upper()})"
-        elif "invalid" in err_str.lower():
-            user_msg = f"مفتاح الـ API غير صحيح لـ ({provider.upper()})"
+            err_str = str(e)
+            print("CRITICAL AGENT ERROR:", err_str)
+            user_msg = f"حدث خطأ في خادم الصوت: {err_str}"
+            if "GROQ_API_KEY is required" in err_str or "مفقود" in err_str or "GEMINI_API_KEY" in err_str:
+                user_msg = "يرجى إدخال مفتاح الذكاء الاصطناعي (Gemini / Groq) وحفظه في صفحة الإعدادات أولاً."
+            elif "insufficient_quota" in err_str:
+                user_msg = f"انتهت باقة أو رصيد الذكاء الاصطناعي الخاص بـ ({provider.upper()})"
+            elif "1008" in err_str or "not found" in err_str:
+                user_msg = f"الموديل غير متاح أو اسم الموديل غير صحيح لـ ({provider.upper()})"
+            elif "invalid" in err_str.lower():
+                user_msg = f"مفتاح الـ API غير صحيح لـ ({provider.upper()})"
 
-        print(f"[AUDIO FALLBACK NOTIFICATION EMITTED] Broadcasted to user: '{user_msg}'")
-        try:
-            import json
-            await ctx.room.local_participant.publish_data(
-                json.dumps({
-                    "type": "error",
-                    "message": user_msg,
-                    "speak_error": True,
-                    "action": "TRANSFER_TO_HUMAN_OR_NOTIFY"
-                }).encode("utf-8"),
-                reliable=True
-            )
-        except Exception as pub_err:
-            print(f"[DataChannel Error Output Failed] {pub_err}")
+            print(f"[AUDIO FALLBACK NOTIFICATION EMITTED] Broadcasted to user: '{user_msg}'")
+            try:
+                import json
+                await ctx.room.local_participant.publish_data(
+                    json.dumps({
+                        "type": "error",
+                        "message": user_msg,
+                        "speak_error": True,
+                        "action": "TRANSFER_TO_HUMAN_OR_NOTIFY"
+                    }).encode("utf-8"),
+                    reliable=True
+                )
+            except Exception as pub_err:
+                print(f"[DataChannel Error Output Failed] {pub_err}")
 
-        # Stream spoken audio directly into telephony WebRTC audio track for phone callers
-        try:
-            await play_in_call_fallback_audio(ctx, user_msg)
-        except Exception as audio_err:
-            print(f"[In-Call Audio Stream Failed] {audio_err}")
-        raise e
+            # Stream spoken audio directly into telephony WebRTC audio track for phone callers
+            try:
+                await play_in_call_fallback_audio(ctx, user_msg)
+            except Exception as audio_err:
+                print(f"[In-Call Audio Stream Failed] {audio_err}")
+            raise e
 
 
     async def on_close():

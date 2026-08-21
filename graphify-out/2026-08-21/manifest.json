@@ -2970,8 +2970,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/lib/usage-alert.ts": {
-    "mtime": 1787320240.5880973,
-    "ast_hash": "c4f317538c821bf13e8cbb01d7bf12a9",
+    "mtime": 1786537682.5588126,
+    "ast_hash": "b184447125ce8a3bb0640c7dac887349",
     "semantic_hash": ""
   },
   "casper-voice-web/tests/multi_tenant_verification_suite.test.ts": {
@@ -3522,31 +3522,6 @@
   "current_problems_analysis.md": {
     "mtime": 1787319789.515428,
     "ast_hash": "b1d807e2682ab4b3b02b07b697fe807a",
-    "semantic_hash": ""
-  },
-  "casper-voice-web/tests/usage_alert.test.ts": {
-    "mtime": 1787320247.278985,
-    "ast_hash": "1628d5371679fc10c10f07e1a08b85c4",
-    "semantic_hash": ""
-  },
-  "agent_fix_walkthrough.md": {
-    "mtime": 1787319895.5616746,
-    "ast_hash": "1cef3c3e0d0f6fc6df007aa6a1a4c495",
-    "semantic_hash": ""
-  },
-  "token_alerts_mechanism_and_fix.md": {
-    "mtime": 1787320173.3469107,
-    "ast_hash": "a250ec9542829467878d48f2d13b8d42",
-    "semantic_hash": ""
-  },
-  "token_consumption_rules.md": {
-    "mtime": 1787320002.4941728,
-    "ast_hash": "3bcce2f23e8b7f9e519088360366d679",
-    "semantic_hash": ""
-  },
-  "tokens_comparison_agent_vs_voice.md": {
-    "mtime": 1787320084.8760374,
-    "ast_hash": "b2399df762e502648002a47bb61ef0c1",
     "semantic_hash": ""
   }
 }

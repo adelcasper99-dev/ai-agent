@@ -24,6 +24,8 @@ export default function LoginPage() {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [forgotPinLoading, setForgotPinLoading] = useState(false);
+  const [forgotPinSuccess, setForgotPinSuccess] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -102,6 +104,30 @@ export default function LoginPage() {
       setError(err?.message || "تعذر الاتصال بالخادم");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ── Forgot PIN Handler ──
+  const handleForgotPin = async () => {
+    setError("");
+    setForgotPinSuccess("");
+    setForgotPinLoading(true);
+    try {
+      const res = await fetch("/api/auth/forgot-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: customerPhone }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setForgotPinSuccess(data.message || "تم إرسال رابط الدخول السريع إلى حسابك على التيليجرام!");
+      } else {
+        setError(data.error || "فشل إرسال طلب الاستعادة");
+      }
+    } catch (err: any) {
+      setError("تعذر الاتصال بالخادم");
+    } finally {
+      setForgotPinLoading(false);
     }
   };
 
@@ -358,6 +384,25 @@ export default function LoginPage() {
                       />
                     </div>
                   </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <button
+                      type="button"
+                      onClick={handleForgotPin}
+                      disabled={forgotPinLoading}
+                      className="text-xs text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      {forgotPinLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-emerald-400" />}
+                      <span>نسيت الرمز السري؟ ارسل رابط للدخول</span>
+                    </button>
+                  </div>
+
+                  {forgotPinSuccess && (
+                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 shrink-0" />
+                      <span>{forgotPinSuccess}</span>
+                    </div>
+                  )}
 
                   <button
                     type="submit"

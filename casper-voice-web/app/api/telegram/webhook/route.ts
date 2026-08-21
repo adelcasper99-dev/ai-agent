@@ -1081,6 +1081,28 @@ export async function POST(req: NextRequest) {
     // Onboarding Input Interceptor
     let tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: chatId } });
 
+    // ── PIN Reset & Direct Commands ──
+    const normalizedText = (text || "").trim().toLowerCase();
+    const isPinTrigger = normalizedText === "/pin" || 
+                         normalizedText === "/resetpin" || 
+                         normalizedText === "تغيير الـ pin" || 
+                         normalizedText === "تغيير الرقم السري" || 
+                         normalizedText === "نسيت الرقم السري" || 
+                         normalizedText === "نسيت الـ pin";
+
+    if (tenant && isPinTrigger) {
+      await (prisma as any).tenant.update({
+        where: { id: tenant.id },
+        data: { state: "setting_merchant_pin" },
+      });
+      await sendTelegramAlert({
+        chatId,
+        text: "🔒 *إعادة تعيين رمز الـ PIN:*\nيرجى إرسال رمز PIN سري جديد مكون من 4 إلى 6 أرقام لتسجيل الدخول السريع إلى لوحة الويب:",
+        idempotencyKey: `onboarding:reset_pin_prompt:${chatId}:${message.message_id}`,
+      });
+      return NextResponse.json({ ok: true });
+    }
+
     if (tenant && tenant.state !== "active" && tenant.state !== "pending_agreement") {
       const contactMsg = (message as any).contact;
       const isContactMsg = Boolean(contactMsg && contactMsg.phone_number);

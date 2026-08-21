@@ -80,7 +80,7 @@ def main():
     # Step 3: Dependencies & Prisma Build
     print("\nSTEP 3: Dependencies & Next.js Build...")
     run_remote("cd voice_service && python3 -m venv venv && ./venv/bin/pip install -r requirements.txt")
-    run_remote("cd casper-voice-web && rm -rf .next && npm install && npx prisma generate && node scripts/backfill_null_tenants.js && npx prisma db push --accept-data-loss && npm run build")
+    run_remote("cd casper-voice-web && rm -rf .next && npm install && npx prisma generate && node scripts/backfill_null_tenants.js && npx tsx scripts/clean_long_tenant_names.ts && npx prisma db push --accept-data-loss && npm run build")
 
     # Step 4: PM2 Production Reload
     print("\nSTEP 4: PM2 Production Server Reload...")

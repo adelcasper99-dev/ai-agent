@@ -30,6 +30,7 @@ import { buildWhisperPrompt } from "@/lib/whisper_prompt";
 import { sanitizeEgyptianPhone } from "@/lib/phone-sanitizer";
 import { extractCleanBusinessName, extractBusinessNameWithLLM } from "@/lib/tenant-name-cleaner";
 import { checkAndIncrementTenantLlmQuota } from "@/lib/tenant-quota";
+import { hashPin } from "@/lib/session";
 
 async function sendProfileConfirmationCard(chatId: string, merchantName: string, phoneNumber: string, msgId?: number) {
   await sendTelegramAlert({
@@ -367,6 +368,23 @@ export async function POST(req: NextRequest) {
           });
         }
         await answerCallback("يرجى مشاركة أو كتابة الرقم الجديد");
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data === "merchant:set_pin") {
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (tenant) {
+          await (prisma as any).tenant.update({
+            where: { id: tenant.id },
+            data: { state: "setting_merchant_pin" },
+          });
+          await sendTelegramAlert({
+            chatId: callbackChatId,
+            text: "🔒 *تعيين رمز الـ PIN:*\nيرجى إرسال رمز PIN سري مكون من 4 إلى 6 أرقام لتسجيل الدخول السريع إلى لوحة الويب من أي جهاز:",
+            idempotencyKey: `onboarding:set_pin_prompt:${callbackChatId}`,
+          });
+        }
+        await answerCallback("يرجى إدخال رمز الـ PIN");
         return NextResponse.json({ ok: true });
       }
 
@@ -1155,6 +1173,49 @@ export async function POST(req: NextRequest) {
             resize_keyboard: true,
             one_time_keyboard: true,
           },
+        });
+        return NextResponse.json({ ok: true });
+      }
+
+      if (tenant.state === "setting_merchant_pin") {
+        let pin = text.trim().replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d).toString());
+        if (!/^\d{4,6}$/.test(pin)) {
+          await sendTelegramAlert({
+            chatId,
+            text: "⚠️ يرجى إدخال رمز PIN صالح مكون من 4 إلى 6 أرقام فقط (مثال: 1234):",
+            idempotencyKey: `onboarding:pin_invalid:${chatId}:${message.message_id}`,
+          });
+          return NextResponse.json({ ok: true });
+        }
+
+        let customer = await (prisma as any).customer.findFirst({
+          where: { tenantId: tenant.id, phone: tenant.phoneNumber || "" }
+        });
+        if (!customer) {
+          customer = await (prisma as any).customer.create({
+            data: {
+              tenantId: tenant.id,
+              name: tenant.merchantName || tenant.name,
+              phone: tenant.phoneNumber || "01000000000",
+            }
+          });
+        }
+
+        const hashed = await hashPin(pin, customer.id);
+        await (prisma as any).customer.update({
+          where: { id: customer.id },
+          data: { pinHash: hashed },
+        });
+
+        await (prisma as any).tenant.update({
+          where: { id: tenant.id },
+          data: { state: "active" },
+        });
+
+        await sendTelegramAlert({
+          chatId,
+          text: `✅ *تم تعيين رمز الـ PIN بنجاح!*\n\nيمكنك الآن تسجيل الدخول في أي وقت إلى لوحة الويب برقم موبايلك \`${tenant.phoneNumber}\` والرمز السري.`,
+          idempotencyKey: `onboarding:pin_saved:${chatId}:${message.message_id}`,
         });
         return NextResponse.json({ ok: true });
       }

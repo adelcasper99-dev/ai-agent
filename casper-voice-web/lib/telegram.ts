@@ -4,6 +4,7 @@
 
 import Decimal from 'decimal.js';
 import { prisma } from './prisma';
+import { signMagicLink } from './session';
 
 export interface TelegramAlertPayload {
   chatId: string;
@@ -268,11 +269,41 @@ export async function approveTenantRequest(requestId: string, decidedBy: string,
     });
   }
 
+  // Generate Magic Link for instant login
+  let magicLinkUrl: string | undefined;
+  try {
+    let customer = await (prisma as any).customer.findFirst({
+      where: { tenantId: tenant.id, phone: req.phoneNumber || '' }
+    });
+    if (!customer) {
+      customer = await (prisma as any).customer.create({
+        data: {
+          tenantId: tenant.id,
+          name: req.customerName,
+          phone: req.phoneNumber || '01000000000',
+        }
+      });
+    }
+    const token = await signMagicLink(customer.id, 60 * 24 * 7); // 7 days
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://109.123.247.119:3000';
+    magicLinkUrl = `${appUrl}/api/auth/magic-link?token=${token}`;
+  } catch (err) {
+    console.warn('[approveTenantRequest] Failed to generate magic link:', err);
+  }
+
+  const replyMarkup = magicLinkUrl ? {
+    inline_keyboard: [
+      [{ text: '🌐 فتح لوحة التحكم (دخول مباشر)', url: magicLinkUrl }],
+      [{ text: '🔑 تعيين رمز PIN للدخول', callback_data: 'merchant:set_pin' }],
+    ]
+  } : undefined;
+
   // Non-blocking notification to customer
   fireAndForgetTelegramAlert({
     chatId: req.telegramChatId,
-    text: `🎉 *تم تفعيل حسابك بنجاح!*\nأهلاً بك أستاذ/ة *${req.customerName}* في نظام Casper ERP & POS.`,
+    text: `🎉 *تم تفعيل حسابك بنجاح!*\nأهلاً بك أستاذ/ة *${req.customerName}* في نظام Casper ERP & POS.\n\n🌐 يمكنك الدخول المباشر إلى لوحة التحكم الخاصة بنشاطك بنقرة واحدة من الزر أدناه:`,
     idempotencyKey: `approved:${req.id}`,
+    replyMarkup,
   });
 
   return {
@@ -328,10 +359,39 @@ export async function approveDirectTenant(tenantId: string, decidedBy: string) {
 
   const tenant = await (prisma as any).tenant.findUnique({ where: { id: tenantId } });
   if (tenant && tenant.telegramChatId) {
+    let magicLinkUrl: string | undefined;
+    try {
+      let customer = await (prisma as any).customer.findFirst({
+        where: { tenantId: tenant.id, phone: tenant.phoneNumber || '' }
+      });
+      if (!customer) {
+        customer = await (prisma as any).customer.create({
+          data: {
+            tenantId: tenant.id,
+            name: tenant.merchantName || tenant.name,
+            phone: tenant.phoneNumber || '01000000000',
+          }
+        });
+      }
+      const token = await signMagicLink(customer.id, 60 * 24 * 7); // 7 days
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://109.123.247.119:3000';
+      magicLinkUrl = `${appUrl}/api/auth/magic-link?token=${token}`;
+    } catch (err) {
+      console.warn('[approveDirectTenant] Failed to generate magic link:', err);
+    }
+
+    const replyMarkup = magicLinkUrl ? {
+      inline_keyboard: [
+        [{ text: '🌐 فتح لوحة التحكم (دخول مباشر)', url: magicLinkUrl }],
+        [{ text: '🔑 تعيين رمز PIN سريع', callback_data: 'merchant:set_pin' }],
+      ]
+    } : undefined;
+
     fireAndForgetTelegramAlert({
       chatId: tenant.telegramChatId,
-      text: `🎉 *تم تفعيل حسابك بنجاح!*\nأهلاً بك أستاذ/ة *${tenant.name}* في نظام Casper ERP & POS.\n\n📱 *الخطوة الأخيرة للربط:* قم بفتح إعدادات Telegram Business وحدد هذا البوت لاستقبال والرد على رسائل عملائك تلقائياً!`,
+      text: `🎉 *تم تفعيل حسابك بنجاح!*\nأهلاً بك أستاذ/ة *${tenant.merchantName || tenant.name}* في نظام Casper ERP & POS.\n\n🏢 *الشركة:* ${tenant.name}\n📱 *الموبايل:* \`${tenant.phoneNumber || 'غير محدد'}\`\n\n🌐 يمكنك الدخول المباشر إلى لوحة التحكم الخاصة بنشاطك من الزر أدناه:\n\n💬 *الخطوة التالية للربط:* قم بفتح إعدادات Telegram Business وحدد هذا البوت لاستقبال والرد على رسائل عملائك تلقائياً!`,
       idempotencyKey: `direct_approved:${tenant.id}`,
+      replyMarkup,
     });
   }
 

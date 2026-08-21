@@ -1,6 +1,7 @@
 /**
  * tenant-name-cleaner.ts — Cleans and extracts concise business names from conversational user input
  */
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export function extractCleanBusinessName(rawText: string | null | undefined): string {
   if (!rawText || !rawText.trim()) return "شركة غير محددة";
@@ -92,20 +93,21 @@ export async function extractBusinessNameWithLLM(rawText: string | null | undefi
   const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (geminiKey) {
     try {
-      const { GoogleGenAI } = await import("@google/genai");
-      const ai = new GoogleGenAI({ apiKey: geminiKey });
-      const prompt = `استخرج اسم المحل أو الشركة فقط من هذه الرسالة بالعامية المصرية بدقة واختصار شديد (لا يتجاوز 4 كلمات):\n"${rawText}"\n\nأجب بصيغة JSON فقط: {"businessName": "اسم النشاط أو المحل"}`;
-
-      const response = await ai.models.generateContent({
+      const genAI = new GoogleGenerativeAI(geminiKey);
+      const model = genAI.getGenerativeModel({
         model: "gemini-2.5-flash",
-        contents: prompt,
-        config: {
+        generationConfig: {
           responseMimeType: "application/json",
           temperature: 0.1,
         },
       });
 
-      const parsed = JSON.parse(response.text || "{}");
+      const prompt = `استخرج اسم المحل أو الشركة فقط من هذه الرسالة بالعامية المصرية بدقة واختصار شديد (لا يتجاوز 4 كلمات):\n"${rawText}"\n\nأجب بصيغة JSON فقط: {"businessName": "اسم النشاط أو المحل"}`;
+
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text();
+      const parsed = JSON.parse(responseText || "{}");
+
       if (parsed.businessName && typeof parsed.businessName === "string" && parsed.businessName.trim()) {
         let cleanExtracted = parsed.businessName.trim();
         if (cleanExtracted.length > 40) {

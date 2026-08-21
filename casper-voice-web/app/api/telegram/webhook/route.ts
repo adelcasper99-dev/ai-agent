@@ -294,6 +294,9 @@ export async function POST(req: NextRequest) {
             },
           });
         }
+        await answerCallback("يرجى كتابة أو مشاركة الرقم الجديد");
+        return NextResponse.json({ ok: true });
+      }
       if (data === "confirm_biz:ok") {
         const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
         if (tenant) {

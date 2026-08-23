@@ -1,25 +1,42 @@
-# Implementation Plan: DesignMD MCP & Casper Voice Design System
+# 📐 Implementation Plan: Casper Alumital Estimator
 
-## Executive Summary
-Integrate DesignMD MCP server configuration and Casper Voice design specification to enforce consistent typography, HSL color tokens, 8-pt spacing grids, voice state animations, and low-hardware glassmorphism fallbacks across `casper-voice-web`.
+## 1. Executive Summary
+Add a sub-agent tool module (`calculate_quotation`, `confirm_quotation`, `generate_media`) to Casper AI Agent (Telegram) for window/kitchen aluminum estimation.
 
-## Proposed Changes
+## 2. Component Blueprint
 
-### Workspace Root
-#### [NEW] [`.mcp.json`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/.mcp.json)
-- Configures `designmd-mcp` stdio server via `npx -y designmd-mcp`.
+### A. Prisma Schema (`prisma/schema.prisma`)
+Add `Quotation` model:
+- `id`: UUID Primary Key
+- `tenantId`: String
+- `customerRef`: String?
+- `width_cm`, `height_cm`: Decimal
+- `quantity`: Int
+- `price_per_meter`: Decimal
+- `area_sqm`: Decimal
+- `window_total`: Decimal
+- `extra_items`: Json? (`[{ name, unit_price, quantity, line_total }]`)
+- `discount_pct`, `discount_amount`: Decimal?
+- `total_price`: Decimal
+- `status`: String (`draft` | `processing_media` | `confirmed` | `media_failed` | `sent` | `cancelled`)
+- `pdfUrl`, `sketchUrl`: String?
+- `createdAt`: DateTime @default(now())
+- `@@index([tenantId, status])`
 
-#### [NEW] [`.vscode/mcp.json`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/.vscode/mcp.json)
-- Configures IDE workspace MCP server binding for DesignMD.
+### B. Estimation Engine & Zod Schemas (`src/lib/alumital/estimator.ts`)
+- Strict Zod validation schemas.
+- Pure `Decimal.js` pricing function (`calculateQuotation`).
 
-### `casper-voice-web`
-#### [NEW] [`casper-voice-web/DESIGN.md`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/DESIGN.md)
-- Machine-readable specification detailing HSL colors, Cairo/Inter typography, 8-pt spacing, voice states, and 48px touch rules.
+### C. Telegram Tool Registrations (`src/lib/telegram/telegram_llm.ts`)
+- Register `calculate_quotation`, `confirm_quotation`, `generate_media`.
+- RBAC middleware (`ADMIN_CHAT_ID` check).
 
-#### [MODIFY] [`casper-voice-web/app/design_tokens.css`](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/design_tokens.css)
-- Added 8-pt spacing variables (`--space-xs` to `--space-touch-min`), voice state glow tokens, `.glass-dock`, `.glass-card-lg` utility classes, and `@supports not (backdrop-filter: blur(10px))` fallbacks.
+### D. Media Workers (`src/lib/alumital/media_worker.ts`)
+- PDF Invoice renderer (`@react-pdf/renderer`).
+- PNG Scale sketch renderer (`sharp` + SVG template).
+- Background queue with retry logic (3 attempts).
 
-## Verification Plan
-1. Validate CSS syntax and build compatibility via `npx tsc --noEmit`.
-2. Confirm `.mcp.json` JSON structure.
-3. Perform audit of design tokens and accessibility guidelines.
+## 3. Verification & Safety Criteria
+- Unit tests with Vitest (`tests/alumital_estimator.test.ts`).
+- Zero float math checks.
+- TypeScript strict typing (zero `any`).

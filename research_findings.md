@@ -1,15 +1,22 @@
-# Research Findings: DesignMD & Design System Integration for Casper Voice
+# 🔬 Best Practices Research: Casper Alumital Estimator
 
-## 1. Executive Summary
-Integration of the DesignMD MCP server (`designmd-mcp`) with `casper-voice-web` enables automated, machine-readable design system spec enforcement via `DESIGN.md`.
+## Technical Stack & Architectural Patterns
 
-## 2. Key Standards & Architectural Findings
-- **`DESIGN.md` Protocol**: A plain-text markdown blueprint standardizing HSL color tokens, typography scales (Cairo/Inter), 8-pt modular spacing, and glassmorphism backdrop blurs.
-- **Apple HIG vs Material 3**: Apple HIG provides 44pt+ touch bounds and sleek translucency suitable for iPad cashier docks; Material 3 provides dynamic surface roles suitable for Android POS hardware.
-- **Voice State Motion**: Standardized pulsing CSS keyframes (`.voice-state-listening`, `.voice-state-processing`, `.voice-state-speaking`) ensure instant visual feedback during voice commands.
-- **Low-Hardware POS Safety**: CSS `@supports not (backdrop-filter: blur(10px))` fallbacks ensure performance on budget POS terminals.
+### 1. Financial Precision & Decimal Engine
+- **Pattern**: Enforce `Decimal.js` across all monetary, area, dimension, and percentage calculations.
+- **Rule**: Float math (`+`, `-`, `*`, `/`) is strictly prohibited on monetary fields.
+- **Precision Rules**:
+  - Dimensions (`width_cm`, `height_cm`): converted to meters via `new Decimal(cm).div(100)`.
+  - Area (`area_sqm`): `width_m.times(height_m)`, enforced minimum area threshold `if (area < 1) area = 1`.
+  - Pricing: `window_total = area * price_per_meter * quantity`.
+  - Extra items: array of line totals `new Decimal(unit_price).times(quantity)`.
+  - Final total: `subtotal - discount`. Stored with `@db.Decimal(12, 2)`.
 
-## 3. Best Practices Compliance Checklist
-- [x] Zero floats in financial displays (`Decimal.js` monospace formatting).
-- [x] Hardware-accelerated CSS animations (`box-shadow` & `opacity`).
-- [x] Dual RTL/LTR typography symmetry (`dir="rtl"` for Arabic Cairo font).
+### 2. State Machine & Idempotency
+- **Pattern**: Strict transition state machine for `Quotation`: `draft` -> `processing_media` -> `confirmed` / `media_failed` -> `sent` / `cancelled`.
+- **Concurrency Protection**: Perform atomic state updates (`UPDATE "Quotation" SET status = 'processing_media' WHERE id = quote_id AND status = 'draft'`).
+- **Idempotency**: If zero rows modified, reject duplicate call without error.
+
+### 3. Telegram Bot LLM Integration & RBAC
+- **Pattern**: System prompt guardrails + explicit code middleware in `telegram_llm.ts`.
+- **Security Check**: Gated `price_per_meter`, discounts, and `extra_items` manipulation to verified `ADMIN_CHAT_ID`.

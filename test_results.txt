@@ -1,12 +1,8 @@
-================================================
-CASPER VOICE QA & COMPLIANCE TEST SUITE
-================================================
-Test Execution Date: 2026-08-16T12:25:31+03:00
+ RUN  v4.1.11 C:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project
 
-[PASS] .mcp.json JSON Syntax Validation (.mcp.json VALID JSON)
-[PASS] .vscode/mcp.json Syntax Validation
-[PASS] casper-voice-web/DESIGN.md Spec Grounding
-[PASS] casper-voice-web/app/design_tokens.css 8-pt Grid & Glass Fallback Rules
+ ✓ tests/alumital_estimator.test.ts (4 tests) 12ms
 
-SUMMARY: 4/4 TESTS PASSED (100% GREEN)
-================================================
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  03:51:08
+   Duration  1.18s (transform 57ms, setup 0ms, import 972ms, tests 12ms, environment 0ms)

@@ -3169,7 +3169,13 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
             inline_keyboard: [
               [
                 { text: "✅ تأكيد وتوليد الملفات الرسمية", callback_data: `confirm_quote_${quotation.id}` },
-                { text: "❌ إلغاء", callback_data: `cancel_quote_${quotation.id}` },
+              ],
+              [
+                { text: "📏 تعديل المقاس", callback_data: `edit_quote_dim_${quotation.id}` },
+                { text: "💵 تعديل السعر / الخصم", callback_data: `edit_quote_price_${quotation.id}` },
+              ],
+              [
+                { text: "❌ إلغاء المسودة", callback_data: `cancel_quote_${quotation.id}` },
               ],
             ],
           },

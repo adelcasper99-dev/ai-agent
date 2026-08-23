@@ -269,6 +269,26 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
+      if (data.startsWith("edit_quote_dim_")) {
+        await answerCallback("تعديل المقاس 📏");
+        await sendTelegramAlert({
+          chatId: callbackChatId,
+          text: `📏 *لتعديل مقاس الشباك/الباب:*\nأرسل رسالة نصية أو فويس بالمقاس الجديد (مثال: *"خلي المقاس 100 في 120"* أو *"المقاس 140 في 160 عدد 3"*).\nوسأقوم بتحديث الحسابات وإصدار كارت المقايسة المعدل فوراً. ✨`,
+          idempotencyKey: `quote:edit_dim:${callbackChatId}:${Date.now()}`,
+        });
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data.startsWith("edit_quote_price_")) {
+        await answerCallback("تعديل السعر أو الخصم 💵");
+        await sendTelegramAlert({
+          chatId: callbackChatId,
+          text: `💵 *لتعديل السعر أو تطبيق خصم:*\nأرسل رسالة نصية أو فويس بالتعديل المطلوب (مثال: *"سعر المتر 1350"* أو *"اعمل خصم 10%"* أو *"شيل الخصم"*).\nوسأقوم بتحديث الحسابات فوراً. ✨`,
+          idempotencyKey: `quote:edit_price:${callbackChatId}:${Date.now()}`,
+        });
+        return NextResponse.json({ ok: true });
+      }
+
       if (data.startsWith("cancel_quote_")) {
         const quoteId = data.replace("cancel_quote_", "").trim();
         await (prisma as any).quotation.updateMany({

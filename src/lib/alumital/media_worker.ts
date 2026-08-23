@@ -39,11 +39,12 @@ async function getBrowser() {
     return browserInstance;
   }
 
-  const puppeteer = await import('puppeteer').catch(() => null);
+  // Only puppeteer-core is installed on the VPS (puppeteer full pkg not required).
+  // serverExternalPackages in next.config.ts prevents Turbopack from statically bundling it.
   const puppeteerCore = await import('puppeteer-core').catch(() => null);
 
-  const launchOptions: any = {
-    headless: true,
+  const launchOptions = {
+    headless: true as const,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -56,27 +57,19 @@ async function getBrowser() {
     ],
   };
 
-  // Check known browser paths for Linux/Windows if using puppeteer-core or fallback
+  // Check known browser paths for Linux VPS and Windows dev machine
   const possiblePaths = [
     process.env.CHROMIUM_PATH,
     process.env.CHROME_PATH,
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/chromium',
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
     'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-    '/usr/bin/chromium-browser',
-    '/usr/bin/google-chrome',
-    '/usr/bin/google-chrome-stable',
-    '/usr/bin/chromium',
   ].filter(Boolean);
 
-  if (puppeteer && puppeteer.default) {
-    try {
-      browserInstance = await puppeteer.default.launch(launchOptions);
-      return browserInstance;
-    } catch (e) {
-      console.warn('[MediaWorker] Puppeteer default launch failed, trying executable paths...', e);
-    }
-  }
 
   if (puppeteerCore && puppeteerCore.default) {
     for (const p of possiblePaths) {

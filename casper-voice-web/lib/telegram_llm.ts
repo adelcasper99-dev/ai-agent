@@ -398,6 +398,38 @@ const correctLastTransactionTool: FunctionDeclaration = {
   }
 };
 
+const calculateAlumitalQuotationTool: FunctionDeclaration = {
+  name: "calculate_alumital_quotation",
+  description: "حساب وعمل مقايسة ألوميتال تفصيلية لنافذة أو باب وحفظها كمسودة (عرض سعر). يستخرج الأبعاد (العرض والارتفاع بالسنتيمتر)، الكمية، سعر المتر، البنود الإضافية، والخصم.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      width_cm: { type: SchemaType.NUMBER, description: "عرض الشباك أو الباب بالسنتيمتر (مثال: 120)" },
+      height_cm: { type: SchemaType.NUMBER, description: "ارتفاع الشباك أو الباب بالسنتيمتر (مثال: 140)" },
+      quantity: { type: SchemaType.NUMBER, description: "عدد القطع المطلوبة (الافتراضي 1)" },
+      price_per_meter: { type: SchemaType.NUMBER, description: "سعر المتر المربع للألوميتال بالجنيه (مثال: 1500)" },
+      apply_min_area: { type: SchemaType.BOOLEAN, description: "تطبيق شرط الحد الأدنى للمساحة 1 متر مربع (افتراضي true)" },
+      discount_pct: { type: SchemaType.NUMBER, description: "نسبة الخصم المئوية إن وجدت (0-100)" },
+      discount_amount: { type: SchemaType.NUMBER, description: "مبلغ الخصم المباشر بالجنيه إن وجد" },
+      customer_ref: { type: SchemaType.STRING, description: "اسم أو مرجع العميل المراد عمل المقايسة له" },
+      extra_items: {
+        type: SchemaType.ARRAY,
+        description: "قائمة البنود الإضافية (مثل سلك، مقبض، كالون)",
+        items: {
+          type: SchemaType.OBJECT,
+          properties: {
+            name: { type: SchemaType.STRING, description: "اسم البند الإضافي (مثال: دلفة سلك صلب)" },
+            quantity: { type: SchemaType.NUMBER, description: "الكمية المطلوبة من البند" },
+            unit_price: { type: SchemaType.NUMBER, description: "سعر الوحدة للبند الإضافي بالجنيه" }
+          },
+          required: ["name", "quantity", "unit_price"]
+        }
+      }
+    },
+    required: ["width_cm", "height_cm"]
+  }
+};
+
 // ==================== DYNAMIC TOOL ROUTING & CLUSTERS ====================
 
 export const ALL_TOOLS: FunctionDeclaration[] = [
@@ -406,23 +438,25 @@ export const ALL_TOOLS: FunctionDeclaration[] = [
   reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool,
   getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool, addProductTool,
   updateStockTool, addCustomerTool, saveMerchantMemoryTool, getMerchantMemoryTool,
-  cancelLastTransactionTool, correctLastTransactionTool
+  cancelLastTransactionTool, correctLastTransactionTool, calculateAlumitalQuotationTool
 ];
 
-export type ClusterKey = 'SALES' | 'PURCHASES' | 'APPOINTMENTS' | 'INVENTORY' | 'FINANCE_META';
+export type ClusterKey = 'SALES' | 'PURCHASES' | 'APPOINTMENTS' | 'INVENTORY' | 'FINANCE_META' | 'ALUMITAL';
 
 const SALES_TOOLS: FunctionDeclaration[] = [lookupMerchantMemoryTool, logSaleTool, addCustomerTool, logSalesReturnTool, logCustomerPaymentTool, getCustomerBalanceTool, cancelLastTransactionTool, correctLastTransactionTool];
 const PURCHASE_TOOLS: FunctionDeclaration[] = [lookupMerchantMemoryTool, logPurchaseTool, logSupplierPaymentTool, getSupplierBalanceTool, logPurchaseReturnTool, cancelLastTransactionTool, correctLastTransactionTool];
 const APPOINTMENT_TOOLS: FunctionDeclaration[] = [bookAppointmentTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool];
 const INVENTORY_TOOLS: FunctionDeclaration[] = [addProductTool, updateStockTool];
 const FINANCE_META_TOOLS: FunctionDeclaration[] = [lookupMerchantMemoryTool, logExpenseTool, getFinancialSummaryTool, reportMissingFeatureTool, saveMerchantMemoryTool, getMerchantMemoryTool, cancelLastTransactionTool, correctLastTransactionTool];
+const ALUMITAL_TOOLS: FunctionDeclaration[] = [calculateAlumitalQuotationTool, lookupMerchantMemoryTool, saveMerchantMemoryTool];
 
 const CLUSTER_KEYWORDS: Record<ClusterKey, string[]> = {
   SALES: ["بيع", "بعت", "كاش", "آجل", "عميل", "حساب عميل", "رصيد عميل", "قبضت", "سدد", "مرتجع مبيعات", "رجع من", "تليفون عميل", "ديون عميل", "بعت مش اشتريت", "الغى", "إلغاء", "خطأ", "تعديل"],
   PURCHASES: ["شراء", "اشتريت", "اشترى", "اشترى من", "مشتريات", "مورد", "فاتورة", "سددت للمورد", "مرتجع مشتريات", "رجعت للمورد", "حساب المورد", "ديون مورد", "اشتريت مش بعت", "الغى", "إلغاء", "خطأ", "تعديل"],
   APPOINTMENTS: ["موعد", "ميعاد", "حجز", "الغي", "لغى", "مسح ميعاد", "تأجيل", "أجل", "غير ميعاد", "مواعيد", "بكرة الساعة", "اشوف مواعيد", "معاد"],
   INVENTORY: ["صنف", "منتج", "كتالوج", "مخزون", "جرد", "رصيد فعلي", "صحح مخزون", "أضف صنف", "سلعة جديدة"],
-  FINANCE_META: ["مصروف", "مصاريف", "تقرير", "ملخص", "أرباح", "مبيعات النهاردة", "كشف حساب شهر", "ميزة ناقصة", "امسح", "تعديل", "خطأ"]
+  FINANCE_META: ["مصروف", "مصاريف", "تقرير", "ملخص", "أرباح", "مبيعات النهاردة", "كشف حساب شهر", "ميزة ناقصة", "امسح", "تعديل", "خطأ"],
+  ALUMITAL: ["ألوميتال", "الوميتال", "شباك", "باب", "مقايسة", "عرض سعر", "متر", "قطاع", "سلك", "كالون", "مقبض", "ازاز", "زجاج", "عرض", "ارتفاع", "احسبلي", "تأكيد", "كوتيشن", "أوفر", "أوفرة"]
 };
 
 export function resolveActiveTools(text: string, lastHistoryMsg?: string): { activeTools: FunctionDeclaration[]; activeClusters: ClusterKey[] } {
@@ -437,7 +471,7 @@ export function resolveActiveTools(text: string, lastHistoryMsg?: string): { act
 
   // Safety fallback: if 0 clusters match or >= 4 clusters match (high ambiguity/multi-intent), return ALL_TOOLS
   if (matchedClusters.size === 0 || matchedClusters.size >= 4) {
-    return { activeTools: ALL_TOOLS, activeClusters: ['SALES', 'PURCHASES', 'APPOINTMENTS', 'INVENTORY', 'FINANCE_META'] };
+    return { activeTools: ALL_TOOLS, activeClusters: ['SALES', 'PURCHASES', 'APPOINTMENTS', 'INVENTORY', 'FINANCE_META', 'ALUMITAL'] };
   }
 
   const toolSet = new Set<FunctionDeclaration>();
@@ -448,6 +482,7 @@ export function resolveActiveTools(text: string, lastHistoryMsg?: string): { act
     else if (cluster === 'APPOINTMENTS') clusterTools = APPOINTMENT_TOOLS;
     else if (cluster === 'INVENTORY') clusterTools = INVENTORY_TOOLS;
     else if (cluster === 'FINANCE_META') clusterTools = FINANCE_META_TOOLS;
+    else if (cluster === 'ALUMITAL') clusterTools = ALUMITAL_TOOLS;
 
     clusterTools.forEach(t => toolSet.add(t));
   }
@@ -505,7 +540,14 @@ export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: stri
     FINANCE_META: `
 قواعد المصروفات والتقارير العامة (log_expense / get_financial_summary / report_missing_feature):
 1. تسجيل المصروفات (log_expense): استخرج المبلغ والبيان والفئة.
-2. تقارير الأرباح والمبيعات (get_financial_summary): للفترات اليومية والأسبوعية والشهرية.`
+2. تقارير الأرباح والمبيعات (get_financial_summary): للفترات اليومية والأسبوعية والشهرية.`,
+
+    ALUMITAL: `
+قواعد مقايسات وعروض أسعار الألوميتال (calculate_alumital_quotation):
+1. استخراج الأبعاد: العرض (width_cm) والارتفاع (height_cm) بالسنتيمتر (مثال: "120 في 140" -> width: 120, height: 140).
+2. استخراج سعر المتر: إذا ذُكر صراحة ("بسعر 1500 للمتر" -> price_per_meter: 1500).
+3. استخراج البنود الإضافية: أي إضافات مثل سلك أو كالون أو مقابض ضعها في extra_items مع الكمية وسعر الوحدة إن ذُكر.
+4. الخصم: إذا ذُكر خصم مئوي أو مبلغ مباشر ضعه في discount_pct أو discount_amount.`
   };
 
   const activeRules = activeClusters.map(c => EXTRACTION_RULES[c] || '').join('\n');
@@ -1211,7 +1253,7 @@ async function logRejectedToolCall(tenantId: string | undefined, toolName: strin
 }
 // === END grounding guard ===
 
-export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0, fullContextText?: string, options?: GroundingCheckOptions): Promise<{ success: boolean; resultText: string; uiSent?: boolean }> {
+export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0, fullContextText?: string, options?: GroundingCheckOptions & { chatId?: string }): Promise<{ success: boolean; resultText: string; uiSent?: boolean }> {
   // ── TENANT ISOLATION GUARD ─────────────────────────────────────────────────
   // Financial mutations MUST have a resolved tenantId. Block hard if missing.
   const FINANCIAL_TOOLS = [
@@ -1219,6 +1261,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     'pay_supplier_debt', 'log_sales_return', 'log_purchase_return',
     'add_product', 'add_customer', 'log_customer_payment',
     'cancel_last_transaction', 'correct_last_transaction', 'update_expense',
+    'calculate_alumital_quotation',
   ];
   if (!tenantId && FINANCIAL_TOOLS.includes(name)) {
     console.error(`[executeTool] BLOCKED: tool=${name} called without tenantId — refusing to write NULL-tenant data.`);
@@ -3035,6 +3078,108 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       return { success: true, resultText: `📋 ذاكرة التاجر المسجلة:\n${mapped}` };
     }
 
+    if (name === "calculate_alumital_quotation") {
+      if (!tenantId) {
+        return { success: false, resultText: "يلزم تحديد هوية النشاط لحساب وعمل المقايسة." };
+      }
+
+      const widthCm = Number(args.width_cm);
+      const heightCm = Number(args.height_cm);
+      if (!widthCm || !heightCm || widthCm < 30 || heightCm < 30) {
+        return { success: false, resultText: "يرجى تحديد أبعاد صحيحة للشباك أو الباب (الحد الأدنى 30 سم لكل بعد)." };
+      }
+
+      // If price_per_meter is missing from input, look up default price or use fallback
+      let pricePerMeter = Number(args.price_per_meter);
+      if (!pricePerMeter || pricePerMeter <= 0) {
+        pricePerMeter = 1200; // fallback standard price per m²
+      }
+
+      // Parse extra items if string
+      let extraItems = args.extra_items || [];
+      if (typeof extraItems === "string") {
+        try {
+          extraItems = JSON.parse(extraItems);
+        } catch {
+          extraItems = [];
+        }
+      }
+
+      const { calculateQuotation } = await import("@/lib/alumital/estimator");
+      const quoteResult = calculateQuotation({
+        width_cm: widthCm,
+        height_cm: heightCm,
+        quantity: Number(args.quantity) || 1,
+        price_per_meter: pricePerMeter,
+        apply_min_area: args.apply_min_area !== false,
+        extra_items: extraItems,
+        discount_pct: Number(args.discount_pct) || 0,
+        discount_amount: Number(args.discount_amount) || 0,
+      });
+
+      // Save Quotation in DB as 'draft'
+      const quotation = await prisma.quotation.create({
+        data: {
+          tenantId,
+          customerRef: args.customer_ref ? String(args.customer_ref).trim() : null,
+          width_cm: new Decimal(widthCm),
+          height_cm: new Decimal(heightCm),
+          quantity: Number(args.quantity) || 1,
+          price_per_meter: new Decimal(pricePerMeter),
+          area_sqm: new Decimal(quoteResult.area_sqm),
+          window_total: new Decimal(quoteResult.window_total),
+          extra_items: JSON.stringify(quoteResult.extra_items),
+          discount_pct: new Decimal(args.discount_pct || 0),
+          discount_amount: new Decimal(quoteResult.discount_applied),
+          subtotal_before_discount: new Decimal(quoteResult.subtotal_before_discount),
+          total_price: new Decimal(quoteResult.total_price),
+          status: "draft",
+        },
+      });
+
+      const extrasSummary = quoteResult.extra_items.length > 0
+        ? `\n➕ *البنود الإضافية:*\n` + quoteResult.extra_items.map((it: any) => `  • ${it.name} (${it.quantity} × ${it.unit_price} = ${it.line_total} ج.م)`).join("\n")
+        : "";
+
+      const discountSummary = new Decimal(quoteResult.discount_applied).greaterThan(0)
+        ? `\n🏷️ *الخصم المطبق:* -${quoteResult.discount_applied} ج.م`
+        : "";
+
+      const summaryText = `📐 *مقايسة ألوميتال مبدئية (مسودة):*
+────────────────
+📏 *المقاس:* ${widthCm} × ${heightCm} سم
+🔢 *الكمية:* ${quoteResult.quantity} قطعة
+📐 *المساحة المحسوبة:* ${quoteResult.area_sqm} م²
+💵 *سعر المتر:* ${pricePerMeter} ج.م
+💰 *سعر القطاعات:* ${quoteResult.window_total} ج.م${extrasSummary}${discountSummary}
+────────────────
+💎 *المبلغ الإجمالي:* *${quoteResult.total_price} ج.م*
+
+هل ترغب في تأكيد المقايسة وتوليد الرسم الفني وتقرير الـ PDF المعتمد؟`;
+
+      // Send interactive card with inline buttons if chatId is available in options
+      const targetChatId = options?.chatId;
+      if (targetChatId) {
+        const { sendTelegramAlert } = await import("@/lib/telegram");
+        await sendTelegramAlert({
+          chatId: targetChatId,
+          text: summaryText,
+          idempotencyKey: `quote_draft_${quotation.id}_${Date.now()}`,
+          replyMarkup: {
+            inline_keyboard: [
+              [
+                { text: "✅ تأكيد وتوليد الملفات الرسمية", callback_data: `confirm_quote_${quotation.id}` },
+                { text: "❌ إلغاء", callback_data: `cancel_quote_${quotation.id}` },
+              ],
+            ],
+          },
+        });
+        return { success: true, resultText: summaryText, uiSent: true };
+      }
+
+      return { success: true, resultText: summaryText };
+    }
+
       return { success: false, resultText: `أداة غير معروفة: ${name}` };
     } catch (err: any) {
       console.error(`[Telegram LLM Tool Error] ${name}:`, err);
@@ -3286,7 +3431,7 @@ export async function processTelegramMessageWithLLM(
           const combinedResults = [];
           for (let idx = 0; idx < functionCalls.length; idx++) {
             const call = functionCalls[idx];
-            const toolRes = await executeTool(call.name, call.args, tenantId, text, telegramMessageId, idx, fullContextText);
+            const toolRes = await executeTool(call.name, call.args, tenantId, text, telegramMessageId, idx, fullContextText, { chatId: telegramChatId });
             if (!toolRes.uiSent) {
               combinedResults.push(toolRes.resultText);
             }
@@ -3431,7 +3576,7 @@ export async function processTelegramMessageWithLLM(
               console.error("[Groq Parser] JSON parse error:", jsonMatch[0], e);
             }
           }
-          const toolRes = await executeTool(funcName, args, tenantId, normalizedText, telegramMessageId, 0, fullContextText);
+          const toolRes = await executeTool(funcName, args, tenantId, normalizedText, telegramMessageId, 0, fullContextText, { chatId: telegramChatId });
           if (toolRes.uiSent) return { status: "success", text: "" };
           void saveChatMessage(tenantId, telegramChatId, "assistant", toolRes.resultText);
           return { status: "success", text: toolRes.resultText };
@@ -3448,7 +3593,7 @@ export async function processTelegramMessageWithLLM(
           const call = toolCalls[idx];
           let args: Record<string, any> = {};
           try { args = JSON.parse(call.function.arguments); } catch {}
-          const toolRes = await executeTool(call.function.name, args, tenantId, normalizedText, telegramMessageId, idx, fullContextText);
+          const toolRes = await executeTool(call.function.name, args, tenantId, normalizedText, telegramMessageId, idx, fullContextText, { chatId: telegramChatId });
           if (!toolRes.uiSent) {
             results.push(toolRes.resultText);
           }

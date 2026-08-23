@@ -187,6 +187,113 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
+      // ==================== ALUMITAL QUOTATION CONFIRMATION / CANCELLATION ====================
+      if (data.startsWith("confirm_quote_")) {
+        const quoteId = data.replace("confirm_quote_", "").trim();
+        await answerCallback("جاري تجهيز وتوليد الملفات الرسمية... ⏳");
+
+        // Atomic lock from draft -> processing_media
+        const updated = await (prisma as any).quotation.updateMany({
+          where: { id: quoteId, status: "draft" },
+          data: { status: "processing_media" }
+        });
+
+        if (updated.count === 0) {
+          await answerCallback("⚠️ تم تأكيد هذه المقايسة أو معالجتها مسبقاً.");
+          return NextResponse.json({ ok: true });
+        }
+
+        const quote = await (prisma as any).quotation.findUnique({
+          where: { id: quoteId },
+          include: { tenant: true }
+        });
+
+        if (!quote) {
+          await answerCallback("❌ لم يتم العثور على المقايسة.");
+          return NextResponse.json({ ok: true });
+        }
+
+        try {
+          const { processMediaJob } = await import("@/lib/alumital/media_worker");
+          const { sendTelegramPhoto, sendTelegramDocument } = await import("@/lib/telegram");
+          const fs = await import("fs/promises");
+
+          const job = await processMediaJob(quoteId, quote.tenantId);
+          if (job.status === "completed" && job.sketchPngPath && job.pdfPath) {
+            const pngBuf = await fs.readFile(job.sketchPngPath);
+            const pdfBuf = await fs.readFile(job.pdfPath);
+
+            // 1. Send Sketch Photo
+            const sketchCaption = `📐 *الرسم الهندسي للمقايسة #${quoteId.slice(0, 8)}*\nالأبعاد: ${quote.width_cm} × ${quote.height_cm} سم | المساحة: ${quote.area_sqm} م²`;
+            await sendTelegramPhoto(callbackChatId, pngBuf, sketchCaption);
+
+            // 2. Send Formal Quotation PDF Document
+            const pdfCaption = `📄 *عرض السعر الرسمي المعتمد #${quoteId.slice(0, 8)}*\nالإجمالي: *${quote.total_price} ج.م* | جاهز للطباعة والمشاركة`;
+            await sendTelegramDocument(callbackChatId, pdfBuf, `عرض_سعر_${quoteId.slice(0, 8)}.pdf`, pdfCaption);
+
+            // 3. Edit original confirmation message
+            if (callback.message?.message_id) {
+              const token = process.env.TELEGRAM_BOT_TOKEN;
+              if (token) {
+                await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    chat_id: callbackChatId,
+                    message_id: callback.message.message_id,
+                    text: `✅ *تم تأكيد المقايسة بنجاح وتم إرسال الرسم الهندسي وملف الـ PDF الرسمي أعلاه.*`,
+                    parse_mode: "Markdown"
+                  })
+                }).catch(() => null);
+              }
+            }
+          } else {
+            throw new Error(job.error || "فشل توليد الملفات");
+          }
+        } catch (mediaErr: any) {
+          console.error("[Telegram Webhook Media Render Error]:", mediaErr);
+          const token = process.env.TELEGRAM_BOT_TOKEN;
+          if (token && callback.message?.message_id) {
+            await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: callbackChatId,
+                message_id: callback.message.message_id,
+                text: `⚠️ حدث خطأ أثناء معالجة الملفات: ${mediaErr?.message || "يرجى المحاولة لاحقاً."}`
+              })
+            }).catch(() => null);
+          }
+        }
+
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data.startsWith("cancel_quote_")) {
+        const quoteId = data.replace("cancel_quote_", "").trim();
+        await (prisma as any).quotation.updateMany({
+          where: { id: quoteId, status: "draft" },
+          data: { status: "cancelled" }
+        });
+        await answerCallback("تم إلغاء المقايسة.");
+        if (callback.message?.message_id) {
+          const token = process.env.TELEGRAM_BOT_TOKEN;
+          if (token) {
+            await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: callbackChatId,
+                message_id: callback.message.message_id,
+                text: `❌ *تم إلغاء مسودة المقايسة.*`,
+                parse_mode: "Markdown"
+              })
+            }).catch(() => null);
+          }
+        }
+        return NextResponse.json({ ok: true });
+      }
+
       const isTenantCommand = data.startsWith("menu:") || data.startsWith("sale:") || data.startsWith("cmd_");
       if (isTenantCommand) {
         const tenantCheck = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });

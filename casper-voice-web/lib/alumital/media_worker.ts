@@ -1,9 +1,9 @@
-import path from 'path';
+﻿import path from 'path';
 import fs from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 import Decimal from 'decimal.js';
 import sharp from 'sharp';
-import { prisma } from '../../../casper-voice-web/lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 export interface MediaRenderJob {
   quoteId: string;
@@ -192,7 +192,7 @@ export function buildSketchSvg(dim: SketchDimensions): string {
   
   <!-- Width Label Badge -->
   <rect x="${startX + Math.round(drawW / 2) - 55}" y="${startY - 44}" width="110" height="26" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
-  <text x="${startX + Math.round(drawW / 2)}" y="${startY - 26}" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">العرض: ${w} سم</text>
+  <text x="${startX + Math.round(drawW / 2)}" y="${startY - 26}" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">ط§ظ„ط¹ط±ط¶: ${w} ط³ظ…</text>
 
   <!-- Right Height Dimension Line -->
   <line x1="${startX + drawW + 25}" y1="${startY}" x2="${startX + drawW + 25}" y2="${startY + drawH}" 
@@ -202,12 +202,12 @@ export function buildSketchSvg(dim: SketchDimensions): string {
 
   <!-- Height Label Badge -->
   <rect x="${startX + drawW + 35}" y="${startY + Math.round(drawH / 2) - 14}" width="115" height="28" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
-  <text x="${startX + drawW + 92}" y="${startY + Math.round(drawH / 2) + 5}" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">الارتفاع: ${h} سم</text>
+  <text x="${startX + drawW + 92}" y="${startY + Math.round(drawH / 2) + 5}" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">ط§ظ„ط§ط±طھظپط§ط¹: ${h} ط³ظ…</text>
 
   <!-- Footer Info Specs -->
   <rect x="30" y="445" width="540" height="40" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1" />
-  <text x="550" y="470" fill="#94a3b8" font-size="13" text-anchor="end">قطاع ألوميتال هندسي معتمد</text>
-  <text x="50" y="470" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="start">المساحة: ${( (w * h) / 10000 ).toFixed(2)} م²</text>
+  <text x="550" y="470" fill="#94a3b8" font-size="13" text-anchor="end">ظ‚ط·ط§ط¹ ط£ظ„ظˆظ…ظٹطھط§ظ„ ظ‡ظ†ط¯ط³ظٹ ظ…ط¹طھظ…ط¯</text>
+  <text x="50" y="470" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="start">ط§ظ„ظ…ط³ط§ط­ط©: ${( (w * h) / 10000 ).toFixed(2)} ظ…آ²</text>
 </svg>
   `.trim();
 }
@@ -237,8 +237,8 @@ export function buildArabicQuotationHtml(data: {
       <td style="text-align:center;">${idx + 1}</td>
       <td>${item.name}</td>
       <td style="text-align:center;">${item.quantity}</td>
-      <td style="text-align:center;">${item.unit_price} ج.م</td>
-      <td style="text-align:center; font-weight:bold;">${item.line_total} ج.م</td>
+      <td style="text-align:center;">${item.unit_price} ط¬.ظ…</td>
+      <td style="text-align:center; font-weight:bold;">${item.line_total} ط¬.ظ…</td>
     </tr>`
     )
     .join('');
@@ -248,7 +248,7 @@ export function buildArabicQuotationHtml(data: {
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>عرض سعر ألوميتال #${data.quoteId.slice(0, 8)}</title>
+  <title>ط¹ط±ط¶ ط³ط¹ط± ط£ظ„ظˆظ…ظٹطھط§ظ„ #${data.quoteId.slice(0, 8)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -290,28 +290,28 @@ export function buildArabicQuotationHtml(data: {
   <div class="container">
     <div class="header">
       <div>
-        <div class="company-title">${data.tenantName || 'Casper POS — مقايسات الألوميتال'}</div>
-        <div class="company-sub">عرض سعر هندسي تفصيلي ومقايسة معتمدة</div>
+        <div class="company-title">${data.tenantName || 'Casper POS â€” ظ…ظ‚ط§ظٹط³ط§طھ ط§ظ„ط£ظ„ظˆظ…ظٹطھط§ظ„'}</div>
+        <div class="company-sub">ط¹ط±ط¶ ط³ط¹ط± ظ‡ظ†ط¯ط³ظٹ طھظپطµظٹظ„ظٹ ظˆظ…ظ‚ط§ظٹط³ط© ظ…ط¹طھظ…ط¯ط©</div>
       </div>
       <div class="quote-badge">
-        <h3>عرض سعر #${data.quoteId.slice(0, 8)}</h3>
-        <p>التاريخ: ${data.dateStr}</p>
+        <h3>ط¹ط±ط¶ ط³ط¹ط± #${data.quoteId.slice(0, 8)}</h3>
+        <p>ط§ظ„طھط§ط±ظٹط®: ${data.dateStr}</p>
       </div>
     </div>
 
     <div class="meta-grid">
-      <div class="meta-item"><span class="meta-label">العميل / الإشارة:</span><span class="meta-val">${data.customerRef || 'عميل نقدي'}</span></div>
-      <div class="meta-item"><span class="meta-label">المقاس الهندسي:</span><span class="meta-val">${data.width_cm} × ${data.height_cm} سم</span></div>
-      <div class="meta-item"><span class="meta-label">العدد / الكمية:</span><span class="meta-val">${data.quantity} قطعة</span></div>
-      <div class="meta-item"><span class="meta-label">إجمالي المساحة:</span><span class="meta-val">${data.area_sqm} م²</span></div>
+      <div class="meta-item"><span class="meta-label">ط§ظ„ط¹ظ…ظٹظ„ / ط§ظ„ط¥ط´ط§ط±ط©:</span><span class="meta-val">${data.customerRef || 'ط¹ظ…ظٹظ„ ظ†ظ‚ط¯ظٹ'}</span></div>
+      <div class="meta-item"><span class="meta-label">ط§ظ„ظ…ظ‚ط§ط³ ط§ظ„ظ‡ظ†ط¯ط³ظٹ:</span><span class="meta-val">${data.width_cm} أ— ${data.height_cm} ط³ظ…</span></div>
+      <div class="meta-item"><span class="meta-label">ط§ظ„ط¹ط¯ط¯ / ط§ظ„ظƒظ…ظٹط©:</span><span class="meta-val">${data.quantity} ظ‚ط·ط¹ط©</span></div>
+      <div class="meta-item"><span class="meta-label">ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ظ…ط³ط§ط­ط©:</span><span class="meta-val">${data.area_sqm} ظ…آ²</span></div>
     </div>
 
     ${
       data.sketchPngBase64
         ? `
     <div class="sketch-section">
-      <div class="sketch-title">📐 الرسم الفني والمنظور الهندسي للنافذة / الباب</div>
-      <img src="data:image/png;base64,${data.sketchPngBase64}" alt="رسم هندسي للمقايسة" />
+      <div class="sketch-title">ًں“گ ط§ظ„ط±ط³ظ… ط§ظ„ظپظ†ظٹ ظˆط§ظ„ظ…ظ†ط¸ظˆط± ط§ظ„ظ‡ظ†ط¯ط³ظٹ ظ„ظ„ظ†ط§ظپط°ط© / ط§ظ„ط¨ط§ط¨</div>
+      <img src="data:image/png;base64,${data.sketchPngBase64}" alt="ط±ط³ظ… ظ‡ظ†ط¯ط³ظٹ ظ„ظ„ظ…ظ‚ط§ظٹط³ط©" />
     </div>`
         : ''
     }
@@ -320,22 +320,22 @@ export function buildArabicQuotationHtml(data: {
       <thead>
         <tr>
           <th style="width:40px; text-align:center;">#</th>
-          <th>البيان والمواصفات</th>
-          <th style="width:80px; text-align:center;">الكمية</th>
-          <th style="width:110px; text-align:center;">سعر الوحدة</th>
-          <th style="width:120px; text-align:center;">الإجمالي</th>
+          <th>ط§ظ„ط¨ظٹط§ظ† ظˆط§ظ„ظ…ظˆط§طµظپط§طھ</th>
+          <th style="width:80px; text-align:center;">ط§ظ„ظƒظ…ظٹط©</th>
+          <th style="width:110px; text-align:center;">ط³ط¹ط± ط§ظ„ظˆط­ط¯ط©</th>
+          <th style="width:120px; text-align:center;">ط§ظ„ط¥ط¬ظ…ط§ظ„ظٹ</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td style="text-align:center;">1</td>
           <td>
-            <strong>بند قطاع الألوميتال والزجاج (${data.width_cm}×${data.height_cm} سم)</strong><br>
-            <span style="font-size:11px; color:#64748b;">مساحة إجمالية: ${data.area_sqm} م² بسعر المتر المربع</span>
+            <strong>ط¨ظ†ط¯ ظ‚ط·ط§ط¹ ط§ظ„ط£ظ„ظˆظ…ظٹطھط§ظ„ ظˆط§ظ„ط²ط¬ط§ط¬ (${data.width_cm}أ—${data.height_cm} ط³ظ…)</strong><br>
+            <span style="font-size:11px; color:#64748b;">ظ…ط³ط§ط­ط© ط¥ط¬ظ…ط§ظ„ظٹط©: ${data.area_sqm} ظ…آ² ط¨ط³ط¹ط± ط§ظ„ظ…طھط± ط§ظ„ظ…ط±ط¨ط¹</span>
           </td>
           <td style="text-align:center;">${data.quantity}</td>
-          <td style="text-align:center;">${data.price_per_meter} ج.م</td>
-          <td style="text-align:center; font-weight:bold;">${data.window_total} ج.م</td>
+          <td style="text-align:center;">${data.price_per_meter} ط¬.ظ…</td>
+          <td style="text-align:center; font-weight:bold;">${data.window_total} ط¬.ظ…</td>
         </tr>
         ${extraRows}
       </tbody>
@@ -344,28 +344,28 @@ export function buildArabicQuotationHtml(data: {
     <div class="summary-box">
       <table class="summary-table">
         <tr>
-          <td>المجموع قبل الخصم:</td>
-          <td style="text-align:left; font-weight:bold;">${data.subtotal_before_discount} ج.م</td>
+          <td>ط§ظ„ظ…ط¬ظ…ظˆط¹ ظ‚ط¨ظ„ ط§ظ„ط®طµظ…:</td>
+          <td style="text-align:left; font-weight:bold;">${data.subtotal_before_discount} ط¬.ظ…</td>
         </tr>
         ${
           new Decimal(data.discount_applied || 0).greaterThan(0)
             ? `
         <tr style="color:#e11d48;">
-          <td>الخصم المطبق:</td>
-          <td style="text-align:left; font-weight:bold;">- ${data.discount_applied} ج.م</td>
+          <td>ط§ظ„ط®طµظ… ط§ظ„ظ…ط·ط¨ظ‚:</td>
+          <td style="text-align:left; font-weight:bold;">- ${data.discount_applied} ط¬.ظ…</td>
         </tr>`
             : ''
         }
         <tr class="total-row">
-          <td>صافي المبلغ الإجمالي:</td>
-          <td style="text-align:left;">${data.total_price} ج.م</td>
+          <td>طµط§ظپظٹ ط§ظ„ظ…ط¨ظ„ط؛ ط§ظ„ط¥ط¬ظ…ط§ظ„ظٹ:</td>
+          <td style="text-align:left;">${data.total_price} ط¬.ظ…</td>
         </tr>
       </table>
     </div>
 
     <div class="footer">
-      <div>صلاحية هذا العرض 15 يوماً من تاريخ الإصدار.</div>
-      <div>نظام Casper Voice ERP — الإدارة السحابية والذكاء الاصطناعي</div>
+      <div>طµظ„ط§ط­ظٹط© ظ‡ط°ط§ ط§ظ„ط¹ط±ط¶ 15 ظٹظˆظ…ط§ظ‹ ظ…ظ† طھط§ط±ظٹط® ط§ظ„ط¥طµط¯ط§ط±.</div>
+      <div>ظ†ط¸ط§ظ… Casper Voice ERP â€” ط§ظ„ط¥ط¯ط§ط±ط© ط§ظ„ط³ط­ط§ط¨ظٹط© ظˆط§ظ„ط°ظƒط§ط، ط§ظ„ط§طµط·ظ†ط§ط¹ظٹ</div>
     </div>
   </div>
 </body>
@@ -421,7 +421,7 @@ export async function processMediaJob(quoteId: string, tenantId?: string): Promi
 
     const htmlContent = buildArabicQuotationHtml({
       quoteId: quote.id,
-      tenantName: quote.tenant?.name || 'ورشة الألوميتال المتطورة',
+      tenantName: quote.tenant?.name || 'ظˆط±ط´ط© ط§ظ„ط£ظ„ظˆظ…ظٹطھط§ظ„ ط§ظ„ظ…طھط·ظˆط±ط©',
       customerRef: quote.customerRef || undefined,
       dateStr: new Date(quote.createdAt).toLocaleDateString('ar-EG', {
         year: 'numeric',

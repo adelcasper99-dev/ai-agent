@@ -1,0 +1,393 @@
+import subprocess
+import pathlib
+
+workspace_dir = pathlib.Path(r'c:\Users\TheExpert\Downloads\casper-voice-project\casper-voice-project')
+html_path = workspace_dir / 'samples' / 'invoice_template.html'
+pdf_out_path = pathlib.Path(r'C:\Users\TheExpert\Downloads\sample_quotation.pdf')
+png_out_path = pathlib.Path(r'C:\Users\TheExpert\Downloads\sample_quotation_sketch.png')
+
+html_content = """<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>عرض أسعار مقايسة فنية - Casper Alumital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: A4;
+      margin: 15mm;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background-color: #ffffff;
+      color: #0f172a;
+      margin: 0;
+      padding: 0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .invoice-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      padding: 28px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand-title {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      margin: 0;
+    }
+    .brand-subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .quote-badge {
+      text-align: left;
+    }
+    .badge-label {
+      font-size: 18px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+    .badge-meta {
+      font-size: 11px;
+      color: #cbd5e1;
+      margin-top: 4px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 20px 32px;
+      background-color: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .info-card {
+      font-size: 12px;
+    }
+    .info-card strong {
+      color: #475569;
+      display: inline-block;
+      min-width: 85px;
+    }
+    .info-card span {
+      color: #0f172a;
+      font-weight: 600;
+    }
+    .content {
+      padding: 24px 32px;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: #0284c7;
+      border-radius: 2px;
+      display: inline-block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    th {
+      background-color: #1e293b;
+      color: #ffffff;
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 12px;
+      text-align: right;
+    }
+    th:last-child {
+      text-align: left;
+    }
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 12px;
+      color: #334155;
+    }
+    td:last-child {
+      text-align: left;
+      font-weight: 700;
+      color: #0284c7;
+    }
+    .sketch-box {
+      margin: 20px 0;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 16px;
+      background: #0f172a;
+      text-align: center;
+    }
+    .summary-wrap {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+    .summary-card {
+      width: 320px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 16px;
+      font-size: 12px;
+      color: #475569;
+    }
+    .summary-row.discount {
+      color: #dc2626;
+      font-weight: 600;
+    }
+    .summary-total {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 15px;
+      font-weight: 900;
+    }
+    .summary-total span:last-child {
+      color: #38bdf8;
+    }
+    .terms {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 11px;
+      color: #64748b;
+    }
+    .terms ul {
+      margin: 6px 0;
+      padding-right: 20px;
+    }
+    .footer {
+      background: #f1f5f9;
+      padding: 12px;
+      text-align: center;
+      font-size: 10px;
+      color: #94a3b8;
+      border-top: 1px solid #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="invoice-container">
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <h1 class="brand-title">كاسبر لأنظمة الألوميتال</h1>
+        <div class="brand-subtitle">أنظمة معمارية متخصصة • شبابيك • أبواب • مطابخ</div>
+      </div>
+      <div class="quote-badge">
+        <div class="badge-label">مقايسة رسمية / QUOTATION</div>
+        <div class="badge-meta">رقم العرض: <strong>#QTE-2026-0891</strong></div>
+        <div class="badge-meta">التاريخ: <strong>23 أغسطس 2026</strong></div>
+      </div>
+    </div>
+
+    <!-- Customer Info -->
+    <div class="info-grid">
+      <div class="info-card">
+        <div><strong>العميل:</strong> <span>المهندس أحمد محمود</span></div>
+        <div style="margin-top: 4px;"><strong>رقم الهاتف:</strong> <span dir="ltr">01012345678</span></div>
+      </div>
+      <div class="info-card">
+        <div><strong>المشروع:</strong> <span>فيلا سكنية - التجمع الخامس</span></div>
+        <div style="margin-top: 4px;"><strong>الفرع / المبيعات:</strong> <span>فرع المعادي الرئيسي</span></div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="section-title">بنود المقايسة وتفاصيل التسعير</div>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>البيان والمواصفات</th>
+            <th>الأبعاد (عرض × ارتفاع)</th>
+            <th>المساحة / العدد</th>
+            <th>سعر المتر</th>
+            <th>الإجمالي</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <strong>شباك ألوميتال سحاب - قطاع جامبو عازل للصوت</strong><br>
+              <small style="color: #64748b;">زجاج دبل 24 مم شفاف + كاوتش EPDM تركي مانع للأتربة</small>
+            </td>
+            <td>120 × 140 سم</td>
+            <td>1.68 م² (عدد 2)</td>
+            <td>1,500.00 ج.م</td>
+            <td>5,040.00 ج.م</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>مقبض مستورد أصلي + كالون أمان تركي</strong><br>
+              <small style="color: #64748b;">إكسسوارات قفل معتمدة ضد السرقة</small>
+            </td>
+            <td>قياسي</td>
+            <td>عدد 2</td>
+            <td>150.00 ج.م</td>
+            <td>300.00 ج.م</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>دلفة سلك صلب مانع للحشرات (Flyscreen)</strong><br>
+              <small style="color: #64748b;">سلك صلب غير قابل للصدأ مع إطار داخلي</small>
+            </td>
+            <td>60 × 140 سم</td>
+            <td>عدد 2</td>
+            <td>200.00 ج.م</td>
+            <td>400.00 ج.م</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Embedded Technical Sketch -->
+      <div class="section-title">الكروكي الفني وتوزيع الأبعاد الهندسية</div>
+      <div class="sketch-box">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 360" width="100%" height="240" style="font-family:'Cairo', sans-serif;">
+          <defs>
+            <linearGradient id="frameGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#334155"/>
+              <stop offset="50%" stop-color="#1e293b"/>
+              <stop offset="100%" stop-color="#0f172a"/>
+            </linearGradient>
+            <linearGradient id="glassGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#0284c7" stop-opacity="0.1"/>
+            </linearGradient>
+            <marker id="arrow2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+            </marker>
+          </defs>
+
+          <!-- Width Arrow (Top) -->
+          <line x1="200" y1="35" x2="500" y2="35" stroke="#38bdf8" stroke-width="2" marker-start="url(#arrow2)" marker-end="url(#arrow2)"/>
+          <rect x="300" y="20" width="100" height="26" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1"/>
+          <text x="350" y="38" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">العرض: 120 سم</text>
+
+          <!-- Height Arrow (Left) -->
+          <line x1="160" y1="65" x2="160" y2="305" stroke="#38bdf8" stroke-width="2" marker-start="url(#arrow2)" marker-end="url(#arrow2)"/>
+          <rect x="95" y="170" width="110" height="26" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1"/>
+          <text x="150" y="188" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">الارتفاع: 140 سم</text>
+
+          <!-- Outer Frame -->
+          <rect x="200" y="65" width="300" height="240" rx="4" fill="url(#frameGrad2)" stroke="#64748b" stroke-width="4"/>
+
+          <!-- Sliding Panels -->
+          <rect x="210" y="75" width="140" height="220" rx="2" fill="url(#glassGrad2)" stroke="#475569" stroke-width="3"/>
+          <rect x="350" y="75" width="140" height="220" rx="2" fill="url(#glassGrad2)" stroke="#475569" stroke-width="3"/>
+
+          <!-- Reflections -->
+          <line x1="225" y1="90" x2="310" y2="210" stroke="#ffffff" stroke-width="1" stroke-opacity="0.4" stroke-dasharray="40 10"/>
+          <line x1="365" y1="90" x2="450" y2="210" stroke="#ffffff" stroke-width="1" stroke-opacity="0.4" stroke-dasharray="40 10"/>
+
+          <!-- Handles -->
+          <rect x="342" y="170" width="6" height="26" rx="2" fill="#e2e8f0"/>
+          <rect x="352" y="170" width="6" height="26" rx="2" fill="#e2e8f0"/>
+
+          <!-- Legend Text -->
+          <text x="350" y="335" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">قطاع جامبو عازل للصوت • زجاج دبل 24 مم • سلك صلب مانع للحشرات</text>
+        </svg>
+      </div>
+
+      <!-- Financial Totals -->
+      <div class="summary-wrap">
+        <div class="summary-card">
+          <div class="summary-row">
+            <span>الإجمالي الفرعي:</span>
+            <span>5,740.00 ج.م</span>
+          </div>
+          <div class="summary-row discount">
+            <span>الخصم الممنوح (5%):</span>
+            <span>- 287.00 ج.م</span>
+          </div>
+          <div class="summary-row">
+            <span>ضريبة القيمة المضافة (14%):</span>
+            <span>+ 763.42 ج.م</span>
+          </div>
+          <div class="summary-total">
+            <span>الإجمالي الصافي:</span>
+            <span>6,216.42 ج.م</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Terms & Notes -->
+      <div class="terms">
+        <strong>شروط وأحكام المقايسة:</strong>
+        <ul>
+          <li>هذا العرض سارٍ لمدة 7 أيام عمل من تاريخ إصداره.</li>
+          <li>نظام الدفع: 50% دفعة تعاقد، 40% عند توريد الهيكل والألواح، و 10% بعد إتمام التركيب والتسليم النهائي.</li>
+          <li>المقاسات النهائية يتم اعتمادها رسميًا بعد المعاينة الميدانية للفني المختص بموقع العمل.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      كاسبر لأنظمة إدارة نقاط البيع والـ ERP • نظام معتمد لحسابات ورش ومصانع الألوميتال
+    </div>
+  </div>
+
+</body>
+</html>
+"""
+
+html_path.write_text(html_content, encoding='utf-8')
+
+# Convert HTML to PDF using Chrome Headless
+chrome_path = r'C:\Program Files (x86)\Google\Chrome\Application\chrome.EXE'
+cmd = [
+    chrome_path,
+    '--headless',
+    '--disable-gpu',
+    '--no-pdf-header-footer',
+    f'--print-to-pdf={str(pdf_out_path)}',
+    str(html_path)
+]
+
+res = subprocess.run(cmd, capture_output=True, text=True)
+print("Chrome PDF output:", res.returncode)
+
+# Also copy HTML to Downloads so user can preview directly in browser if desired
+(pathlib.Path(r'C:\Users\TheExpert\Downloads\sample_quotation_preview.html')).write_text(html_content, encoding='utf-8')
+print("Successfully generated Arabic PDF & HTML Preview in Downloads!")

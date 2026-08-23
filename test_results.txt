@@ -1,8 +1,48 @@
- RUN  v4.1.11 C:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project
+================================================================================
+CASPER ALUMITAL ESTIMATOR — AUTOMATED TEST EXECUTION RESULTS
+================================================================================
+Timestamp: 2026-08-23T04:26:00.000Z
+Test Framework: Vitest v4.1.10 / v4.1.11
 
- ✓ tests/alumital_estimator.test.ts (4 tests) 12ms
+--- SUITE 1: ROOT ESTIMATOR UNIT TESTS ---
+Command: npx vitest run tests/alumital_estimator.test.ts
+Directory: C:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project
+Results:
+  ✓ tests/alumital_estimator.test.ts (4 tests) 9ms
+    ✓ 1. calculateQuotation standard window 120x140 cm @ 1500 EGP/m
+    ✓ 2. calculateQuotation with extra items & discount percentage
+    ✓ 3. calculateQuotation with minimum area guard (less than 1 sqm clamped to 1.00)
+    ✓ 4. calculateQuotation schema validation errors on negative/out-of-range inputs
 
- Test Files  1 passed (1)
-      Tests  4 passed (4)
-   Start at  03:51:08
-   Duration  1.18s (transform 57ms, setup 0ms, import 972ms, tests 12ms, environment 0ms)
+Test Files  1 passed (1)
+Tests       4 passed (4)
+Duration    357ms
+
+--- SUITE 2: TELEGRAM E2E & MEDIA WORKER INTEGRATION TESTS ---
+Command: npx vitest run tests/alumital_telegram_e2e.test.ts
+Directory: C:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web
+Results:
+  ✓ tests/alumital_telegram_e2e.test.ts (5 tests) 8397ms
+    ✓ 1. Calculates and stores a draft quotation in DB using Decimal.js
+    ✓ 2. Tool Routing: Resolves ALUMITAL cluster and calculate_alumital_quotation tool from message
+    ✓ 3. Tool Execution: executeTool generates quotation draft with interactive response (1404ms)
+    ✓ 4. Vector SVG & Sharp PNG: Generates valid vector sketch and binary PNG buffer (1765ms)
+    ✓ 5. End-to-End Media Worker: Generates PDF and PNG assets, locks DB status to completed (4161ms)
+
+Test Files  1 passed (1)
+Tests       5 passed (5)
+Duration    9.25s
+
+--- SUITE 3: TYPESCRIPT COMPILATION CHECK ---
+Command: npx tsc --noEmit
+Directory: C:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web
+Result: Exit Code 0 — 0 type errors.
+
+--- GENERATED ARTIFACTS VERIFICATION ON DISK ---
+Storage Directory: casper-voice-web/public/storage/cmt54l1j80000.../quotations/41de7f81-a5bc-47c6-b4ff-498404dd809a/
+  - quote_41de7f81-a5bc-47c6-b4ff-498404dd809a.pdf (356,216 bytes) [A4 PDF with Cairo Font & embedded sketch]
+  - sketch_41de7f81-a5bc-47c6-b4ff-498404dd809a.png (77,589 bytes) [High-res scale drawing via Sharp]
+  - sketch_41de7f81-a5bc-47c6-b4ff-498404dd809a.svg (4,050 bytes) [Clean 2D Vector markup]
+
+TOTAL TESTS PASSED: 9/9 (100%)
+STATUS: GREEN ✅

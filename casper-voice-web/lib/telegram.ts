@@ -424,3 +424,59 @@ export async function rejectDirectTenant(tenantId: string, decidedBy: string) {
   return { alreadyDecided: false, tenant };
 }
 
+/**
+ * Send Photo directly to Telegram Chat (used for technical sketch PNG)
+ */
+export async function sendTelegramPhoto(chatId: string, photoBuffer: Buffer, caption?: string): Promise<boolean> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return false;
+
+  try {
+    const formData = new FormData();
+    formData.append('chat_id', chatId);
+    const blob = new Blob([new Uint8Array(photoBuffer)], { type: 'image/png' });
+    formData.append('photo', blob, 'sketch.png');
+    if (caption) {
+      formData.append('caption', caption);
+      formData.append('parse_mode', 'Markdown');
+    }
+
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+      method: 'POST',
+      body: formData,
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('[sendTelegramPhoto error]:', err);
+    return false;
+  }
+}
+
+/**
+ * Send Document (PDF) directly to Telegram Chat (used for official quotation PDF)
+ */
+export async function sendTelegramDocument(chatId: string, docBuffer: Buffer, filename: string, caption?: string): Promise<boolean> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return false;
+
+  try {
+    const formData = new FormData();
+    formData.append('chat_id', chatId);
+    const blob = new Blob([new Uint8Array(docBuffer)], { type: 'application/pdf' });
+    formData.append('document', blob, filename);
+    if (caption) {
+      formData.append('caption', caption);
+      formData.append('parse_mode', 'Markdown');
+    }
+
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
+      method: 'POST',
+      body: formData,
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('[sendTelegramDocument error]:', err);
+    return false;
+  }
+}
+

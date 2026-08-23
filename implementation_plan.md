@@ -1,42 +1,93 @@
-# 📐 Implementation Plan: Casper Alumital Estimator
+# Alumital Estimator — Telegram Integration & Media Worker (Remediation)
 
-## 1. Executive Summary
-Add a sub-agent tool module (`calculate_quotation`, `confirm_quotation`, `generate_media`) to Casper AI Agent (Telegram) for window/kitchen aluminum estimation.
+## Context
 
-## 2. Component Blueprint
+The financial math core (`estimator.ts`) is complete and passing all tests. The feature is **disconnected** from the bot: no tool declaration, no dispatch handler, no real PDF/SVG generation.
 
-### A. Prisma Schema (`prisma/schema.prisma`)
-Add `Quotation` model:
-- `id`: UUID Primary Key
-- `tenantId`: String
-- `customerRef`: String?
-- `width_cm`, `height_cm`: Decimal
-- `quantity`: Int
-- `price_per_meter`: Decimal
-- `area_sqm`: Decimal
-- `window_total`: Decimal
-- `extra_items`: Json? (`[{ name, unit_price, quantity, line_total }]`)
-- `discount_pct`, `discount_amount`: Decimal?
-- `total_price`: Decimal
-- `status`: String (`draft` | `processing_media` | `confirmed` | `media_failed` | `sent` | `cancelled`)
-- `pdfUrl`, `sketchUrl`: String?
-- `createdAt`: DateTime @default(now())
-- `@@index([tenantId, status])`
+## Scope
 
-### B. Estimation Engine & Zod Schemas (`src/lib/alumital/estimator.ts`)
-- Strict Zod validation schemas.
-- Pure `Decimal.js` pricing function (`calculateQuotation`).
+Three surgical file mutations. Zero schema changes required (Quotation model already exists).
 
-### C. Telegram Tool Registrations (`src/lib/telegram/telegram_llm.ts`)
-- Register `calculate_quotation`, `confirm_quotation`, `generate_media`.
-- RBAC middleware (`ADMIN_CHAT_ID` check).
+---
 
-### D. Media Workers (`src/lib/alumital/media_worker.ts`)
-- PDF Invoice renderer (`@react-pdf/renderer`).
-- PNG Scale sketch renderer (`sharp` + SVG template).
-- Background queue with retry logic (3 attempts).
+## Proposed Changes
 
-## 3. Verification & Safety Criteria
-- Unit tests with Vitest (`tests/alumital_estimator.test.ts`).
-- Zero float math checks.
-- TypeScript strict typing (zero `any`).
+### File 1 — `casper-voice-web/lib/telegram_llm.ts`
+
+#### [MODIFY] Tool Declaration (insert before line 401)
+
+Add `const calculateAlumitalQuotationTool: FunctionDeclaration` with:
+- `name`: `"calculate_alumital_quotation"`
+- Arabic description
+- Parameters: `width_cm`, `height_cm`, `quantity`, `price_per_meter`, `apply_min_area`, `discount_pct`, `discount_amount`, `extra_items` (array)
+- `required`: `["width_cm", "height_cm", "price_per_meter"]`
+
+#### [MODIFY] ALL_TOOLS array (line 409)
+
+Append `calculateAlumitalQuotationTool` to the array.
+
+#### [MODIFY] New ClusterKey 'ALUMITAL' (line 412)
+
+Add `'ALUMITAL'` to the `ClusterKey` union type.
+Add `ALUMITAL_TOOLS` array + keywords (`"أوفر", "أوفرة", "ألومتال", "نافذة", "باب", "كوتيشن", "عرض سعر", "احسبلي", "حسابات", "مقاس"`).
+
+#### [MODIFY] Dispatch handler (insert before line 3038)
+
+```typescript
+if (name === "calculate_alumital_quotation") {
+  // 1. Parse & validate via Zod
+  // 2. Call calculateQuotation() from estimator.ts
+  // 3. Persist Quotation record in DB (status: 'draft')
+  // 4. Fire-and-forget: processMediaJob() → generates PDF + SVG
+  // 5. Return formatted Arabic reply with result breakdown
+}
+```
+
+---
+
+### File 2 — `src/lib/alumital/media_worker.ts`
+
+Full replacement of 32-line stub with:
+
+1. **Atomic state lock**: `prisma.quotation.updateMany({ where: { id, status: 'draft' }, data: { status: 'processing_media' } })` — if 0 rows updated → skip (already processing)
+2. **SVG sketch generator**: Pure string template, proportional 2D rectangle with dimension labels
+3. **Arabic HTML template**: Inline Cairo font, RTL layout, full quotation breakdown table
+4. **PDF via Puppeteer**: `browser.newPage()` → `setContent(html)` → `pdf({ format: 'A4' })`
+5. **fs.writeFile**: Save to `casper-voice-web/public/storage/{tenantId}/quotations/{quoteId}/`
+6. **State finalize**: `prisma.quotation.update({ status: 'completed', pdfUrl, sketchUrl })`
+7. **Error recovery**: `status: 'media_failed'` on catch
+
+---
+
+### File 3 — `package.json` (casper-voice-web)
+
+Add `puppeteer` to dependencies for server-side PDF rendering.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+```bash
+npx vitest run tests/alumital_estimator.test.ts   # 4 tests — must stay GREEN
+npx vitest run tests/alumital_telegram_e2e.test.ts # 3 tests — must stay GREEN
+npx tsc --noEmit                                   # 0 TS errors
+```
+
+### Manual Verification
+Send bot message: `"احسبلي شباك 150x200 بسعر 280 جنيه للمتر"` → expect:
+- Arabic calculation summary reply
+- PDF attachment in chat
+- 2D sketch attachment
+
+---
+
+## Risk Map
+
+| Risk | Mitigation |
+|---|---|
+| Puppeteer binary missing on VPS | `puppeteer` bundles Chromium by default — works on Ubuntu VPS |
+| Arabic font not rendering | Embed Cairo font as base64 in HTML template |
+| Atomic lock race condition | `updateMany WHERE status='draft'` → `count.updated === 0` → bail |
+| Public storage path collision | `{tenantId}/{quoteId}` path uniqueness guaranteed by UUID |
+| Tool routing miss | Add ALUMITAL keywords to cluster router |

@@ -52,6 +52,7 @@ model Tenant {
   adminLinkTokens AdminLinkToken[]
   adminLinkAudits AdminLinkAudit[]
   merchantMemoryFacts MerchantMemoryFact[]
+  quotations      Quotation[]
 
   setupCode                String?  @unique
   businessConnectionId     String?  @unique
@@ -508,4 +509,31 @@ model RevokedSession {
   expiresAt DateTime
 
   @@index([expiresAt])
+}
+
+// ── مقايسات الألوميتال (Alumital Estimator & Quotations) ────────────
+model Quotation {
+  id                       String   @id @default(uuid())
+  tenantId                 String
+  tenant                   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customerRef              String?
+  width_cm                 Decimal
+  height_cm                Decimal
+  quantity                 Int      @default(1)
+  price_per_meter          Decimal
+  area_sqm                 Decimal
+  window_total             Decimal
+  extra_items              String?  // JSON string: [{ name, unit_price, quantity, line_total }]
+  discount_pct             Decimal?
+  discount_amount          Decimal?
+  subtotal_before_discount  Decimal
+  total_price              Decimal
+  status                   String   @default("draft") // draft | processing_media | confirmed | media_failed | sent | cancelled
+  pdfUrl                   String?
+  sketchUrl                String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
 }

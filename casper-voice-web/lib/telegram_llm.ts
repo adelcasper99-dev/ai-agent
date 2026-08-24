@@ -3384,33 +3384,6 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       }).join('\n');
 
       const resultText = `✅ تم تسجيل مقاسات للعميل ${customerName}:\n${itemSummaries}`;
-
-      // Send interactive card if chatId present
-      const targetChatId = options?.chatId;
-      if (targetChatId && createdList.length > 0) {
-        const { sendTelegramAlert } = await import("@/lib/telegram");
-        const inlineButtons: any[] = [];
-        
-        createdList.slice(0, 4).forEach((rec, idx) => {
-          inlineButtons.push([
-            { text: `✏️ تعديل ${idx + 1} (${rec.itemType})`, callback_data: `edit_meas_${rec.id}` },
-            { text: `🗑️ مسح ${idx + 1}`, callback_data: `del_meas_${rec.id}` }
-          ]);
-        });
-
-        inlineButtons.push([
-          { text: `📑 عمل كوتيشن مالي لـ ${customerName}`, callback_data: `quote_meas_${createdList[0].id}` }
-        ]);
-
-        await sendTelegramAlert({
-          chatId: targetChatId,
-          text: resultText,
-          idempotencyKey: `meas_save_${createdList[0].id}_${Date.now()}`,
-          replyMarkup: { inline_keyboard: inlineButtons }
-        });
-        return { success: true, resultText, uiSent: true };
-      }
-
       return { success: true, resultText };
     }
 

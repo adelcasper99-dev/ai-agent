@@ -608,7 +608,8 @@ export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: stri
 3. تفريد وسائط الأدوات (Tool Arguments Isolation): يجب استخراج المبالغ والأرقام وأسماء الأصناف والأشخاص من **رسالة المستخدم الحالية فقط**. يُمنع منعاً باتاً استعادة أرقام أو وسائط قديمة من سجل الحوار (Chat History) وتطبيقها على الرسالة الجديدة.
 4. عدم الخلط بين الاستعلام وتنفيذ المعاملات: إذا كان نص رسالة المستخدم استعلاماً عن كشف حساب ("كشف حساب", "كم له", "كم عليه", "رصيد")، يُمنع استدعاء أدوات المعاملات مثل log_purchase_return أو log_sale، ويجب استدعاء get_supplier_balance أو get_customer_balance حصراً.
 5. إذا كان هناك حقل مفقود أو غير واضح، اسأل التاجر فوراً وبكل وضوح بالعامية المصرية لاستكمال البيانات الناقصة.
-6. أداة report_missing_feature مخصصة فقط للميزات البرمجية الحقيقية غير المتاحة. يُمنع منعاً باتاً استدعاؤها عند رفض حجز موعد في الماضي أو تلقي كلام عشوائي.`;
+6. أداة report_missing_feature مخصصة فقط للميزات البرمجية الحقيقية غير المتاحة. يُمنع منعاً باتاً استدعاؤها عند رفض حجز موعد في الماضي أو تلقي كلام عشوائي.
+7. عدم تكرار العمليات السابقة (Single-Turn Execution): نفذ فقط البنود والعمليات المذكورة في رسالة المستخدم الأخيرة. يُمنع منعاً باتاً إعادة استدعاء أدوات أو تكرار تسجيل مقاسات أو فواتير للعملاء المذكورين في الرسائل السابقة.`;
 
   const EXTRACTION_RULES: Record<ClusterKey, string> = {
     SALES: `
@@ -3798,9 +3799,9 @@ export async function processTelegramMessageWithLLM(
   console.log(`[TokenRouter] Input: "${normalizedText.slice(0, 35)}..." | Active Clusters: [${activeClusters.join(', ')}] | Tools Sent: ${activeTools.length}/${ALL_TOOLS.length}`);
 
   // Format history for Gemini SDK & ensure history starts with user role
-  // Single-turn tool isolation: Clear history only when active tools match explicit new transaction keywords to prevent argument bleeding
-  const isNewTransactionCmd = /(اشتريت|اشترى|هنشتري|نشتري|شراء|بعت|بيع|هنبيع|نبيع|أضف|اضف|ضيف|احجز|رجعت)/i.test(normalizedText);
-  const isPendingChoicePurgeCmd = /(اشتريت|اشترى|هنشتري|نشتري|شراء|بعت|بيع|هنبيع|نبيع|رجعت|أضف|اضف|ضيف|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد)/i.test(normalizedText);
+  // Single-turn tool isolation: Clear history when active tools match explicit transaction or measurement keywords to prevent argument bleeding and duplicate re-execution
+  const isNewTransactionCmd = /(سجل|تسجيل|اشتريت|اشترى|هنشتري|نشتري|شراء|بعت|بيع|هنبيع|نبيع|أضف|اضف|ضيف|احجز|حجز|رجعت|مرتجع|مقاس|مقاسات|شباك|باب|مطبخ|احسب|كوتيشن|عرض\s*سعر|كشف|هات|عدل|امسح|فاتورة|سداد|دفعة)/i.test(normalizedText);
+  const isPendingChoicePurgeCmd = /(سجل|تسجيل|اشتريت|اشترى|هنشتري|نشتري|شراء|بعت|بيع|هنبيع|نبيع|رجعت|أضف|اضف|ضيف|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد|مقاس|مقاسات)/i.test(normalizedText);
 
   if (isPendingChoicePurgeCmd && tenantId) {
     await (prisma as any).conversationState.deleteMany({

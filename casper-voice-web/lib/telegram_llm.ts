@@ -633,7 +633,7 @@ export function resolveActiveTools(text: string, lastHistoryMsg?: string): { act
   return { activeTools: Array.from(toolSet), activeClusters: Array.from(matchedClusters) };
 }
 
-export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: string, typeStr: string, hoursStr: string, memoryContext?: string): string {
+export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: string, typeStr: string, hoursStr: string, memoryContext?: string, timeContext?: string): string {
   const CORE_PROMPT = `أنت المساعد الشخصي الذكي الخاص بمدير أو صاحب العمل ${companyStr} ${typeStr} ${hoursStr}.
 تحدث بالعامية المصرية الصريحة والسريعة جداً.
 
@@ -710,7 +710,8 @@ export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: stri
 
   const activeRules = activeClusters.map(c => EXTRACTION_RULES[c] || '').join('\n');
   const memoryBlock = memoryContext ? `\n\n[ذاكرة التاجر المحفوظة (سياق فقط)]:\n${memoryContext}` : '';
-  return `${CORE_PROMPT}\n${activeRules}${memoryBlock}`.trim();
+  const timeBlock = timeContext ? `\n\n[التوقيت الحالي في مصر]: ${timeContext}` : '';
+  return `${CORE_PROMPT}${timeBlock}\n${activeRules}${memoryBlock}`.trim();
 }
 
 
@@ -1175,6 +1176,114 @@ export function extractAllNumbersFromText(text: string): number[] {
   return nums;
 }
 
+export function parseEgyptianArabicDateTime(timeStr?: string, isoStr?: string, baseDate: Date = new Date()): Date {
+  if (isoStr) {
+    const d = new Date(isoStr);
+    if (!isNaN(d.getTime())) return d;
+  }
+  const now = baseDate instanceof Date && !isNaN(baseDate.getTime()) ? baseDate : new Date();
+  if (!timeStr) {
+    return new Date(now.getTime() + 60 * 60 * 1000);
+  }
+
+  const s = timeStr.toLowerCase().trim();
+
+  // 1. Direct minute matches: (بعد / كمان / خلال / في خلال / في الـ / في) X (دقيقة / دقائق / دقايق / د)
+  const minMatch = s.match(/(?:بعد|كمان|خلال|في\s*خلال|في\s*الـ|في)\s+(\d+)\s*(?:دقيقة|دقايق|دقائق|د)/);
+  if (minMatch) {
+    return new Date(now.getTime() + parseInt(minMatch[1], 10) * 60 * 1000);
+  }
+
+  // 2. Relative minute shortcuts (دقيقتين، ربع ساعة، تلت ساعة، نص ساعة، إلخ)
+  if (s.includes("دقيقتين") || s.includes("دقيقتان")) {
+    return new Date(now.getTime() + 2 * 60 * 1000);
+  }
+  if (s.includes("دقيقة واحدة") || s.includes("كمان دقيقة") || s.includes("بعد دقيقة")) {
+    return new Date(now.getTime() + 1 * 60 * 1000);
+  }
+  if (s.includes("ربع ساعة") || s.includes("ربع ساعه")) {
+    return new Date(now.getTime() + 15 * 60 * 1000);
+  }
+  if (s.includes("تلت ساعة") || s.includes("ثلث ساعة") || s.includes("تلت ساعه")) {
+    return new Date(now.getTime() + 20 * 60 * 1000);
+  }
+  if (s.includes("نص ساعة") || s.includes("نصف ساعة") || s.includes("نص ساعه")) {
+    return new Date(now.getTime() + 30 * 60 * 1000);
+  }
+  if (s.includes("ساعة إلا ربع") || s.includes("ساعه الا ربع") || s.includes("ساعة الا ربع")) {
+    return new Date(now.getTime() + 45 * 60 * 1000);
+  }
+  if (s.includes("ساعتين") || s.includes("ساعتان")) {
+    return new Date(now.getTime() + 2 * 60 * 60 * 1000);
+  }
+  if (s.includes("بعد ساعة") || s.includes("كمان ساعة") || s.includes("خلال ساعة") || s.includes("بعد ساعه") || s.includes("كمان ساعه")) {
+    return new Date(now.getTime() + 60 * 60 * 1000);
+  }
+
+  // 3. Direct hour matches: (بعد / كمان / خلال / في خلال / في الـ / في) X (ساعة / ساعات / س)
+  const hrMatch = s.match(/(?:بعد|كمان|خلال|في\s*خلال|في\s*الـ|في)\s+(\d+)\s*(?:ساعة|ساعات|س)/);
+  if (hrMatch) {
+    return new Date(now.getTime() + parseInt(hrMatch[1], 10) * 60 * 60 * 1000);
+  }
+
+  // 4. Days offset (بكرة، بعد بكرة)
+  let targetDate = new Date(now);
+  if (s.includes("بكرة") || s.includes("غدا") || s.includes("غداً") || s.includes("بكره")) {
+    targetDate.setDate(targetDate.getDate() + 1);
+  } else if (s.includes("بعد بكرة") || s.includes("بعد بكره")) {
+    targetDate.setDate(targetDate.getDate() + 2);
+  }
+
+  // 5. Word hours mapping: في التاسعة، العاشرة، إلخ
+  const wordHours: Record<string, number> = {
+    "الواحدة": 1, "التانية": 2, "الثانية": 2, "التالتة": 3, "الثالثة": 3,
+    "الرابعة": 4, "الخامسة": 5, "السادسة": 6, "السابعة": 7, "التامنة": 8,
+    "الثامنة": 8, "التاسعة": 9, "العاشرة": 10, "الحادية عشرة": 11, "الحادية عشر": 11,
+    "الثانية عشرة": 12, "الثانية عشر": 12
+  };
+
+  for (const [word, hr] of Object.entries(wordHours)) {
+    if (s.includes(word)) {
+      let h = hr;
+      const isNight = s.includes("بالليل") || s.includes("مساء") || s.includes("عصر") || s.includes("الظهر") || s.includes("م");
+      const isMorning = s.includes("الصبح") || s.includes("صباح") || s.includes("ص");
+      if (isNight && h < 12) h += 12;
+      if (isMorning && h === 12) h = 0;
+      if (!isNight && !isMorning && h >= 1 && h <= 11) {
+        if (h <= 6 || (h >= 7 && h <= 11 && now.getHours() >= 12)) h += 12;
+      }
+      targetDate.setHours(h, 0, 0, 0);
+      if (targetDate.getTime() < now.getTime() && !s.includes("بكرة") && !s.includes("غدا") && !s.includes("بكره")) {
+        targetDate.setDate(targetDate.getDate() + 1);
+      }
+      return targetDate;
+    }
+  }
+
+  // 6. Digit hour match: الساعة \d+ أو في \d+
+  const hourMatch = s.match(/(?:الساعة|الساعه|ساعة|ساعه|في)\s+(\d{1,2})(?::(\d{2}))?/);
+  if (hourMatch) {
+    let h = parseInt(hourMatch[1], 10);
+    const m = hourMatch[2] ? parseInt(hourMatch[2], 10) : 0;
+    const isNight = s.includes("بالليل") || s.includes("مساء") || s.includes("عصر") || s.includes("الظهر") || s.includes("م");
+    const isMorning = s.includes("الصبح") || s.includes("صباح") || s.includes("ص");
+
+    if (isNight && h < 12) h += 12;
+    if (isMorning && h === 12) h = 0;
+    if (!isNight && !isMorning && h >= 1 && h <= 11) {
+      if (h <= 6 || (h >= 7 && h <= 11 && now.getHours() >= 12)) h += 12;
+    }
+
+    targetDate.setHours(h, m, 0, 0);
+    if (targetDate.getTime() < now.getTime() && !s.includes("بكرة") && !s.includes("غدا") && !s.includes("بكره")) {
+      targetDate.setDate(targetDate.getDate() + 1);
+    }
+    return targetDate;
+  }
+
+  return new Date(now.getTime() + 60 * 60 * 1000);
+}
+
 export type AmbiguityType = 'PRICE_AMBIGUITY' | 'NUMERIC_AMBIGUITY';
 
 export interface GroundingCheckOptions {
@@ -1421,62 +1530,6 @@ async function logRejectedToolCall(tenantId: string | undefined, toolName: strin
   } catch (e) {
     console.error("[RejectedToolCall log error]", e);
   }
-}
-export function parseEgyptianArabicDateTime(timeStr?: string, isoStr?: string): Date {
-  if (isoStr) {
-    const d = new Date(isoStr);
-    if (!isNaN(d.getTime())) return d;
-  }
-  const now = new Date();
-  if (!timeStr) {
-    return new Date(now.getTime() + 60 * 60 * 1000);
-  }
-
-  const s = timeStr.toLowerCase().trim();
-
-  const minMatch = s.match(/بعد\s+(\d+)\s*(دقيقة|دقايق|د)/);
-  if (minMatch) {
-    return new Date(now.getTime() + parseInt(minMatch[1], 10) * 60 * 1000);
-  }
-  const hrMatch = s.match(/بعد\s+(\d+)\s*(ساعة|ساعات|س)/);
-  if (hrMatch) {
-    return new Date(now.getTime() + parseInt(hrMatch[1], 10) * 60 * 60 * 1000);
-  }
-  if (s.includes("بعد ساعة")) {
-    return new Date(now.getTime() + 60 * 60 * 1000);
-  }
-  if (s.includes("بعد نص ساعة") || s.includes("بعد نصف ساعة")) {
-    return new Date(now.getTime() + 30 * 60 * 1000);
-  }
-  if (s.includes("بعد ساعتين")) {
-    return new Date(now.getTime() + 2 * 60 * 60 * 1000);
-  }
-
-  let targetDate = new Date(now);
-  if (s.includes("بكرة") || s.includes("غدا") || s.includes("غداً") || s.includes("بكره")) {
-    targetDate.setDate(targetDate.getDate() + 1);
-  } else if (s.includes("بعد بكرة") || s.includes("بعد بكره")) {
-    targetDate.setDate(targetDate.getDate() + 2);
-  }
-
-  const hourMatch = s.match(/الساعة\s+(\d{1,2})(?::(\d{2}))?/);
-  if (hourMatch) {
-    let h = parseInt(hourMatch[1], 10);
-    const m = hourMatch[2] ? parseInt(hourMatch[2], 10) : 0;
-    const isNight = s.includes("بالليل") || s.includes("مساء") || s.includes("عصر") || s.includes("الظهر");
-    const isMorning = s.includes("الصبح") || s.includes("صباح");
-
-    if (isNight && h < 12) h += 12;
-    if (isMorning && h === 12) h = 0;
-    if (!isNight && !isMorning && h >= 1 && h <= 11) {
-      if (h <= 6) h += 12;
-    }
-
-    targetDate.setHours(h, m, 0, 0);
-    return targetDate;
-  }
-
-  return new Date(now.getTime() + 2 * 60 * 60 * 1000);
 }
 
 // === END grounding guard ===
@@ -3715,7 +3768,8 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       }
 
       const targetChatId = options?.chatId;
-      const remindAt = parseEgyptianArabicDateTime(args.time_expression, args.remind_at_iso);
+      const baseDate = options?.messageTimestamp ? (options.messageTimestamp instanceof Date ? options.messageTimestamp : new Date(options.messageTimestamp)) : new Date();
+      const remindAt = parseEgyptianArabicDateTime(args.time_expression, args.remind_at_iso, baseDate);
 
       await (prisma as any).reminder.create({
         data: {
@@ -3730,11 +3784,13 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       });
 
       const dateStr = remindAt.toLocaleDateString("ar-EG", {
+        timeZone: "Africa/Cairo",
         weekday: "long",
         month: "numeric",
         day: "numeric"
       });
       const timeStr = remindAt.toLocaleTimeString("ar-EG", {
+        timeZone: "Africa/Cairo",
         hour: "2-digit",
         minute: "2-digit",
         hour12: true
@@ -3774,8 +3830,8 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       }
 
       const lines = reminders.map((r: any, idx: number) => {
-        const timeStr = r.remindAt.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit", hour12: true });
-        const dateStr = r.remindAt.toLocaleDateString("ar-EG", { weekday: "short", day: "numeric", month: "numeric" });
+        const timeStr = r.remindAt.toLocaleTimeString("ar-EG", { timeZone: "Africa/Cairo", hour: "2-digit", minute: "2-digit", hour12: true });
+        const dateStr = r.remindAt.toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo", weekday: "short", day: "numeric", month: "numeric" });
         return `${idx + 1}️⃣ *${r.title}* ${r.customerName ? `(عميل: ${r.customerName})` : ''}\n   ↳ ⏰ ${dateStr} - ${timeStr}`;
       });
 
@@ -3886,10 +3942,28 @@ export async function processTelegramMessageWithLLM(
   workingHours?: string,
   telegramChatId?: string,
   telegramMessageId?: number | string,
-  merchantName?: string
+  merchantName?: string,
+  messageTimestamp?: number | Date
 ): Promise<LLMResult> {
   const executeCore = async (): Promise<LLMResult> => {
     const { getValidApiKey, markKeyExhausted } = await import('./apiKeyManager');
+    
+    // Base message timestamp anchored to Telegram message.date
+    const baseTime = messageTimestamp ? (messageTimestamp instanceof Date ? messageTimestamp : new Date(messageTimestamp)) : new Date();
+    const cairoDateStr = baseTime.toLocaleDateString("ar-EG", {
+      timeZone: "Africa/Cairo",
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+    const cairoTimeStr = baseTime.toLocaleTimeString("ar-EG", {
+      timeZone: "Africa/Cairo",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
+    const timeContext = `${cairoDateStr} - الساعة ${cairoTimeStr} (${baseTime.toISOString()})`;
     
     // 1. Fetch rolling chat history buffer (last 6 messages in past 60 mins)
     let rawHistory: Array<{ role: string; text: string }> = [];
@@ -4048,7 +4122,7 @@ export async function processTelegramMessageWithLLM(
   const memoryContext = resolvedMemories.length > 0
     ? resolvedMemories.map(m => `${m.key} = ${m.value}`).join('\n')
     : undefined;
-  const activePrompt = buildActivePrompt(activeClusters, companyStr, typeStr, hoursStr, memoryContext);
+  const activePrompt = buildActivePrompt(activeClusters, companyStr, typeStr, hoursStr, memoryContext, timeContext);
 
   console.log(`[TokenRouter] Input: "${normalizedText.slice(0, 35)}..." | Active Clusters: [${activeClusters.join(', ')}] | Tools Sent: ${activeTools.length}/${ALL_TOOLS.length}`);
 
@@ -4099,7 +4173,7 @@ export async function processTelegramMessageWithLLM(
           const combinedResults = [];
           for (let idx = 0; idx < functionCalls.length; idx++) {
             const call = functionCalls[idx];
-            const toolRes = await executeTool(call.name, call.args, tenantId, text, telegramMessageId, idx, fullContextText, { chatId: telegramChatId });
+            const toolRes = await executeTool(call.name, call.args, tenantId, text, telegramMessageId, idx, fullContextText, { chatId: telegramChatId, messageTimestamp: baseTime });
             if (!toolRes.uiSent) {
               combinedResults.push(toolRes.resultText);
             }
@@ -4244,7 +4318,7 @@ export async function processTelegramMessageWithLLM(
               console.error("[Groq Parser] JSON parse error:", jsonMatch[0], e);
             }
           }
-          const toolRes = await executeTool(funcName, args, tenantId, normalizedText, telegramMessageId, 0, fullContextText, { chatId: telegramChatId });
+          const toolRes = await executeTool(funcName, args, tenantId, normalizedText, telegramMessageId, 0, fullContextText, { chatId: telegramChatId, messageTimestamp: baseTime });
           if (toolRes.uiSent) return { status: "success", text: "" };
           void saveChatMessage(tenantId, telegramChatId, "assistant", toolRes.resultText);
           return { status: "success", text: toolRes.resultText };
@@ -4261,7 +4335,7 @@ export async function processTelegramMessageWithLLM(
           const call = toolCalls[idx];
           let args: Record<string, any> = {};
           try { args = JSON.parse(call.function.arguments); } catch {}
-          const toolRes = await executeTool(call.function.name, args, tenantId, normalizedText, telegramMessageId, idx, fullContextText, { chatId: telegramChatId });
+          const toolRes = await executeTool(call.function.name, args, tenantId, normalizedText, telegramMessageId, idx, fullContextText, { chatId: telegramChatId, messageTimestamp: baseTime });
           if (!toolRes.uiSent) {
             results.push(toolRes.resultText);
           }
@@ -4299,7 +4373,7 @@ export async function processTelegramMessageWithLLM(
                 console.error("[Groq Parser] JSON parse error:", jsonMatch[0], e);
               }
             }
-            const toolRes = await executeTool(funcName, args, tenantId, text, telegramMessageId, 0, fullContextText);
+            const toolRes = await executeTool(funcName, args, tenantId, text, telegramMessageId, 0, fullContextText, { chatId: telegramChatId, messageTimestamp: baseTime });
             if (toolRes.uiSent) return { status: "success", text: "" };
             void saveChatMessage(tenantId, telegramChatId, "assistant", toolRes.resultText);
             return { status: "success", text: toolRes.resultText };

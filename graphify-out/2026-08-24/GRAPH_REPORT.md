@@ -1,11 +1,11 @@
 # Graph Report - casper-voice-project  (2026-08-24)
 
 ## Corpus Check
-- 734 files · ~778,027 words
+- 734 files · ~773,800 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 6959 nodes · 12316 edges · 524 communities (464 shown, 60 thin omitted)
+- 6959 nodes · 12316 edges · 524 communities (463 shown, 61 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 273 edges (avg confidence: 0.69)
 - Token cost: 0 input · 0 output
 
@@ -505,7 +505,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (524 total, 60 thin omitted)
+## Communities (524 total, 61 thin omitted)
 
 ### Community 0 - "live-browser.js"
 Cohesion: 0.03
@@ -536,8 +536,8 @@ Cohesion: 0.10
 Nodes (38): actionLabel(), bindConfigureCountPillTooltip(), bindConfigureInlineControlHover(), bindConfigureModifierPillHover(), buildConfigureActionControl(), buildConfigureCountControl(), buildConfigureRow(), buildConfigureSubmitButton() (+30 more)
 
 ### Community 7 - "detect-antipatterns-browser.js"
-Cohesion: 0.07
-Nodes (47): browserColorsClose(), browserDesignSystemConfig(), browserFindingsFromMap(), browserHasDirectText(), browserPrimaryFont(), browserRadiusTokens(), browserSampleText(), buildSelectorSegment() (+39 more)
+Cohesion: 0.06
+Nodes (52): browserColorsClose(), browserDesignSystemConfig(), browserHasDirectText(), browserPrimaryFont(), browserRadiusTokens(), browserSampleText(), buildSelectorSegment(), checkBrowserDesignSystemSources() (+44 more)
 
 ### Community 8 - "run.py"
 Cohesion: 0.05
@@ -632,8 +632,8 @@ Cohesion: 0.18
 Nodes (15): GET(), POST(), GET(), POST(), GET(), KNOWN_KEYS, POST(), SENSITIVE_KEYS (+7 more)
 
 ### Community 31 - "live-wrap.mjs"
-Cohesion: 0.12
-Nodes (38): hasGeneratedHeader(), HEADER_MARKERS, isGeneratedFile(), isGitIgnored(), resolveLiveTemplateExtensions(), argVal(), buildInsertWrapperLines(), computeInsertLine() (+30 more)
+Cohesion: 0.14
+Nodes (34): resolveLiveTemplateExtensions(), argVal(), buildInsertWrapperLines(), computeInsertLine(), INSERT_POSITIONS, insertCli(), isInsertPosition(), resolveElementMatch() (+26 more)
 
 ### Community 32 - "manual-apply.mjs"
 Cohesion: 0.10
@@ -747,7 +747,7 @@ Nodes (25): Assess Adaptation Challenge, Breakpoints: Content-Driven, Content Ad
 
 ### Community 58 - "impeccable-paths.mjs"
 Cohesion: 0.04
-Nodes (17): paySupplierSchema, updateSupplierSchema, createAuditLog(), LogAuditParams, globalForPrisma, prismaSystem, RAGSearchResult, searchKnowledgeBase() (+9 more)
+Nodes (16): paySupplierSchema, updateSupplierSchema, createAuditLog(), LogAuditParams, globalForPrisma, prismaSystem, RAGSearchResult, searchKnowledgeBase() (+8 more)
 
 ### Community 59 - "package.json"
 Cohesion: 0.08
@@ -774,8 +774,8 @@ Cohesion: 0.08
 Nodes (24): Advanced Features, Aspect Ratio Examples, Available Aspect Ratios, Available Resolutions, Converting to PNG (if needed), Core API Pattern, Custom Resolution & Aspect Ratio, Default Model (+16 more)
 
 ### Community 65 - "collectBrowserFindings"
-Cohesion: 0.11
-Nodes (38): checkColors(), checkElementAIPaletteDOM(), checkElementColors(), checkElementColorsDOM(), checkElementGlow(), checkElementGlowDOM(), checkElementHoverContrast(), checkElementIconTile() (+30 more)
+Cohesion: 0.09
+Nodes (46): checkBorders(), checkColors(), checkElementAIPaletteDOM(), checkElementBorders(), checkElementBordersDOM(), checkElementColors(), checkElementColorsDOM(), checkElementGlow() (+38 more)
 
 ### Community 66 - "insert-ui.mjs"
 Cohesion: 0.11
@@ -970,8 +970,8 @@ Cohesion: 0.13
 Nodes (14): 1. Accessibility (A11y), 2. Performance, 3. Theming, 4. Responsive Design, 5. Implementation Integrity (CRITICAL), Audit Health Score, Detailed Findings by Severity, Diagnostic Scan (+6 more)
 
 ### Community 114 - "template-extensions.mjs"
-Cohesion: 0.16
-Nodes (14): checkElementOversizedH1(), checkElementOversizedH1DOM(), checkElementQuality(), checkOversizedH1(), checkQuality(), colorsNearlyMatch(), cssColorIsTransparent(), getComputedStyleFor() (+6 more)
+Cohesion: 0.15
+Nodes (17): borderColorsFromStyle(), borderWidthsFromStyle(), checkElementGptBorderShadow(), checkElementGptBorderShadowDOM(), checkGptThinBorderWideShadow(), checkQuality(), colorsNearlyMatch(), cssColorAlpha() (+9 more)
 
 ### Community 115 - "sveltekit-adapter.mjs"
 Cohesion: 0.33
@@ -1042,8 +1042,8 @@ Cohesion: 0.15
 Nodes (13): Component translation rules, Narrative mapping, Scan mode (approach C: auto-extract, then confirm descriptive language), Schema, Step 1: Find the design assets, Step 2: Auto-extract what can be auto-extracted, Step 2b: Stage the frontmatter, Step 3: Ask the user for qualitative language (+5 more)
 
 ### Community 133 - "sampleCssBackground"
-Cohesion: 0.22
-Nodes (14): firstCssUrl(), getLayerValue(), loadVisualContrastImage(), parseObjectPosition(), parsePositionPair(), parsePositionToken(), pickWorstContrastColor(), pointToImageSource() (+6 more)
+Cohesion: 0.24
+Nodes (13): firstCssUrl(), getLayerValue(), loadVisualContrastImage(), parseObjectPosition(), parsePositionPair(), parsePositionToken(), pointToImageSource(), resolveObjectImageRect() (+5 more)
 
 ### Community 134 - "readConfig"
 Cohesion: 0.18
@@ -1418,8 +1418,8 @@ Cohesion: 0.38
 Nodes (7): browserFindingsFromMap(), collectBrowserFindings(), collectBrowserFindingsAsync(), postSerializedFindings(), renderBrowserFindings(), scanResultMeta(), serializeFindings()
 
 ### Community 228 - "iOS platform"
-Cohesion: 0.14
-Nodes (21): checkBorders(), checkEdgeFlushCardsDOM(), checkElementBlinkingCursorDOM(), checkElementBorders(), checkElementBordersDOM(), checkElementPseudoStripeDOM(), checkElementTextOverflowDOM(), checkEmDashOveruse() (+13 more)
+Cohesion: 0.15
+Nodes (19): browserFindingsFromMap(), checkCreamPalette(), checkEdgeFlushCardsDOM(), checkElementBlinkingCursorDOM(), checkElementTextOverflowDOM(), checkFirstViewportColumnOverflowDOM(), checkHeadingRhythmDOM(), checkPageQualityDOM() (+11 more)
 
 ### Community 229 - "collectBrowserFindings"
 Cohesion: 0.33
@@ -1922,8 +1922,8 @@ Cohesion: 0.50
 Nodes (3): 1. The Core Architecture Challenge, 2. Best-Practice Solution: Dual-Mode Financial Engine (`lib/financial.ts`), Research Findings — Finding #2: Financial Precision Architecture
 
 ### Community 437 - "checkElementHeroEyebrow"
-Cohesion: 0.12
-Nodes (22): checkElementHeroEyebrow(), checkElementHeroEyebrowDOM(), checkElementQualityDOM(), checkHeroEyebrow(), checkNumberedSectionLabels(), checkNumberedSectionLabelsDOM(), checkNumberedSectionLabelsFromDoc(), checkRepeatedContainerTextFromDoc() (+14 more)
+Cohesion: 0.13
+Nodes (20): checkElementHeroEyebrow(), checkElementHeroEyebrowDOM(), checkElementQualityDOM(), checkHeroEyebrow(), checkNumberedSectionLabels(), checkNumberedSectionLabelsDOM(), checkNumberedSectionLabelsFromDoc(), checkRepeatedSectionKickers() (+12 more)
 
 ### Community 438 - "rebuild_vps_dashboard.py"
 Cohesion: 0.80
@@ -2009,10 +2009,6 @@ Nodes (4): checkElementRadialSpotlight(), checkElementRadialSpotlightDOM(), elem
 Cohesion: 0.50
 Nodes (5): parseObjectPosition(), parsePositionPair(), parsePositionToken(), resolveObjectImageRect(), resolvePaintedImageRect()
 
-### Community 485 - "TenantProvisioner"
-Cohesion: 0.32
-Nodes (8): borderColorsFromStyle(), borderWidthsFromStyle(), checkElementGptBorderShadow(), checkElementGptBorderShadowDOM(), checkGptThinBorderWideShadow(), cssColorAlpha(), shadowLayerAlpha(), shadowMaxBlurPx()
-
 ### Community 486 - "🛠️ Fix Verification & Walkthrough"
 Cohesion: 0.50
 Nodes (3): ⚡ Empirical Verification Evidence, 🛠️ Fix Verification & Walkthrough, Summary Table
@@ -2058,8 +2054,8 @@ Cohesion: 0.40
 Nodes (5): ensureHookGitExcludes(), escapeRegExp(), persistCache(), resolveGitDir(), resolveHookGitExcludeTarget()
 
 ### Community 498 - "isGeneratedFile"
-Cohesion: 1.00
-Nodes (3): checkCreamPalette(), creamFromClassList(), isCreamColor()
+Cohesion: 0.70
+Nodes (4): hasGeneratedHeader(), HEADER_MARKERS, isGeneratedFile(), isGitIgnored()
 
 ### Community 499 - "dependencies"
 Cohesion: 0.40
@@ -2124,14 +2120,14 @@ Nodes (3): ⚡ Raw Verification Evidence, Summary Table, 🚀 VPS Production Dep
 ## Knowledge Gaps
 - **2750 isolated node(s):** `here`, `API_BASE`, `API_TIMEOUT_MS`, `localStates`, `COMMON_DEV_PORTS` (+2745 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **60 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **61 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `v()` connect `modern-screenshot.umd.js` to `live-browser.js`, `iOS platform`, `doctor.mjs`, `runHook`, `detect-url.mjs`, `scanCssTextForPulsingDot`, `update_routes.test.ts`, `staleness.mjs`, `event-validation.mjs`, `broadcast`?**
+- **Why does `v()` connect `modern-screenshot.umd.js` to `live-browser.js`, `collectBrowserFindings`, `doctor.mjs`, `runHook`, `detect-url.mjs`, `scanCssTextForPulsingDot`, `update_routes.test.ts`, `staleness.mjs`, `event-validation.mjs`, `broadcast`?**
   _High betweenness centrality (0.043) - this node is a cross-community bridge._
-- **Why does `el()` connect `el` to `live-browser.js`, `checks.mjs`, `context.mjs`, `resumeSession`, `design-system.mjs`, `detect-antipatterns-browser.js`, `activeElementDeep`, `setLiveState`, `detect-text.mjs`, `doctor.mjs`, `checkElementHeroEyebrow`, `critique-storage.mjs`, `detect-url.mjs`, `update_routes.test.ts`, `CSP detection (first-time only)`, `cli`, `iOS platform`, `collectBrowserFindings`, `isGeneratedFile`?**
+- **Why does `el()` connect `el` to `live-browser.js`, `checks.mjs`, `context.mjs`, `cli`, `iOS platform`, `design-system.mjs`, `collectBrowserFindings`, `detect-antipatterns-browser.js`, `detect-url.mjs`, `doctor.mjs`, `resumeSession`, `activeElementDeep`, `setLiveState`, `update_routes.test.ts`, `checkElementHeroEyebrow`, `critique-storage.mjs`, `detect-text.mjs`, `CSP detection (first-time only)`?**
   _High betweenness centrality (0.037) - this node is a cross-community bridge._
 - **Why does `executeTool()` connect `staleness.mjs` to `impeccable-paths.mjs`, `merchant_memory.ts`, `resolveLiveInjectionAnchor`, `source-lock.mjs`, `modern-screenshot.umd.js`, `readLiveServerInfo`, `dependencies`?**
   _High betweenness centrality (0.037) - this node is a cross-community bridge._

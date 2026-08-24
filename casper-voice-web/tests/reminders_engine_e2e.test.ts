@@ -36,18 +36,39 @@ describe("Smart Reminder Engine E2E Test Suite", () => {
   });
 
   it("1. should parse Egyptian Arabic time expressions accurately", () => {
-    const d1 = parseEgyptianArabicDateTime("بعد 30 دقيقة");
-    const diff1 = d1.getTime() - Date.now();
-    expect(diff1).toBeGreaterThan(28 * 60 * 1000);
-    expect(diff1).toBeLessThan(32 * 60 * 1000);
+    const base = new Date("2026-08-24T19:04:00+03:00"); // 07:04 PM Cairo time
 
-    const d2 = parseEgyptianArabicDateTime("بعد ساعتين");
-    const diff2 = d2.getTime() - Date.now();
-    expect(diff2).toBeGreaterThan(118 * 60 * 1000);
-    expect(diff2).toBeLessThan(122 * 60 * 1000);
+    // Relative minutes
+    const d1 = parseEgyptianArabicDateTime("بعد 30 دقيقة", undefined, base);
+    expect(d1.getTime() - base.getTime()).toBe(30 * 60 * 1000);
 
-    const d3 = parseEgyptianArabicDateTime("بكرة الساعة 5 مساءً");
-    expect(d3.getDate()).not.toBe(new Date().getDate());
+    const d2 = parseEgyptianArabicDateTime("كمان دقيقتين", undefined, base);
+    expect(d2.getTime() - base.getTime()).toBe(2 * 60 * 1000);
+
+    const d3 = parseEgyptianArabicDateTime("في الـ 5 دقائق القادمة", undefined, base);
+    expect(d3.getTime() - base.getTime()).toBe(5 * 60 * 1000);
+
+    const d4 = parseEgyptianArabicDateTime("خلال ربع ساعة", undefined, base);
+    expect(d4.getTime() - base.getTime()).toBe(15 * 60 * 1000);
+
+    const d5 = parseEgyptianArabicDateTime("تلت ساعة", undefined, base);
+    expect(d5.getTime() - base.getTime()).toBe(20 * 60 * 1000);
+
+    const d6 = parseEgyptianArabicDateTime("نص ساعة", undefined, base);
+    expect(d6.getTime() - base.getTime()).toBe(30 * 60 * 1000);
+
+    const d7 = parseEgyptianArabicDateTime("ساعة إلا ربع", undefined, base);
+    expect(d7.getTime() - base.getTime()).toBe(45 * 60 * 1000);
+
+    const d8 = parseEgyptianArabicDateTime("بعد ساعتين", undefined, base);
+    expect(d8.getTime() - base.getTime()).toBe(2 * 60 * 60 * 1000);
+
+    // Word hour expressions
+    const d9 = parseEgyptianArabicDateTime("في التاسعة", undefined, base);
+    expect(d9.getHours()).toBe(21); // 9 PM
+
+    const d10 = parseEgyptianArabicDateTime("الساعة 8 مساءً", undefined, base);
+    expect(d10.getHours()).toBe(20); // 8 PM
   });
 
   it("2. should set reminder successfully with customer linking", async () => {
@@ -77,6 +98,35 @@ describe("Smart Reminder Engine E2E Test Suite", () => {
     expect(saved).not.toBeNull();
     expect(saved.customerName).toBe("المهندس محمود");
     expect(saved.status).toBe("pending");
+  });
+
+  it("2.1. should anchor relative reminders to messageTimestamp accurately with Cairo timezone formatting", async () => {
+    // 07:04 PM Cairo time = 19:04
+    const messageDate = new Date("2026-08-24T19:04:00+03:00");
+    const res = await executeTool(
+      "set_reminder",
+      {
+        title: "تركيب شباك في الـ 5 دقائق القادمة",
+        time_expression: "في الـ 5 دقائق القادمة"
+      },
+      testTenantId,
+      "تركيب شباك في الـ 5 دقائق القادمة",
+      undefined,
+      0,
+      undefined,
+      { chatId: testChatId, messageTimestamp: messageDate }
+    );
+
+    expect(res.success).toBe(true);
+    expect(res.resultText).toContain("تم ضبط تذكير");
+    // Expected time is 07:09 PM (displayed as ٠٧:٠٩ م in ar-EG)
+    expect(res.resultText).toMatch(/07:09|7:09|٠٧:٠٩|٧:٠٩/);
+
+    const saved = await (prisma as any).reminder.findFirst({
+      where: { tenantId: testTenantId, title: "تركيب شباك في الـ 5 دقائق القادمة" }
+    });
+    expect(saved).not.toBeNull();
+    expect(saved.remindAt.getTime()).toBe(messageDate.getTime() + 5 * 60 * 1000);
   });
 
   it("3. should retrieve active reminders list via get_reminders", async () => {

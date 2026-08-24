@@ -1,19 +1,21 @@
-session_intent: "Implement MerchantMemoryFact engine with tenant isolation, trigram fuzzy matching, financial guardrails, and weekly consolidation"
+session_intent: "Implement Alumital per-unit minimum area calculation fix, separate physical cut and billable area metrics, and deploy live to production"
 decisions:
-  - "Used Prisma MerchantMemoryFact model linked to Tenant with supersededById relation for non-destructive history"
-  - "Added validateMemoryFact to aggressively block float math and financial values (EGP, LE, etc.) from being memorized"
-  - "Created consolidate_merchant_memories.ts to run weekly, keeping the newest alias fact and superseding older ones"
-  - "Registered lookup_merchant_memory, save_merchant_memory, get_merchant_memory as priority tools in telegram_llm.ts router"
-  - "Passed 16/16 Vitest tests and deployed directly to production (109.123.247.119) via deploy-hq"
+  - "Enforced per-unit floor calculation: Decimal.max(actualAreaPerUnit, 1).times(qty) preventing batch multiplier losses"
+  - "Separated actual_area_sqm (workshop cuts) from billable_area_sqm (quotation invoicing) while maintaining area_sqm alias"
+  - "Enforced strict Decimal.js precision across all financial metrics and line totals in estimator"
+  - "Updated Vitest unit and integration test suites (100% passing across 16 tests)"
+  - "Deployed live to HQ VPS (109.123.247.119) with Next.js 16.2.12 build and PM2 process reloads"
 files_modified:
-  - path: "casper-voice-web/prisma/schema.prisma"
-    why: "Added MerchantMemoryFact model"
+  - path: "src/lib/alumital/estimator.ts"
+    why: "Implemented per-unit minimum floor and dual area metrics"
+  - path: "casper-voice-web/lib/alumital/estimator.ts"
+    why: "Synchronized with root estimator implementation"
   - path: "casper-voice-web/lib/telegram_llm.ts"
-    why: "Added memory tools, validateMemoryFact guard, and tool router integration"
-  - path: "casper-voice-web/scripts/consolidate_merchant_memories.ts"
-    why: "Added weekly deduplication job"
-  - path: "casper-voice-web/tests/merchant_memory.test.ts"
-    why: "Full test suite for memory and financial guards"
+    why: "Updated summary text formatting and metrics display"
+  - path: "tests/alumital_estimator.test.ts"
+    why: "Unit tests for per-unit floor and multi-window calculations"
+  - path: "casper-voice-web/tests/alumital_telegram_e2e.test.ts"
+    why: "E2E tests for quotation creation, tool routing, and media worker"
 active_goals:
   - "none"
 next_steps:
@@ -21,7 +23,7 @@ next_steps:
 failed_approaches:
   - "none"
 last_condense:
-  timestamp: "2026-08-15T17:58:30Z"
-  tokens_before: 185000
+  timestamp: "2026-08-24T19:03:00Z"
+  tokens_before: 120000
   tokens_after: 8500
-  reduction_pct: 95
+  reduction_pct: 93

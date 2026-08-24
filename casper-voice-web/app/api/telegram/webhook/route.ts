@@ -1963,6 +1963,7 @@ export async function POST(req: NextRequest) {
           }
         }
 
+        const msgTimestamp = message?.date ? message.date * 1000 : Date.now();
         const llmResult = await processTelegramMessageWithLLM(
           text,
           tenant?.id,
@@ -1971,7 +1972,8 @@ export async function POST(req: NextRequest) {
           tenant?.workingHours,
           chatId,
           message.message_id,
-          tenant?.merchantName
+          tenant?.merchantName,
+          msgTimestamp
         );
 
         if (llmResult.status === "all_providers_exhausted") {

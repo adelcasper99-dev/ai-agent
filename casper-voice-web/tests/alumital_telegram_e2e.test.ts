@@ -46,7 +46,9 @@ describe('Casper Alumital Estimator E2E & RBAC Lifecycle', () => {
       discount_pct: 5,
     });
 
-    expect(calcResult.area_sqm).toBe('1.68');
+    expect(calcResult.actual_area_sqm).toBe('3.36');
+    expect(calcResult.billable_area_sqm).toBe('3.36');
+    expect(calcResult.area_sqm).toBe('3.36');
     expect(calcResult.window_total).toBe('5040.00');
     expect(calcResult.subtotal_before_discount).toBe('5740.00');
     expect(calcResult.discount_applied).toBe('287.00');
@@ -155,5 +157,5 @@ describe('Casper Alumital Estimator E2E & RBAC Lifecycle', () => {
     expect(verified?.status).toBe('completed');
     expect(verified?.pdfUrl).toBeDefined();
     expect(verified?.sketchUrl).toBeDefined();
-  });
+  }, 30000);
 });

@@ -10,14 +10,16 @@ describe('Casper Alumital Estimator Financial Engine', () => {
       price_per_meter: 1500,
     });
 
-    // 1.2m * 1.4m = 1.68 sqm
-    expect(res.area_sqm).toBe('1.68');
-    // 1.68 sqm * 1500 EGP * 2 = 5040.00 EGP
+    // 1.2m * 1.4m = 1.68 sqm per unit * 2 = 3.36 sqm total
+    expect(res.actual_area_sqm).toBe('3.36');
+    expect(res.billable_area_sqm).toBe('3.36');
+    expect(res.area_sqm).toBe('3.36');
+    // 3.36 sqm * 1500 EGP = 5040.00 EGP
     expect(res.window_total).toBe('5040.00');
     expect(res.total_price).toBe('5040.00');
   });
 
-  it('enforces minimum area threshold of 1.00 sqm when dimensions are smaller', () => {
+  it('enforces per-unit minimum area floor of 1.00 sqm for single small unit', () => {
     const res = calculateQuotation({
       width_cm: 50,
       height_cm: 60,
@@ -26,10 +28,32 @@ describe('Casper Alumital Estimator Financial Engine', () => {
       apply_min_area: true,
     });
 
-    // 0.5 * 0.6 = 0.3 sqm -> bumped to 1.00 sqm
+    // 0.5 * 0.6 = 0.30 sqm actual -> bumped to 1.00 sqm billable
+    expect(res.actual_area_sqm).toBe('0.30');
+    expect(res.billable_area_sqm).toBe('1.00');
     expect(res.area_sqm).toBe('1.00');
     expect(res.window_total).toBe('2000.00');
     expect(res.total_price).toBe('2000.00');
+  });
+
+  it('enforces per-unit minimum area floor across multiple small units correctly', () => {
+    const res = calculateQuotation({
+      width_cm: 50,
+      height_cm: 60,
+      quantity: 3,
+      price_per_meter: 1600,
+      apply_min_area: true,
+    });
+
+    // Each window is 0.30 sqm (< 1.00 sqm).
+    // Actual total = 0.30 * 3 = 0.90 sqm.
+    // Billable total = max(0.30, 1.00) * 3 = 1.00 * 3 = 3.00 sqm.
+    // Window total = 3.00 * 1600 = 4800.00 EGP.
+    expect(res.actual_area_sqm).toBe('0.90');
+    expect(res.billable_area_sqm).toBe('3.00');
+    expect(res.area_sqm).toBe('3.00');
+    expect(res.window_total).toBe('4800.00');
+    expect(res.total_price).toBe('4800.00');
   });
 
   it('calculates extra items and discounts correctly without floating point errors', () => {
@@ -46,6 +70,8 @@ describe('Casper Alumital Estimator Financial Engine', () => {
     });
 
     // 2.0 * 2.0 = 4.00 sqm
+    expect(res.actual_area_sqm).toBe('4.00');
+    expect(res.billable_area_sqm).toBe('4.00');
     expect(res.area_sqm).toBe('4.00');
     // window_total = 4000.00
     expect(res.window_total).toBe('4000.00');

@@ -31,7 +31,9 @@ export interface QuotationResult {
   width_m: string;
   height_m: string;
   quantity: number;
-  area_sqm: string;
+  actual_area_sqm: string;
+  billable_area_sqm: string;
+  area_sqm: string; // backwards compatibility alias for billable_area_sqm
   window_total: string;
   extra_items: ExtraItemResult[];
   subtotal_before_discount: string;
@@ -47,12 +49,18 @@ export function calculateQuotation(rawInput: CalculateQuotationInput): Quotation
   const qty = new Decimal(input.quantity);
   const price = new Decimal(input.price_per_meter);
 
-  let area = width.times(height);
-  if (input.apply_min_area && area.lessThan(1)) {
-    area = new Decimal(1);
-  }
+  // 1. Actual physical cut area per unit & total
+  const actualAreaPerUnit = width.times(height);
+  const actualAreaTotal = actualAreaPerUnit.times(qty);
 
-  const windowTotal = area.times(price).times(qty);
+  // 2. Minimum billable area floor calculated per individual unit
+  const billableAreaPerUnit = input.apply_min_area
+    ? Decimal.max(actualAreaPerUnit, new Decimal(1))
+    : actualAreaPerUnit;
+  const billableAreaTotal = billableAreaPerUnit.times(qty);
+
+  // 3. Window base total calculation
+  const windowTotal = billableAreaTotal.times(price);
 
   const extraLines: ExtraItemResult[] = (input.extra_items || []).map((item) => {
     const itemQty = new Decimal(item.quantity);
@@ -93,7 +101,9 @@ export function calculateQuotation(rawInput: CalculateQuotationInput): Quotation
     width_m: width.toFixed(2),
     height_m: height.toFixed(2),
     quantity: input.quantity,
-    area_sqm: area.toFixed(2),
+    actual_area_sqm: actualAreaTotal.toFixed(2),
+    billable_area_sqm: billableAreaTotal.toFixed(2),
+    area_sqm: billableAreaTotal.toFixed(2),
     window_total: windowTotal.toFixed(2),
     extra_items: extraLines,
     subtotal_before_discount: subtotalBeforeDiscount.toFixed(2),

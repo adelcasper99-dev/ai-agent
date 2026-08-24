@@ -1,41 +1,8 @@
-=== TEST RESULTS & COMPILATION REPORT ===
-Timestamp: 2026-08-24T16:50:00Z
-Target: Feature Broadcast & Interactive Release Notes Engine
+RUN  v4.1.11 C:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project
 
---- TypeScript Compilation Check ---
-Command: npx tsc --noEmit
-Exit Code: 0
-Output: Clean compilation (0 errors)
+ ✓ tests/alumital_estimator.test.ts (5 tests) 13ms
 
---- Vitest Test Suites ---
-Command: npx vitest run tests/broadcast_engine_e2e.test.ts tests/reminders_engine_e2e.test.ts tests/customer_measurements_e2e.test.ts
-Exit Code: 0
-
-Test Files  3 passed (3)
-Tests       17 passed (17)
-
-Details:
-✓ tests/broadcast_engine_e2e.test.ts (3 tests)
-  ✓ 1. should reject invalid broadcast payloads via Zod schema
-  ✓ 2. should process live broadcast to active merchants and record stats
-  ✓ 3. should handle preview mode without broadcasting to all tenants
-
-✓ tests/reminders_engine_e2e.test.ts (5 tests)
-  ✓ 1. should parse Egyptian Arabic time expressions accurately
-  ✓ 2. should set reminder successfully with customer linking
-  ✓ 3. should retrieve active reminders list via get_reminders
-  ✓ 4. should cancel a reminder by title keyword
-  ✓ 5. should enforce tenant isolation when setting and listing reminders
-
-✓ tests/customer_measurements_e2e.test.ts (9 tests)
-  ✓ 1. Tool Routing: Resolves ALUMITAL cluster
-  ✓ 2. Schema Validation
-  ✓ 3. Single-Turn Isolation
-  ✓ 4. Tool Execution
-  ✓ 5. Item Type Parsing
-  ✓ 6. Multi-Item Extraction
-  ✓ 7. Edit Lifecycle
-  ✓ 8. Delete Lifecycle
-  ✓ 9. Interactive Action Buttons
-
-ALL PASSING: 100% SUCCESS RATE
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  18:54:32
+   Duration  1.89s (transform 62ms, setup 0ms, import 1.09s, tests 13ms, environment 0ms)

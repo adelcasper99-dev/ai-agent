@@ -1,27 +1,13 @@
-# Research Findings: High-Reliability Telegram Broadcasts & Interactive Try-It Flows
+# Research Findings: Alumital Per-Unit Minimum Area Architecture & Financial Precision
 
-## 1. Telegram Bot API Rate-Limiting & Flood Control
-- **Official Constraints:** Maximum 30 messages/second globally from a single bot token, and max 1 message/second per private chat.
-- **Best Practice:**
-  - Sequential batching with `Promise.all` over chunks of 20 with `await sleep(50)` between batches.
-  - Exponential backoff on `HTTP 429` parsing `retry_after` response header.
-  - Immediate logging of `403 Forbidden: bot was blocked by the user` to mark merchant chat as inactive.
+## 1. Domain & Industry Standards (Alumital Estimating in Egypt/MENA)
+- **Minimum Billable Unit Rule**: Aluminum fabricators incur fixed fabrication costs (cutting, miter joins, corner cleats, handling, lock & roller installations) regardless of window dimensions. Any aperture where width × height < 1.00 m² is billed as a flat 1.00 m².
+- **Quantity Multiplier**: Each discrete unit is evaluated against the 1.00 m² floor independently before multiplying by quantity.
+- **Shop Floor vs Accounting Separation**:
+  - `actual_area_sqm`: Total actual glass and profile cutting area ($W \times H \times Qty$). Used by workshop technicians to prepare raw material cuts.
+  - `billable_area_sqm`: Total billable area ($\max(W \times H, 1.00) \times Qty$). Used in invoicing, quotations, and financial ledgers.
 
-## 2. Interactive Quick-Try Callbacks Architecture
-- **Telegram Limit:** Callback data payload size limit is 64 bytes.
-- **Pattern:**
-  - Use compact callback keys: `try_f_<shortId>_<exIdx>`.
-  - Store full example text in the database (`FeatureRelease.examples`), retrieve by index on callback tap.
-  - Trigger `processTelegramMessageWithLLM(exampleText, tenantId, ...)` and deliver instant response.
-
-## 3. Schema & Data Model Design
-- `FeatureRelease` model:
-  - `id`: UUID
-  - `title`: String
-  - `description`: String (Markdown supported)
-  - `examples`: Json (Array of `{ label: string, prompt: string }`)
-  - `targetType`: String ("all", "business_type", "selected")
-  - `status`: String ("draft", "sending", "completed", "failed")
-  - `sentCount`: Int (default 0)
-  - `failedCount`: Int (default 0)
-  - `createdAt`: DateTime (default now)
+## 2. Technical Stack Patterns in Casper POS / ERP
+- **Zero Native Floating-Point Math**: Enforced by `Decimal.js` (e.g. `Decimal.max(actualAreaPerUnit, 1)` and `billableAreaPerUnit.times(qty)`).
+- **Prisma Schema Alignment**: Store `actual_area_sqm` as Decimal along with existing `area_sqm` / `billable_area_sqm`.
+- **Validation**: Zod schema defaults `apply_min_area` to `true`.

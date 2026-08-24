@@ -3356,7 +3356,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         const h = item.height_cm ? new Decimal(Number(item.height_cm)) : null;
         const d = item.depth_cm ? new Decimal(Number(item.depth_cm)) : null;
 
-        const rec = await prisma.customerMeasurement.create({
+        const rec = await (prisma as any).customerMeasurement.create({
           data: {
             tenantId,
             customerId,
@@ -3376,7 +3376,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         createdList.push(rec);
       }
 
-      const itemSummaries = createdList.map((c, i) => {
+      const itemSummaries = createdList.map((c: any, i: number) => {
         const dim = c.width_cm && c.height_cm
           ? ` (${c.width_cm}×${c.height_cm}${c.depth_cm ? `×${c.depth_cm}` : ''} سم)`
           : '';
@@ -3398,7 +3398,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         return { success: false, resultText: "يرجى تحديد اسم العميل لعرض مقاساته." };
       }
 
-      const measurements = await prisma.customerMeasurement.findMany({
+      const measurements = await (prisma as any).customerMeasurement.findMany({
         where: {
           tenantId,
           customerName: { contains: customerName },
@@ -3414,7 +3414,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         };
       }
 
-      const lines = measurements.map((m, idx) => {
+      const lines = measurements.map((m: any, idx: number) => {
         const dim = m.width_cm && m.height_cm
           ? `${m.width_cm}×${m.height_cm}${m.depth_cm ? `×${m.depth_cm}` : ''} سم`
           : 'أبعاد غير محددة';
@@ -3430,7 +3430,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         const { sendTelegramAlert } = await import("@/lib/telegram");
         const inlineButtons: any[] = [];
 
-        measurements.slice(0, 5).forEach((m, idx) => {
+        measurements.slice(0, 5).forEach((m: any, idx: number) => {
           inlineButtons.push([
             { text: `✏️ تعديل ${idx + 1}`, callback_data: `edit_meas_${m.id}` },
             { text: `🗑️ مسح ${idx + 1}`, callback_data: `del_meas_${m.id}` }
@@ -3468,12 +3468,12 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       // Find target measurement
       let targetMeas: any = null;
       if (args.target_recent) {
-        targetMeas = await prisma.customerMeasurement.findFirst({
+        targetMeas = await (prisma as any).customerMeasurement.findFirst({
           where: { tenantId, customerName: { contains: customerName }, status: { not: "cancelled" } },
           orderBy: { createdAt: "desc" }
         });
       } else if (args.old_width_cm && args.old_height_cm) {
-        targetMeas = await prisma.customerMeasurement.findFirst({
+        targetMeas = await (prisma as any).customerMeasurement.findFirst({
           where: {
             tenantId,
             customerName: { contains: customerName },
@@ -3484,7 +3484,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
           orderBy: { createdAt: "desc" }
         });
       } else if (args.target_item_type) {
-        targetMeas = await prisma.customerMeasurement.findFirst({
+        targetMeas = await (prisma as any).customerMeasurement.findFirst({
           where: {
             tenantId,
             customerName: { contains: customerName },
@@ -3494,7 +3494,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
           orderBy: { createdAt: "desc" }
         });
       } else {
-        targetMeas = await prisma.customerMeasurement.findFirst({
+        targetMeas = await (prisma as any).customerMeasurement.findFirst({
           where: { tenantId, customerName: { contains: customerName }, status: { not: "cancelled" } },
           orderBy: { createdAt: "desc" }
         });
@@ -3515,7 +3515,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       if (args.accessories) updateData.accessories = String(args.accessories).trim();
       if (args.notes) updateData.notes = String(args.notes).trim();
 
-      const updated = await prisma.customerMeasurement.update({
+      const updated = await (prisma as any).customerMeasurement.update({
         where: { id: targetMeas.id },
         data: updateData
       });
@@ -3538,7 +3538,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       }
 
       if (args.delete_all) {
-        const res = await prisma.customerMeasurement.updateMany({
+        const res = await (prisma as any).customerMeasurement.updateMany({
           where: { tenantId, customerName: { contains: customerName }, status: { not: "cancelled" } },
           data: { status: "cancelled" }
         });
@@ -3547,12 +3547,12 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
 
       let targetMeas: any = null;
       if (args.target_recent) {
-        targetMeas = await prisma.customerMeasurement.findFirst({
+        targetMeas = await (prisma as any).customerMeasurement.findFirst({
           where: { tenantId, customerName: { contains: customerName }, status: { not: "cancelled" } },
           orderBy: { createdAt: "desc" }
         });
       } else if (args.width_cm && args.height_cm) {
-        targetMeas = await prisma.customerMeasurement.findFirst({
+        targetMeas = await (prisma as any).customerMeasurement.findFirst({
           where: {
             tenantId,
             customerName: { contains: customerName },
@@ -3563,7 +3563,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
           orderBy: { createdAt: "desc" }
         });
       } else if (args.target_item_type) {
-        targetMeas = await prisma.customerMeasurement.findFirst({
+        targetMeas = await (prisma as any).customerMeasurement.findFirst({
           where: {
             tenantId,
             customerName: { contains: customerName },
@@ -3573,7 +3573,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
           orderBy: { createdAt: "desc" }
         });
       } else {
-        targetMeas = await prisma.customerMeasurement.findFirst({
+        targetMeas = await (prisma as any).customerMeasurement.findFirst({
           where: { tenantId, customerName: { contains: customerName }, status: { not: "cancelled" } },
           orderBy: { createdAt: "desc" }
         });
@@ -3583,7 +3583,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         return { success: false, resultText: `لم يتم العثور على مقاس مسجل للعميل "${customerName}" لمسحه.` };
       }
 
-      await prisma.customerMeasurement.update({
+      await (prisma as any).customerMeasurement.update({
         where: { id: targetMeas.id },
         data: { status: "cancelled" }
       });

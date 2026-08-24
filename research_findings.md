@@ -1,34 +1,37 @@
-# Research Findings: Best Practices for Token-Efficient Prompting & Customer Measurements Architecture
+# Best-Practice Research: Voice-Triggered Scheduled Reminders & Push Notification Architecture
 
-## 1. Executive Summary & Industry Benchmarks
-- **Problem Space:** Multi-turn conversational voice/chat assistants for ERP/POS frequently bleed tokens and hallucinate apologetic essays when encountering queries outside standard accounting.
-- **Goal:**
-  1. System Prompt Hardening (Caveman Directive): Enforce strict token-economy constraints (< 25 words per standard reply, zero apologies, zero internal system mechanics disclosure).
-  2. Technical Specifications & Dimension Architecture: Provide a dedicated, schema-isolated model (`CustomerMeasurement`) that captures arbitrary manufacturing dimensions (width, height, type, notes) while cleanly coexisting with financial `Quotation` workflows.
+**Researcher:** Lead Architect & Distributed Systems Specialist  
+**Topic:** Real-Time Push Notification Engine, Egyptian Arabic Temporal Parsing & Multi-Tenant Cron Workers
 
-## 2. Token-Efficient System Prompt Best Practices
-- **Negative Constraints Formulation:** Standard LLMs (Gemini Flash / GPT-4o) react strongly to positive imperative brevity constraints combined with clear negative rules:
-  - `ممنوع تماماً الاعتذارات أو ذكر "أنا ذكاء اصطناعي" أو شرح السيستم الداخلي.`
-  - `الردود قصيرة جداً (سطر أو سطرين كحد أقصى) ومباشرة بالعامية المصرية.`
-  - `في حال عدم العثور على مقاس أو حساب، أجب مباشرة: "مش مسجل مقاسات لـ [الاسم]. تحب أسجلها دلوقتي؟"`
+---
 
-## 3. Schema & Tool Design for Customer Measurements
-- **Model `CustomerMeasurement` Attributes:**
-  - `id`: String @id @default(cuid())
-  - `tenantId`: String (Indexed with tenant isolation)
-  - `customerName`: String (Indexed)
-  - `customerId`: String? (Optional link to Customer model)
-  - `itemType`: String (e.g. "شباك", "باب", "مطبخ", "تاندة", "واجهة")
-  - `width_cm`: Decimal? or Float
-  - `height_cm`: Decimal? or Float
-  - `quantity`: Int @default(1)
-  - `notes`: String? (e.g. "قطاع جامبو دبل عسلي بسلك")
-  - `createdAt`: DateTime @default(now())
-- **Tools Definition:**
-  1. `save_customer_measurement`: Extracts customer name, item type, dimensions (width/height), quantity, and technical notes.
-  2. `get_customer_measurements`: Queries measurements by customer name with fuzzy match and formats an ultra-concise summary.
+## 1. 🕒 Timezone & Temporal Parsing Standards
+- **UTC DB Storage, Local Egypt Timezone Parsing:**
+  All timestamps stored in DB as standard UTC ISO-8601 DateTime. Spoken Arabic times ("الساعة 5 العصر", "بكرة 10 الصبح") are resolved against Africa/Cairo (+02:00 or +03:00 DST).
+- **Graceful Relative Parsing:**
+  Support expressions:
+  - `"بعد [X] دقائق / ساعات"` ➔ `Date.now() + X * ms`
+  - `"بكرة الساعة [H]"` ➔ Tomorrow at H:00
+  - `"يوم [السبت/الأحد/الخميس] الساعة [H]"` ➔ Next specified weekday at H:00
 
-## 4. Conflict-Free Coexistence with Quotations
-- `Quotation` is used when pricing / financial computation is involved (`calculate_alumital_quotation`).
-- `CustomerMeasurement` is used when recording or retrieving technical dimensions without pricing.
-- Both tools reside in `ALUMITAL` / `MEASUREMENTS` cluster to allow Gemini to pick the precise tool based on intent.
+---
+
+## 2. ⚡ Poller vs Job Queue Architecture
+- In a lightweight Node/Next.js multi-tenant setup, a 30-second interval worker (or serverless cron trigger `/api/cron/reminders`) queries:
+  ```ts
+  const due = await prisma.reminder.findMany({
+    where: { status: "pending", remindAt: { lte: new Date() } },
+    include: { tenant: true }
+  });
+  ```
+- **Concurrency & Idempotency Safety:**
+  Use optimistic locking or status update before sending notification (`status: "sending"` / `"sent"`) with atomic `updateMany` to prevent duplicate Telegram alerts across worker reloads.
+
+---
+
+## 3. 📱 Telegram Interactive Push Alert Design
+When a reminder triggers:
+- Text: `🔔 *تذكير مستحق الآن:*\n📌 [نص التذكير]\n👤 العميل: [اسم العميل إن وجد]`
+- Inline Action Buttons:
+  - `[✅ تم الإنجاز]` (`done_rem_<id>`) ➔ Marks status as `completed`.
+  - `[⏰ تأجيل ساعة]` (`snooze_rem_<id>_60`) ➔ Postpones `remindAt` by 60 minutes and sets status back to `pending`.

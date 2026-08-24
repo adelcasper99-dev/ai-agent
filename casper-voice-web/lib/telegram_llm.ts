@@ -524,6 +524,44 @@ const deleteCustomerMeasurementTool: FunctionDeclaration = {
   }
 };
 
+const setReminderTool: FunctionDeclaration = {
+  name: "set_reminder",
+  description: "تسجيل وضبط تذكير أو تنبيه مجدول للتاجر (مثال: 'فكرني بكرة الساعة 5 بتسليم شباك محمد صادق', 'فكرني يوم الخميس بفلوس المورد', 'نبهني بعد ساعتين').",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      title: { type: SchemaType.STRING, description: "نص وموضوع التذكير (مثال: تسليم شباك محمد صادق)" },
+      remind_at_iso: { type: SchemaType.STRING, description: "تاريخ ووقت التذكير بتنسيق ISO-8601 إن توفر" },
+      time_expression: { type: SchemaType.STRING, description: "التعبير الزمني كما ذكره المستخدم (مثال: 'بكرة الساعة 5', 'بعد ساعتين')" },
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل المرتبط بالتذكير إن وجد" }
+    },
+    required: ["title"]
+  }
+};
+
+const getRemindersTool: FunctionDeclaration = {
+  name: "get_reminders",
+  description: "عرض واسترجاع قائمة التذكيرات القادمة والمجدولة للتاجر (مثال: 'ايه التذكيرات اللي عندي', 'فكرني بمواعيدي والتذكيرات', 'تذكيرات محمد صادق').",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل لتصفية التذكيرات الخاصة به (اختياري)" }
+    }
+  }
+};
+
+const cancelReminderTool: FunctionDeclaration = {
+  name: "cancel_reminder",
+  description: "إلغاء أو مسح تذكير محدد (مثال: 'الغي تذكير تسليم شباك محمد صادق', 'امسح تذكير بكرة').",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      reminder_id: { type: SchemaType.STRING, description: "معرف التذكير إن وجد" },
+      title_keyword: { type: SchemaType.STRING, description: "كلمة من عنوان التذكير للبحث عنه وإلغائه" }
+    }
+  }
+};
+
 // ==================== DYNAMIC TOOL ROUTING & CLUSTERS ====================
 
 export const ALL_TOOLS: FunctionDeclaration[] = [
@@ -533,25 +571,27 @@ export const ALL_TOOLS: FunctionDeclaration[] = [
   getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool, addProductTool,
   updateStockTool, addCustomerTool, saveMerchantMemoryTool, getMerchantMemoryTool,
   cancelLastTransactionTool, correctLastTransactionTool, calculateAlumitalQuotationTool,
-  saveCustomerMeasurementTool, getCustomerMeasurementsTool, updateCustomerMeasurementTool, deleteCustomerMeasurementTool
+  saveCustomerMeasurementTool, getCustomerMeasurementsTool, updateCustomerMeasurementTool, deleteCustomerMeasurementTool,
+  setReminderTool, getRemindersTool, cancelReminderTool
 ];
 
 export type ClusterKey = 'SALES' | 'PURCHASES' | 'APPOINTMENTS' | 'INVENTORY' | 'FINANCE_META' | 'ALUMITAL';
 
 const SALES_TOOLS: FunctionDeclaration[] = [lookupMerchantMemoryTool, logSaleTool, addCustomerTool, logSalesReturnTool, logCustomerPaymentTool, getCustomerBalanceTool, cancelLastTransactionTool, correctLastTransactionTool];
 const PURCHASE_TOOLS: FunctionDeclaration[] = [lookupMerchantMemoryTool, logPurchaseTool, logSupplierPaymentTool, getSupplierBalanceTool, logPurchaseReturnTool, cancelLastTransactionTool, correctLastTransactionTool];
-const APPOINTMENT_TOOLS: FunctionDeclaration[] = [bookAppointmentTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool];
+const APPOINTMENT_TOOLS: FunctionDeclaration[] = [bookAppointmentTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool, setReminderTool, getRemindersTool, cancelReminderTool];
 const INVENTORY_TOOLS: FunctionDeclaration[] = [addProductTool, updateStockTool];
 const FINANCE_META_TOOLS: FunctionDeclaration[] = [lookupMerchantMemoryTool, logExpenseTool, getFinancialSummaryTool, reportMissingFeatureTool, saveMerchantMemoryTool, getMerchantMemoryTool, cancelLastTransactionTool, correctLastTransactionTool];
 const ALUMITAL_TOOLS: FunctionDeclaration[] = [
   calculateAlumitalQuotationTool, saveCustomerMeasurementTool, getCustomerMeasurementsTool, updateCustomerMeasurementTool, deleteCustomerMeasurementTool,
+  setReminderTool, getRemindersTool, cancelReminderTool,
   lookupMerchantMemoryTool, saveMerchantMemoryTool
 ];
 
 const CLUSTER_KEYWORDS: Record<ClusterKey, string[]> = {
   SALES: ["بيع", "بعت", "كاش", "آجل", "عميل", "حساب عميل", "رصيد عميل", "قبضت", "سدد", "مرتجع مبيعات", "رجع من", "تليفون عميل", "ديون عميل", "بعت مش اشتريت", "الغى", "إلغاء", "خطأ", "تعديل"],
   PURCHASES: ["شراء", "اشتريت", "اشترى", "اشترى من", "مشتريات", "مورد", "فاتورة", "سددت للمورد", "مرتجع مشتريات", "رجعت للمورد", "حساب المورد", "ديون مورد", "اشتريت مش بعت", "الغى", "إلغاء", "خطأ", "تعديل"],
-  APPOINTMENTS: ["موعد", "ميعاد", "حجز", "الغي", "لغى", "مسح ميعاد", "تأجيل", "أجل", "غير ميعاد", "مواعيد", "بكرة الساعة", "اشوف مواعيد", "معاد"],
+  APPOINTMENTS: ["موعد", "ميعاد", "حجز", "الغي", "لغى", "مسح ميعاد", "تأجيل", "أجل", "غير ميعاد", "مواعيد", "بكرة الساعة", "اشوف مواعيد", "معاد", "فكرني", "تذكير", "تنبيه", "نبهني", "ذكرني", "تذكيرات", "منبه"],
   INVENTORY: ["صنف", "منتج", "كتالوج", "مخزون", "جرد", "رصيد فعلي", "صحح مخزون", "أضف صنف", "سلعة جديدة"],
   FINANCE_META: ["مصروف", "مصاريف", "تقرير", "ملخص", "أرباح", "مبيعات النهاردة", "كشف حساب شهر", "ميزة ناقصة", "امسح", "تعديل", "خطأ"],
   ALUMITAL: [
@@ -636,10 +676,13 @@ export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: stri
 4. مرتجع مشتريات للمورد (log_purchase_return): عند إرجاع بضاعة للمورد استخدم log_purchase_return.`,
 
     APPOINTMENTS: `
-قواعد إدارة المواعيد (book_appointment / get_appointments_list / cancel_appointment / reschedule_appointment):
-1. حجز موعد جديد (book_appointment): تاريخ اليوم يُؤخذ من النظام. إذا طلب موعداً في الماضي، ارفض الطلب واطلب تاريخاً في المستقبل.
-2. استرجاع قائمة المواعيد (get_appointments_list): عند السؤال عن 'ميعاد فلان' أو 'مواعيد بكرة'.
-3. إلغاء وتعديل المواعيد (cancel_appointment / reschedule_appointment): عند طلب إلغاء استخدم cancel_appointment، وعند التأجيل استخدم reschedule_appointment.`,
+قواعد إدارة المواعيد والتذكيرات الذكية:
+1. ضبط تذكير أو تنبيه مجدول (set_reminder): عند طلب التذكير (مثال: "فكرني بكرة الساعة 5 اكلم فلان", "نبهني بعد ساعتين بفلوس المورد", "فكرني بتسليم شباك محمد صادق").
+2. استرجاع وعرض قائمة التذكيرات (get_reminders): عند الاستعلام عن التذكيرات المجدولة (مثال: "ايه التذكيرات اللي عندي", "فكرني بالتذكيرات", "تذكيرات اليوم", "تذكيرات فلان") -> استدعِ get_reminders حصراً.
+3. إلغاء التذكيرات (cancel_reminder): عند طلب إلغاء أو مسح تذكير (مثال: "الغي تذكير المهندس محمود", "امسح تذكير شباك فلان").
+4. حجز موعد جديد (book_appointment): عند طلب حجز ميعاد/كشف/موعد لعميل.
+5. استرجاع قائمة المواعيد (get_appointments_list): عند السؤال عن 'مواعيد بكرة' أو 'مواعيد المحل'.
+6. إلغاء وتعديل المواعيد (cancel_appointment / reschedule_appointment).`,
 
     INVENTORY: `
 قواعد المخزون والكتالوج (add_product / update_stock):
@@ -1379,6 +1422,63 @@ async function logRejectedToolCall(tenantId: string | undefined, toolName: strin
     console.error("[RejectedToolCall log error]", e);
   }
 }
+export function parseEgyptianArabicDateTime(timeStr?: string, isoStr?: string): Date {
+  if (isoStr) {
+    const d = new Date(isoStr);
+    if (!isNaN(d.getTime())) return d;
+  }
+  const now = new Date();
+  if (!timeStr) {
+    return new Date(now.getTime() + 60 * 60 * 1000);
+  }
+
+  const s = timeStr.toLowerCase().trim();
+
+  const minMatch = s.match(/بعد\s+(\d+)\s*(دقيقة|دقايق|د)/);
+  if (minMatch) {
+    return new Date(now.getTime() + parseInt(minMatch[1], 10) * 60 * 1000);
+  }
+  const hrMatch = s.match(/بعد\s+(\d+)\s*(ساعة|ساعات|س)/);
+  if (hrMatch) {
+    return new Date(now.getTime() + parseInt(hrMatch[1], 10) * 60 * 60 * 1000);
+  }
+  if (s.includes("بعد ساعة")) {
+    return new Date(now.getTime() + 60 * 60 * 1000);
+  }
+  if (s.includes("بعد نص ساعة") || s.includes("بعد نصف ساعة")) {
+    return new Date(now.getTime() + 30 * 60 * 1000);
+  }
+  if (s.includes("بعد ساعتين")) {
+    return new Date(now.getTime() + 2 * 60 * 60 * 1000);
+  }
+
+  let targetDate = new Date(now);
+  if (s.includes("بكرة") || s.includes("غدا") || s.includes("غداً") || s.includes("بكره")) {
+    targetDate.setDate(targetDate.getDate() + 1);
+  } else if (s.includes("بعد بكرة") || s.includes("بعد بكره")) {
+    targetDate.setDate(targetDate.getDate() + 2);
+  }
+
+  const hourMatch = s.match(/الساعة\s+(\d{1,2})(?::(\d{2}))?/);
+  if (hourMatch) {
+    let h = parseInt(hourMatch[1], 10);
+    const m = hourMatch[2] ? parseInt(hourMatch[2], 10) : 0;
+    const isNight = s.includes("بالليل") || s.includes("مساء") || s.includes("عصر") || s.includes("الظهر");
+    const isMorning = s.includes("الصبح") || s.includes("صباح");
+
+    if (isNight && h < 12) h += 12;
+    if (isMorning && h === 12) h = 0;
+    if (!isNight && !isMorning && h >= 1 && h <= 11) {
+      if (h <= 6) h += 12;
+    }
+
+    targetDate.setHours(h, m, 0, 0);
+    return targetDate;
+  }
+
+  return new Date(now.getTime() + 2 * 60 * 60 * 1000);
+}
+
 // === END grounding guard ===
 
 export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0, fullContextText?: string, options?: GroundingCheckOptions & { chatId?: string }): Promise<{ success: boolean; resultText: string; uiSent?: boolean }> {
@@ -1390,7 +1490,8 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     'add_product', 'add_customer', 'log_customer_payment',
     'cancel_last_transaction', 'correct_last_transaction', 'update_expense',
     'calculate_alumital_quotation',
-    'save_customer_measurement', 'update_customer_measurement', 'delete_customer_measurement'
+    'save_customer_measurement', 'update_customer_measurement', 'delete_customer_measurement',
+    'set_reminder', 'get_reminders', 'cancel_reminder'
   ];
   if (!tenantId && FINANCIAL_TOOLS.includes(name)) {
     console.error(`[executeTool] BLOCKED: tool=${name} called without tenantId — refusing to write NULL-tenant data.`);
@@ -3594,6 +3695,159 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       };
     }
 
+    if (name === "set_reminder") {
+      if (!tenantId) {
+        return { success: false, resultText: "يلزم تحديد هوية النشاط لضبط التذكير." };
+      }
+
+      const title = String(args.title || "").trim();
+      if (!title) {
+        return { success: false, resultText: "يرجى تحديد موضوع التذكير." };
+      }
+
+      const customerName = args.customer_name ? String(args.customer_name).trim() : null;
+      let customerId: string | null = null;
+      if (customerName) {
+        const cust = await (prisma as any).customer.findFirst({
+          where: { tenantId, name: { contains: customerName } }
+        });
+        if (cust) customerId = cust.id;
+      }
+
+      const targetChatId = options?.chatId;
+      const remindAt = parseEgyptianArabicDateTime(args.time_expression, args.remind_at_iso);
+
+      await (prisma as any).reminder.create({
+        data: {
+          tenantId,
+          customerId,
+          customerName,
+          title,
+          remindAt,
+          status: "pending",
+          telegramChatId: targetChatId ? String(targetChatId) : null
+        }
+      });
+
+      const dateStr = remindAt.toLocaleDateString("ar-EG", {
+        weekday: "long",
+        month: "numeric",
+        day: "numeric"
+      });
+      const timeStr = remindAt.toLocaleTimeString("ar-EG", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      });
+
+      return {
+        success: true,
+        resultText: `⏰ تم ضبط تذكير: "${title}" ${customerName ? `للعميل ${customerName} ` : ''}في ميعاد (${dateStr} الساعة ${timeStr}).`
+      };
+    }
+
+    if (name === "get_reminders") {
+      if (!tenantId) {
+        return { success: false, resultText: "يلزم تحديد هوية النشاط لعرض التذكيرات." };
+      }
+
+      const customerName = args.customer_name ? String(args.customer_name).trim() : null;
+      const whereClause: any = {
+        tenantId,
+        status: { in: ["pending", "sent"] }
+      };
+      if (customerName) {
+        whereClause.customerName = { contains: customerName };
+      }
+
+      const reminders = await (prisma as any).reminder.findMany({
+        where: whereClause,
+        orderBy: { remindAt: "asc" },
+        take: 10
+      });
+
+      if (reminders.length === 0) {
+        return {
+          success: true,
+          resultText: `مفيش تذكيرات قادمة مسجلة حالياً ${customerName ? `للعميل ${customerName}` : ''}. تحب تسجل تذكير جديد؟ ⏰`
+        };
+      }
+
+      const lines = reminders.map((r: any, idx: number) => {
+        const timeStr = r.remindAt.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit", hour12: true });
+        const dateStr = r.remindAt.toLocaleDateString("ar-EG", { weekday: "short", day: "numeric", month: "numeric" });
+        return `${idx + 1}️⃣ *${r.title}* ${r.customerName ? `(عميل: ${r.customerName})` : ''}\n   ↳ ⏰ ${dateStr} - ${timeStr}`;
+      });
+
+      const summaryCard = `📋 *قائمة التذكيرات المجدولة* (${reminders.length} تذكيرات):\n───────────────────────\n${lines.join('\n\n')}\n───────────────────────`;
+
+      const targetChatId = options?.chatId;
+      if (targetChatId) {
+        const { sendTelegramAlert } = await import("@/lib/telegram");
+        const inlineButtons: any[] = [];
+        reminders.slice(0, 5).forEach((r: any, idx: number) => {
+          inlineButtons.push([
+            { text: `✅ تم ${idx + 1}`, callback_data: `done_rem_${r.id}` },
+            { text: `🗑️ مسح ${idx + 1}`, callback_data: `del_rem_${r.id}` }
+          ]);
+        });
+
+        await sendTelegramAlert({
+          chatId: targetChatId,
+          text: summaryCard,
+          idempotencyKey: `rem_list_${tenantId}_${Date.now()}`,
+          replyMarkup: { inline_keyboard: inlineButtons }
+        });
+        return { success: true, resultText: summaryCard, uiSent: true };
+      }
+
+      return { success: true, resultText: summaryCard };
+    }
+
+    if (name === "cancel_reminder") {
+      if (!tenantId) {
+        return { success: false, resultText: "يلزم تحديد هوية النشاط لإلغاء التذكير." };
+      }
+
+      const reminderId = args.reminder_id ? String(args.reminder_id).trim() : null;
+      const titleKeyword = args.title_keyword ? String(args.title_keyword).trim() : null;
+
+      let targetRem: any = null;
+      if (reminderId) {
+        targetRem = await (prisma as any).reminder.findFirst({
+          where: { id: reminderId, tenantId, status: { not: "cancelled" } }
+        });
+      } else if (titleKeyword) {
+        targetRem = await (prisma as any).reminder.findFirst({
+          where: {
+            tenantId,
+            title: { contains: titleKeyword },
+            status: { not: "cancelled" }
+          },
+          orderBy: { createdAt: "desc" }
+        });
+      } else {
+        targetRem = await (prisma as any).reminder.findFirst({
+          where: { tenantId, status: { not: "cancelled" } },
+          orderBy: { createdAt: "desc" }
+        });
+      }
+
+      if (!targetRem) {
+        return { success: false, resultText: "لم يتم العثور على تذكير مطابق لإلغائه." };
+      }
+
+      await (prisma as any).reminder.update({
+        where: { id: targetRem.id },
+        data: { status: "cancelled" }
+      });
+
+      return {
+        success: true,
+        resultText: `🗑️ تم إلغاء تذكير: "${targetRem.title}".`
+      };
+    }
+
       return { success: false, resultText: `أداة غير معروفة: ${name}` };
     } catch (err: any) {
       console.error(`[Telegram LLM Tool Error] ${name}:`, err);
@@ -3800,8 +4054,8 @@ export async function processTelegramMessageWithLLM(
 
   // Format history for Gemini SDK & ensure history starts with user role
   // Single-turn tool isolation: Clear history when active tools match explicit transaction or measurement keywords to prevent argument bleeding and duplicate re-execution
-  const isNewTransactionCmd = /(سجل|تسجيل|اشتريت|اشترى|هنشتري|نشتري|شراء|بعت|بيع|هنبيع|نبيع|أضف|اضف|ضيف|احجز|حجز|رجعت|مرتجع|مقاس|مقاسات|شباك|باب|مطبخ|احسب|كوتيشن|عرض\s*سعر|كشف|هات|عدل|امسح|فاتورة|سداد|دفعة)/i.test(normalizedText);
-  const isPendingChoicePurgeCmd = /(سجل|تسجيل|اشتريت|اشترى|هنشتري|نشتري|شراء|بعت|بيع|هنبيع|نبيع|رجعت|أضف|اضف|ضيف|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد|مقاس|مقاسات)/i.test(normalizedText);
+  const isNewTransactionCmd = /(سجل|تسجيل|اشتريت|اشترى|هنشتري|نشتري|شراء|بعت|بيع|هنبيع|نبيع|أضف|اضف|ضيف|احجز|حجز|رجعت|مرتجع|مقاس|مقاسات|شباك|باب|مطبخ|احسب|كوتيشن|عرض\s*سعر|كشف|هات|عدل|امسح|فاتورة|سداد|دفعة|فكرني|تذكير|تذكيرات|نبهني|ذكرني)/i.test(normalizedText);
+  const isPendingChoicePurgeCmd = /(سجل|تسجيل|اشتريت|اشترى|هنشتري|نشتري|شراء|بعت|بيع|هنبيع|نبيع|رجعت|أضف|اضف|ضيف|احجز|إلغاء|الغاء|كشف\s*حساب|حساب\s*المورد|حساب\s*العميل|رصيد|مقاس|مقاسات|فكرني|تذكير|تذكيرات)/i.test(normalizedText);
 
   if (isPendingChoicePurgeCmd && tenantId) {
     await (prisma as any).conversationState.deleteMany({

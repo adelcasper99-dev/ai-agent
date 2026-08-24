@@ -1,30 +1,39 @@
-# Walkthrough: Casper Telegram Caveman Mode & Customer Measurements Engine
+# Walkthrough: Smart Voice Reminder Engine & Dispatcher
 
-## 1. Overview & Accomplishments
-Successfully implemented and verified:
-1. **Strict Caveman Mode in Telegram Bot:**
-   - Enforced maximum brevity (< 2 sentences, 0 apologies, 0 filler) across LLM prompt generation and output sanitizers.
-2. **Customer Technical Measurements Engine (Save, Retrieve, Update, Delete):**
-   - Added `CustomerMeasurement` Prisma model with multi-tenant isolation.
-   - Built `save_customer_measurement`, `get_customer_measurements`, `update_customer_measurement`, and `delete_customer_measurement` AI tools.
-   - Seamlessly integrated multi-item capabilities (windows, doors, full kitchens, dimensions, glass types, accessories).
-3. **Interactive Telegram Cards & 2-Step Confirmation Gates:**
-   - Implemented numbered Telegram cards with inline buttons (`[✏️ تعديل]`, `[🗑️ مسح]`, `[📑 تحويل لكوتيشن]`).
-   - Implemented 2-step confirmation for deletions to prevent accidental loss.
-4. **Seamless Quotation Synergy:**
-   - Quotation calculations (`calculate_alumital_quotation`) operate harmoniously alongside customer measurements without keyword or intent collision.
+## Completed Engineering Changes
+
+### 1. Database Schema
+- Added `Reminder` model to `casper-voice-web/prisma/schema.prisma` with relation to `Tenant` and `Customer`.
+- Created compound indexes on `[tenantId, status, remindAt]` and `[status, remindAt]`.
+
+### 2. LLM Tool Declarations & Routing
+- Added `setReminderTool`, `getRemindersTool`, and `cancelReminderTool` in `casper-voice-web/lib/telegram_llm.ts`.
+- Integrated tools into `APPOINTMENTS` and `ALUMITAL` clusters with keyword routing (`فكرني`, `تذكير`, `ميعاد`, `نبهني`).
+
+### 3. Core Engine & Temporal Parsing
+- Built `parseEgyptianArabicDateTime` supporting relative offsets (`بعد 30 دقيقة`, `بعد ساعتين`, `بعد نص ساعة`) and absolute dates (`بكرة الساعة 5 مساء`).
+- Handled customer auto-linking by name.
+- Protected all tool actions behind `FINANCIAL_TOOLS` tenant guard.
+
+### 4. Interactive Telegram Callbacks & Dispatcher
+- Added inline callback handlers in `casper-voice-web/app/api/telegram/webhook/route.ts`:
+  - `done_rem_<id>`: Marks reminder completed with confirmation alert.
+  - `snooze_rem_<id>_<mins>`: Postpones reminder by N minutes.
+  - `del_rem_<id>`: Cancels and removes reminder.
+- Created background polling route `casper-voice-web/app/api/cron/reminders/route.ts` with atomic concurrency locking (`pending` -> `sending` -> `sent`).
 
 ---
 
-## 2. Key Files Modified & Added
-- `casper-voice-web/prisma/schema.prisma`: Added `CustomerMeasurement` model and relations to `Tenant` and `Customer`.
-- `casper-voice-web/lib/telegram_llm.ts`: Added 4 measurement tool declarations, router keywords, Caveman prompt instructions, output sanitizer, and execution handlers with inline button support.
-- `casper-voice-web/app/api/telegram/webhook/route.ts`: Added callback query handlers for inline button interactions, 2-step confirmation, and quotation conversion.
-- `casper-voice-web/tests/customer_measurements_e2e.test.ts`: 9/9 end-to-end integration tests covering routing, execution, multi-item batches, updates, deletions, and quotation synergy.
+## Verification Evidence
+- **TypeScript:** `npx tsc --noEmit` passed with 0 errors.
+- **E2E Tests:** 14/14 tests passing across `tests/reminders_engine_e2e.test.ts` and `tests/customer_measurements_e2e.test.ts`.
 
 ---
 
-## 3. Verification & Test Evidence
-- **TypeScript Check:** `npx tsc --noEmit` ➔ 0 errors.
-- **Vitest Unit & E2E Tests:** `tests/customer_measurements_e2e.test.ts` ➔ 9/9 PASSED.
-- **Guardrail Tests:** `tests/telegram_llm_guardrails.test.ts` ➔ 6/6 PASSED.
+## Pipeline Artifact Links
+- [Implementation Plan](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/implementation_plan.md)
+- [Ironclad Review Report](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/ironclad_review_implementation_plan.md)
+- [Task Checklist](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/task.md)
+- [Code Review Report](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/code_review_report.md)
+- [Test Results](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/test_results.txt)
+- [Walkthrough](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/walkthrough.md)

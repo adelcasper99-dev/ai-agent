@@ -1,22 +1,36 @@
-======================================================================
-CASPER TEST SUITE EXECUTION REPORT
-======================================================================
-Timestamp: 2026-08-24T13:36:05Z
-Test Suites: 
- - tests/customer_measurements_e2e.test.ts (9/9 PASSED)
- - tests/telegram_llm_guardrails.test.ts (6/6 PASSED)
- - tests/financial_precision.test.ts (13/13 PASSED)
- - tests/merchant_memory.test.ts (3/3 PASSED)
- - tests/session-security.test.ts (15/15 PASSED)
- - tests/update_routes.test.ts (11/11 PASSED)
- - tests/multi_tenant_verification_suite.test.ts (1/1 PASSED)
- - tests/telegram_action_isolation.test.ts (13/13 PASSED)
+=== TEST RESULTS & COMPILATION REPORT ===
+Timestamp: 2026-08-24T16:15:00Z
+Target: Casper Voice & Smart Reminder Engine
 
-TypeScript Validation:
- - npx tsc --noEmit: 0 ERRORS (EXIT CODE 0)
+--- TypeScript Compilation Check ---
+Command: npx tsc --noEmit
+Exit Code: 0
+Output: Clean compilation (0 errors)
 
-Summary:
- - Status: ALL SUITES PASSED ✅
- - Regressions: 0
- - TypeScript Errors: 0
-======================================================================
+--- Vitest Test Suites ---
+Command: npx vitest run tests/reminders_engine_e2e.test.ts tests/customer_measurements_e2e.test.ts
+Exit Code: 0
+
+Test Files  2 passed (2)
+Tests       14 passed (14)
+
+Details:
+✓ tests/customer_measurements_e2e.test.ts (9 tests)
+  ✓ 1. Tool Routing: Resolves ALUMITAL cluster and save_customer_measurement
+  ✓ 2. Schema Validation: Checks dimensions and item types
+  ✓ 3. Single-Turn Isolation: Prevents duplicate execution
+  ✓ 4. Tool Execution: Inserts customer measurement
+  ✓ 5. Item Type Parsing: Maps colloquial terms
+  ✓ 6. Multi-Item Extraction: Parses multiple measurements
+  ✓ 7. Edit Lifecycle: Updates existing measurement
+  ✓ 8. Delete Lifecycle: Cancels target measurement
+  ✓ 9. Interactive Action Buttons: Returns action markup
+
+✓ tests/reminders_engine_e2e.test.ts (5 tests)
+  ✓ 1. should parse Egyptian Arabic time expressions accurately
+  ✓ 2. should set reminder successfully with customer linking
+  ✓ 3. should retrieve active reminders list via get_reminders
+  ✓ 4. should cancel a reminder by title keyword
+  ✓ 5. should enforce tenant isolation when setting and listing reminders
+
+ALL PASSING: 100% SUCCESS RATE

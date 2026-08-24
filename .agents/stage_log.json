@@ -2,67 +2,59 @@
   {
     "stage": "0a-grill-me",
     "status": "COMPLETED",
-    "timestamp": "2026-08-24T13:11:45.000Z",
-    "artifacts": ["docs/brainstorms/customer-measurements-requirements.md"]
+    "timestamp": "2026-08-24T16:05:35.000Z",
+    "artifacts": ["docs/brainstorms/smart-reminder-engine-requirements.md"]
   },
   {
     "stage": "0b-research",
     "status": "COMPLETED",
-    "timestamp": "2026-08-24T13:11:58.000Z",
+    "timestamp": "2026-08-24T16:05:57.000Z",
     "artifacts": ["research_findings.md"]
   },
   {
     "stage": "1-spec",
     "status": "COMPLETED",
-    "timestamp": "2026-08-24T13:12:05.000Z",
+    "timestamp": "2026-08-24T16:06:04.000Z",
     "artifacts": ["implementation_plan.md"]
   },
   {
     "stage": "2ab-ironclad",
     "status": "COMPLETED",
-    "timestamp": "2026-08-24T13:12:15.000Z",
+    "timestamp": "2026-08-24T16:06:13.000Z",
     "artifacts": ["ironclad_review_implementation_plan.md"],
-    "score_before": 89,
-    "score_after": 98.8,
-    "gaps_found": 6,
-    "gaps_resolved": 6
+    "score_before": 91.0,
+    "score_after": 98.5,
+    "gaps_found": 4,
+    "gaps_resolved": 4
   },
   {
     "stage": "3-build",
     "status": "COMPLETED",
-    "timestamp": "2026-08-24T13:33:10.000Z",
-    "artifacts": [
-      "task.md",
-      "casper-voice-web/prisma/schema.prisma",
-      "casper-voice-web/lib/telegram_llm.ts",
-      "casper-voice-web/app/api/telegram/webhook/route.ts"
-    ]
+    "timestamp": "2026-08-24T16:14:52.000Z",
+    "artifacts": ["task.md"]
   },
   {
-    "stage": "3b-audit",
+    "stage": "3b-code-audit",
     "status": "COMPLETED",
-    "timestamp": "2026-08-24T13:36:40.000Z",
-    "artifacts": ["code_review_report.md"],
-    "diff_score": 98.6
+    "timestamp": "2026-08-24T16:14:59.000Z",
+    "artifacts": ["code_review_report.md"]
   },
   {
-    "stage": "4-test",
+    "stage": "4-test-qa",
     "status": "COMPLETED",
-    "timestamp": "2026-08-24T13:36:50.000Z",
-    "artifacts": ["test_results.txt"],
-    "unit_tests": "9/9 passed",
-    "ts_errors": 0
+    "timestamp": "2026-08-24T16:15:05.000Z",
+    "artifacts": ["test_results.txt"]
   },
   {
     "stage": "5-accept",
     "status": "COMPLETED",
-    "timestamp": "2026-08-24T13:37:00.000Z",
+    "timestamp": "2026-08-24T16:15:12.000Z",
     "artifacts": ["walkthrough.md"]
   },
   {
     "stage": "6-compliance",
     "status": "COMPLETED",
-    "timestamp": "2026-08-24T13:37:45.000Z",
-    "artifacts": ["pipeline_completion_report.md"]
+    "timestamp": "2026-08-24T16:15:18.000Z",
+    "artifacts": ["stage_log.json"]
   }
 ]

@@ -435,6 +435,69 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
+      if (data.startsWith("done_rem_")) {
+        const remId = data.replace("done_rem_", "").trim();
+        const rem = await (prisma as any).reminder.findUnique({ where: { id: remId } });
+        if (!rem) {
+          await answerCallback("❌ لم يتم العثور على التذكير.");
+          return NextResponse.json({ ok: true });
+        }
+        await (prisma as any).reminder.update({
+          where: { id: remId },
+          data: { status: "completed" }
+        });
+        await sendTelegramAlert({
+          chatId: callbackChatId,
+          text: `✅ *تم إنجاز التذكير بنجاح:*\n📌 ${rem.title}${rem.customerName ? ` (العميل: ${rem.customerName})` : ''}\n✨ شكراً لك!`,
+          idempotencyKey: `done_rem_ack_${remId}_${Date.now()}`
+        }).catch(() => null);
+        await answerCallback("✅ تم تحديد التذكير كمنجز!");
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data.startsWith("snooze_rem_")) {
+        const parts = data.replace("snooze_rem_", "").split("_");
+        const remId = parts[0];
+        const mins = Number(parts[1]) || 60;
+        const rem = await (prisma as any).reminder.findUnique({ where: { id: remId } });
+        if (!rem) {
+          await answerCallback("❌ لم يتم العثور على التذكير.");
+          return NextResponse.json({ ok: true });
+        }
+        const newRemindAt = new Date(Date.now() + mins * 60 * 1000);
+        await (prisma as any).reminder.update({
+          where: { id: remId },
+          data: { remindAt: newRemindAt, status: "pending" }
+        });
+        await sendTelegramAlert({
+          chatId: callbackChatId,
+          text: `⏰ *تم تأجيل التذكير بنجاح:*\n📌 ${rem.title}\nسأنبهك مرة أخرى بعد ${mins} دقيقة.`,
+          idempotencyKey: `snooze_rem_ack_${remId}_${Date.now()}`
+        }).catch(() => null);
+        await answerCallback(`⏰ تم التأجيل لمدة ${mins} دقيقة!`);
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data.startsWith("del_rem_")) {
+        const remId = data.replace("del_rem_", "").trim();
+        const rem = await (prisma as any).reminder.findUnique({ where: { id: remId } });
+        if (!rem) {
+          await answerCallback("❌ لم يتم العثور على التذكير.");
+          return NextResponse.json({ ok: true });
+        }
+        await (prisma as any).reminder.update({
+          where: { id: remId },
+          data: { status: "cancelled" }
+        });
+        await sendTelegramAlert({
+          chatId: callbackChatId,
+          text: `🗑️ *تم إلغاء التذكير:*\n📌 ${rem.title}`,
+          idempotencyKey: `del_rem_ack_${remId}_${Date.now()}`
+        }).catch(() => null);
+        await answerCallback("🗑️ تم مسح التذكير!");
+        return NextResponse.json({ ok: true });
+      }
+
       const isTenantCommand = data.startsWith("menu:") || data.startsWith("sale:") || data.startsWith("cmd_");
       if (isTenantCommand) {
         const tenantCheck = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });

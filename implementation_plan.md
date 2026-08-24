@@ -1,61 +1,67 @@
-# Implementation Plan: Casper Telegram Caveman Mode & Customer Technical Measurements Engine
+# Implementation Plan: Smart Voice Reminder & Telegram Scheduled Alerts Engine
 
-## 1. Context & Architecture Overview
-Casper POS & ERP utilizes Next.js 16, React 19, SQLite / PostgreSQL with Prisma, and Gemini Flash LLM orchestration for voice and Telegram bot assistants.
-This plan addresses:
-1. **System Prompt Hardening:** Injecting strict Caveman brevity and token conservation into `buildActivePrompt` in `casper-voice-web/lib/telegram_llm.ts`.
-2. **Customer Measurement Engine:** Adding `CustomerMeasurement` model in Prisma, implementing `save_customer_measurement` and `get_customer_measurements` tools, registering them in tool definitions, router clusters, and intent handlers.
-3. **Quotation & Measurement Harmonization:** Ensuring zero collision between financial estimations (`Quotation`) and technical dimensions (`CustomerMeasurement`).
+## 1. Executive Summary
+Enable merchants and workshop owners to set natural voice/text reminders via Telegram bot (e.g. `"فكرني بكرة الساعة 5 بتسليم شباك محمد صادق"`). The system extracts the reminder parameters, stores them with strict tenant isolation, executes background checks, and sends push notifications to Telegram with action buttons `[✅ تم الإنجاز]` and `[⏰ تأجيل ساعة]`.
 
 ---
 
-## 2. Proposed Code & Schema Modifications
+## 2. Proposed Architectural Changes
 
-### A. Database Schema (`casper-voice-web/prisma/schema.prisma`)
-- Add `CustomerMeasurement` model:
+### A. Database Schema (`prisma/schema.prisma`)
+Add `Reminder` model:
 ```prisma
-model CustomerMeasurement {
-  id           String   @id @default(cuid())
-  tenantId     String
-  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customerId   String?
-  customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  customerName String
-  itemType     String   @default("شباك")
-  width_cm     Decimal?
-  height_cm    Decimal?
-  quantity     Int      @default(1)
-  notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+model Reminder {
+  id             String    @id @default(cuid())
+  tenantId       String
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customerId     String?
+  customer       Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerName   String?
+  title          String
+  remindAt       DateTime
+  status         String    @default("pending") // pending | sent | completed | cancelled
+  telegramChatId String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  @@index([tenantId, customerName])
-  @@index([tenantId, createdAt])
+  @@index([tenantId, status, remindAt])
+  @@index([status, remindAt])
 }
 ```
-- Update `Tenant` and `Customer` models with relation fields.
-
-### B. System Prompt & Tool Routing (`casper-voice-web/lib/telegram_llm.ts`)
-- **Caveman System Prompt Rule:**
-  - "الردود فائقة الإيجاز (سطر أو سطرين فقط) بالعامية المصرية الصريحة السريعة."
-  - "ممنوع نهائياً الاعتذارات، مقدمات الترحيب الزائدة، أو شرح آليات وبرمجة السيستم الداخلية."
-  - "إذا لم تتوفر بيانات أو ميزة، أجب في جملة واحدة مباشرة ومفيدة."
-- **Tool Declarations:**
-  - `saveCustomerMeasurementTool`: saves dimensions, item type, quantity, customer name, notes.
-  - `getCustomerMeasurementsTool`: queries and returns recorded measurements for customer.
-- **Cluster Keywords:**
-  - Add `MEASUREMENTS` / update `ALUMITAL` keywords with `مقاس`, `مقاسات`, `أبعاد`, `رفع مقاس`, `مقاس شباك`, `مقاس باب`.
-- **Tool Handlers:**
-  - Execute database transaction to record `CustomerMeasurement`.
-  - Format concise response for retrieved dimensions.
+Add relation `reminders Reminder[]` to `Tenant` and `Customer`.
 
 ---
 
-## 3. Verification & Testing Plan
-- Create Vitest test suite `casper-voice-web/tests/customer_measurements_e2e.test.ts`:
-  1. Test tool routing resolves `save_customer_measurement` on "سجل مقاس لمحمد صادق شباك 120 في 140".
-  2. Test tool routing resolves `get_customer_measurements` on "مقاسات العميل محمد صادق".
-  3. Test zero collision between `calculate_alumital_quotation` and `save_customer_measurement`.
-  4. Test database persistence and retrieval of `CustomerMeasurement`.
-  5. Test Caveman response length (< 120 characters, zero apologetic keywords).
-- Run full test suite: `npx vitest run`.
+### B. AI Tools in Telegram LLM Engine (`lib/telegram_llm.ts`)
+1. `setReminderTool`:
+   - Name: `set_reminder`
+   - Parameters: `title`, `remind_at_iso`, `customer_name`
+   - Description: تسجيل تذكير بميعاد تسليم أو متابعة أو مهمة
+2. `getRemindersTool`:
+   - Name: `get_reminders`
+   - Parameters: `customer_name?`
+   - Description: عرض قائمة التذكيرات القادمة والمستحقة
+3. `cancelReminderTool`:
+   - Name: `cancel_reminder`
+   - Parameters: `reminder_id?`, `title_keyword?`
+   - Description: إلغاء أو حذف تذكير محدد
+
+---
+
+### C. Telegram Webhook Callback Queries (`app/api/telegram/webhook/route.ts`)
+- `done_rem_<id>`: Marks reminder status as `completed`.
+- `snooze_rem_<id>_<mins>`: Postpones `remindAt` by N minutes and resets status to `pending`.
+- `del_rem_<id>`: Cancels the reminder.
+
+---
+
+### D. Automated Dispatcher API & Worker (`app/api/cron/reminders/route.ts`)
+- Scans `status: "pending"` and `remindAt <= new Date()`.
+- Sends `sendTelegramAlert` with interactive inline keyboard.
+- Idempotently updates status to `sent`.
+
+---
+
+## 3. Verification Plan
+- Unit & E2E Vitest suite testing `set_reminder`, `get_reminders`, `cancel_reminder`, temporal parsing, and multi-tenant isolation.
+- TypeScript zero-error type check (`npx tsc --noEmit`).

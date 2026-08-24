@@ -12,7 +12,8 @@ const PUBLIC_PATHS = [
   '/api/telegram/webhook', 
   '/telegram-voice', 
   '/api/livekit/token', 
-  '/api/health/voice'
+  '/api/health/voice',
+  '/api/cron'
 ];
 
 function isInternalSecretValid(headerSecret: string | null): boolean {

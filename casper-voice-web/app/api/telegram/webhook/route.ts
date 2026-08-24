@@ -435,6 +435,47 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
+      if (data.startsWith("try_f_")) {
+        const parts = data.replace("try_f_", "").split("_");
+        const releaseId = parts[0];
+        const exIdx = parseInt(parts[1] || "0", 10);
+
+        let targetPrompt = "";
+        if (releaseId === "preview") {
+          targetPrompt = "فكرني بكرة الساعة 5 اكلم المهندس محمود";
+        } else {
+          const rel = await (prisma as any).featureRelease.findUnique({ where: { id: releaseId } });
+          if (rel && rel.examples) {
+            try {
+              const parsedEx = JSON.parse(rel.examples);
+              if (parsedEx[exIdx] && parsedEx[exIdx].prompt) {
+                targetPrompt = parsedEx[exIdx].prompt;
+              }
+            } catch {}
+          }
+        }
+
+        if (!targetPrompt) {
+          await answerCallback("⚠️ تعذر تحميل المثال.");
+          return NextResponse.json({ ok: true });
+        }
+
+        await answerCallback(`🧪 جاري تنفيذ: "${targetPrompt.slice(0, 20)}..."`);
+
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (tenant) {
+          await processTelegramMessageWithLLM(
+            targetPrompt,
+            tenant.id,
+            tenant.merchantName || undefined,
+            tenant.businessType || undefined,
+            tenant.workingHours || undefined,
+            callbackChatId
+          );
+        }
+        return NextResponse.json({ ok: true });
+      }
+
       if (data.startsWith("done_rem_")) {
         const remId = data.replace("done_rem_", "").trim();
         const rem = await (prisma as any).reminder.findUnique({ where: { id: remId } });

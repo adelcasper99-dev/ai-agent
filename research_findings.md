@@ -1,37 +1,27 @@
-# Best-Practice Research: Voice-Triggered Scheduled Reminders & Push Notification Architecture
+# Research Findings: High-Reliability Telegram Broadcasts & Interactive Try-It Flows
 
-**Researcher:** Lead Architect & Distributed Systems Specialist  
-**Topic:** Real-Time Push Notification Engine, Egyptian Arabic Temporal Parsing & Multi-Tenant Cron Workers
+## 1. Telegram Bot API Rate-Limiting & Flood Control
+- **Official Constraints:** Maximum 30 messages/second globally from a single bot token, and max 1 message/second per private chat.
+- **Best Practice:**
+  - Sequential batching with `Promise.all` over chunks of 20 with `await sleep(50)` between batches.
+  - Exponential backoff on `HTTP 429` parsing `retry_after` response header.
+  - Immediate logging of `403 Forbidden: bot was blocked by the user` to mark merchant chat as inactive.
 
----
+## 2. Interactive Quick-Try Callbacks Architecture
+- **Telegram Limit:** Callback data payload size limit is 64 bytes.
+- **Pattern:**
+  - Use compact callback keys: `try_f_<shortId>_<exIdx>`.
+  - Store full example text in the database (`FeatureRelease.examples`), retrieve by index on callback tap.
+  - Trigger `processTelegramMessageWithLLM(exampleText, tenantId, ...)` and deliver instant response.
 
-## 1. 🕒 Timezone & Temporal Parsing Standards
-- **UTC DB Storage, Local Egypt Timezone Parsing:**
-  All timestamps stored in DB as standard UTC ISO-8601 DateTime. Spoken Arabic times ("الساعة 5 العصر", "بكرة 10 الصبح") are resolved against Africa/Cairo (+02:00 or +03:00 DST).
-- **Graceful Relative Parsing:**
-  Support expressions:
-  - `"بعد [X] دقائق / ساعات"` ➔ `Date.now() + X * ms`
-  - `"بكرة الساعة [H]"` ➔ Tomorrow at H:00
-  - `"يوم [السبت/الأحد/الخميس] الساعة [H]"` ➔ Next specified weekday at H:00
-
----
-
-## 2. ⚡ Poller vs Job Queue Architecture
-- In a lightweight Node/Next.js multi-tenant setup, a 30-second interval worker (or serverless cron trigger `/api/cron/reminders`) queries:
-  ```ts
-  const due = await prisma.reminder.findMany({
-    where: { status: "pending", remindAt: { lte: new Date() } },
-    include: { tenant: true }
-  });
-  ```
-- **Concurrency & Idempotency Safety:**
-  Use optimistic locking or status update before sending notification (`status: "sending"` / `"sent"`) with atomic `updateMany` to prevent duplicate Telegram alerts across worker reloads.
-
----
-
-## 3. 📱 Telegram Interactive Push Alert Design
-When a reminder triggers:
-- Text: `🔔 *تذكير مستحق الآن:*\n📌 [نص التذكير]\n👤 العميل: [اسم العميل إن وجد]`
-- Inline Action Buttons:
-  - `[✅ تم الإنجاز]` (`done_rem_<id>`) ➔ Marks status as `completed`.
-  - `[⏰ تأجيل ساعة]` (`snooze_rem_<id>_60`) ➔ Postpones `remindAt` by 60 minutes and sets status back to `pending`.
+## 3. Schema & Data Model Design
+- `FeatureRelease` model:
+  - `id`: UUID
+  - `title`: String
+  - `description`: String (Markdown supported)
+  - `examples`: Json (Array of `{ label: string, prompt: string }`)
+  - `targetType`: String ("all", "business_type", "selected")
+  - `status`: String ("draft", "sending", "completed", "failed")
+  - `sentCount`: Int (default 0)
+  - `failedCount`: Int (default 0)
+  - `createdAt`: DateTime (default now)

@@ -589,3 +589,19 @@ model Reminder {
   @@index([status, remindAt])
 }
 
+// ── إعلانات وتحديثات الميزات للعملاء (Feature Releases & Broadcasts) ────────
+model FeatureRelease {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  examples    String   // JSON array of [{ label: string, prompt: string }]
+  targetType  String   @default("all") // all | business_type | selected
+  status      String   @default("draft") // draft | sending | completed | failed
+  sentCount   Int      @default(0)
+  failedCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
+

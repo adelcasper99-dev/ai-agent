@@ -1963,7 +1963,7 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        const msgTimestamp = message?.date ? message.date * 1000 : Date.now();
+        const msgTimestamp = message?.date ? Number(message.date) * 1000 : Date.now();
         const llmResult = await processTelegramMessageWithLLM(
           text,
           tenant?.id,

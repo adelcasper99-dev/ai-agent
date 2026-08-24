@@ -1288,6 +1288,7 @@ export type AmbiguityType = 'PRICE_AMBIGUITY' | 'NUMERIC_AMBIGUITY';
 
 export interface GroundingCheckOptions {
   resolvedAmbiguity?: AmbiguityType;
+  messageTimestamp?: number | Date;
 }
 
 function groundingCheck(
@@ -1534,7 +1535,7 @@ async function logRejectedToolCall(tenantId: string | undefined, toolName: strin
 
 // === END grounding guard ===
 
-export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0, fullContextText?: string, options?: GroundingCheckOptions & { chatId?: string }): Promise<{ success: boolean; resultText: string; uiSent?: boolean }> {
+export async function executeTool(name: string, args: any, tenantId?: string, userMessageText?: string, telegramMessageId?: number | string, callIndex: number = 0, fullContextText?: string, options?: GroundingCheckOptions & { chatId?: string; messageTimestamp?: number | Date }): Promise<{ success: boolean; resultText: string; uiSent?: boolean }> {
   // ── TENANT ISOLATION GUARD ─────────────────────────────────────────────────
   // Financial mutations MUST have a resolved tenantId. Block hard if missing.
   const FINANCIAL_TOOLS = [

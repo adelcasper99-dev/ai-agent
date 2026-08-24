@@ -18,7 +18,7 @@ export const CalculateQuotationInputSchema = z.object({
   discount_amount: z.number().min(0).optional().default(0),
 });
 
-export type CalculateQuotationInput = z.infer<typeof CalculateQuotationInputSchema>;
+export type CalculateQuotationInput = z.input<typeof CalculateQuotationInputSchema>;
 
 export interface ExtraItemResult {
   name: string;

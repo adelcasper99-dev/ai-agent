@@ -430,6 +430,100 @@ const calculateAlumitalQuotationTool: FunctionDeclaration = {
   }
 };
 
+const saveCustomerMeasurementTool: FunctionDeclaration = {
+  name: "save_customer_measurement",
+  description: "تسجيل وحفظ مقاسات أو مواصفات فنية لعميل (شباك، باب، مطبخ، دلفة، إكسسوارات) بدون حساب مالي. يستخرج اسم العميل، نوع البند، الأبعاد، الكمية، نوع القطاع، الزجاج، والإكسسوارات والملاحظات.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل (مثال: محمد صادق)" },
+      item_type: { type: SchemaType.STRING, description: "نوع البند (مثال: شباك، باب، مطبخ، دلفة زجاج، إكسسوار)" },
+      width_cm: { type: SchemaType.NUMBER, description: "العرض بالسنتيمتر (إن وجد)" },
+      height_cm: { type: SchemaType.NUMBER, description: "الارتفاع بالسنتيمتر (إن وجد)" },
+      depth_cm: { type: SchemaType.NUMBER, description: "العمق بالسنتيمتر للمطابخ والوحدات (إن وجد)" },
+      quantity: { type: SchemaType.NUMBER, description: "العدد أو الكمية (الافتراضي 1)" },
+      material: { type: SchemaType.STRING, description: "القطاع أو الخامة (مثال: جامبو، تانجو، بي إس، خشمونيوم)" },
+      glass_type: { type: SchemaType.STRING, description: "نوع الزجاج (مثال: دبل عسلي، سنجل، سيكوريت، فاميه)" },
+      accessories: { type: SchemaType.STRING, description: "الإكسسوارات والملاحظات الفنية (مثال: مفصلات باكم، مقبض إيطالي، سلك بليسيه)" },
+      notes: { type: SchemaType.STRING, description: "ملاحظات إضافية" },
+      items: {
+        type: SchemaType.ARRAY,
+        description: "قائمة البنود في حال تسجيل أكثر من مقاس في نفس الرسالة",
+        items: {
+          type: SchemaType.OBJECT,
+          properties: {
+            item_type: { type: SchemaType.STRING, description: "نوع البند (شباك، باب...)" },
+            width_cm: { type: SchemaType.NUMBER, description: "العرض بالسنتيمتر" },
+            height_cm: { type: SchemaType.NUMBER, description: "الارتفاع بالسنتيمتر" },
+            depth_cm: { type: SchemaType.NUMBER, description: "العمق بالسنتيمتر" },
+            quantity: { type: SchemaType.NUMBER, description: "العدد" },
+            material: { type: SchemaType.STRING, description: "الخامة أو القطاع" },
+            glass_type: { type: SchemaType.STRING, description: "نوع الزجاج" },
+            accessories: { type: SchemaType.STRING, description: "الإكسسوارات" },
+            notes: { type: SchemaType.STRING, description: "ملاحظات" }
+          },
+          required: ["item_type"]
+        }
+      }
+    },
+    required: ["customer_name"]
+  }
+};
+
+const getCustomerMeasurementsTool: FunctionDeclaration = {
+  name: "get_customer_measurements",
+  description: "استرجاع وعرض كشف المقاسات والمواصفات الفنية المسجلة لعميل محدد (مثال: 'مقاسات محمد صادق', 'أبعاد شباك فلان', 'مقاسات العميل').",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل المراد عرض مقاساته" },
+      item_type: { type: SchemaType.STRING, description: "نوع البند للتصفية (اختياري: شباك، باب، مطبخ...)" }
+    },
+    required: ["customer_name"]
+  }
+};
+
+const updateCustomerMeasurementTool: FunctionDeclaration = {
+  name: "update_customer_measurement",
+  description: "تعديل مقاس أو مواصفات بند مسجل مسبقاً لعميل (مثال: 'عدل شباك 140 في 150 خليه 190 في 180 لمحمد صادق', 'غير زجاج باب محمد صادق').",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل" },
+      target_item_type: { type: SchemaType.STRING, description: "نوع البند المراد تعديله (شباك، باب...)" },
+      old_width_cm: { type: SchemaType.NUMBER, description: "العرض القديم لتحديد البند بدقة إن وُجد" },
+      old_height_cm: { type: SchemaType.NUMBER, description: "الارتفاع القديم لتحديد البند بدقة إن وُجد" },
+      new_width_cm: { type: SchemaType.NUMBER, description: "العرض الجديد بالسنتيمتر" },
+      new_height_cm: { type: SchemaType.NUMBER, description: "الارتفاع الجديد بالسنتيمتر" },
+      new_depth_cm: { type: SchemaType.NUMBER, description: "العمق الجديد بالسنتيمتر" },
+      new_quantity: { type: SchemaType.NUMBER, description: "الكمية الجديدة" },
+      material: { type: SchemaType.STRING, description: "القطاع أو الخامة الجديدة" },
+      glass_type: { type: SchemaType.STRING, description: "نوع الزجاج الجديد" },
+      accessories: { type: SchemaType.STRING, description: "الإكسسوارات الجديدة" },
+      notes: { type: SchemaType.STRING, description: "ملاحظات جديدة" },
+      target_recent: { type: SchemaType.BOOLEAN, description: "تعديل آخر مقاس تم تسجيله لهذا العميل (افتراضي false)" }
+    },
+    required: ["customer_name"]
+  }
+};
+
+const deleteCustomerMeasurementTool: FunctionDeclaration = {
+  name: "delete_customer_measurement",
+  description: "حذف أو إلغاء مقاس أو بند مسجل لعميل (مثال: 'الغي باب الحمام لمحمد صادق', 'امسح شباك 120 في 140 لمحمد صادق', 'امسح كل مقاسات فلان').",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      customer_name: { type: SchemaType.STRING, description: "اسم العميل" },
+      target_item_type: { type: SchemaType.STRING, description: "نوع البند المراد حذفه (اختياري)" },
+      width_cm: { type: SchemaType.NUMBER, description: "العرض لتحديد البند بدقة (اختياري)" },
+      height_cm: { type: SchemaType.NUMBER, description: "الارتفاع لتحديد البند بدقة (اختياري)" },
+      delete_all: { type: SchemaType.BOOLEAN, description: "حذف كافة مقاسات العميل (افتراضي false)" },
+      target_recent: { type: SchemaType.BOOLEAN, description: "حذف آخر مقاس تم تسجيله (افتراضي false)" }
+    },
+    required: ["customer_name"]
+  }
+};
+
 // ==================== DYNAMIC TOOL ROUTING & CLUSTERS ====================
 
 export const ALL_TOOLS: FunctionDeclaration[] = [
@@ -438,7 +532,8 @@ export const ALL_TOOLS: FunctionDeclaration[] = [
   reportMissingFeatureTool, logCustomerPaymentTool, getCustomerBalanceTool, logSupplierPaymentTool,
   getSupplierBalanceTool, logSalesReturnTool, logPurchaseReturnTool, addProductTool,
   updateStockTool, addCustomerTool, saveMerchantMemoryTool, getMerchantMemoryTool,
-  cancelLastTransactionTool, correctLastTransactionTool, calculateAlumitalQuotationTool
+  cancelLastTransactionTool, correctLastTransactionTool, calculateAlumitalQuotationTool,
+  saveCustomerMeasurementTool, getCustomerMeasurementsTool, updateCustomerMeasurementTool, deleteCustomerMeasurementTool
 ];
 
 export type ClusterKey = 'SALES' | 'PURCHASES' | 'APPOINTMENTS' | 'INVENTORY' | 'FINANCE_META' | 'ALUMITAL';
@@ -448,7 +543,10 @@ const PURCHASE_TOOLS: FunctionDeclaration[] = [lookupMerchantMemoryTool, logPurc
 const APPOINTMENT_TOOLS: FunctionDeclaration[] = [bookAppointmentTool, getAppointmentsListTool, cancelAppointmentTool, rescheduleAppointmentTool];
 const INVENTORY_TOOLS: FunctionDeclaration[] = [addProductTool, updateStockTool];
 const FINANCE_META_TOOLS: FunctionDeclaration[] = [lookupMerchantMemoryTool, logExpenseTool, getFinancialSummaryTool, reportMissingFeatureTool, saveMerchantMemoryTool, getMerchantMemoryTool, cancelLastTransactionTool, correctLastTransactionTool];
-const ALUMITAL_TOOLS: FunctionDeclaration[] = [calculateAlumitalQuotationTool, lookupMerchantMemoryTool, saveMerchantMemoryTool];
+const ALUMITAL_TOOLS: FunctionDeclaration[] = [
+  calculateAlumitalQuotationTool, saveCustomerMeasurementTool, getCustomerMeasurementsTool, updateCustomerMeasurementTool, deleteCustomerMeasurementTool,
+  lookupMerchantMemoryTool, saveMerchantMemoryTool
+];
 
 const CLUSTER_KEYWORDS: Record<ClusterKey, string[]> = {
   SALES: ["بيع", "بعت", "كاش", "آجل", "عميل", "حساب عميل", "رصيد عميل", "قبضت", "سدد", "مرتجع مبيعات", "رجع من", "تليفون عميل", "ديون عميل", "بعت مش اشتريت", "الغى", "إلغاء", "خطأ", "تعديل"],
@@ -456,7 +554,12 @@ const CLUSTER_KEYWORDS: Record<ClusterKey, string[]> = {
   APPOINTMENTS: ["موعد", "ميعاد", "حجز", "الغي", "لغى", "مسح ميعاد", "تأجيل", "أجل", "غير ميعاد", "مواعيد", "بكرة الساعة", "اشوف مواعيد", "معاد"],
   INVENTORY: ["صنف", "منتج", "كتالوج", "مخزون", "جرد", "رصيد فعلي", "صحح مخزون", "أضف صنف", "سلعة جديدة"],
   FINANCE_META: ["مصروف", "مصاريف", "تقرير", "ملخص", "أرباح", "مبيعات النهاردة", "كشف حساب شهر", "ميزة ناقصة", "امسح", "تعديل", "خطأ"],
-  ALUMITAL: ["ألوميتال", "الوميتال", "شباك", "باب", "مقايسة", "عرض سعر", "متر", "قطاع", "سلك", "كالون", "مقبض", "ازاز", "زجاج", "عرض", "ارتفاع", "احسبلي", "تأكيد", "كوتيشن", "أوفر", "أوفرة"]
+  ALUMITAL: [
+    "ألوميتال", "الوميتال", "شباك", "باب", "مطبخ", "مقايسة", "عرض سعر", "متر", "قطاع", "سلك", "كالون", "مقبض",
+    "ازاز", "زجاج", "عرض", "ارتفاع", "عمق", "احسبلي", "تأكيد", "كوتيشن", "أوفر", "أوفرة",
+    "مقاس", "مقاسات", "مقاس العميل", "أبعاد", "رفع مقاس", "سجل مقاس", "احفظ مقاس", "مقاس شباك", "مقاس باب", "مقاس مطبخ",
+    "مفصلات", "خشمونيوم", "باكم", "سيكوريت", "دبل عسلي"
+  ]
 };
 
 export function resolveActiveTools(text: string, lastHistoryMsg?: string): { activeTools: FunctionDeclaration[]; activeClusters: ClusterKey[] } {
@@ -492,7 +595,12 @@ export function resolveActiveTools(text: string, lastHistoryMsg?: string): { act
 
 export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: string, typeStr: string, hoursStr: string, memoryContext?: string): string {
   const CORE_PROMPT = `أنت المساعد الشخصي الذكي الخاص بمدير أو صاحب العمل ${companyStr} ${typeStr} ${hoursStr}.
-تحدث بالعامية المصرية الحية والراقية مباشرة وسريعة.
+تحدث بالعامية المصرية الصريحة والسريعة جداً.
+
+قواعد الحسم والإيجاز الصارم (Strict Caveman Mode):
+1. الردود فائقة الإيجاز (سطر أو سطرين فقط كحد أقصى) بدون أي حشو أو كلام إنشائي أو مقدمات ترحيب طويلة.
+2. ممنوع منعاً باتاً الاعتذار (مثل "حقك عليا", "بعتذر", "أنا مقدر إحباطك") وممنوع ذكر "أنا ذكاء اصطناعي" أو شرح كواليس وبرمجة السيستم الداخلية.
+3. إذا لم تتوفر معلومة أو مقاس أو ميزة، أجب في جملة واحدة سريعة ومفيدة ومباشرة فقط.
 
 قواعد حظر التخيل والبيانات الأساسية وتفريد الوسائط (Tool Parameter Extraction Isolation):
 1. جميع العملاء والمستخدمين يتحدثون اللغة العربية (العامية المصرية) والإنجليزية فقط لا غير.
@@ -543,11 +651,17 @@ export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: stri
 2. تقارير الأرباح والمبيعات (get_financial_summary): للفترات اليومية والأسبوعية والشهرية.`,
 
     ALUMITAL: `
-قواعد مقايسات وعروض أسعار الألوميتال (calculate_alumital_quotation):
-1. استخراج الأبعاد: العرض (width_cm) والارتفاع (height_cm) بالسنتيمتر (مثال: "120 في 140" -> width: 120, height: 140).
-2. استخراج سعر المتر: إذا ذُكر صراحة ("بسعر 1500 للمتر" -> price_per_meter: 1500).
-3. استخراج البنود الإضافية: أي إضافات مثل سلك أو كالون أو مقابض ضعها في extra_items مع الكمية وسعر الوحدة إن ذُكر.
-4. الخصم: إذا ذُكر خصم مئوي أو مبلغ مباشر ضعه في discount_pct أو discount_amount.`
+قواعد مقايسات الألوميتال والمقاسات الفنية للعملاء:
+1. تسجيل وحفظ مقاسات فنية لعميل (save_customer_measurement):
+   - عند ذكر مقاسات أو أبعاد لعميل دون طلب حساب مالي أو سعر متر (مثال: "سجل مقاس لمحمد صادق شباك 120 في 140", "ضيف باب حمام 80×210 لمحمد صادق", "سجل مطبخ خشمونيوم 3 متر").
+   - استخرج: اسم العميل (customer_name)، نوع البند (item_type: شباك، باب، مطبخ، دلفة، إكسسوار)، الأبعاد (width_cm, height_cm, depth_cm)، الخامة/القطاع (material)، نوع الزجاج (glass_type)، والإكسسوارات (accessories).
+2. استرجاع وعرض مقاسات العميل (get_customer_measurements):
+   - عند السؤال عن مقاسات عميل (مثال: "مقاسات محمد صادق كام", "طلعلي مقاسات فلان", "أبعاد شباك محمد صادق").
+3. تعديل أو حذف مقاسات عميل (update_customer_measurement / delete_customer_measurement):
+   - عند طلب تعديل ("عدل شباك 140 في 150 خليه 190 في 180 لمحمد صادق") -> update_customer_measurement.
+   - عند طلب حذف ("امسح/الغي باب الحمام لمحمد صادق", "الغي آخر مقاس") -> delete_customer_measurement.
+4. حساب وعمل مقايسة وعرض سعر مالي (calculate_alumital_quotation):
+   - عند طلب حساب تكلفة أو عرض سعر أو ذكر سعر المتر ("احسبلي كوتيشن شباك 120 في 140 المتر بـ 1500", "عرض سعر").`
   };
 
   const activeRules = activeClusters.map(c => EXTRACTION_RULES[c] || '').join('\n');
@@ -1239,6 +1353,19 @@ function sanitizeNonToolReply(text: string): string {
     console.warn(`[LLM Guardrail] Intercepted illegal text-simulated mutation response: "${text}"`);
     return "عشان أسجلك العملية دي محتاج تفاصيل أكتر (اسم الصنف والسعر والكمية) 💰";
   }
+
+  // Caveman Sanitizer: Strip apologetic essays & system disclosure
+  const apologiesRegex = /(حقك\s*عليا|أنا\s*مقدر\s*جداً|أنا\s*حالياً\s*مبرمج|المساعد\s*الذكي\s*مسؤول\s*عن\s*الحسابات|السيستم\s*اللي\s*أنا\s*مربوط\s*عليه|فأنا\s*فعلياً\s*مش\s*بقدر)/gi;
+  if (apologiesRegex.test(text)) {
+    // If text was an apologetic essay about measurements, return concise Egyptian Arabic prompt
+    if (/مقاس|أبعاد|مطبخ|شباك/i.test(text)) {
+      return "مش مسجل مقاسات بالبيانات دي. تحب أسجلها دلوقتي بالاسم والأبعاد؟ 📐";
+    }
+    // General fallback: trim to first concise sentence
+    const firstLine = text.split('\n').map(l => l.trim()).filter(l => l.length > 0 && !apologiesRegex.test(l))[0];
+    return firstLine || "أنا معاك، قولي المطلوب وأنا تحت أمرك.";
+  }
+
   return text;
 }
 
@@ -1262,6 +1389,7 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
     'add_product', 'add_customer', 'log_customer_payment',
     'cancel_last_transaction', 'correct_last_transaction', 'update_expense',
     'calculate_alumital_quotation',
+    'save_customer_measurement', 'update_customer_measurement', 'delete_customer_measurement'
   ];
   if (!tenantId && FINANCIAL_TOOLS.includes(name)) {
     console.error(`[executeTool] BLOCKED: tool=${name} called without tenantId — refusing to write NULL-tenant data.`);
@@ -3184,6 +3312,312 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
       }
 
       return { success: true, resultText: summaryText };
+    }
+
+    // ==================== CUSTOMER MEASUREMENTS & TECHNICAL SPECS ====================
+    if (name === "save_customer_measurement") {
+      if (!tenantId) {
+        return { success: false, resultText: "يلزم تحديد هوية النشاط لحفظ المقاسات." };
+      }
+
+      const customerName = String(args.customer_name || "").trim();
+      if (!customerName) {
+        return { success: false, resultText: "يرجى توضيح اسم العميل لتسجيل المقاس له." };
+      }
+
+      // Check for optional customer link in DB
+      let customerId: string | null = null;
+      try {
+        const cust = await prisma.customer.findFirst({
+          where: { tenantId, name: { contains: customerName } }
+        });
+        if (cust) customerId = cust.id;
+      } catch {}
+
+      // Normalize items list (single vs batch)
+      const rawItems: any[] = Array.isArray(args.items) && args.items.length > 0
+        ? args.items
+        : [{
+            item_type: args.item_type || "شباك",
+            width_cm: args.width_cm,
+            height_cm: args.height_cm,
+            depth_cm: args.depth_cm,
+            quantity: args.quantity || 1,
+            material: args.material,
+            glass_type: args.glass_type,
+            accessories: args.accessories,
+            notes: args.notes
+          }];
+
+      const createdList: any[] = [];
+      for (const item of rawItems) {
+        const w = item.width_cm ? new Decimal(Number(item.width_cm)) : null;
+        const h = item.height_cm ? new Decimal(Number(item.height_cm)) : null;
+        const d = item.depth_cm ? new Decimal(Number(item.depth_cm)) : null;
+
+        const rec = await prisma.customerMeasurement.create({
+          data: {
+            tenantId,
+            customerId,
+            customerName,
+            itemType: item.item_type || "شباك",
+            width_cm: w,
+            height_cm: h,
+            depth_cm: d,
+            quantity: Number(item.quantity) || 1,
+            material: item.material ? String(item.material).trim() : null,
+            glassType: item.glass_type ? String(item.glass_type).trim() : null,
+            accessories: item.accessories ? String(item.accessories).trim() : null,
+            notes: item.notes ? String(item.notes).trim() : null,
+            status: "pending"
+          }
+        });
+        createdList.push(rec);
+      }
+
+      const itemSummaries = createdList.map((c, i) => {
+        const dim = c.width_cm && c.height_cm
+          ? ` (${c.width_cm}×${c.height_cm}${c.depth_cm ? `×${c.depth_cm}` : ''} سم)`
+          : '';
+        const specs = [c.material, c.glassType, c.accessories].filter(Boolean).join(' - ');
+        return `${createdList.length > 1 ? `${i+1}. ` : ''}${c.itemType}${dim}${specs ? ` [${specs}]` : ''}`;
+      }).join('\n');
+
+      const resultText = `✅ تم تسجيل مقاسات للعميل ${customerName}:\n${itemSummaries}`;
+
+      // Send interactive card if chatId present
+      const targetChatId = options?.chatId;
+      if (targetChatId && createdList.length > 0) {
+        const { sendTelegramAlert } = await import("@/lib/telegram");
+        const inlineButtons: any[] = [];
+        
+        createdList.slice(0, 4).forEach((rec, idx) => {
+          inlineButtons.push([
+            { text: `✏️ تعديل ${idx + 1} (${rec.itemType})`, callback_data: `edit_meas_${rec.id}` },
+            { text: `🗑️ مسح ${idx + 1}`, callback_data: `del_meas_${rec.id}` }
+          ]);
+        });
+
+        inlineButtons.push([
+          { text: `📑 عمل كوتيشن مالي لـ ${customerName}`, callback_data: `quote_meas_${createdList[0].id}` }
+        ]);
+
+        await sendTelegramAlert({
+          chatId: targetChatId,
+          text: resultText,
+          idempotencyKey: `meas_save_${createdList[0].id}_${Date.now()}`,
+          replyMarkup: { inline_keyboard: inlineButtons }
+        });
+        return { success: true, resultText, uiSent: true };
+      }
+
+      return { success: true, resultText };
+    }
+
+    if (name === "get_customer_measurements") {
+      if (!tenantId) {
+        return { success: false, resultText: "يلزم تحديد هوية النشاط لاسترجاع المقاسات." };
+      }
+
+      const customerName = String(args.customer_name || "").trim();
+      if (!customerName) {
+        return { success: false, resultText: "يرجى تحديد اسم العميل لعرض مقاساته." };
+      }
+
+      const measurements = await prisma.customerMeasurement.findMany({
+        where: {
+          tenantId,
+          customerName: { contains: customerName },
+          status: { not: "cancelled" }
+        },
+        orderBy: { createdAt: "asc" }
+      });
+
+      if (measurements.length === 0) {
+        return {
+          success: true,
+          resultText: `مش مسجل مقاسات للعميل "${customerName}". تحب أسجلها دلوقتي بالاسم والأبعاد؟ 📐`
+        };
+      }
+
+      const lines = measurements.map((m, idx) => {
+        const dim = m.width_cm && m.height_cm
+          ? `${m.width_cm}×${m.height_cm}${m.depth_cm ? `×${m.depth_cm}` : ''} سم`
+          : 'أبعاد غير محددة';
+        const qty = m.quantity > 1 ? ` (عدد ${m.quantity})` : '';
+        const specs = [m.material, m.glassType, m.accessories, m.notes].filter(Boolean).join(' - ');
+        return `${idx + 1}️⃣ *${m.itemType}${qty}:* ${dim}${specs ? `\n   ↳ _(${specs})_` : ''}`;
+      });
+
+      const summaryCard = `📋 *كشف مقاسات العميل: ${customerName}* (${measurements.length} بنود):\n───────────────────────\n${lines.join('\n\n')}\n───────────────────────`;
+
+      const targetChatId = options?.chatId;
+      if (targetChatId) {
+        const { sendTelegramAlert } = await import("@/lib/telegram");
+        const inlineButtons: any[] = [];
+
+        measurements.slice(0, 5).forEach((m, idx) => {
+          inlineButtons.push([
+            { text: `✏️ تعديل ${idx + 1}`, callback_data: `edit_meas_${m.id}` },
+            { text: `🗑️ مسح ${idx + 1}`, callback_data: `del_meas_${m.id}` }
+          ]);
+        });
+
+        if (measurements.length > 0) {
+          inlineButtons.push([
+            { text: `📑 تحويل لعرض سعر (كوتيشن)`, callback_data: `quote_meas_${measurements[0].id}` }
+          ]);
+        }
+
+        await sendTelegramAlert({
+          chatId: targetChatId,
+          text: summaryCard,
+          idempotencyKey: `meas_list_${customerName}_${Date.now()}`,
+          replyMarkup: { inline_keyboard: inlineButtons }
+        });
+        return { success: true, resultText: summaryCard, uiSent: true };
+      }
+
+      return { success: true, resultText: summaryCard };
+    }
+
+    if (name === "update_customer_measurement") {
+      if (!tenantId) {
+        return { success: false, resultText: "يلزم تحديد هوية النشاط لتعديل المقاسات." };
+      }
+
+      const customerName = String(args.customer_name || "").trim();
+      if (!customerName) {
+        return { success: false, resultText: "يرجى تحديد اسم العميل لتعديل مقاسه." };
+      }
+
+      // Find target measurement
+      let targetMeas: any = null;
+      if (args.target_recent) {
+        targetMeas = await prisma.customerMeasurement.findFirst({
+          where: { tenantId, customerName: { contains: customerName }, status: { not: "cancelled" } },
+          orderBy: { createdAt: "desc" }
+        });
+      } else if (args.old_width_cm && args.old_height_cm) {
+        targetMeas = await prisma.customerMeasurement.findFirst({
+          where: {
+            tenantId,
+            customerName: { contains: customerName },
+            width_cm: new Decimal(Number(args.old_width_cm)),
+            height_cm: new Decimal(Number(args.old_height_cm)),
+            status: { not: "cancelled" }
+          },
+          orderBy: { createdAt: "desc" }
+        });
+      } else if (args.target_item_type) {
+        targetMeas = await prisma.customerMeasurement.findFirst({
+          where: {
+            tenantId,
+            customerName: { contains: customerName },
+            itemType: { contains: String(args.target_item_type).trim() },
+            status: { not: "cancelled" }
+          },
+          orderBy: { createdAt: "desc" }
+        });
+      } else {
+        targetMeas = await prisma.customerMeasurement.findFirst({
+          where: { tenantId, customerName: { contains: customerName }, status: { not: "cancelled" } },
+          orderBy: { createdAt: "desc" }
+        });
+      }
+
+      if (!targetMeas) {
+        return { success: false, resultText: `لم يتم العثور على مقاس مطابق للعميل "${customerName}" لتعديله.` };
+      }
+
+      const updateData: any = {};
+      if (args.new_width_cm) updateData.width_cm = new Decimal(Number(args.new_width_cm));
+      if (args.new_height_cm) updateData.height_cm = new Decimal(Number(args.new_height_cm));
+      if (args.new_depth_cm) updateData.depth_cm = new Decimal(Number(args.new_depth_cm));
+      if (args.new_quantity) updateData.quantity = Number(args.new_quantity);
+      if (args.new_item_type) updateData.itemType = String(args.new_item_type).trim();
+      if (args.material) updateData.material = String(args.material).trim();
+      if (args.glass_type) updateData.glassType = String(args.glass_type).trim();
+      if (args.accessories) updateData.accessories = String(args.accessories).trim();
+      if (args.notes) updateData.notes = String(args.notes).trim();
+
+      const updated = await prisma.customerMeasurement.update({
+        where: { id: targetMeas.id },
+        data: updateData
+      });
+
+      const dim = updated.width_cm && updated.height_cm ? `${updated.width_cm}×${updated.height_cm} سم` : '';
+      return {
+        success: true,
+        resultText: `✅ تم تعديل ${updated.itemType} للعميل ${customerName} بنجاح ${dim ? `إلى ${dim}` : ''}.`
+      };
+    }
+
+    if (name === "delete_customer_measurement") {
+      if (!tenantId) {
+        return { success: false, resultText: "يلزم تحديد هوية النشاط لحذف المقاسات." };
+      }
+
+      const customerName = String(args.customer_name || "").trim();
+      if (!customerName) {
+        return { success: false, resultText: "يرجى تحديد اسم العميل لحذف مقاسه." };
+      }
+
+      if (args.delete_all) {
+        const res = await prisma.customerMeasurement.updateMany({
+          where: { tenantId, customerName: { contains: customerName }, status: { not: "cancelled" } },
+          data: { status: "cancelled" }
+        });
+        return { success: true, resultText: `🗑️ تم مسح كافة مقاسات العميل ${customerName} (${res.count} بنود).` };
+      }
+
+      let targetMeas: any = null;
+      if (args.target_recent) {
+        targetMeas = await prisma.customerMeasurement.findFirst({
+          where: { tenantId, customerName: { contains: customerName }, status: { not: "cancelled" } },
+          orderBy: { createdAt: "desc" }
+        });
+      } else if (args.width_cm && args.height_cm) {
+        targetMeas = await prisma.customerMeasurement.findFirst({
+          where: {
+            tenantId,
+            customerName: { contains: customerName },
+            width_cm: new Decimal(Number(args.width_cm)),
+            height_cm: new Decimal(Number(args.height_cm)),
+            status: { not: "cancelled" }
+          },
+          orderBy: { createdAt: "desc" }
+        });
+      } else if (args.target_item_type) {
+        targetMeas = await prisma.customerMeasurement.findFirst({
+          where: {
+            tenantId,
+            customerName: { contains: customerName },
+            itemType: { contains: String(args.target_item_type).trim() },
+            status: { not: "cancelled" }
+          },
+          orderBy: { createdAt: "desc" }
+        });
+      } else {
+        targetMeas = await prisma.customerMeasurement.findFirst({
+          where: { tenantId, customerName: { contains: customerName }, status: { not: "cancelled" } },
+          orderBy: { createdAt: "desc" }
+        });
+      }
+
+      if (!targetMeas) {
+        return { success: false, resultText: `لم يتم العثور على مقاس مسجل للعميل "${customerName}" لمسحه.` };
+      }
+
+      await prisma.customerMeasurement.update({
+        where: { id: targetMeas.id },
+        data: { status: "cancelled" }
+      });
+
+      return {
+        success: true,
+        resultText: `🗑️ تم مسح ${targetMeas.itemType} (${targetMeas.width_cm || ''}×${targetMeas.height_cm || ''}) للعميل ${customerName}.`
+      };
     }
 
       return { success: false, resultText: `أداة غير معروفة: ${name}` };

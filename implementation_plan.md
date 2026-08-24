@@ -1,93 +1,61 @@
-# Alumital Estimator — Telegram Integration & Media Worker (Remediation)
+# Implementation Plan: Casper Telegram Caveman Mode & Customer Technical Measurements Engine
 
-## Context
-
-The financial math core (`estimator.ts`) is complete and passing all tests. The feature is **disconnected** from the bot: no tool declaration, no dispatch handler, no real PDF/SVG generation.
-
-## Scope
-
-Three surgical file mutations. Zero schema changes required (Quotation model already exists).
+## 1. Context & Architecture Overview
+Casper POS & ERP utilizes Next.js 16, React 19, SQLite / PostgreSQL with Prisma, and Gemini Flash LLM orchestration for voice and Telegram bot assistants.
+This plan addresses:
+1. **System Prompt Hardening:** Injecting strict Caveman brevity and token conservation into `buildActivePrompt` in `casper-voice-web/lib/telegram_llm.ts`.
+2. **Customer Measurement Engine:** Adding `CustomerMeasurement` model in Prisma, implementing `save_customer_measurement` and `get_customer_measurements` tools, registering them in tool definitions, router clusters, and intent handlers.
+3. **Quotation & Measurement Harmonization:** Ensuring zero collision between financial estimations (`Quotation`) and technical dimensions (`CustomerMeasurement`).
 
 ---
 
-## Proposed Changes
+## 2. Proposed Code & Schema Modifications
 
-### File 1 — `casper-voice-web/lib/telegram_llm.ts`
+### A. Database Schema (`casper-voice-web/prisma/schema.prisma`)
+- Add `CustomerMeasurement` model:
+```prisma
+model CustomerMeasurement {
+  id           String   @id @default(cuid())
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customerId   String?
+  customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerName String
+  itemType     String   @default("شباك")
+  width_cm     Decimal?
+  height_cm    Decimal?
+  quantity     Int      @default(1)
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-#### [MODIFY] Tool Declaration (insert before line 401)
-
-Add `const calculateAlumitalQuotationTool: FunctionDeclaration` with:
-- `name`: `"calculate_alumital_quotation"`
-- Arabic description
-- Parameters: `width_cm`, `height_cm`, `quantity`, `price_per_meter`, `apply_min_area`, `discount_pct`, `discount_amount`, `extra_items` (array)
-- `required`: `["width_cm", "height_cm", "price_per_meter"]`
-
-#### [MODIFY] ALL_TOOLS array (line 409)
-
-Append `calculateAlumitalQuotationTool` to the array.
-
-#### [MODIFY] New ClusterKey 'ALUMITAL' (line 412)
-
-Add `'ALUMITAL'` to the `ClusterKey` union type.
-Add `ALUMITAL_TOOLS` array + keywords (`"أوفر", "أوفرة", "ألومتال", "نافذة", "باب", "كوتيشن", "عرض سعر", "احسبلي", "حسابات", "مقاس"`).
-
-#### [MODIFY] Dispatch handler (insert before line 3038)
-
-```typescript
-if (name === "calculate_alumital_quotation") {
-  // 1. Parse & validate via Zod
-  // 2. Call calculateQuotation() from estimator.ts
-  // 3. Persist Quotation record in DB (status: 'draft')
-  // 4. Fire-and-forget: processMediaJob() → generates PDF + SVG
-  // 5. Return formatted Arabic reply with result breakdown
+  @@index([tenantId, customerName])
+  @@index([tenantId, createdAt])
 }
 ```
+- Update `Tenant` and `Customer` models with relation fields.
+
+### B. System Prompt & Tool Routing (`casper-voice-web/lib/telegram_llm.ts`)
+- **Caveman System Prompt Rule:**
+  - "الردود فائقة الإيجاز (سطر أو سطرين فقط) بالعامية المصرية الصريحة السريعة."
+  - "ممنوع نهائياً الاعتذارات، مقدمات الترحيب الزائدة، أو شرح آليات وبرمجة السيستم الداخلية."
+  - "إذا لم تتوفر بيانات أو ميزة، أجب في جملة واحدة مباشرة ومفيدة."
+- **Tool Declarations:**
+  - `saveCustomerMeasurementTool`: saves dimensions, item type, quantity, customer name, notes.
+  - `getCustomerMeasurementsTool`: queries and returns recorded measurements for customer.
+- **Cluster Keywords:**
+  - Add `MEASUREMENTS` / update `ALUMITAL` keywords with `مقاس`, `مقاسات`, `أبعاد`, `رفع مقاس`, `مقاس شباك`, `مقاس باب`.
+- **Tool Handlers:**
+  - Execute database transaction to record `CustomerMeasurement`.
+  - Format concise response for retrieved dimensions.
 
 ---
 
-### File 2 — `src/lib/alumital/media_worker.ts`
-
-Full replacement of 32-line stub with:
-
-1. **Atomic state lock**: `prisma.quotation.updateMany({ where: { id, status: 'draft' }, data: { status: 'processing_media' } })` — if 0 rows updated → skip (already processing)
-2. **SVG sketch generator**: Pure string template, proportional 2D rectangle with dimension labels
-3. **Arabic HTML template**: Inline Cairo font, RTL layout, full quotation breakdown table
-4. **PDF via Puppeteer**: `browser.newPage()` → `setContent(html)` → `pdf({ format: 'A4' })`
-5. **fs.writeFile**: Save to `casper-voice-web/public/storage/{tenantId}/quotations/{quoteId}/`
-6. **State finalize**: `prisma.quotation.update({ status: 'completed', pdfUrl, sketchUrl })`
-7. **Error recovery**: `status: 'media_failed'` on catch
-
----
-
-### File 3 — `package.json` (casper-voice-web)
-
-Add `puppeteer` to dependencies for server-side PDF rendering.
-
----
-
-## Verification Plan
-
-### Automated Tests
-```bash
-npx vitest run tests/alumital_estimator.test.ts   # 4 tests — must stay GREEN
-npx vitest run tests/alumital_telegram_e2e.test.ts # 3 tests — must stay GREEN
-npx tsc --noEmit                                   # 0 TS errors
-```
-
-### Manual Verification
-Send bot message: `"احسبلي شباك 150x200 بسعر 280 جنيه للمتر"` → expect:
-- Arabic calculation summary reply
-- PDF attachment in chat
-- 2D sketch attachment
-
----
-
-## Risk Map
-
-| Risk | Mitigation |
-|---|---|
-| Puppeteer binary missing on VPS | `puppeteer` bundles Chromium by default — works on Ubuntu VPS |
-| Arabic font not rendering | Embed Cairo font as base64 in HTML template |
-| Atomic lock race condition | `updateMany WHERE status='draft'` → `count.updated === 0` → bail |
-| Public storage path collision | `{tenantId}/{quoteId}` path uniqueness guaranteed by UUID |
-| Tool routing miss | Add ALUMITAL keywords to cluster router |
+## 3. Verification & Testing Plan
+- Create Vitest test suite `casper-voice-web/tests/customer_measurements_e2e.test.ts`:
+  1. Test tool routing resolves `save_customer_measurement` on "سجل مقاس لمحمد صادق شباك 120 في 140".
+  2. Test tool routing resolves `get_customer_measurements` on "مقاسات العميل محمد صادق".
+  3. Test zero collision between `calculate_alumital_quotation` and `save_customer_measurement`.
+  4. Test database persistence and retrieval of `CustomerMeasurement`.
+  5. Test Caveman response length (< 120 characters, zero apologetic keywords).
+- Run full test suite: `npx vitest run`.

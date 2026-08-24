@@ -314,6 +314,127 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
+      // ==================== CUSTOMER MEASUREMENTS INTERACTIVE BUTTONS ====================
+      if (data.startsWith("del_meas_")) {
+        const measId = data.replace("del_meas_", "").trim();
+        const meas = await (prisma as any).customerMeasurement.findUnique({ where: { id: measId } });
+        if (!meas) {
+          await answerCallback("❌ لم يتم العثور على المقاس.");
+          return NextResponse.json({ ok: true });
+        }
+
+        await answerCallback("⚠️ يتطلب تأكيد");
+        const dimStr = meas.width_cm && meas.height_cm ? `${meas.width_cm}×${meas.height_cm} سم` : '';
+        const confirmText = `⚠️ *تأكيد مسح البند:*\nهل أنت متأكد من مسح (${meas.itemType} ${dimStr}) للعميل *${meas.customerName}*؟`;
+
+        const token = process.env.TELEGRAM_BOT_TOKEN;
+        if (token && callback.message?.message_id) {
+          await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: callbackChatId,
+              message_id: callback.message.message_id,
+              text: confirmText,
+              parse_mode: "Markdown",
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    { text: "✅ نعم، امسح البند", callback_data: `confirm_del_meas_${meas.id}` },
+                    { text: "❌ تراجع وإلغاء", callback_data: `cancel_del_meas_${meas.id}` }
+                  ]
+                ]
+              }
+            })
+          }).catch(() => null);
+        }
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data.startsWith("confirm_del_meas_")) {
+        const measId = data.replace("confirm_del_meas_", "").trim();
+        await (prisma as any).customerMeasurement.updateMany({
+          where: { id: measId },
+          data: { status: "cancelled" }
+        });
+        await answerCallback("🗑️ تم مسح البند بنجاح");
+        if (callback.message?.message_id) {
+          const token = process.env.TELEGRAM_BOT_TOKEN;
+          if (token) {
+            await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: callbackChatId,
+                message_id: callback.message.message_id,
+                text: `🗑️ *تم مسح البند بنجاح من سجل العميل.*`,
+                parse_mode: "Markdown"
+              })
+            }).catch(() => null);
+          }
+        }
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data.startsWith("cancel_del_meas_")) {
+        await answerCallback("تم التراجع");
+        if (callback.message?.message_id) {
+          const token = process.env.TELEGRAM_BOT_TOKEN;
+          if (token) {
+            await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: callbackChatId,
+                message_id: callback.message.message_id,
+                text: `✅ *تم التراجع والإبقاء على المقاس كما هو دون تغيير.*`,
+                parse_mode: "Markdown"
+              })
+            }).catch(() => null);
+          }
+        }
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data.startsWith("edit_meas_")) {
+        const measId = data.replace("edit_meas_", "").trim();
+        const meas = await (prisma as any).customerMeasurement.findUnique({ where: { id: measId } });
+        await answerCallback("تعديل المقاس ✏️");
+        const dimStr = meas?.width_cm && meas?.height_cm ? ` (${meas.width_cm}×${meas.height_cm})` : '';
+        await sendTelegramAlert({
+          chatId: callbackChatId,
+          text: `✏️ *لتعديل ${meas?.itemType || 'البند'}${dimStr} للعميل ${meas?.customerName || ''}:*\nأرسل رسالة نصية أو فويس بالأبعاد أو المواصفات الجديدة.\n*(مثال: "خلي الشباك 140 في 150 زجاج فاميه")*`,
+          idempotencyKey: `meas:edit_prompt:${measId}:${Date.now()}`
+        });
+        return NextResponse.json({ ok: true });
+      }
+
+      if (data.startsWith("quote_meas_")) {
+        const measId = data.replace("quote_meas_", "").trim();
+        const meas = await (prisma as any).customerMeasurement.findUnique({ where: { id: measId } });
+        if (!meas) {
+          await answerCallback("❌ لم يتم العثور على المقاس.");
+          return NextResponse.json({ ok: true });
+        }
+
+        const width = Number(meas.width_cm) || 120;
+        const height = Number(meas.height_cm) || 120;
+        await answerCallback("جاري عمل المقايسة وعرض السعر... 📐");
+
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (tenant) {
+          await processTelegramMessageWithLLM(
+            `احسبلي مقايسة ألوميتال للعميل ${meas.customerName} شباك ${width} في ${height} بسعر 1500 للمتر`,
+            tenant.id,
+            tenant.merchantName || undefined,
+            tenant.businessType || undefined,
+            tenant.workingHours || undefined,
+            callbackChatId
+          );
+        }
+        return NextResponse.json({ ok: true });
+      }
+
       const isTenantCommand = data.startsWith("menu:") || data.startsWith("sale:") || data.startsWith("cmd_");
       if (isTenantCommand) {
         const tenantCheck = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });

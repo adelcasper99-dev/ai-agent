@@ -118,7 +118,7 @@ describe("AI Guardrails & Adversarial Prompts", () => {
       Date.now()
     );
     // Should trigger Small-Talk Short-Circuit
-    expect(result.text || (result as any).finalReply).toMatch(/مساعد|مبيعات|لا أستطيع|أهلاً|قولّي/i);
+    expect(result.text || (result as any).finalReply).toMatch(/مساعد|مبيعات|لا أستطيع|أهلاً|قولّي|جاهز|المحل|شغل/i);
   }, 30000);
 
   it("G5: Cancels an existing appointment (الغي موعد احمد مكش)", async () => {

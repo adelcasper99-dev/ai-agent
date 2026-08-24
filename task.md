@@ -1,10 +1,10 @@
-# Task List — Alumital Estimator Remediation (Block B Build)
+# Task Tracking: Caveman Mode & Customer Measurements Engine
 
-- [x] **Task 1**: Wire `calculate_alumital_quotation` to `casper-voice-web/lib/telegram_llm.ts` (tool declaration, ALL_TOOLS array, ALUMITAL cluster router, extraction rules).
-- [x] **Task 2**: Add `calculate_alumital_quotation` dispatch handler to `executeTool` with Zod parsing, Decimal.js calculations, draft quote DB persistence, and interactive inline confirmation cards.
-- [x] **Task 3**: Add `confirm_quote_*` and `cancel_quote_*` callback query handlers to `casper-voice-web/app/api/telegram/webhook/route.ts` with atomic DB status locks (`WHERE status = 'draft'`).
-- [x] **Task 4**: Add `sendTelegramPhoto` and `sendTelegramDocument` helpers to `casper-voice-web/lib/telegram.ts`.
-- [x] **Task 5**: Build full production `src/lib/alumital/media_worker.ts` & `casper-voice-web/lib/alumital/media_worker.ts` with SVG sketch generator, Sharp SVG-to-PNG binary conversion, Cairo Google Font Arabic HTML template, and Puppeteer singleton PDF rendering.
-- [x] **Task 6**: Install `sharp` and `puppeteer-core` dependencies in `casper-voice-web/package.json`.
-- [x] **Task 7**: Run comprehensive Vitest E2E test suite (`tests/alumital_telegram_e2e.test.ts` - 5/5 GREEN) and unit test suite (`tests/alumital_estimator.test.ts` - 4/4 GREEN).
-- [x] **Task 8**: Validate zero TypeScript compilation errors with `npx tsc --noEmit`.
+- [x] 1. Schema: Add CustomerMeasurement model with tenant isolation & relations in prisma/schema.prisma
+- [x] 2. Run prisma db push / prisma generate
+- [x] 3. Prompt: Harden buildActivePrompt & sanitizeNonToolReply with strict Caveman Mode directives
+- [x] 4. Tools: Declare save_customer_measurement, get_customer_measurements, update_customer_measurement, delete_customer_measurement
+- [x] 5. Routing: Update resolveActiveTools & CLUSTER_KEYWORDS with measurement keywords & handlers
+- [x] 6. Handlers: Implement DB transactions & Telegram Inline Buttons in executeTool
+- [x] 7. Webhook: Implement callback_query handlers for measurement inline buttons & 2-step confirmation
+- [x] 8. Tests: Write comprehensive Vitest test suite in tests/customer_measurements_e2e.test.ts

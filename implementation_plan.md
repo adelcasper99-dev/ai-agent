@@ -1,36 +1,43 @@
-# مواصفات وخطة تنفيذ منظومة المقايسات متعددة البنود وحوكمة أزرار التيليجرام (Final Hardened Spec V3.5)
+# خطة العمل المحدثة v2: محرك الرندر الهندسي الآمن والمضبوط
 
-> [!IMPORTANT]
-> تم تدعيم الخطة بباتش تطبيع الأرقام الهندية العربية الكامل (`normalizeArabicDigits`) وتضمينه كـ Task مستقلة إلزامية في الـ Checklist مع اختبار وحدة مخصص.
+## 1. التشخيص والحل المعماري للموارد والخطوط (Resource & Font Hardening)
 
----
+### أ. إدارة موارد الـ VPS وحماية خوادم الصوت (LiveKit & VPS Safety)
+* **المشكلة:** الخادم يعمل عليه خدمات صوتية حية (LiveKit Agent) وبوت التيليجرام ولوحة الإدارة. إطلاق متصفحات متعددة قد يسبب ضغط RAM/CPU.
+* **الحل المعماري الصارم:**
+  1. **Singleton Browser With Tab Reuse:** متصفح Chromium واحد فقط، يُعاد استخدامه عبر فتح صفحة (`page = await browser.newPage()`) واحدة لكل مهمة رندر، ثم إغلاق الصفحة فوراً.
+  2. **Sequential Multi-Item Batching:** عند رندر 4 أو 10 بنود، يتم توليد صور البنود داخل نفس التاب بالتسلسل (`loop`) دون فتح 10 تابات متزامنة.
+  3. **Auto-Close Idle Timer:** إغلاق المتصفح تماماً بعد 60 ثانية من الخمول لتفريغ الذاكرة العشوائية إلى 0 MB.
+  4. **Mutex / Concurrency Queue:** قفل متزامن يضمن معالجة مهمة رندر واحدة فقط في نفس اللحظة لمنع أي تداخل أو إجهاد للخادم.
 
-## 1. منظومة الحماية والـ Patch المعتمد (Digit Normalization & Anti-Hallucination Guard)
-
-### أ. دالة تطبيع الأرقام الهندية-العربية (`normalizeArabicDigits`)
-```typescript
-// يحوّل أي رقم هندي-عربي (٠-٩) لرقم لاتيني (0-9) قبل فحص الحارس النصي
-function normalizeArabicDigits(text: string): string {
-  const easternToWestern: Record<string, string> = {
-    '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
-    '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
-  };
-  return text.replace(/[٠-٩]/g, (d) => easternToWestern[d] || d);
-}
-```
-
-### ب. تكامل الفحص داخل `sanitizeNonToolReply`
-* يتم تطبيع النص أولاً: `const normalized = normalizeArabicDigits(reply);`
-* تشغيل الفحص على `normalized` (جداول الماركداون + الفحص الثلاثي للأسعار).
-* إذا كان الرد سليماً، يتم إرجاع النص **الأصلي** `reply` دون تعديل للحفاظ على صياغة التاجر الأصلية.
+### ب. تأكيد الخطوط العربية على السيرفر (Arabic System Fonts Verified)
+* تم تثبيت وفحص خطوط `Noto Sans Arabic` و `Noto Kufi Arabic` و `KacstNaskh` و `Scheherazade` و `Liberation Sans` على سيرفر الإنتاج (HQ VPS) وتحديث كاش `fontconfig` بنجاح.
+* القالب سيستخدم صراحة عائلة الخطوط المضمونة: `font-family: 'Cairo', 'Noto Sans Arabic', 'DejaVu Sans', Tahoma, sans-serif;`.
 
 ---
 
-## 2. جدول المهام التنفيذية الصريح والملزم (Strict Step-by-Step Checklist)
+## 2. القرارات الهندسية المحددة (Architecture Specs)
 
-- [ ] **Task 1 (Prisma Schema):** إضافة `items String?` في نموذج `Quotation` بملف `schema.prisma`.
-- [ ] **Task 2 (Estimator Engine):** ترقية `estimator.ts` بـ `CalculateQuotationInputSchema`، `.refine()`، دقة `Decimal.js`، وإلغاء ازدواجية الملفات عبر re-export.
-- [ ] **Task 3.1 (Digit Normalization Patch):** إضافة دالة `normalizeArabicDigits` في `telegram_llm.ts` ودمجها كأول سطر في `sanitizeNonToolReply`.
-- [ ] **Task 3.2 (Telegram LLM Guardrails):** تحديث `calculateAlumitalQuotationTool` Schema، الكارت التفاعلي المرقم، الـ Disambiguation prompt، وحارس الـ 3-Predicate Check.
-- [ ] **Task 4 (Webhook Callback Route):** معالجة `conf_q:`, `ed_dim:`, `ed_prc:`, `can_q:` مع القفل الذري والـ Auto-Rollback التلقائي عند أي خطأ في توليد الميديا.
-- [ ] **Task 5 (Test Suite & Verification):** كتابة وتشغيل `tests/alumital_multi_item_guardrails.test.ts` والتحقق من حالة محمود فوزي المرجعية (**67,830.00 ج**)، واختبار الأرقام الهندية العربية `٦٧٨٣٠ جنيه` مع لصق الـ Output الفعلي كاملاً.
+### أ. تسليم صور التيليجرام (Telegram Delivery)
+* **1 إلى 10 بنود:** إرسال صور PNG عالية الدقة لكل بند عبر `sendMediaGroup` (ألبوم منظم) مع كابشن: `1️⃣ بند 1: شباك (100×100 سم) - 5 قطع`.
+* **أكثر من 10 بنود:** إرسال أول 10 بنود كألبوم + إرفاق ملف الـ PDF الشامل لجميع البنود (احتراماً لحد التيليجرام الأقصى 10 صور).
+
+### ب. صفحات الـ PDF (PDF Layout)
+* **1 إلى 6 بنود:** شبكة رسومات هندسية مصغرة (Bento Grid) مع الجدول والإجماليات في **صفحة A4 واحدة مؤكدة (Single-Page Guarantee)**.
+* **أكثر من 6 بنود:** جدول ممتد مع ترويسة متكررة وتوزيع صفحات طبيعي بدون كسر الصفوف (`page-break-inside: avoid`).
+
+### ج. محرك أشكال الأصناف (Item Types & Universal Fallback)
+* **شباك:** إطار مستطيل/مربع مع ضلفتين وخطوط انعكاس الزجاج.
+* **باب:** إطار رأسي مع مقبض الباب (Handle) وتقسيم معماري.
+* **مخصص / Fallback (مطبخ، فاصل، تندة، إلخ):** إطار لوح معماري محايد يعرض الأبعاد والاسم بوضوح تام.
+
+---
+
+## 3. خطة الاختبار والقياس التجريبي القابل للتحقق (Measurable Tests)
+في ملف `tests/alumital_sketch_pdf_hardening.test.ts`:
+1. **فحص الـ Mojibake:** فحص نصوص الـ SVG والتأكد من عدم وجود `/[طظ][§©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿]/` أو `\uFFFD`.
+2. **فحص حجم الـ PNG المنتج:** `expect(pngBuffer.length).toBeGreaterThan(5000)` لضمان عدم وجود صور تالفة أو فارغة.
+3. **فحص حجم الـ PDF:** `expect(pdfBuffer.length).toBeGreaterThan(10000)`.
+4. **فحص صفحة الـ PDF الواحدة:** فحص الـ Buffer والتأكد من أن عدد صفحات المقايسة (4 بنود) = **1 صفحة بالضبط**.
+5. **فحص دعم الأصناف المختلفة:** اختبار "باب"، "شباك"، "مطبخ"، و"بند افتراضي".
+6. **مراجعة بصرية حية:** فحص الصور وملف الـ PDF المولد على التيليجرام وسيرفر الإنتاج.

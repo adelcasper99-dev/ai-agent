@@ -225,8 +225,7 @@ export async function POST(req: NextRequest) {
           const fs = await import("fs/promises");
 
           const job = await processMediaJob(quoteId, quote.tenantId);
-          if (job.status === "completed" && job.sketchPngPath && job.pdfPath) {
-            const pngBuf = await fs.readFile(job.sketchPngPath);
+          if (job.status === "completed" && job.pdfPath) {
             const pdfBuf = await fs.readFile(job.pdfPath);
 
             await (prisma as any).quotation.update({
@@ -234,12 +233,32 @@ export async function POST(req: NextRequest) {
               data: { status: "confirmed", pdfUrl: job.pdfUrl, sketchUrl: job.sketchUrl }
             });
 
-            // 1. Send Sketch Photo
-            const sketchCaption = `📐 *الرسم الهندسي للمقايسة #${quoteId.slice(0, 8)}*\nالأبعاد: ${quote.width_cm} × ${quote.height_cm} سم | المساحة: ${quote.area_sqm} م²`;
-            await sendTelegramPhoto(callbackChatId, pngBuf, sketchCaption);
+            // 1. Send Item Sketches (Send each sketch photo with clear caption)
+            const sketchesToSend = job.sketches && job.sketches.length > 0 ? job.sketches : (job.sketchPngPath ? [{
+              itemIndex: 1,
+              itemType: 'شباك',
+              width_cm: Number(quote.width_cm),
+              height_cm: Number(quote.height_cm),
+              quantity: quote.quantity,
+              pngPath: job.sketchPngPath,
+            }] : []);
+
+            // Send up to 10 photos
+            const maxPhotosToSend = Math.min(sketchesToSend.length, 10);
+            for (let i = 0; i < maxPhotosToSend; i++) {
+              const sk = sketchesToSend[i];
+              try {
+                const skBuf = await fs.readFile(sk.pngPath);
+                const caption = `📐 *مخطط بند ${sk.itemIndex}:* ${sk.itemType} (${sk.width_cm} × ${sk.height_cm} سم) - ${sk.quantity} قطع`;
+                await sendTelegramPhoto(callbackChatId, skBuf, caption);
+              } catch (photoErr) {
+                console.error(`[Telegram Webhook] Failed to send photo for item ${sk.itemIndex}:`, photoErr);
+              }
+            }
 
             // 2. Send Formal Quotation PDF Document
-            const pdfCaption = `📄 *عرض السعر الرسمي المعتمد #${quoteId.slice(0, 8)}*\nالإجمالي: *${quote.total_price} ج.م* | جاهز للطباعة والمشاركة`;
+            const custNote = quote.customerRef ? ` للعميل *${quote.customerRef}*` : '';
+            const pdfCaption = `📄 *عرض السعر الرسمي المعتمد${custNote} #${quoteId.slice(0, 8)}*\nالإجمالي: *${quote.total_price} ج.م* | عدد البنود: ${sketchesToSend.length} | جاهز للطباعة والمشاركة ✨`;
             await sendTelegramDocument(callbackChatId, pdfBuf, `عرض_سعر_${quoteId.slice(0, 8)}.pdf`, pdfCaption);
 
             // 3. Edit original confirmation message
@@ -252,7 +271,7 @@ export async function POST(req: NextRequest) {
                   body: JSON.stringify({
                     chat_id: callbackChatId,
                     message_id: callback.message.message_id,
-                    text: `✅ *تم تأكيد المقايسة بنجاح وتم إرسال الرسم الهندسي وملف الـ PDF الرسمي أعلاه.*`,
+                    text: `✅ *تم تأكيد المقايسة بنجاح وتم إرسال المخططات الهندسية وملف الـ PDF الرسمي أعلاه.*`,
                     parse_mode: "Markdown"
                   })
                 }).catch(() => null);

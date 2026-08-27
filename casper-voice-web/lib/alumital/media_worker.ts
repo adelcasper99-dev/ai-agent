@@ -2,8 +2,19 @@ import path from 'path';
 import fs from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 import Decimal from 'decimal.js';
-import sharp from 'sharp';
 import { prisma } from '@/lib/prisma';
+
+export interface SketchItem {
+  itemIndex: number;
+  itemType: string;
+  width_cm: number;
+  height_cm: number;
+  quantity: number;
+  svgPath: string;
+  pngPath: string;
+  url: string;
+  pngBase64: string;
+}
 
 export interface MediaRenderJob {
   quoteId: string;
@@ -13,6 +24,7 @@ export interface MediaRenderJob {
   sketchSvgPath?: string;
   pdfUrl?: string;
   sketchUrl?: string;
+  sketches?: SketchItem[];
   status: 'completed' | 'failed';
   error?: string;
 }
@@ -22,12 +34,33 @@ export interface SketchDimensions {
   height_cm: number;
   customerRef?: string;
   profile_type?: string;
+  item_type?: string;
+  quantity?: number;
+  item_index?: number;
 }
 
-// ==================== SINGLETON BROWSER MANAGEMENT ====================
+// ==================== CONCURRENCY MUTEX & SINGLETON BROWSER ====================
 let browserInstance: any = null;
 let browserIdleTimer: NodeJS.Timeout | null = null;
-const BROWSER_IDLE_TIMEOUT_MS = 60000; // Close browser after 60s of inactivity to save RAM
+const BROWSER_IDLE_TIMEOUT_MS = 60000; // Close browser after 60s of inactivity to keep 0MB idle RAM
+
+let renderMutexPromise: Promise<void> = Promise.resolve();
+
+async function withRenderMutex<T>(fn: () => Promise<T>): Promise<T> {
+  let unlock: () => void;
+  const nextLock = new Promise<void>((resolve) => {
+    unlock = resolve;
+  });
+  const prevLock = renderMutexPromise;
+  renderMutexPromise = nextLock;
+
+  await prevLock;
+  try {
+    return await fn();
+  } finally {
+    unlock!();
+  }
+}
 
 async function getBrowser() {
   if (browserIdleTimer) {
@@ -39,8 +72,6 @@ async function getBrowser() {
     return browserInstance;
   }
 
-  // Only puppeteer-core is installed on the VPS (puppeteer full pkg not required).
-  // serverExternalPackages in next.config.ts prevents Turbopack from statically bundling it.
   const puppeteerCore: any = await import('puppeteer-core').catch(() => null);
   const puppeteer = puppeteerCore ? (puppeteerCore.default || puppeteerCore) : null;
 
@@ -58,7 +89,6 @@ async function getBrowser() {
     ],
   };
 
-  // Check known browser paths for Linux VPS and Windows dev machine
   const possiblePaths = [
     process.env.CHROMIUM_PATH,
     process.env.CHROME_PATH,
@@ -105,25 +135,134 @@ function scheduleBrowserIdleClose() {
   }, BROWSER_IDLE_TIMEOUT_MS);
 }
 
-// ==================== 2D VECTOR SKETCH GENERATOR ====================
+// ==================== 2D VECTOR BLUEPRINT GENERATOR ====================
 export function buildSketchSvg(dim: SketchDimensions): string {
   const w = Number(dim.width_cm) || 100;
-  const h = Number(dim.height_cm) || 120;
+  const h = Number(dim.height_cm) || 100;
+  const itemType = (dim.item_type || 'شباك').trim();
+  const itemIndex = dim.item_index || 1;
+  const qty = dim.quantity || 1;
 
-  // Aspect ratio scaling inside a 600x500 viewport with 80px margins
+  const hasDoorKeyword = /باب|door/i.test(itemType);
+  const hasWindowKeyword = /شباك|نافذة|window/i.test(itemType);
+  const hasCustomKeyword = /مطبخ|فاصل|تندة|واجهة|قاطع|kitchen|partition|facade/i.test(itemType);
+
+  let isDoor = false;
+  let isWindow = false;
+
+  if (hasDoorKeyword) {
+    isDoor = true;
+  } else if (hasWindowKeyword) {
+    isWindow = true;
+  } else if (hasCustomKeyword) {
+    // Custom architectural panel
+    isDoor = false;
+    isWindow = false;
+  } else if (h >= 180 && w <= 110) {
+    isDoor = true;
+  } else if (!itemType || itemType === 'شباك' || h < 180) {
+    isWindow = true;
+  }
+
+  // Aspect ratio scaling inside a 600x500 viewport
   const maxW = 440;
-  const maxH = 340;
+  const maxH = 330;
   const ratio = Math.min(maxW / w, maxH / h);
-  const drawW = Math.round(w * ratio);
-  const drawH = Math.round(h * ratio);
+  const drawW = Math.max(80, Math.round(w * ratio));
+  const drawH = Math.max(100, Math.round(h * ratio));
 
   const startX = Math.round((600 - drawW) / 2);
-  const startY = Math.round((500 - drawH) / 2) - 10;
-  const frameThickness = Math.max(12, Math.round(drawW * 0.05));
-  const midX = startX + Math.round(drawW / 2);
+  const startY = Math.round((460 - drawH) / 2) + 20;
+  const frameThickness = Math.max(10, Math.round(drawW * 0.05));
+  const areaM2 = ((w * h) / 10000).toFixed(2);
+
+  // Door specific elements vs Window specific elements
+  let interiorSvg = '';
+  let typeLabel = '';
+
+  if (isDoor) {
+    typeLabel = `باب ألوميتال`;
+    const innerW = drawW - frameThickness * 2;
+    const innerH = drawH - frameThickness * 2;
+    const handleY = startY + Math.round(drawH * 0.55);
+    const handleX = startX + drawW - frameThickness - 18;
+
+    interiorSvg = `
+      <!-- Door Main Leaf -->
+      <rect x="${startX + frameThickness}" y="${startY + frameThickness}" 
+            width="${innerW}" height="${innerH}" 
+            fill="url(#glassGrad)" stroke="#38bdf8" stroke-width="1.5" rx="2" />
+      
+      <!-- Door Top Glass Panel & Lower Kickplate -->
+      <rect x="${startX + frameThickness + 10}" y="${startY + frameThickness + 10}" 
+            width="${innerW - 20}" height="${Math.round(innerH * 0.55)}" 
+            fill="#0284c7" fill-opacity="0.25" stroke="#38bdf8" stroke-width="1" />
+      <rect x="${startX + frameThickness + 10}" y="${startY + frameThickness + Math.round(innerH * 0.65)}" 
+            width="${innerW - 20}" height="${Math.round(innerH * 0.3)}" 
+            fill="#1e293b" stroke="#64748b" stroke-width="1" />
+
+      <!-- Door Handle & Keyhole Knob -->
+      <circle cx="${handleX}" cy="${handleY}" r="7" fill="#f8fafc" stroke="#0284c7" stroke-width="2" />
+      <rect x="${handleX - 3}" cy="${handleY - 14}" width="6" height="28" rx="3" fill="#cbd5e1" stroke="#475569" stroke-width="1" />
+      
+      <!-- Door Swing Arc Indicator -->
+      <path d="M ${startX + frameThickness} ${startY + drawH - frameThickness} A ${innerW} ${innerW} 0 0 0 ${startX + drawW - frameThickness} ${startY + drawH - frameThickness}" 
+            fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6 6" stroke-opacity="0.6" />
+    `;
+  } else if (isWindow) {
+    typeLabel = `شباك ألوميتال`;
+    const midX = startX + Math.round(drawW / 2);
+    const sashW = Math.round((drawW - frameThickness * 3) / 2);
+    const sashH = drawH - frameThickness * 2;
+
+    interiorSvg = `
+      <!-- Left Glass Sash -->
+      <rect x="${startX + frameThickness}" y="${startY + frameThickness}" 
+            width="${sashW}" height="${sashH}" 
+            fill="url(#glassGrad)" stroke="#38bdf8" stroke-width="1.5" rx="2" />
+
+      <!-- Right Glass Sash -->
+      <rect x="${midX + Math.round(frameThickness / 2)}" y="${startY + frameThickness}" 
+            width="${sashW}" height="${sashH}" 
+            fill="url(#glassGrad)" stroke="#38bdf8" stroke-width="1.5" rx="2" />
+
+      <!-- Middle Mullion Interlock -->
+      <rect x="${midX - Math.round(frameThickness / 2)}" y="${startY}" 
+            width="${frameThickness}" height="${drawH}" 
+            fill="url(#frameGrad)" stroke="#64748b" stroke-width="1" />
+
+      <!-- Glass reflection light glare -->
+      <line x1="${startX + frameThickness + 15}" y1="${startY + frameThickness + 15}" 
+            x2="${startX + Math.round(drawW * 0.35)}" y2="${startY + drawH - frameThickness - 20}" 
+            stroke="#ffffff" stroke-width="2" stroke-opacity="0.3" stroke-dasharray="10 15" />
+      <line x1="${midX + frameThickness + 15}" y1="${startY + frameThickness + 15}" 
+            x2="${midX + Math.round(drawW * 0.35)}" y2="${startY + drawH - frameThickness - 20}" 
+            stroke="#ffffff" stroke-width="2" stroke-opacity="0.3" stroke-dasharray="10 15" />
+    `;
+  } else {
+    // Custom / Universal Architectural Panel (Kitchen, Partition, Facade, etc.)
+    typeLabel = itemType;
+    const innerW = drawW - frameThickness * 2;
+    const innerH = drawH - frameThickness * 2;
+
+    interiorSvg = `
+      <!-- Neutral Panel Body -->
+      <rect x="${startX + frameThickness}" y="${startY + frameThickness}" 
+            width="${innerW}" height="${innerH}" 
+            fill="url(#glassGrad)" stroke="#38bdf8" stroke-width="1.5" rx="2" />
+      
+      <!-- Architectural Grid Lines -->
+      <line x1="${startX + frameThickness}" y1="${startY + Math.round(drawH / 2)}" 
+            x2="${startX + drawW - frameThickness}" y2="${startY + Math.round(drawH / 2)}" 
+            stroke="#64748b" stroke-width="1.5" stroke-dasharray="5 5" />
+      <line x1="${startX + Math.round(drawW / 2)}" y1="${startY + frameThickness}" 
+            x2="${startX + Math.round(drawW / 2)}" y2="${startY + drawH - frameThickness}" 
+            stroke="#64748b" stroke-width="1.5" stroke-dasharray="5 5" />
+    `;
+  }
 
   return `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" width="600" height="500" style="background:#0f172a; font-family:'Cairo', 'Segoe UI', Tahoma, sans-serif;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" width="600" height="500" style="background:#0f172a; font-family:'Cairo', 'Noto Sans Arabic', 'DejaVu Sans', Tahoma, sans-serif;">
   <defs>
     <!-- Background grid -->
     <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -147,66 +286,50 @@ export function buildSketchSvg(dim: SketchDimensions): string {
     </marker>
   </defs>
 
+  <!-- Background Canvas -->
   <rect width="100%" height="100%" fill="#0f172a" />
   <rect width="100%" height="100%" fill="url(#grid)" />
 
-  <!-- Outer Aluminum Frame -->
+  <!-- Top Title Bar -->
+  <rect x="25" y="16" width="550" height="42" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1" />
+  <text x="555" y="43" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="end">بند ${itemIndex}: ${itemType} (${qty} قطع)</text>
+  <text x="45" y="43" fill="#94a3b8" font-size="14" font-weight="600" text-anchor="start">المقاس: ${w} × ${h} سم</text>
+
+  <!-- Outer Aluminum Profile Frame -->
   <rect x="${startX}" y="${startY}" width="${drawW}" height="${drawH}" rx="4" fill="url(#frameGrad)" stroke="#94a3b8" stroke-width="2" />
 
-  <!-- Inner Left Glass Panel -->
-  <rect x="${startX + frameThickness}" y="${startY + frameThickness}" 
-        width="${Math.round((drawW - frameThickness * 3) / 2)}" 
-        height="${drawH - frameThickness * 2}" 
-        fill="url(#glassGrad)" stroke="#38bdf8" stroke-width="1.5" />
-
-  <!-- Inner Right Glass Panel (Sliding / Fixed) -->
-  <rect x="${midX + Math.round(frameThickness / 2)}" y="${startY + frameThickness}" 
-        width="${Math.round((drawW - frameThickness * 3) / 2)}" 
-        height="${drawH - frameThickness * 2}" 
-        fill="url(#glassGrad)" stroke="#38bdf8" stroke-width="1.5" />
-
-  <!-- Middle Mullion / Interlock Profile -->
-  <rect x="${midX - Math.round(frameThickness / 2)}" y="${startY}" 
-        width="${frameThickness}" height="${drawH}" 
-        fill="url(#frameGrad)" stroke="#64748b" stroke-width="1" />
-
-  <!-- Glass reflection light glare lines -->
-  <line x1="${startX + frameThickness + 15}" y1="${startY + frameThickness + 15}" 
-        x2="${startX + Math.round(drawW * 0.35)}" y2="${startY + drawH - frameThickness - 20}" 
-        stroke="#ffffff" stroke-width="2" stroke-opacity="0.25" stroke-dasharray="10 15" />
-  <line x1="${midX + frameThickness + 15}" y1="${startY + frameThickness + 15}" 
-        x2="${midX + Math.round(drawW * 0.35)}" y2="${startY + drawH - frameThickness - 20}" 
-        stroke="#ffffff" stroke-width="2" stroke-opacity="0.25" stroke-dasharray="10 15" />
+  <!-- Dynamic Interior Architecture -->
+  ${interiorSvg}
 
   <!-- Top Width Dimension Line -->
-  <line x1="${startX}" y1="${startY - 25}" x2="${startX + drawW}" y2="${startY - 25}" 
+  <line x1="${startX}" y1="${startY - 22}" x2="${startX + drawW}" y2="${startY - 22}" 
         stroke="#38bdf8" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)" />
-  <line x1="${startX}" y1="${startY - 35}" x2="${startX}" y2="${startY - 5}" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2 2" />
-  <line x1="${startX + drawW}" y1="${startY - 35}" x2="${startX + drawW}" y2="${startY - 5}" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2 2" />
+  <line x1="${startX}" y1="${startY - 30}" x2="${startX}" y2="${startY - 4}" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2 2" />
+  <line x1="${startX + drawW}" y1="${startY - 30}" x2="${startX + drawW}" y2="${startY - 4}" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2 2" />
   
   <!-- Width Label Badge -->
-  <rect x="${startX + Math.round(drawW / 2) - 55}" y="${startY - 44}" width="110" height="26" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
-  <text x="${startX + Math.round(drawW / 2)}" y="${startY - 26}" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">ط§ظ„ط¹ط±ط¶: ${w} ط³ظ…</text>
+  <rect x="${startX + Math.round(drawW / 2) - 65}" y="${startY - 42}" width="130" height="26" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+  <text x="${startX + Math.round(drawW / 2)}" y="${startY - 25}" fill="#f8fafc" font-size="13" font-weight="bold" text-anchor="middle">العرض: ${w} سم</text>
 
   <!-- Right Height Dimension Line -->
-  <line x1="${startX + drawW + 25}" y1="${startY}" x2="${startX + drawW + 25}" y2="${startY + drawH}" 
+  <line x1="${startX + drawW + 24}" y1="${startY}" x2="${startX + drawW + 24}" y2="${startY + drawH}" 
         stroke="#38bdf8" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)" />
-  <line x1="${startX + drawW + 5}" y1="${startY}" x2="${startX + drawW + 35}" y2="${startY}" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2 2" />
-  <line x1="${startX + drawW + 5}" y1="${startY + drawH}" x2="${startX + drawW + 35}" y2="${startY + drawH}" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2 2" />
+  <line x1="${startX + drawW + 4}" y1="${startY}" x2="${startX + drawW + 32}" y2="${startY}" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2 2" />
+  <line x1="${startX + drawW + 4}" y1="${startY + drawH}" x2="${startX + drawW + 32}" y2="${startY + drawH}" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2 2" />
 
   <!-- Height Label Badge -->
-  <rect x="${startX + drawW + 35}" y="${startY + Math.round(drawH / 2) - 14}" width="115" height="28" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
-  <text x="${startX + drawW + 92}" y="${startY + Math.round(drawH / 2) + 5}" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">ط§ظ„ط§ط±طھظپط§ط¹: ${h} ط³ظ…</text>
+  <rect x="${startX + drawW + 32}" y="${startY + Math.round(drawH / 2) - 14}" width="130" height="28" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+  <text x="${startX + drawW + 97}" y="${startY + Math.round(drawH / 2) + 5}" fill="#f8fafc" font-size="13" font-weight="bold" text-anchor="middle">الارتفاع: ${h} سم</text>
 
   <!-- Footer Info Specs -->
-  <rect x="30" y="445" width="540" height="40" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1" />
-  <text x="550" y="470" fill="#94a3b8" font-size="13" text-anchor="end">ظ‚ط·ط§ط¹ ط£ظ„ظˆظ…ظٹطھط§ظ„ ظ‡ظ†ط¯ط³ظٹ ظ…ط¹طھظ…ط¯</text>
-  <text x="50" y="470" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="start">ط§ظ„ظ…ط³ط§ط­ط©: ${( (w * h) / 10000 ).toFixed(2)} ظ…آ²</text>
+  <rect x="25" y="445" width="550" height="38" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1" />
+  <text x="555" y="469" fill="#94a3b8" font-size="13" text-anchor="end">قطاع ألوميتال هندسي معتمد — ${typeLabel}</text>
+  <text x="45" y="469" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="start">مساحة الوحدة: ${areaM2} م² | الإجمالي: ${(Number(areaM2) * qty).toFixed(2)} م²</text>
 </svg>
   `.trim();
 }
 
-// ==================== ARABIC HTML QUOTATION TEMPLATE ====================
+// ==================== ARABIC HTML & PDF QUOTATION TEMPLATE ====================
 export function buildArabicQuotationHtml(data: {
   quoteId: string;
   tenantName: string;
@@ -223,44 +346,43 @@ export function buildArabicQuotationHtml(data: {
   subtotal_before_discount: string;
   discount_applied: string;
   total_price: string;
+  sketches?: Array<{ itemIndex: number; itemType: string; width_cm: number; height_cm: number; quantity: number; pngBase64: string }>;
   sketchPngBase64?: string;
 }): string {
   const isMultiItem = data.items && data.items.length > 1;
+  const itemsList = data.items && data.items.length > 0 ? data.items : [
+    {
+      item_type: 'شباك',
+      width_cm: data.width_cm,
+      height_cm: data.height_cm,
+      quantity: data.quantity,
+      price_per_meter: data.price_per_meter,
+      total_billable_area_sqm: data.area_sqm,
+      line_total: data.window_total,
+    }
+  ];
 
-  const itemRows =
-    data.items && data.items.length > 0
-      ? data.items
-          .map(
-            (item, idx) => `
-        <tr>
-          <td style="text-align:center;">${idx + 1}</td>
-          <td>
-            <strong>${item.item_type || 'شباك'} (${item.width_cm}×${item.height_cm} سم)</strong><br>
-            <span style="font-size:11px; color:#64748b;">مساحة إجمالية: ${item.total_billable_area_sqm || item.total_actual_area_sqm} م²</span>
-          </td>
-          <td style="text-align:center;">${item.quantity}</td>
-          <td style="text-align:center;">${item.price_per_meter || data.price_per_meter} ج.م</td>
-          <td style="text-align:center; font-weight:bold;">${item.line_total} ج.م</td>
-        </tr>`
-          )
-          .join('')
-      : `
-        <tr>
-          <td style="text-align:center;">1</td>
-          <td>
-            <strong>بند قطاع الألوميتال والزجاج (${data.width_cm}×${data.height_cm} سم)</strong><br>
-            <span style="font-size:11px; color:#64748b;">مساحة إجمالية: ${data.area_sqm} م² بسعر المتر المربع</span>
-          </td>
-          <td style="text-align:center;">${data.quantity}</td>
-          <td style="text-align:center;">${data.price_per_meter} ج.م</td>
-          <td style="text-align:center; font-weight:bold;">${data.window_total} ج.م</td>
-        </tr>`;
+  const itemRows = itemsList
+    .map(
+      (item, idx) => `
+    <tr>
+      <td style="text-align:center; font-weight:bold;">${idx + 1}</td>
+      <td>
+        <strong style="color:#0f172a;">${item.item_type || 'شباك'} (${item.width_cm} × ${item.height_cm} سم)</strong><br>
+        <span style="font-size:11px; color:#64748b;">مساحة إجمالية: ${item.total_billable_area_sqm || item.total_actual_area_sqm} م² ${item.unit_billable_area_sqm === '1.00' ? '(حد أدنى 1م²)' : ''}</span>
+      </td>
+      <td style="text-align:center; font-weight:600;">${item.quantity}</td>
+      <td style="text-align:center;">${item.price_per_meter || data.price_per_meter} ج.م</td>
+      <td style="text-align:center; font-weight:bold; color:#0284c7;">${item.line_total} ج.م</td>
+    </tr>`
+    )
+    .join('');
 
   const extraRows = (data.extra_items || [])
     .map(
       (item, idx) => `
     <tr>
-      <td style="text-align:center;">${(data.items?.length || 1) + idx + 1}</td>
+      <td style="text-align:center;">${itemsList.length + idx + 1}</td>
       <td>${item.name}</td>
       <td style="text-align:center;">${item.quantity}</td>
       <td style="text-align:center;">${item.unit_price} ج.م</td>
@@ -268,6 +390,37 @@ export function buildArabicQuotationHtml(data: {
     </tr>`
     )
     .join('');
+
+  // Visual Sketch Cards Layout (Single page compact matrix for <= 6 items)
+  let sketchesHtml = '';
+  const sketchesToRender = data.sketches && data.sketches.length > 0 ? data.sketches : (data.sketchPngBase64 ? [{ itemIndex: 1, itemType: 'شباك', width_cm: data.width_cm, height_cm: data.height_cm, quantity: data.quantity, pngBase64: data.sketchPngBase64 }] : []);
+
+  if (sketchesToRender.length === 1) {
+    sketchesHtml = `
+    <div class="sketch-single">
+      <div class="sketch-header">📐 الرسم الفني والمنظور الهندسي المعتمد</div>
+      <img src="data:image/png;base64,${sketchesToRender[0].pngBase64}" alt="رسم هندسي" style="max-height: 200px;" />
+    </div>`;
+  } else if (sketchesToRender.length > 1 && sketchesToRender.length <= 6) {
+    const gridCols = sketchesToRender.length === 2 ? 'repeat(2, 1fr)' : sketchesToRender.length <= 4 ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)';
+    const cards = sketchesToRender
+      .map(
+        (sk) => `
+      <div class="sketch-card">
+        <div class="sketch-card-title">بند ${sk.itemIndex}: ${sk.itemType} (${sk.width_cm}×${sk.height_cm})</div>
+        <img src="data:image/png;base64,${sk.pngBase64}" alt="بند ${sk.itemIndex}" />
+      </div>`
+      )
+      .join('');
+
+    sketchesHtml = `
+    <div class="sketch-matrix-section">
+      <div class="sketch-header">📐 المخططات الهندسية للأصناف (${sketchesToRender.length} بنود)</div>
+      <div class="sketch-grid" style="grid-template-columns: ${gridCols};">
+        ${cards}
+      </div>
+    </div>`;
+  }
 
   return `
 <!DOCTYPE html>
@@ -277,43 +430,150 @@ export function buildArabicQuotationHtml(data: {
   <title>عرض سعر ألوميتال #${data.quoteId.slice(0, 8)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', Tahoma, sans-serif; }
-    body { background-color: #f8fafc; color: #1e293b; padding: 24px; font-size: 14px; }
-    .container { max-width: 800px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 32px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0284c7; padding-bottom: 18px; margin-bottom: 24px; }
-    .company-title { font-size: 24px; font-weight: 800; color: #0f172a; }
-    .company-sub { font-size: 13px; color: #64748b; margin-top: 4px; }
-    .quote-badge { background: #f0f9ff; border: 1px solid #bae6fd; color: #0284c7; padding: 8px 16px; border-radius: 8px; text-align: left; }
-    .quote-badge h3 { font-size: 16px; font-weight: 700; margin: 0; }
-    .quote-badge p { font-size: 12px; color: #64748b; margin: 2px 0 0 0; }
+    @page {
+      size: A4 portrait;
+      margin: 8mm 10mm;
+    }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Cairo', 'Noto Sans Arabic', 'DejaVu Sans', Tahoma, sans-serif; 
+    }
+    body { 
+      background-color: #ffffff; 
+      color: #1e293b; 
+      padding: 0; 
+      font-size: 13px; 
+      line-height: 1.4;
+    }
+    .page-container { 
+      max-width: 780px; 
+      margin: 0 auto; 
+      background: #ffffff; 
+      padding: 10px 14px;
+    }
+    .header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      border-bottom: 2px solid #0284c7; 
+      padding-bottom: 10px; 
+      margin-bottom: 12px; 
+    }
+    .company-title { font-size: 20px; font-weight: 800; color: #0f172a; }
+    .company-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .quote-badge { 
+      background: #f0f9ff; 
+      border: 1px solid #bae6fd; 
+      color: #0284c7; 
+      padding: 6px 14px; 
+      border-radius: 8px; 
+      text-align: left; 
+    }
+    .quote-badge h3 { font-size: 14px; font-weight: 700; margin: 0; }
+    .quote-badge p { font-size: 11px; color: #64748b; margin: 1px 0 0 0; }
     
-    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; }
-    .meta-item { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
-    .meta-label { color: #64748b; font-weight: 600; }
+    .meta-grid { 
+      display: grid; 
+      grid-template-columns: repeat(4, 1fr); 
+      gap: 8px; 
+      margin-bottom: 12px; 
+      background: #f8fafc; 
+      padding: 10px 12px; 
+      border-radius: 8px; 
+      border: 1px solid #e2e8f0; 
+    }
+    .meta-item { display: flex; flex-direction: column; font-size: 12px; }
+    .meta-label { color: #64748b; font-weight: 600; font-size: 11px; margin-bottom: 2px; }
     .meta-val { color: #0f172a; font-weight: 700; }
 
-    .sketch-section { margin-bottom: 28px; text-align: center; background: #0f172a; padding: 16px; border-radius: 10px; }
-    .sketch-section img { max-width: 100%; height: auto; max-height: 280px; border-radius: 6px; }
-    .sketch-title { color: #38bdf8; font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    /* Sketches Layout */
+    .sketch-single { 
+      margin-bottom: 12px; 
+      text-align: center; 
+      background: #0f172a; 
+      padding: 8px; 
+      border-radius: 8px; 
+      page-break-inside: avoid;
+    }
+    .sketch-single img { max-width: 100%; height: auto; border-radius: 4px; }
+    
+    .sketch-matrix-section {
+      margin-bottom: 12px;
+      background: #0f172a;
+      padding: 8px 10px;
+      border-radius: 8px;
+      page-break-inside: avoid;
+    }
+    .sketch-header { 
+      color: #38bdf8; 
+      font-size: 12px; 
+      font-weight: 700; 
+      margin-bottom: 6px; 
+      text-align: right;
+    }
+    .sketch-grid {
+      display: grid;
+      gap: 8px;
+    }
+    .sketch-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 4px;
+      text-align: center;
+    }
+    .sketch-card-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sketch-card img {
+      width: 100%;
+      height: auto;
+      max-height: 100px;
+      border-radius: 4px;
+      object-fit: contain;
+    }
 
-    table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-    th { background: #0f172a; color: #f8fafc; font-weight: 700; padding: 10px 12px; font-size: 13px; text-align: right; }
-    td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+    /* Table & Pricing */
+    table { width: 100%; border-collapse: collapse; margin-bottom: 12px; page-break-inside: avoid; }
+    th { background: #0f172a; color: #f8fafc; font-weight: 700; padding: 8px 10px; font-size: 12px; text-align: right; }
+    td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
     tr:nth-child(even) { background: #f8fafc; }
 
-    .summary-box { display: flex; justify-content: flex-end; margin-top: 16px; }
-    .summary-table { width: 340px; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; }
-    .summary-table tr td { padding: 8px 14px; }
-    .summary-table .total-row { background: #0284c7; color: #ffffff; font-size: 16px; font-weight: 800; }
+    .summary-box { 
+      display: flex; 
+      justify-content: flex-end; 
+      margin-top: 8px; 
+      page-break-inside: avoid;
+    }
+    .summary-table { width: 320px; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; }
+    .summary-table tr td { padding: 6px 12px; font-size: 12px; }
+    .summary-table .total-row { background: #0284c7; color: #ffffff; font-size: 14px; font-weight: 800; }
     .summary-table .total-row td { border-bottom: none; color: #ffffff; }
 
-    .footer { margin-top: 36px; padding-top: 16px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 12px; color: #64748b; }
+    .footer { 
+      margin-top: 14px; 
+      padding-top: 8px; 
+      border-top: 1px dashed #cbd5e1; 
+      display: flex; 
+      justify-content: space-between; 
+      font-size: 11px; 
+      color: #64748b; 
+      page-break-inside: avoid;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="page-container">
     <div class="header">
       <div>
         <div class="company-title">${data.tenantName || 'ورشة الألوميتال المتطورة'}</div>
@@ -327,29 +587,21 @@ export function buildArabicQuotationHtml(data: {
 
     <div class="meta-grid">
       <div class="meta-item"><span class="meta-label">العميل / الإشارة:</span><span class="meta-val">${data.customerRef || 'عميل نقدي'}</span></div>
-      <div class="meta-item"><span class="meta-label">${isMultiItem ? 'عدد البنود:' : 'المقاس الهندسي:'}</span><span class="meta-val">${isMultiItem ? `${data.items!.length} بنود مستقلة` : `${data.width_cm} × ${data.height_cm} سم`}</span></div>
+      <div class="meta-item"><span class="meta-label">${isMultiItem ? 'عدد الأصناف:' : 'المقاس الهندسي:'}</span><span class="meta-val">${isMultiItem ? `${itemsList.length} بنود مختلفة` : `${data.width_cm} × ${data.height_cm} سم`}</span></div>
       <div class="meta-item"><span class="meta-label">إجمالي الوحدات:</span><span class="meta-val">${data.quantity} قطعة</span></div>
-      <div class="meta-item"><span class="meta-label">إجمالي المساحة المحسوبة:</span><span class="meta-val">${data.area_sqm} م²</span></div>
+      <div class="meta-item"><span class="meta-label">إجمالي المساحة:</span><span class="meta-val">${data.area_sqm} م²</span></div>
     </div>
 
-    ${
-      data.sketchPngBase64
-        ? `
-    <div class="sketch-section">
-      <div class="sketch-title">📐 الرسم الفني والمنظور الهندسي للنموذج الأساسي</div>
-      <img src="data:image/png;base64,${data.sketchPngBase64}" alt="رسم هندسي للمقايسة" />
-    </div>`
-        : ''
-    }
+    ${sketchesHtml}
 
     <table>
       <thead>
         <tr>
-          <th style="width:40px; text-align:center;">#</th>
-          <th>البيان والمواصفات</th>
-          <th style="width:80px; text-align:center;">الكمية</th>
-          <th style="width:110px; text-align:center;">سعر الوحدة</th>
-          <th style="width:120px; text-align:center;">الإجمالي</th>
+          <th style="width:36px; text-align:center;">#</th>
+          <th>البيان والمواصفات الهندسية</th>
+          <th style="width:70px; text-align:center;">الكمية</th>
+          <th style="width:100px; text-align:center;">سعر الوحدة</th>
+          <th style="width:110px; text-align:center;">الإجمالي</th>
         </tr>
       </thead>
       <tbody>
@@ -392,139 +644,216 @@ export function buildArabicQuotationHtml(data: {
 
 // ==================== PROCESS MEDIA JOB (E2E) ====================
 export async function processMediaJob(quoteId: string, tenantId?: string): Promise<MediaRenderJob> {
-  try {
-    const quote = await prisma.quotation.findUnique({
-      where: { id: quoteId },
-      include: { tenant: true },
-    });
-
-    if (!quote) {
-      throw new Error(`Quotation with id ${quoteId} not found`);
-    }
-
-    const tId = tenantId || quote.tenantId || 'global';
-    const storageDir = path.resolve(process.cwd(), 'public', 'storage', tId, 'quotations', quoteId);
-    if (!existsSync(storageDir)) {
-      mkdirSync(storageDir, { recursive: true });
-    }
-
-    const widthCm = Number(quote.width_cm);
-    const heightCm = Number(quote.height_cm);
-
-    // 1. Generate 2D Vector SVG Sketch
-    const svgContent = buildSketchSvg({
-      width_cm: widthCm,
-      height_cm: heightCm,
-      customerRef: quote.customerRef || undefined,
-    });
-    const svgPath = path.join(storageDir, `sketch_${quoteId}.svg`);
-    await fs.writeFile(svgPath, svgContent, 'utf-8');
-
-    // 2. Convert SVG -> PNG using sharp
-    const pngBuffer = await sharp(Buffer.from(svgContent)).png().toBuffer();
-    const pngPath = path.join(storageDir, `sketch_${quoteId}.png`);
-    await fs.writeFile(pngPath, pngBuffer);
-    const pngBase64 = pngBuffer.toString('base64');
-
-    // 3. Generate Arabic HTML
-    let parsedItems: any[] = [];
-    if (quote.items) {
-      try {
-        parsedItems = typeof quote.items === 'string' ? JSON.parse(quote.items) : (quote.items as any);
-      } catch {
-        parsedItems = [];
-      }
-    }
-
-    let parsedExtras: any[] = [];
-    if (quote.extra_items) {
-      try {
-        parsedExtras = typeof quote.extra_items === 'string' ? JSON.parse(quote.extra_items) : (quote.extra_items as any);
-      } catch {
-        parsedExtras = [];
-      }
-    }
-
-    const htmlContent = buildArabicQuotationHtml({
-      quoteId: quote.id,
-      tenantName: quote.tenant?.name || 'ورشة الألوميتال المتطورة',
-      customerRef: quote.customerRef || undefined,
-      dateStr: new Date(quote.createdAt).toLocaleDateString('ar-EG', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      }),
-      width_cm: widthCm,
-      height_cm: heightCm,
-      quantity: quote.quantity,
-      price_per_meter: new Decimal(quote.price_per_meter).toFixed(2),
-      area_sqm: new Decimal(quote.area_sqm).toFixed(2),
-      window_total: new Decimal(quote.window_total).toFixed(2),
-      items: parsedItems,
-      extra_items: parsedExtras,
-      subtotal_before_discount: new Decimal(quote.subtotal_before_discount).toFixed(2),
-      discount_applied: new Decimal(quote.discount_amount || 0).toFixed(2),
-      total_price: new Decimal(quote.total_price).toFixed(2),
-      sketchPngBase64: pngBase64,
-    });
-
-    // 4. Render PDF with Chromium
-    const browser = await getBrowser();
-    const page = await browser.newPage();
+  return withRenderMutex(async () => {
     try {
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 30000 });
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' },
+      const quote = await prisma.quotation.findUnique({
+        where: { id: quoteId },
+        include: { tenant: true },
       });
 
-      const pdfPath = path.join(storageDir, `quote_${quoteId}.pdf`);
-      await fs.writeFile(pdfPath, pdfBuffer);
+      if (!quote) {
+        throw new Error(`Quotation with id ${quoteId} not found`);
+      }
 
-      const pdfUrl = `/storage/${tId}/quotations/${quoteId}/quote_${quoteId}.pdf`;
-      const sketchUrl = `/storage/${tId}/quotations/${quoteId}/sketch_${quoteId}.png`;
+      const tId = tenantId || quote.tenantId || 'global';
+      const storageDir = path.resolve(process.cwd(), 'public', 'storage', tId, 'quotations', quoteId);
+      if (!existsSync(storageDir)) {
+        mkdirSync(storageDir, { recursive: true });
+      }
 
-      // 5. Update DB Status -> completed
-      await prisma.quotation.update({
-        where: { id: quoteId },
-        data: {
-          status: 'completed',
+      // Parse items array
+      let parsedItems: any[] = [];
+      if (quote.items) {
+        try {
+          parsedItems = typeof quote.items === 'string' ? JSON.parse(quote.items) : (quote.items as any);
+        } catch {
+          parsedItems = [];
+        }
+      }
+
+      if (parsedItems.length === 0) {
+        parsedItems = [
+          {
+            item_type: 'شباك',
+            width_cm: Number(quote.width_cm),
+            height_cm: Number(quote.height_cm),
+            quantity: quote.quantity,
+            price_per_meter: Number(quote.price_per_meter),
+            total_billable_area_sqm: new Decimal(quote.area_sqm).toFixed(2),
+            line_total: new Decimal(quote.window_total).toFixed(2),
+          },
+        ];
+      }
+
+      let parsedExtras: any[] = [];
+      if (quote.extra_items) {
+        try {
+          parsedExtras = typeof quote.extra_items === 'string' ? JSON.parse(quote.extra_items) : (quote.extra_items as any);
+        } catch {
+          parsedExtras = [];
+        }
+      }
+
+      const browser = await getBrowser();
+      const page = await browser.newPage();
+
+      try {
+        const sketchItems: SketchItem[] = [];
+
+        // Sequential multi-item sketch generation in single tab (Tab Reuse)
+        await page.setViewport({ width: 600, height: 500, deviceScaleFactor: 2 });
+
+        for (let i = 0; i < parsedItems.length; i++) {
+          const item = parsedItems[i];
+          const itemWidth = Number(item.width_cm) || Number(quote.width_cm) || 100;
+          const itemHeight = Number(item.height_cm) || Number(quote.height_cm) || 100;
+          const itemType = String(item.item_type || 'شباك');
+          const itemQty = Number(item.quantity) || 1;
+
+          // 1. Build crisp SVG blueprint
+          const svgContent = buildSketchSvg({
+            width_cm: itemWidth,
+            height_cm: itemHeight,
+            item_type: itemType,
+            quantity: itemQty,
+            item_index: i + 1,
+            customerRef: quote.customerRef || undefined,
+          });
+
+          const svgPath = path.join(storageDir, `sketch_${quoteId}_item_${i + 1}.svg`);
+          await fs.writeFile(svgPath, svgContent, 'utf-8');
+
+          // 2. Render SVG via Headless Chrome with native HarfBuzz Arabic font shaping
+          await page.setContent(
+            `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo', 'Noto Sans Arabic', 'DejaVu Sans', Tahoma, sans-serif; }
+    body { background:#0f172a; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+    svg { display:block; width:600px; height:500px; }
+  </style>
+</head>
+<body>
+  ${svgContent}
+</body>
+</html>`,
+            { waitUntil: 'load', timeout: 15000 }
+          );
+
+          const pngBuffer = await page.screenshot({ type: 'png', omitBackground: false });
+          const pngPath = path.join(storageDir, `sketch_${quoteId}_item_${i + 1}.png`);
+          await fs.writeFile(pngPath, pngBuffer);
+
+          const pngUrl = `/storage/${tId}/quotations/${quoteId}/sketch_${quoteId}_item_${i + 1}.png`;
+          const pngBase64 = pngBuffer.toString('base64');
+
+          sketchItems.push({
+            itemIndex: i + 1,
+            itemType,
+            width_cm: itemWidth,
+            height_cm: itemHeight,
+            quantity: itemQty,
+            svgPath,
+            pngPath,
+            url: pngUrl,
+            pngBase64,
+          });
+        }
+
+        // Backwards compatibility primary sketch
+        const primarySketch = sketchItems[0];
+        const legacyPngPath = path.join(storageDir, `sketch_${quoteId}.png`);
+        const legacySvgPath = path.join(storageDir, `sketch_${quoteId}.svg`);
+        if (primarySketch) {
+          await fs.copyFile(primarySketch.pngPath, legacyPngPath).catch(() => {});
+          await fs.copyFile(primarySketch.svgPath, legacySvgPath).catch(() => {});
+        }
+
+        // 3. Build & Render Arabic HTML Quotation into Single-Page PDF
+        const htmlContent = buildArabicQuotationHtml({
+          quoteId: quote.id,
+          tenantName: quote.tenant?.name || 'ورشة الألوميتال المتطورة',
+          customerRef: quote.customerRef || undefined,
+          dateStr: new Date(quote.createdAt).toLocaleDateString('ar-EG', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+          width_cm: Number(quote.width_cm),
+          height_cm: Number(quote.height_cm),
+          quantity: quote.quantity,
+          price_per_meter: new Decimal(quote.price_per_meter).toFixed(2),
+          area_sqm: new Decimal(quote.area_sqm).toFixed(2),
+          window_total: new Decimal(quote.window_total).toFixed(2),
+          items: parsedItems,
+          extra_items: parsedExtras,
+          subtotal_before_discount: new Decimal(quote.subtotal_before_discount).toFixed(2),
+          discount_applied: new Decimal(quote.discount_amount || 0).toFixed(2),
+          total_price: new Decimal(quote.total_price).toFixed(2),
+          sketches: sketchItems,
+          sketchPngBase64: primarySketch ? primarySketch.pngBase64 : undefined,
+        });
+
+        await page.setContent(htmlContent, { waitUntil: 'load', timeout: 30000 });
+        const pdfBuffer = await page.pdf({
+          format: 'A4',
+          printBackground: true,
+          margin: { top: '8mm', right: '10mm', bottom: '8mm', left: '10mm' },
+        });
+
+        const pdfPath = path.join(storageDir, `quote_${quoteId}.pdf`);
+        await fs.writeFile(pdfPath, pdfBuffer);
+
+        const pdfUrl = `/storage/${tId}/quotations/${quoteId}/quote_${quoteId}.pdf`;
+        const sketchUrl = `/storage/${tId}/quotations/${quoteId}/sketch_${quoteId}_item_1.png`;
+
+        // 4. Update Database
+        await prisma.quotation.update({
+          where: { id: quoteId },
+          data: {
+            status: 'completed',
+            pdfUrl,
+            sketchUrl,
+          },
+        });
+
+        return {
+          quoteId,
+          tenantId: tId,
+          pdfPath,
+          sketchPngPath: primarySketch ? primarySketch.pngPath : undefined,
+          sketchSvgPath: primarySketch ? primarySketch.svgPath : undefined,
           pdfUrl,
           sketchUrl,
-        },
-      });
+          sketches: sketchItems,
+          status: 'completed',
+        };
+      } finally {
+        await page.close().catch(() => {});
+        scheduleBrowserIdleClose();
+      }
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown rendering failure';
+      console.error(`[MediaWorker Error for Quote ${quoteId}]:`, err);
+
+      await prisma.quotation
+        .update({
+          where: { id: quoteId },
+          data: { status: 'media_failed' },
+        })
+        .catch(() => {});
 
       return {
         quoteId,
-        tenantId: tId,
-        pdfPath,
-        sketchPngPath: pngPath,
-        sketchSvgPath: svgPath,
-        pdfUrl,
-        sketchUrl,
-        status: 'completed',
+        tenantId,
+        status: 'failed',
+        error: errorMessage,
       };
-    } finally {
-      await page.close().catch(() => {});
-      scheduleBrowserIdleClose();
     }
-  } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : 'Unknown rendering failure';
-    console.error(`[MediaWorker Error for Quote ${quoteId}]:`, err);
-
-    await prisma.quotation
-      .update({
-        where: { id: quoteId },
-        data: { status: 'media_failed' },
-      })
-      .catch(() => {});
-
-    return {
-      quoteId,
-      tenantId,
-      status: 'failed',
-      error: errorMessage,
-    };
-  }
+  });
 }

@@ -3660,7 +3660,7 @@
       "source_location": "L684",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_isneutralcolor",
-      "community": 228,
+      "community": 65,
       "norm_label": "isneutralcolor()"
     },
     {
@@ -3690,7 +3690,7 @@
       "source_location": "L749",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_contrastratio",
-      "community": 65,
+      "community": 477,
       "norm_label": "contrastratio()"
     },
     {
@@ -3730,7 +3730,7 @@
       "source_location": "L791",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_colortohex",
-      "community": 65,
+      "community": 477,
       "norm_label": "colortohex()"
     },
     {
@@ -3760,7 +3760,7 @@
       "source_location": "L831",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkborders",
-      "community": 228,
+      "community": 65,
       "norm_label": "checkborders()"
     },
     {
@@ -3790,7 +3790,7 @@
       "source_location": "L1015",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkhovercontrast",
-      "community": 65,
+      "community": 477,
       "norm_label": "checkhovercontrast()"
     },
     {
@@ -4200,7 +4200,7 @@
       "source_location": "L2575",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_istabcontextelement",
-      "community": 228,
+      "community": 65,
       "norm_label": "istabcontextelement()"
     },
     {
@@ -4210,7 +4210,7 @@
       "source_location": "L2596",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_isstatuscontextelement",
-      "community": 228,
+      "community": 65,
       "norm_label": "isstatuscontextelement()"
     },
     {
@@ -4220,7 +4220,7 @@
       "source_location": "L2604",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementbordersdom",
-      "community": 228,
+      "community": 65,
       "norm_label": "checkelementbordersdom()"
     },
     {
@@ -4230,7 +4230,7 @@
       "source_location": "L2634",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementpseudostripedom",
-      "community": 228,
+      "community": 65,
       "norm_label": "checkelementpseudostripedom()"
     },
     {
@@ -4360,7 +4360,7 @@
       "source_location": "L3003",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_splittoplevelcommas",
-      "community": 65,
+      "community": 477,
       "norm_label": "splittoplevelcommas()"
     },
     {
@@ -4370,7 +4370,7 @@
       "source_location": "L3029",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_parsecolormix",
-      "community": 65,
+      "community": 477,
       "norm_label": "parsecolormix()"
     },
     {
@@ -4520,7 +4520,7 @@
       "source_location": "L3444",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkemdashoveruse",
-      "community": 228,
+      "community": 7,
       "norm_label": "checkemdashoveruse()"
     },
     {
@@ -4530,7 +4530,7 @@
       "source_location": "L3454",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkemdashoverusedom",
-      "community": 228,
+      "community": 7,
       "norm_label": "checkemdashoverusedom()"
     },
     {
@@ -4570,7 +4570,7 @@
       "source_location": "L3584",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_parseradialgradientstops",
-      "community": 65,
+      "community": 477,
       "norm_label": "parseradialgradientstops()"
     },
     {
@@ -4580,7 +4580,7 @@
       "source_location": "L3613",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkradialspotlight",
-      "community": 65,
+      "community": 477,
       "norm_label": "checkradialspotlight()"
     },
     {
@@ -4750,7 +4750,7 @@
       "source_location": "L4263",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkpagequalityfromdoc",
-      "community": 228,
+      "community": 7,
       "norm_label": "checkpagequalityfromdoc()"
     },
     {
@@ -4760,7 +4760,7 @@
       "source_location": "L4284",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkpagequalitydom",
-      "community": 228,
+      "community": 7,
       "norm_label": "checkpagequalitydom()"
     },
     {
@@ -4780,7 +4780,7 @@
       "source_location": "L4303",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkelementborders",
-      "community": 228,
+      "community": 65,
       "norm_label": "checkelementborders()"
     },
     {
@@ -4950,7 +4950,7 @@
       "source_location": "L5011",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_collectrepeatedcontainertextfindings",
-      "community": 437,
+      "community": 228,
       "norm_label": "collectrepeatedcontainertextfindings()"
     },
     {
@@ -4960,7 +4960,7 @@
       "source_location": "L5080",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkrepeatedcontainertextfromdoc",
-      "community": 437,
+      "community": 228,
       "norm_label": "checkrepeatedcontainertextfromdoc()"
     },
     {
@@ -4980,7 +4980,7 @@
       "source_location": "L5099",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_iscreamcolor",
-      "community": 498,
+      "community": 228,
       "norm_label": "iscreamcolor()"
     },
     {
@@ -4990,7 +4990,7 @@
       "source_location": "L5121",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_creamfromclasslist",
-      "community": 498,
+      "community": 228,
       "norm_label": "creamfromclasslist()"
     },
     {
@@ -5000,7 +5000,7 @@
       "source_location": "L5133",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_checkcreampalette",
-      "community": 498,
+      "community": 228,
       "norm_label": "checkcreampalette()"
     },
     {
@@ -5610,7 +5610,7 @@
       "source_location": "L6914",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_pickworstcontrastcolor",
-      "community": 133,
+      "community": 477,
       "norm_label": "pickworstcontrastcolor()"
     },
     {
@@ -5820,7 +5820,7 @@
       "source_location": "L7441",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_browserfindingsfrommap",
-      "community": 7,
+      "community": 228,
       "norm_label": "browserfindingsfrommap()"
     },
     {
@@ -6090,7 +6090,7 @@
       "source_location": "L8016",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_detector_detect_antipatterns_browser_collectbrowserfindingsasync",
-      "community": 7,
+      "community": 228,
       "norm_label": "collectbrowserfindingsasync()"
     },
     {
@@ -13140,7 +13140,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_is_generated",
-      "community": 31,
+      "community": 498,
       "norm_label": "is-generated.mjs"
     },
     {
@@ -13150,7 +13150,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_is_generated_header_markers",
-      "community": 31,
+      "community": 498,
       "norm_label": "header_markers"
     },
     {
@@ -13160,7 +13160,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_is_generated_isgeneratedfile",
-      "community": 31,
+      "community": 498,
       "norm_label": "isgeneratedfile()"
     },
     {
@@ -13170,7 +13170,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_is_generated_isgitignored",
-      "community": 31,
+      "community": 498,
       "norm_label": "isgitignored()"
     },
     {
@@ -13180,7 +13180,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "agents_skills_impeccable_scripts_lib_is_generated_hasgeneratedheader",
-      "community": 31,
+      "community": 498,
       "norm_label": "hasgeneratedheader()"
     },
     {
@@ -35455,7 +35455,7 @@
       "label": "groundingCheck()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1293",
+      "source_location": "L1294",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_groundingcheck",
       "community": 62,
@@ -35465,7 +35465,7 @@
       "label": "sanitizeNonToolReply()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1500",
+      "source_location": "L1501",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_sanitizenontoolreply",
       "community": 26,
@@ -35475,7 +35475,7 @@
       "label": "logRejectedToolCall()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1525",
+      "source_location": "L1526",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_logrejectedtoolcall",
       "community": 62,
@@ -35485,7 +35485,7 @@
       "label": "executeTool()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1537",
+      "source_location": "L1538",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_executetool",
       "community": 62,
@@ -35495,7 +35495,7 @@
       "label": "LLMResult",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3920",
+      "source_location": "L3921",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_llmresult",
       "community": 26,
@@ -35505,7 +35505,7 @@
       "label": "saveChatMessage()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3924",
+      "source_location": "L3925",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_savechatmessage",
       "community": 26,
@@ -35515,7 +35515,7 @@
       "label": "processTelegramMessageWithLLM()",
       "file_type": "code",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3937",
+      "source_location": "L3938",
       "_origin": "ast",
       "id": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "community": 26,
@@ -35588,7 +35588,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "casper_voice_web_lib_tenant_provisioner_tenantprovisioner",
-      "community": 58,
+      "community": 524,
       "norm_label": "tenantprovisioner"
     },
     {
@@ -35598,7 +35598,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "casper_voice_web_lib_tenant_provisioner_tenantprovisioner_provision",
-      "community": 58,
+      "community": 524,
       "norm_label": ".provision()"
     },
     {
@@ -35608,7 +35608,7 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "casper_voice_web_lib_tenant_provisioner_tenantprovisioner_suspend",
-      "community": 58,
+      "community": 524,
       "norm_label": ".suspend()"
     },
     {
@@ -35618,7 +35618,7 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "casper_voice_web_lib_tenant_provisioner_tenantprovisioner_reactivate",
-      "community": 58,
+      "community": 524,
       "norm_label": ".reactivate()"
     },
     {
@@ -35628,7 +35628,7 @@
       "source_location": "L149",
       "_origin": "ast",
       "id": "casper_voice_web_lib_tenant_provisioner_tenantprovisioner_softdelete",
-      "community": 58,
+      "community": 524,
       "norm_label": ".softdelete()"
     },
     {
@@ -50196,7 +50196,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_github_copilot_instructions",
-      "community": 150,
+      "community": 152,
       "norm_label": "copilot-instructions.md"
     },
     {
@@ -50206,7 +50206,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_github_copilot_instructions_ponytail_lazy_senior_dev_mode",
-      "community": 150,
+      "community": 152,
       "norm_label": "ponytail, lazy senior dev mode"
     },
     {
@@ -50676,7 +50676,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_agents",
-      "community": 152,
+      "community": 150,
       "norm_label": "agents.md"
     },
     {
@@ -50686,7 +50686,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_skills_ponytail_repo_agents_ponytail_lazy_senior_dev_mode",
-      "community": 152,
+      "community": 150,
       "norm_label": "ponytail, lazy senior dev mode"
     },
     {
@@ -143211,7 +143211,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1928",
+      "source_location": "L1929",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "agents_skills_impeccable_scripts_modern_screenshot_umd_v"
@@ -143299,7 +143299,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3294",
+      "source_location": "L3295",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "agents_skills_impeccable_scripts_modern_screenshot_umd_q"
@@ -143794,7 +143794,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3330",
+      "source_location": "L3331",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "agents_skills_impeccable_scripts_modern_screenshot_umd_k"
@@ -158421,7 +158421,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3391",
+      "source_location": "L3392",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_alumital_estimator",
@@ -158444,7 +158444,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3392",
+      "source_location": "L3393",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_alumital_estimator_calculatequotation"
@@ -158718,7 +158718,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3949",
+      "source_location": "L3950",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_apikeymanager",
@@ -158807,7 +158807,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L4151",
+      "source_location": "L4152",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_apikeymanager_getvalidapikey"
@@ -158884,7 +158884,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L4217",
+      "source_location": "L4218",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_apikeymanager_markkeyexhausted"
@@ -159975,7 +159975,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L4120",
+      "source_location": "L4121",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_merchant_memory_resolvemerchantmemories"
@@ -160096,7 +160096,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L4192",
+      "source_location": "L4193",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_merchant_memory_extractandpersistmemory"
@@ -160513,7 +160513,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3915",
+      "source_location": "L3916",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_prisma_tenant_extension_runwithtenant"
@@ -160524,7 +160524,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L4402",
+      "source_location": "L4403",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_prisma_tenant_extension_runwithtenant"
@@ -163350,7 +163350,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3446",
+      "source_location": "L3447",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram",
@@ -163637,7 +163637,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1712",
+      "source_location": "L1713",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_sendtelegramalert"
@@ -164255,7 +164255,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1537",
+      "source_location": "L1538",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_executetool",
@@ -164405,7 +164405,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1293",
+      "source_location": "L1294",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_groundingcheck",
@@ -164445,7 +164445,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3920",
+      "source_location": "L3921",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_llmresult",
@@ -164495,7 +164495,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1525",
+      "source_location": "L1526",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_logrejectedtoolcall",
@@ -164575,7 +164575,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3937",
+      "source_location": "L3938",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
@@ -164655,7 +164655,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1500",
+      "source_location": "L1501",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_sanitizenontoolreply",
@@ -164665,7 +164665,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3924",
+      "source_location": "L3925",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm",
       "target": "casper_voice_web_lib_telegram_llm_savechatmessage",
@@ -165384,7 +165384,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3294",
+      "source_location": "L3295",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_validatememoryfact",
@@ -165417,7 +165417,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L4116",
+      "source_location": "L4117",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_resolveactivetools",
@@ -165472,7 +165472,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L4125",
+      "source_location": "L4126",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_buildactiveprompt",
@@ -165505,7 +165505,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1953",
+      "source_location": "L1954",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_findcustomerfuzzy",
@@ -165516,7 +165516,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2445",
+      "source_location": "L2446",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_findsupplierfuzzy",
@@ -165527,7 +165527,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1974",
+      "source_location": "L1975",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_findproductfuzzy",
@@ -165549,7 +165549,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L4186",
+      "source_location": "L4187",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_enforcearabicenglishonly",
@@ -165560,7 +165560,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1558",
+      "source_location": "L1559",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_sanitizeargslanguage",
@@ -165571,7 +165571,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2896",
+      "source_location": "L2897",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_resolverelativearabicdate",
@@ -165604,7 +165604,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2897",
+      "source_location": "L2898",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_cleanarabictimestr",
@@ -165638,7 +165638,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1549",
+      "source_location": "L1550",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_financial_tools"
@@ -165649,7 +165649,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1299",
+      "source_location": "L1300",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_groundingcheck",
       "target": "casper_voice_web_lib_telegram_llm_financial_tools"
@@ -165659,7 +165659,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L2182",
+      "source_location": "L2183",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_normalizearabic",
@@ -165681,7 +165681,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1301",
+      "source_location": "L1302",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_groundingcheck",
       "target": "casper_voice_web_lib_telegram_llm_normalizearabic",
@@ -165703,7 +165703,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1314",
+      "source_location": "L1315",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_groundingcheck",
       "target": "casper_voice_web_lib_telegram_llm_isarabicfuzzymatch",
@@ -165714,7 +165714,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1608",
+      "source_location": "L1609",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_extractallnumbersfromtext",
@@ -165725,7 +165725,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1333",
+      "source_location": "L1334",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_groundingcheck",
       "target": "casper_voice_web_lib_telegram_llm_extractallnumbersfromtext",
@@ -165736,7 +165736,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3772",
+      "source_location": "L3773",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_parseegyptianarabicdatetime",
@@ -165780,7 +165780,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1679",
+      "source_location": "L1680",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_groundingcheck",
@@ -165791,7 +165791,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L4183",
+      "source_location": "L4184",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_sanitizenontoolreply",
@@ -165802,7 +165802,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L1682",
+      "source_location": "L1683",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_executetool",
       "target": "casper_voice_web_lib_telegram_llm_logrejectedtoolcall",
@@ -165813,7 +165813,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L4075",
+      "source_location": "L4076",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_executetool",
@@ -166143,7 +166143,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L3992",
+      "source_location": "L3993",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_telegram_llm_savechatmessage",
@@ -166155,7 +166155,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "casper-voice-web/lib/telegram_llm.ts",
-      "source_location": "L4210",
+      "source_location": "L4211",
       "weight": 1.0,
       "source": "casper_voice_web_lib_telegram_llm_processtelegrammessagewithllm",
       "target": "casper_voice_web_lib_usage_alert_checkandalerttokenusage"
@@ -198850,5 +198850,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "29e19d7e87742e211bd848a2619624e0c49501fc"
+  "built_at_commit": "e2ae4233e03910b54391068eecc92116fe7a4dcb"
 }

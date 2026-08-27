@@ -1,29 +1,34 @@
-session_intent: "Implement Alumital per-unit minimum area calculation fix, separate physical cut and billable area metrics, and deploy live to production"
+session_intent: "Fix Alumital minimum billable area engine per-unit floor and anchor Telegram reminder time to message.date in Cairo timezone"
 decisions:
-  - "Enforced per-unit floor calculation: Decimal.max(actualAreaPerUnit, 1).times(qty) preventing batch multiplier losses"
-  - "Separated actual_area_sqm (workshop cuts) from billable_area_sqm (quotation invoicing) while maintaining area_sqm alias"
-  - "Enforced strict Decimal.js precision across all financial metrics and line totals in estimator"
-  - "Updated Vitest unit and integration test suites (100% passing across 16 tests)"
-  - "Deployed live to HQ VPS (109.123.247.119) with Next.js 16.2.12 build and PM2 process reloads"
+  - "Enforce minimum 1m² billable area per unit before multiplying by quantity using Decimal.js"
+  - "Separate actual_area_sqm (workshop cutting) from billable_area_sqm (invoice billing), keeping area_sqm for backwards compatibility"
+  - "Extract Telegram message.date timestamp and pass as messageTimestamp to LLM and reminder parser"
+  - "Inject current date and time in Africa/Cairo timezone into Gemini/Groq activePrompt"
+  - "Support Egyptian Arabic time expressions in parseEgyptianArabicDateTime (كمان دقيقتين, في الـ 5 دقائق, ربع/تلت/نص ساعة, في التاسعة)"
+  - "Use z.input for CalculateQuotationInput so default fields are optional for callers"
 files_modified:
-  - path: "src/lib/alumital/estimator.ts"
-    why: "Implemented per-unit minimum floor and dual area metrics"
-  - path: "casper-voice-web/lib/alumital/estimator.ts"
-    why: "Synchronized with root estimator implementation"
-  - path: "casper-voice-web/lib/telegram_llm.ts"
-    why: "Updated summary text formatting and metrics display"
-  - path: "tests/alumital_estimator.test.ts"
-    why: "Unit tests for per-unit floor and multi-window calculations"
-  - path: "casper-voice-web/tests/alumital_telegram_e2e.test.ts"
-    why: "E2E tests for quotation creation, tool routing, and media worker"
+  - path: src/lib/alumital/estimator.ts
+    why: "Implemented per-unit floor calculation and dual area metrics"
+  - path: casper-voice-web/lib/alumital/estimator.ts
+    why: "Synchronized per-unit floor calculation and dual area metrics"
+  - path: casper-voice-web/app/api/telegram/webhook/route.ts
+    why: "Extracted message.date and passed msgTimestamp to processTelegramMessageWithLLM"
+  - path: casper-voice-web/lib/telegram_llm.ts
+    why: "Enhanced parseEgyptianArabicDateTime with baseDate, injected Cairo time into prompt, and formatted confirmation in Africa/Cairo"
+  - path: tests/alumital_estimator.test.ts
+    why: "Added test suite for minimum billable area per-unit floor"
+  - path: casper-voice-web/tests/reminders_engine_e2e.test.ts
+    why: "Added tests for Egyptian time expressions, baseDate anchoring, and Cairo timezone output"
+  - path: casper-voice-web/tests/telegram_llm_guardrails.test.ts
+    why: "Fixed TypeScript union types and assertions"
 active_goals:
-  - "none"
-next_steps:
-  - "none"
+  - "Technical Alumital drawing sheet without pricing (deferred to separate ticket)"
+next_steps: []
 failed_approaches:
-  - "none"
+  - "Relying on server local time for reminders — failed due to VPS UTC timezone vs Cairo UTC+3 difference"
+  - "Using strict 'بعد X دقيقة' regex only — failed on Egyptian colloquial expressions like 'كمان دقيقتين' and 'في الـ 5 دقائق'"
 last_condense:
-  timestamp: "2026-08-24T19:03:00Z"
-  tokens_before: 120000
-  tokens_after: 8500
-  reduction_pct: 93
+  timestamp: "2026-08-24T23:12:00Z"
+  tokens_before: 145000
+  tokens_after: 28000
+  reduction_pct: 81

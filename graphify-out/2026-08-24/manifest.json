@@ -2405,8 +2405,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/telegram/webhook/route.ts": {
-    "mtime": 1787579325.7750528,
-    "ast_hash": "1d897b921342086cadf98674ba419028",
+    "mtime": 1787588076.6020784,
+    "ast_hash": "e5ad2a2403502b191a058486686613e4",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram.ts": {
@@ -2610,8 +2610,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram_llm.ts": {
-    "mtime": 1787577438.39129,
-    "ast_hash": "e553f67b3c901f21d51a83b39f338fe7",
+    "mtime": 1787588107.7851427,
+    "ast_hash": "e0a6a55d3af454ac2ca9afab11d39d09",
     "semantic_hash": ""
   },
   "casper-voice-web/app/telegram-voice/page.tsx": {
@@ -3615,8 +3615,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/tests/reminders_engine_e2e.test.ts": {
-    "mtime": 1787577166.8543031,
-    "ast_hash": "4e62f14eb38d0cdfcaaa4c1f65923b47",
+    "mtime": 1787588118.9913838,
+    "ast_hash": "691f22fc6628a09aa840bc96ccb991f3",
     "semantic_hash": ""
   },
   "casper-voice-web/tests/tenant_name_cleaner.test.ts": {
@@ -3972,6 +3972,21 @@
   "samples/sample_quotation_sketch.svg": {
     "mtime": 1787446485.052159,
     "ast_hash": "566c4501986b071e6cb855b289dcfc36",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/cmt7ftv9n0000vpldpr4lu37h/quotations/5ba9666a-2231-48a2-a200-9967efca93dc/quote_5ba9666a-2231-48a2-a200-9967efca93dc.pdf": {
+    "mtime": 1787588153.408999,
+    "ast_hash": "9560e097e19d4a29bb6c24bd817c0ee2",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/cmt7ftv9n0000vpldpr4lu37h/quotations/5ba9666a-2231-48a2-a200-9967efca93dc/sketch_5ba9666a-2231-48a2-a200-9967efca93dc.png": {
+    "mtime": 1787588149.78698,
+    "ast_hash": "416d46bedf39dc1bbef99f83188d9d70",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/cmt7ftv9n0000vpldpr4lu37h/quotations/5ba9666a-2231-48a2-a200-9967efca93dc/sketch_5ba9666a-2231-48a2-a200-9967efca93dc.svg": {
+    "mtime": 1787588149.7669835,
+    "ast_hash": "b08c9d05511193feeb70669ce23cf5b0",
     "semantic_hash": ""
   }
 }

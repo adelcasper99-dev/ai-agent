@@ -527,6 +527,7 @@ model Quotation {
   price_per_meter          Decimal
   area_sqm                 Decimal
   window_total             Decimal
+  items                    String?  // JSON string: [{ item_type, width_cm, height_cm, quantity, price_per_meter, actual_area_sqm, billable_area_sqm, line_total }]
   extra_items              String?  // JSON string: [{ name, unit_price, quantity, line_total }]
   discount_pct             Decimal?
   discount_amount          Decimal?

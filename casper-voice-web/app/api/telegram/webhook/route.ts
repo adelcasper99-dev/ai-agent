@@ -188,13 +188,19 @@ export async function POST(req: NextRequest) {
       }
 
       // ==================== ALUMITAL QUOTATION CONFIRMATION / CANCELLATION ====================
-      if (data.startsWith("confirm_quote_")) {
-        const quoteId = data.replace("confirm_quote_", "").trim();
+      if (data.startsWith("confirm_quote_") || data.startsWith("conf_q:")) {
+        const quoteId = data.startsWith("conf_q:") ? data.replace("conf_q:", "").trim() : data.replace("confirm_quote_", "").trim();
         await answerCallback("جاري تجهيز وتوليد الملفات الرسمية... ⏳");
 
-        // Atomic lock from draft -> processing_media
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
+        if (!tenant) {
+          await answerCallback("❌ لم يتم التعرف على هوية النشاط.");
+          return NextResponse.json({ ok: true });
+        }
+
+        // Atomic lock from draft -> processing_media with strict tenant verification
         const updated = await (prisma as any).quotation.updateMany({
-          where: { id: quoteId, status: "draft" },
+          where: { id: quoteId, tenantId: tenant.id, status: "draft" },
           data: { status: "processing_media" }
         });
 
@@ -222,6 +228,11 @@ export async function POST(req: NextRequest) {
           if (job.status === "completed" && job.sketchPngPath && job.pdfPath) {
             const pngBuf = await fs.readFile(job.sketchPngPath);
             const pdfBuf = await fs.readFile(job.pdfPath);
+
+            await (prisma as any).quotation.update({
+              where: { id: quoteId },
+              data: { status: "confirmed", pdfUrl: job.pdfUrl, sketchUrl: job.sketchUrl }
+            });
 
             // 1. Send Sketch Photo
             const sketchCaption = `📐 *الرسم الهندسي للمقايسة #${quoteId.slice(0, 8)}*\nالأبعاد: ${quote.width_cm} × ${quote.height_cm} سم | المساحة: ${quote.area_sqm} م²`;
@@ -251,7 +262,13 @@ export async function POST(req: NextRequest) {
             throw new Error(job.error || "فشل توليد الملفات");
           }
         } catch (mediaErr: any) {
-          console.error("[Telegram Webhook Media Render Error]:", mediaErr);
+          console.error("[Telegram Webhook Media Render Error - Auto-rollback to draft]:", mediaErr);
+          // Fail-Safe Auto-Rollback to draft
+          await (prisma as any).quotation.updateMany({
+            where: { id: quoteId, tenantId: tenant.id, status: "processing_media" },
+            data: { status: "draft" }
+          });
+
           const token = process.env.TELEGRAM_BOT_TOKEN;
           if (token && callback.message?.message_id) {
             await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
@@ -260,7 +277,7 @@ export async function POST(req: NextRequest) {
               body: JSON.stringify({
                 chat_id: callbackChatId,
                 message_id: callback.message.message_id,
-                text: `⚠️ حدث خطأ أثناء معالجة الملفات: ${mediaErr?.message || "يرجى المحاولة لاحقاً."}`
+                text: `⚠️ تعذر معالجة وتوليد الملفات حالياً. تم إرجاع المقايسة لحالة المسودة لتتمكن من إعادة المحاولة.`
               })
             }).catch(() => null);
           }
@@ -269,30 +286,33 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
-      if (data.startsWith("edit_quote_dim_")) {
-        await answerCallback("تعديل المقاس 📏");
+      if (data.startsWith("edit_quote_dim_") || data.startsWith("ed_dim:")) {
+        const quoteId = data.startsWith("ed_dim:") ? data.replace("ed_dim:", "").trim() : data.replace("edit_quote_dim_", "").trim();
+        await answerCallback("تعديل المقاس أو البنود 📏");
         await sendTelegramAlert({
           chatId: callbackChatId,
-          text: `📏 *لتعديل مقاس الشباك/الباب:*\nأرسل رسالة نصية أو فويس بالمقاس الجديد (مثال: *"خلي المقاس 100 في 120"* أو *"المقاس 140 في 160 عدد 3"*).\nوسأقوم بتحديث الحسابات وإصدار كارت المقايسة المعدل فوراً. ✨`,
+          text: `📏 *لتعديل مقاس أو بند في المقايسة:*\nأرسل رسالة نصية أو فويس بالتعديل المطلوب (مثال: *"عدل بند 4 خليه 80 في 80"* أو *"امسح بند 3"* أو *"ضيف شباك 100 في 100"*).\nوسأقوم بتحديث الحسابات وإصدار الكارت المعدل فوراً. ✨`,
           idempotencyKey: `quote:edit_dim:${callbackChatId}:${Date.now()}`,
         });
         return NextResponse.json({ ok: true });
       }
 
-      if (data.startsWith("edit_quote_price_")) {
+      if (data.startsWith("edit_quote_price_") || data.startsWith("ed_prc:")) {
+        const quoteId = data.startsWith("ed_prc:") ? data.replace("ed_prc:", "").trim() : data.replace("edit_quote_price_", "").trim();
         await answerCallback("تعديل السعر أو الخصم 💵");
         await sendTelegramAlert({
           chatId: callbackChatId,
-          text: `💵 *لتعديل السعر أو تطبيق خصم:*\nأرسل رسالة نصية أو فويس بالتعديل المطلوب (مثال: *"سعر المتر 1350"* أو *"اعمل خصم 10%"* أو *"شيل الخصم"*).\nوسأقوم بتحديث الحسابات فوراً. ✨`,
+          text: `💵 *لتعديل السعر أو تطبيق خصم:*\nأرسل رسالة نصية أو فويس بالتعديل المطلوب (مثال: *"سعر المتر 3200"* أو *"اعمل خصم 10%"* أو *"شيل الخصم"*).\nوسأقوم بتحديث الحسابات فوراً. ✨`,
           idempotencyKey: `quote:edit_price:${callbackChatId}:${Date.now()}`,
         });
         return NextResponse.json({ ok: true });
       }
 
-      if (data.startsWith("cancel_quote_")) {
-        const quoteId = data.replace("cancel_quote_", "").trim();
+      if (data.startsWith("cancel_quote_") || data.startsWith("can_q:")) {
+        const quoteId = data.startsWith("can_q:") ? data.replace("can_q:", "").trim() : data.replace("cancel_quote_", "").trim();
+        const tenant = await (prisma as any).tenant.findUnique({ where: { telegramChatId: callbackChatId } });
         await (prisma as any).quotation.updateMany({
-          where: { id: quoteId, status: "draft" },
+          where: { id: quoteId, ...(tenant ? { tenantId: tenant.id } : {}), status: "draft" },
           data: { status: "cancelled" }
         });
         await answerCallback("تم إلغاء المقايسة.");

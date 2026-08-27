@@ -1,45 +1,36 @@
-# Alumital Per-Unit Minimum Area Calculation Implementation Plan
+# مواصفات وخطة تنفيذ منظومة المقايسات متعددة البنود وحوكمة أزرار التيليجرام (Final Hardened Spec V3.5)
 
-## Problem Statement
-In `src/lib/alumital/estimator.ts` and `casper-voice-web/lib/alumital/estimator.ts`, the minimum area threshold was previously computed on single units or lacked clear per-unit segregation and dual metric reporting (`actual_area_sqm` vs `billable_area_sqm`). Additionally, strict `Decimal.js` calculations are required across all operations to prevent floating-point inaccuracies.
-
-## User Review Required
 > [!IMPORTANT]
-> - `apply_min_area` is set to `default(true)` and cannot be casually bypassed.
-> - The technical design rendering sheet without prices is deferred to a separate ticket, maintaining laser focus on the core calculation fix.
+> تم تدعيم الخطة بباتش تطبيع الأرقام الهندية العربية الكامل (`normalizeArabicDigits`) وتضمينه كـ Task مستقلة إلزامية في الـ Checklist مع اختبار وحدة مخصص.
 
-## Proposed Changes
+---
 
-### 1. `src/lib/alumital/estimator.ts` & `casper-voice-web/lib/alumital/estimator.ts`
-- Enhance `CalculateQuotationInputSchema` with strict Zod validation.
-- Implement per-unit minimum area calculation:
-  ```typescript
-  const actualAreaPerUnit = width.times(height);
-  const billableAreaPerUnit = input.apply_min_area ? Decimal.max(actualAreaPerUnit, 1) : actualAreaPerUnit;
-  const billableArea = billableAreaPerUnit.times(qty);
-  const actualArea = actualAreaPerUnit.times(qty);
-  const windowTotal = billableArea.times(price);
-  ```
-- Return structured `QuotationResult` containing:
-  - `actual_area_sqm`: total actual physical cut area
-  - `billable_area_sqm`: total billable area after floor application
-  - `area_sqm`: kept for backwards compatibility (equals `billable_area_sqm`)
-  - `window_total`, `subtotal_before_discount`, `discount_applied`, `total_price` all as formatted Decimal strings.
+## 1. منظومة الحماية والـ Patch المعتمد (Digit Normalization & Anti-Hallucination Guard)
 
-### 2. `casper-voice-web/prisma/schema.prisma`
-- Add `actual_area_sqm Decimal?` and `billable_area_sqm Decimal?` to `model Quotation`.
+### أ. دالة تطبيع الأرقام الهندية-العربية (`normalizeArabicDigits`)
+```typescript
+// يحوّل أي رقم هندي-عربي (٠-٩) لرقم لاتيني (0-9) قبل فحص الحارس النصي
+function normalizeArabicDigits(text: string): string {
+  const easternToWestern: Record<string, string> = {
+    '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+    '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+  };
+  return text.replace(/[٠-٩]/g, (d) => easternToWestern[d] || d);
+}
+```
 
-### 3. `casper-voice-web/lib/telegram_llm.ts` & `casper-voice-web/lib/alumital/media_worker.ts`
-- Pass `actual_area_sqm` and `billable_area_sqm` to DB records and rendering templates.
-- Display actual area in workshop diagrams and billable area in quotation summaries.
+### ب. تكامل الفحص داخل `sanitizeNonToolReply`
+* يتم تطبيع النص أولاً: `const normalized = normalizeArabicDigits(reply);`
+* تشغيل الفحص على `normalized` (جداول الماركداون + الفحص الثلاثي للأسعار).
+* إذا كان الرد سليماً، يتم إرجاع النص **الأصلي** `reply` دون تعديل للحفاظ على صياغة التاجر الأصلية.
 
-### 4. Vitest Unit & Integration Tests
-- Update `tests/alumital_estimator.test.ts` to test:
-  - Single window < 1m² (e.g. 50x60cm, qty 1 -> actual 0.30, billable 1.00)
-  - Multi-window < 1m² (e.g. 50x60cm, qty 3 -> actual 0.90, billable 3.00, window_total = 3 * price)
-  - Window > 1m² (e.g. 120x140cm, qty 2 -> actual 3.36, billable 3.36)
-  - Extra items and discounts precision tests.
+---
 
-## Verification Plan
-1. `npx vitest run tests/alumital_estimator.test.ts`
-2. `node scripts/check-casper-rules.js`
+## 2. جدول المهام التنفيذية الصريح والملزم (Strict Step-by-Step Checklist)
+
+- [ ] **Task 1 (Prisma Schema):** إضافة `items String?` في نموذج `Quotation` بملف `schema.prisma`.
+- [ ] **Task 2 (Estimator Engine):** ترقية `estimator.ts` بـ `CalculateQuotationInputSchema`، `.refine()`، دقة `Decimal.js`، وإلغاء ازدواجية الملفات عبر re-export.
+- [ ] **Task 3.1 (Digit Normalization Patch):** إضافة دالة `normalizeArabicDigits` في `telegram_llm.ts` ودمجها كأول سطر في `sanitizeNonToolReply`.
+- [ ] **Task 3.2 (Telegram LLM Guardrails):** تحديث `calculateAlumitalQuotationTool` Schema، الكارت التفاعلي المرقم، الـ Disambiguation prompt، وحارس الـ 3-Predicate Check.
+- [ ] **Task 4 (Webhook Callback Route):** معالجة `conf_q:`, `ed_dim:`, `ed_prc:`, `can_q:` مع القفل الذري والـ Auto-Rollback التلقائي عند أي خطأ في توليد الميديا.
+- [ ] **Task 5 (Test Suite & Verification):** كتابة وتشغيل `tests/alumital_multi_item_guardrails.test.ts` والتحقق من حالة محمود فوزي المرجعية (**67,830.00 ج**)، واختبار الأرقام الهندية العربية `٦٧٨٣٠ جنيه` مع لصق الـ Output الفعلي كاملاً.

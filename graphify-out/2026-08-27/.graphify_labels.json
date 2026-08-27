@@ -523,14 +523,5 @@
   "521": "execute_stage6.py",
   "522": "generate_arabic_pdf.py",
   "523": "patch_ironclad.py",
-  "524": "TenantProvisioner",
-  "525": "مراجعة v3.1 — باج حرج: الـ regex الجديد بقى ميمسكش حاجة خالص",
-  "526": "readConfig",
-  "527": "Patch نهائي: تطبيع الأرقام الهندية-العربية + تعليمات إلزامية للـ Agent",
-  "528": "hook.mjs",
-  "529": "مراجعة v3 — قريبة جداً من الجاهزية للتنفيذ",
-  "530": "test_regex_suite.js",
-  "531": "مراجعة v2 — Hardened Alumital Multi-Item Spec",
-  "532": "متطلبات منظومة المقايسات متعددة البنود وحوكمة أزرار التيليجرام (Alumital Multi-Item Quotation Requirements)",
-  "533": "alumital_multi_item_guardrails.test.ts"
+  "524": "TenantProvisioner"
 }

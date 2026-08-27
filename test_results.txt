@@ -1,8 +1,38 @@
-RUN  v4.1.11 C:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project
+=== COMPLETE ALUMITAL GUARDRAILS & SECURITY TEST SUITE (30 TESTS) ===
+Command: npx vitest run tests/alumital_multi_item_guardrails.test.ts tests/customer_measurements_e2e.test.ts tests/alumital_telegram_e2e.test.ts
+Directory: casper-voice-web
 
- ✓ tests/alumital_estimator.test.ts (5 tests) 13ms
+ RUN  v4.1.10 C:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web
 
- Test Files  1 passed (1)
-      Tests  5 passed (5)
-   Start at  18:54:32
-   Duration  1.89s (transform 62ms, setup 0ms, import 1.09s, tests 13ms, environment 0ms)
+stderr | tests/alumital_multi_item_guardrails.test.ts > Anti-Hallucination & Digit Normalization Guardrails (Task 3) > catches hallucinated totals written with Eastern Arabic-Indic digits
+[LLM Guardrail] Intercepted illegal ungrounded Alumital text calculation: "الإجمالي لمقايسة الشباك هيبقى ٦٧٨٣٠ جنيه"
+
+ ✓ tests/alumital_multi_item_guardrails.test.ts (16 tests) 1331ms
+   ✓ Alumital Multi-Item Quotation & Estimator Engine (Task 2) > accurately calculates the Mahmoud Fawzy reference fixture with per-unit 1m² minimum floor
+   ✓ Alumital Multi-Item Quotation & Estimator Engine (Task 2) > maintains backwards compatibility for single-item requests
+   ✓ Alumital Multi-Item Quotation & Estimator Engine (Task 2) > applies 1m² minimum floor for single item smaller than 1m²
+   ✓ Alumital Multi-Item Quotation & Estimator Engine (Task 2) > correctly handles discounts and extra items in multi-item quotes
+   ✓ Alumital Multi-Item Quotation & Estimator Engine (Task 2) > validates schema and rejects empty inputs
+   ✓ Anti-Hallucination & Digit Normalization Guardrails (Task 3) > normalizes Eastern Arabic-Indic digits to Western Arabic digits
+   ✓ Anti-Hallucination & Digit Normalization Guardrails (Task 3) > catches hallucinated totals written with Eastern Arabic-Indic digits
+   ✓ Anti-Hallucination & Digit Normalization Guardrails (Task 3) > catches hallucinated calculations with numbers before keywords
+   ✓ Anti-Hallucination & Digit Normalization Guardrails (Task 3) > handles punctuation attached to currency correctly
+   ✓ Anti-Hallucination & Digit Normalization Guardrails (Task 3) > intercepts hallucinated markdown calculation tables
+   ✓ Anti-Hallucination & Digit Normalization Guardrails (Task 3) > does NOT intercept safe conversational Arabic sentences (Negative Cases)
+   ✓ Anti-Hallucination & Digit Normalization Guardrails (Task 3) > returns original safe text without alteration
+   ✓ Telegram Webhook Callbacks, Atomic Locks & Auto-Rollback (Task 4) > enforces atomic state transition and prevents double-clicking confirm
+   ✓ Telegram Webhook Callbacks, Atomic Locks & Auto-Rollback (Task 4) > enforces tenant isolation: tenant B cannot confirm or modify tenant A quotation
+   ✓ Telegram Webhook Callbacks, Atomic Locks & Auto-Rollback (Task 4) > automatically rolls back from processing_media to draft if media rendering fails
+   ✓ Telegram Webhook Callbacks, Atomic Locks & Auto-Rollback (Task 4) > supports compact callback prefixes (conf_q, ed_dim, ed_prc, can_q) under 64 bytes
+
+ ✓ tests/customer_measurements_e2e.test.ts (9 tests) 1603ms
+ ✓ tests/alumital_telegram_e2e.test.ts (5 tests) 6254ms
+
+ Test Files  3 passed (3)
+      Tests  30 passed (30)
+   Duration  8.15s
+
+=== TYPECHECK VALIDATION OUTPUT ===
+Command: npx tsc --noEmit
+Directory: casper-voice-web
+Result: Exit Code 0 (Zero Errors)

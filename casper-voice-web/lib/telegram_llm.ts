@@ -400,21 +400,37 @@ const correctLastTransactionTool: FunctionDeclaration = {
 
 const calculateAlumitalQuotationTool: FunctionDeclaration = {
   name: "calculate_alumital_quotation",
-  description: "حساب وعمل مقايسة ألوميتال تفصيلية لنافذة أو باب وحفظها كمسودة (عرض سعر). يستخرج الأبعاد (العرض والارتفاع بالسنتيمتر)، الكمية، سعر المتر، البنود الإضافية، والخصم.",
+  description: "حساب وعمل مقايسة ألوميتال تفصيلية لفتحة واحدة أو عدة فتحات (شبابيك، أبواب، مطابخ) وحفظها كمسودة (عرض سعر). يدعم مصفوفة items لكافة البنود في الطلب، أو الأبعاد المباشرة، وسعر المتر، والخصم.",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
-      width_cm: { type: SchemaType.NUMBER, description: "عرض الشباك أو الباب بالسنتيمتر (مثال: 120)" },
-      height_cm: { type: SchemaType.NUMBER, description: "ارتفاع الشباك أو الباب بالسنتيمتر (مثال: 140)" },
-      quantity: { type: SchemaType.NUMBER, description: "عدد القطع المطلوبة (الافتراضي 1)" },
-      price_per_meter: { type: SchemaType.NUMBER, description: "سعر المتر المربع للألوميتال بالجنيه (مثال: 1500)" },
+      items: {
+        type: SchemaType.ARRAY,
+        description: "قائمة بكافة البنود والفتحات المطلوب حسابها في المقايسة (شبابيك، أبواب، مطابخ)",
+        items: {
+          type: SchemaType.OBJECT,
+          properties: {
+            item_type: { type: SchemaType.STRING, description: "نوع البند (مثال: شباك، باب، مطبخ، دلفة)" },
+            width_cm: { type: SchemaType.NUMBER, description: "عرض البند بالسنتيمتر (مثال: 100)" },
+            height_cm: { type: SchemaType.NUMBER, description: "ارتفاع البند بالسنتيمتر (مثال: 100)" },
+            quantity: { type: SchemaType.NUMBER, description: "عدد القطع من هذا البند (الافتراضي 1)" },
+            price_per_meter: { type: SchemaType.NUMBER, description: "سعر المتر المخصص لهذا البند بالجنيه إن وجد" },
+            apply_min_area: { type: SchemaType.BOOLEAN, description: "تطبيق شرط الحد الأدنى للمساحة 1 متر مربع (افتراضي true)" }
+          },
+          required: ["width_cm", "height_cm"]
+        }
+      },
+      width_cm: { type: SchemaType.NUMBER, description: "عرض الشباك أو الباب بالسنتيمتر في حال كان بنداً واحداً (مثال: 120)" },
+      height_cm: { type: SchemaType.NUMBER, description: "ارتفاع الشباك أو الباب بالسنتيمتر في حال كان بنداً واحداً (مثال: 140)" },
+      quantity: { type: SchemaType.NUMBER, description: "عدد القطع المطلوبة للبند الفردي (الافتراضي 1)" },
+      price_per_meter: { type: SchemaType.NUMBER, description: "سعر المتر المربع العام للألوميتال بالجنيه (مثال: 3000)" },
       apply_min_area: { type: SchemaType.BOOLEAN, description: "تطبيق شرط الحد الأدنى للمساحة 1 متر مربع (افتراضي true)" },
       discount_pct: { type: SchemaType.NUMBER, description: "نسبة الخصم المئوية إن وجدت (0-100)" },
       discount_amount: { type: SchemaType.NUMBER, description: "مبلغ الخصم المباشر بالجنيه إن وجد" },
-      customer_ref: { type: SchemaType.STRING, description: "اسم أو مرجع العميل المراد عمل المقايسة له" },
+      customer_ref: { type: SchemaType.STRING, description: "اسم أو مرجع العميل المراد عمل المقايسة له (مثال: محمود فوزي)" },
       extra_items: {
         type: SchemaType.ARRAY,
-        description: "قائمة البنود الإضافية (مثل سلك، مقبض، كالون)",
+        description: "قائمة البنود والإكسسوارات الإضافية (مثل سلك، مقبض، كالون)",
         items: {
           type: SchemaType.OBJECT,
           properties: {
@@ -426,7 +442,7 @@ const calculateAlumitalQuotationTool: FunctionDeclaration = {
         }
       }
     },
-    required: ["width_cm", "height_cm"]
+    required: []
   }
 };
 
@@ -705,7 +721,9 @@ export function buildActivePrompt(activeClusters: ClusterKey[], companyStr: stri
    - عند طلب تعديل ("عدل شباك 140 في 150 خليه 190 في 180 لمحمد صادق") -> update_customer_measurement.
    - عند طلب حذف ("امسح/الغي باب الحمام لمحمد صادق", "الغي آخر مقاس") -> delete_customer_measurement.
 4. حساب وعمل مقايسة وعرض سعر مالي (calculate_alumital_quotation):
-   - عند طلب حساب تكلفة أو عرض سعر أو ذكر سعر المتر ("احسبلي كوتيشن شباك 120 في 140 المتر بـ 1500", "عرض سعر").`
+   - عند طلب حساب تكلفة، مقايسة، أو عرض سعر لأي شبابيك أو أبواب أو ذكر سعر متر (مثال: "احسبلي للعميل محمود فوزي 5 شبابيك 100 في 100 و3 شبابيك 90 في 150 و4 ابواب 210 في 90 و6 شبابيك 70 في 70 وسعر المتر 3000", "عرض سعر").
+   - ⚠️ ممنوع منعاً باتاً كتابة أو حساب أي أمتار أو أسعار مالية للألوميتال نصياً في الرد. يجب استدعاء calculate_alumital_quotation وتمرير كافة البنود في مصفوفة items.
+   - عند طلب تعديل مقاس بدون تحديد رقم البند (مثال: "عدل شباك 70 في 70") وكان هناك أكثر من بند بنفس المقاس في المقايسة، اسأل التاجر لتحديد رقم البند المطلوب تعديله أولاً.`
   };
 
   const activeRules = activeClusters.map(c => EXTRACTION_RULES[c] || '').join('\n');
@@ -1498,7 +1516,38 @@ function groundingCheck(
   return { ok: true };
 }
 
-function sanitizeNonToolReply(text: string): string {
+export function normalizeArabicDigits(text: string): string {
+  const easternToWestern: Record<string, string> = {
+    '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+    '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+  };
+  return text.replace(/[٠-٩]/g, (d) => easternToWestern[d] || d);
+}
+
+export function isIllegalAlumitalCalculationText(text: string): boolean {
+  const norm = normalizeArabicDigits(text);
+
+  // 1. Table check (Markdown table containing dimensions or keywords)
+  const tablePattern = /\|[^\n]*(?:شباك|باب|مطبخ|قطاع|متر|إجمالي|اجمالي|المقاس|البيان)[^\n]*\|[\s\S]*\|[^\n]*\d+[x×*]\d+[^\n]*\|/i;
+  if (tablePattern.test(norm)) return true;
+
+  // 2. Price amount & currency pattern
+  const pricePattern = /(?:\d{3,7}|\d+[\.,]\d+)\s*(?:جنيه|ج\.م|ج(?=[\s.,!؟،)]|$)(?!دول|هاز|ديد|نب))/i;
+  if (!pricePattern.test(norm)) return false;
+
+  // 3. Alumital context & calculation keywords
+  const hasAlumitalKeyword = /(?:مقايسة|شباك|باب|ألوميتال|الوميتال|المتر|أمتار|الأمتار)/i.test(norm);
+  const hasCalcKeyword = /(?:(?:ال)?(?:إجمالي|اجمالي|تكلفة|سعر|حسبة|حساب)|(?:يكلف|تكلف|هيكلفك))/i.test(norm);
+
+  return hasAlumitalKeyword && hasCalcKeyword;
+}
+
+export function sanitizeNonToolReply(text: string): string {
+  if (isIllegalAlumitalCalculationText(text)) {
+    console.warn(`[LLM Guardrail] Intercepted illegal ungrounded Alumital text calculation: "${text}"`);
+    return "لحساب مقايسة الألوميتال بالأمتار والأسعار الرسمية وكارت الاعتماد، جاري استدعاء حاسبة المقايسات المعتمدة 📐";
+  }
+
   const forbiddenPatterns = [
     /تم\s*تسجيل\s*(بيع|مصروف|مشتريات|سداد|مرتجع)/i,
     /تم\s*حجز\s*موعد/i
@@ -3367,10 +3416,32 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         return { success: false, resultText: "يلزم تحديد هوية النشاط لحساب وعمل المقايسة." };
       }
 
-      const widthCm = Number(args.width_cm);
-      const heightCm = Number(args.height_cm);
-      if (!widthCm || !heightCm || widthCm < 30 || heightCm < 30) {
-        return { success: false, resultText: "يرجى تحديد أبعاد صحيحة للشباك أو الباب (الحد الأدنى 30 سم لكل بعد)." };
+      // Parse items array or construct from single width_cm & height_cm
+      let parsedItems = args.items || [];
+      if (typeof parsedItems === "string") {
+        try {
+          parsedItems = JSON.parse(parsedItems);
+        } catch {
+          parsedItems = [];
+        }
+      }
+
+      if (!Array.isArray(parsedItems) || parsedItems.length === 0) {
+        const widthCm = Number(args.width_cm);
+        const heightCm = Number(args.height_cm);
+        if (!widthCm || !heightCm || widthCm < 30 || heightCm < 30) {
+          return { success: false, resultText: "يرجى تحديد أبعاد صحيحة للشباك أو الباب (الحد الأدنى 30 سم لكل بعد)." };
+        }
+        parsedItems = [
+          {
+            item_type: "شباك",
+            width_cm: widthCm,
+            height_cm: heightCm,
+            quantity: Number(args.quantity) || 1,
+            price_per_meter: Number(args.price_per_meter) || undefined,
+            apply_min_area: args.apply_min_area !== false,
+          },
+        ];
       }
 
       // If price_per_meter is missing from input, look up default price or use fallback
@@ -3391,27 +3462,28 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
 
       const { calculateQuotation } = await import("@/lib/alumital/estimator");
       const quoteResult = calculateQuotation({
-        width_cm: widthCm,
-        height_cm: heightCm,
-        quantity: Number(args.quantity) || 1,
         price_per_meter: pricePerMeter,
         apply_min_area: args.apply_min_area !== false,
+        items: parsedItems,
         extra_items: extraItems,
         discount_pct: Number(args.discount_pct) || 0,
         discount_amount: Number(args.discount_amount) || 0,
       });
+
+      const firstItem = quoteResult.items[0];
 
       // Save Quotation in DB as 'draft'
       const quotation = await prisma.quotation.create({
         data: {
           tenantId,
           customerRef: args.customer_ref ? String(args.customer_ref).trim() : null,
-          width_cm: new Decimal(widthCm),
-          height_cm: new Decimal(heightCm),
-          quantity: Number(args.quantity) || 1,
+          width_cm: new Decimal(firstItem ? firstItem.width_cm : 100),
+          height_cm: new Decimal(firstItem ? firstItem.height_cm : 100),
+          quantity: quoteResult.quantity,
           price_per_meter: new Decimal(pricePerMeter),
-          area_sqm: new Decimal(quoteResult.area_sqm),
+          area_sqm: new Decimal(quoteResult.billable_area_sqm),
           window_total: new Decimal(quoteResult.window_total),
+          items: JSON.stringify(quoteResult.items),
           extra_items: JSON.stringify(quoteResult.extra_items),
           discount_pct: new Decimal(args.discount_pct || 0),
           discount_amount: new Decimal(quoteResult.discount_applied),
@@ -3421,25 +3493,39 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
         },
       });
 
-      const extrasSummary = quoteResult.extra_items.length > 0
-        ? `\n➕ *البنود الإضافية:*\n` + quoteResult.extra_items.map((it: any) => `  • ${it.name} (${it.quantity} × ${it.unit_price} = ${it.line_total} ج.م)`).join("\n")
-        : "";
+      const numberEmojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+      const itemsSummary = quoteResult.items
+        .map((it: any, idx: number) => {
+          const emoji = numberEmojis[idx] || `[${idx + 1}]`;
+          const isFloor = new Decimal(it.unit_actual_area_sqm).lessThan(1) && it.unit_billable_area_sqm === "1.00";
+          const floorNote = isFloor ? " (حد أدنى 1م²)" : "";
+          return `${emoji} *بند ${idx + 1}:* ${it.item_type} (${it.width_cm} × ${it.height_cm} سم) - ${it.quantity} قطع - مساحة: ${it.total_billable_area_sqm} م²${floorNote} - *${it.line_total} ج.م*`;
+        })
+        .join("\n");
+
+      const extrasSummary =
+        quoteResult.extra_items.length > 0
+          ? `\n➕ *البنود الإضافية:*\n` +
+            quoteResult.extra_items
+              .map((it: any) => `  • ${it.name} (${it.quantity} × ${it.unit_price} = ${it.line_total} ج.م)`)
+              .join("\n")
+          : "";
 
       const discountSummary = new Decimal(quoteResult.discount_applied).greaterThan(0)
         ? `\n🏷️ *الخصم المطبق:* -${quoteResult.discount_applied} ج.م`
         : "";
 
-      const summaryText = `📐 *مقايسة ألوميتال مبدئية (مسودة):*
+      const custHeader = args.customer_ref ? ` للعميل *${args.customer_ref}*` : "";
+      const summaryText = `📐 *مقايسة ألوميتال مبدئية (مسودة)${custHeader}:*
 ────────────────
-📏 *المقاس:* ${widthCm} × ${heightCm} سم
-🔢 *الكمية:* ${quoteResult.quantity} قطعة
-📐 *المساحة المحسوبة:* ${quoteResult.area_sqm} م²
+${itemsSummary}
+────────────────
+📏 *المساحة الفعلية:* ${quoteResult.actual_area_sqm} م² | *المساحة المحاسبية:* ${quoteResult.billable_area_sqm} م²
 💵 *سعر المتر:* ${pricePerMeter} ج.م
 💰 *سعر القطاعات:* ${quoteResult.window_total} ج.م${extrasSummary}${discountSummary}
-────────────────
 💎 *المبلغ الإجمالي:* *${quoteResult.total_price} ج.م*
 
-هل ترغب في تأكيد المقايسة وتوليد الرسم الفني وتقرير الـ PDF المعتمد؟`;
+هل ترغب في اعتماد المقايسة وتوليد الرسم الفني وعرض السعر الرسمي (PDF)؟`;
 
       // Send interactive card with inline buttons if chatId is available in options
       const targetChatId = options?.chatId;
@@ -3452,14 +3538,14 @@ export async function executeTool(name: string, args: any, tenantId?: string, us
           replyMarkup: {
             inline_keyboard: [
               [
-                { text: "✅ تأكيد وتوليد الملفات الرسمية", callback_data: `confirm_quote_${quotation.id}` },
+                { text: "✅ اعتماد وتوليد الملفات الرسمية (PDF)", callback_data: `conf_q:${quotation.id}` },
               ],
               [
-                { text: "📏 تعديل المقاس", callback_data: `edit_quote_dim_${quotation.id}` },
-                { text: "💵 تعديل السعر / الخصم", callback_data: `edit_quote_price_${quotation.id}` },
+                { text: "📏 تعديل مقاس أو بند", callback_data: `ed_dim:${quotation.id}` },
+                { text: "💵 تعديل السعر / الخصم", callback_data: `ed_prc:${quotation.id}` },
               ],
               [
-                { text: "❌ إلغاء المسودة", callback_data: `cancel_quote_${quotation.id}` },
+                { text: "❌ إلغاء المسودة", callback_data: `can_q:${quotation.id}` },
               ],
             ],
           },

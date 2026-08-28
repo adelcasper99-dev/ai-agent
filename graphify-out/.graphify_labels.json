@@ -540,5 +540,6 @@
   "538": "ensureHookGitExcludes",
   "539": "test_advanced_edge_cases.ts",
   "540": "checkElementRadialSpotlightDOM",
-  "541": "test_vps_pdf.js"
+  "541": "test_vps_pdf.js",
+  "542": "selectAvailablePendingEvent"
 }

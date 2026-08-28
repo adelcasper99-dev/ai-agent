@@ -1,8 +1,9 @@
-# مهام البناء والتنفيذ لمرحلة Block B (Alumital Multi-Item Guardrails)
+# Task Tracker: Per-Tenant ADMIN_CHAT_ID Isolation
 
-- [x] **Task 1 (Prisma Schema):** إضافة `items String?` في نموذج `Quotation` بملف `schema.prisma` وتحديث عميل Prisma.
-- [x] **Task 2 (Estimator Engine):** ترقية `lib/alumital/estimator.ts` لدعم مصفوفة `items` مع `.refine()`، دقة `Decimal.js` لتطبيق الحد الأدنى 1م²/قطعة، وعمل re-export في `src/lib/alumital/estimator.ts`.
-- [x] **Task 3.1 (Digit Normalization Patch):** إضافة دالة `normalizeArabicDigits` في `telegram_llm.ts` ودمجها كأول سطر في `sanitizeNonToolReply`.
-- [x] **Task 3.2 (Telegram LLM Guardrails):** تحديث `calculateAlumitalQuotationTool` لاستقبال `items[]`، توليد الكارت التفاعلي المرقم (1️⃣، 2️⃣...)، تعليمات فض الالتباس عند التعديل، والحارس الثلاثي.
-- [x] **Task 4 (Webhook Callback Route):** معالجة `conf_q:`, `ed_dim:`, `ed_prc:`, `can_q:` مع القفل الذري والـ Auto-Rollback التلقائي عند أي خطأ في توليد الميديا.
-- [x] **Task 5 (Test Suite & Verification):** إنشاء وتشغيل `tests/alumital_multi_item_guardrails.test.ts` والتحقق من حالة محمود فوزي المرجعية (**67,830.00 ج**)، الأرقام الهندية العربية، وعلامات الترقيم (12/12 PASS).
+- [x] 1. Update `prisma/schema.prisma` with `adminChatId String?` on `Tenant` model
+- [x] 2. Run `npx prisma db push` to synchronize database schema
+- [x] 3. Run migration script to backfill `adminChatId = telegramChatId` for all existing tenants
+- [x] 4. Update `casper-voice-web/lib/telegram.ts` (`getAdminChatId`, `getSuperAdminChatId`, `approveDirectTenant`, `approveTenantRequest`)
+- [x] 5. Update `casper-voice-web/app/api/telegram/webhook/route.ts` (route `/human`, CSAT, and callbacks with tenant-specific admin chat ID)
+- [x] 6. Create `tests/tenant_admin_chat_isolation.test.ts` with comprehensive multi-tenant isolation scenarios
+- [x] 7. Run full Vitest test suite and record pass/fail results

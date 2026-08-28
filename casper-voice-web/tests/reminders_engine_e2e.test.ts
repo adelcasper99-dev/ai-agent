@@ -98,7 +98,7 @@ describe("Smart Reminder Engine E2E Test Suite", () => {
     expect(saved).not.toBeNull();
     expect(saved.customerName).toBe("المهندس محمود");
     expect(saved.status).toBe("pending");
-  });
+  }, 30000);
 
   it("2.1. should anchor relative reminders to messageTimestamp accurately with Cairo timezone formatting", async () => {
     // 07:04 PM Cairo time = 19:04

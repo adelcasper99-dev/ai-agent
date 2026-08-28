@@ -2405,8 +2405,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/app/api/telegram/webhook/route.ts": {
-    "mtime": 1787827894.7817812,
-    "ast_hash": "bd059f7fe158b8c9616bc02103522627",
+    "mtime": 1787834132.0395617,
+    "ast_hash": "3c47acad6e6a5bcf7442628752b9b93a",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/telegram.ts": {
@@ -2600,8 +2600,8 @@
     "semantic_hash": ""
   },
   "implementation_plan.md": {
-    "mtime": 1787827642.875316,
-    "ast_hash": "aa9f2d414216a6e7bcaf79f24e9ffd03",
+    "mtime": 1787832677.4343383,
+    "ast_hash": "149c7b3f5a35574189e7b54dee8eb432",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/auth.ts": {
@@ -3570,8 +3570,8 @@
     "semantic_hash": ""
   },
   "casper-voice-web/lib/alumital/media_worker.ts": {
-    "mtime": 1787830897.6286023,
-    "ast_hash": "220a49f029f5038d410bd426aed9a60f",
+    "mtime": 1787834174.1052823,
+    "ast_hash": "939fdea8be700fece31ac59e350f95f2",
     "semantic_hash": ""
   },
   "casper-voice-web/lib/tenant-name-cleaner.ts": {
@@ -3675,8 +3675,8 @@
     "semantic_hash": ""
   },
   "src/lib/alumital/media_worker.ts": {
-    "mtime": 1787449117.2605171,
-    "ast_hash": "3b98677aaa776b714a8913ac7e65ca99",
+    "mtime": 1787834119.3901086,
+    "ast_hash": "7b05d1c0f35d43c7a4f4180a5ae725be",
     "semantic_hash": ""
   },
   "src/tsconfig.json": {
@@ -4112,6 +4112,161 @@
   "casper-voice-web/public/storage/cmtbgddh70000eglybysa3b09/quotations/aba8915d-322f-4623-b81b-d69f8d00c359/sketch_aba8915d-322f-4623-b81b-d69f8d00c359.svg": {
     "mtime": 1787830924.3779523,
     "ast_hash": "b08c9d05511193feeb70669ce23cf5b0",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/tests/alumital_sketch_pdf_hardening.test.ts": {
+    "mtime": 1787834178.774388,
+    "ast_hash": "5413124378410974f4a2708741ed5fcf",
+    "semantic_hash": ""
+  },
+  "scripts/test_live_vps_render.ts": {
+    "mtime": 1787834396.4850936,
+    "ast_hash": "9e5b7eb70e24a959b1a9076015c0e8e6",
+    "semantic_hash": ""
+  },
+  "docs/alumital_sketch_pdf_plan_review.md": {
+    "mtime": 1787832066.4636421,
+    "ast_hash": "a9dbd1c35b8c593aab5f9e60527ff2a4",
+    "semantic_hash": ""
+  },
+  "docs/alumital_sketch_pdf_plan_review_v2.md": {
+    "mtime": 1787832591.9071152,
+    "ast_hash": "a966f6b61a9fe055dc3f3b087c01ffb3",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/cmtbibuwd00003rba27lt04nn/quotations/70277d6e-0921-4875-932b-2465fd3abdb2/quote_70277d6e-0921-4875-932b-2465fd3abdb2.pdf": {
+    "mtime": 1787834214.7042408,
+    "ast_hash": "816d1057dd0bb521c705754b528574d4",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834186303/quotations/5ffdb174-92fc-46c8-b296-2db2e9af8bac/quote_5ffdb174-92fc-46c8-b296-2db2e9af8bac.pdf": {
+    "mtime": 1787834190.7303066,
+    "ast_hash": "41433c96c8960dbb3313e9f05045a697",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834215077/quotations/f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c/quote_f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c.pdf": {
+    "mtime": 1787834217.629275,
+    "ast_hash": "fc8c8a3acfdf2dc7aba823fd612dbfac",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/cmtbibuwd00003rba27lt04nn/quotations/70277d6e-0921-4875-932b-2465fd3abdb2/sketch_70277d6e-0921-4875-932b-2465fd3abdb2.png": {
+    "mtime": 1787834214.168867,
+    "ast_hash": "9d75145fa80b4a3626320a2ebf08d6cd",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/cmtbibuwd00003rba27lt04nn/quotations/70277d6e-0921-4875-932b-2465fd3abdb2/sketch_70277d6e-0921-4875-932b-2465fd3abdb2.svg": {
+    "mtime": 1787834213.4162872,
+    "ast_hash": "80370600c0bad7651a363266f74c9ffb",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/cmtbibuwd00003rba27lt04nn/quotations/70277d6e-0921-4875-932b-2465fd3abdb2/sketch_70277d6e-0921-4875-932b-2465fd3abdb2_item_1.png": {
+    "mtime": 1787834214.168867,
+    "ast_hash": "9d75145fa80b4a3626320a2ebf08d6cd",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/cmtbibuwd00003rba27lt04nn/quotations/70277d6e-0921-4875-932b-2465fd3abdb2/sketch_70277d6e-0921-4875-932b-2465fd3abdb2_item_1.svg": {
+    "mtime": 1787834213.4162872,
+    "ast_hash": "80370600c0bad7651a363266f74c9ffb",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834186303/quotations/5ffdb174-92fc-46c8-b296-2db2e9af8bac/sketch_5ffdb174-92fc-46c8-b296-2db2e9af8bac.png": {
+    "mtime": 1787834188.827574,
+    "ast_hash": "e285caab45f8ce60238b75510ec001ac",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834186303/quotations/5ffdb174-92fc-46c8-b296-2db2e9af8bac/sketch_5ffdb174-92fc-46c8-b296-2db2e9af8bac.svg": {
+    "mtime": 1787834186.9453993,
+    "ast_hash": "ff65a72f5f630660d96bc8a4aad227a1",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834186303/quotations/5ffdb174-92fc-46c8-b296-2db2e9af8bac/sketch_5ffdb174-92fc-46c8-b296-2db2e9af8bac_item_1.png": {
+    "mtime": 1787834188.827574,
+    "ast_hash": "e285caab45f8ce60238b75510ec001ac",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834186303/quotations/5ffdb174-92fc-46c8-b296-2db2e9af8bac/sketch_5ffdb174-92fc-46c8-b296-2db2e9af8bac_item_1.svg": {
+    "mtime": 1787834186.9453993,
+    "ast_hash": "ff65a72f5f630660d96bc8a4aad227a1",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834186303/quotations/5ffdb174-92fc-46c8-b296-2db2e9af8bac/sketch_5ffdb174-92fc-46c8-b296-2db2e9af8bac_item_2.png": {
+    "mtime": 1787834189.054921,
+    "ast_hash": "70b84523ecd314268365fdb770496404",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834186303/quotations/5ffdb174-92fc-46c8-b296-2db2e9af8bac/sketch_5ffdb174-92fc-46c8-b296-2db2e9af8bac_item_2.svg": {
+    "mtime": 1787834188.8285735,
+    "ast_hash": "b017fbb73c9b9e3a3172003abcff3620",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834186303/quotations/5ffdb174-92fc-46c8-b296-2db2e9af8bac/sketch_5ffdb174-92fc-46c8-b296-2db2e9af8bac_item_3.png": {
+    "mtime": 1787834189.196116,
+    "ast_hash": "4dc1cb5c6855a0217608d06561becf46",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834186303/quotations/5ffdb174-92fc-46c8-b296-2db2e9af8bac/sketch_5ffdb174-92fc-46c8-b296-2db2e9af8bac_item_3.svg": {
+    "mtime": 1787834189.055921,
+    "ast_hash": "e7b3e0dc8d7c451e88e6ad7460fd3974",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834186303/quotations/5ffdb174-92fc-46c8-b296-2db2e9af8bac/sketch_5ffdb174-92fc-46c8-b296-2db2e9af8bac_item_4.png": {
+    "mtime": 1787834189.4650629,
+    "ast_hash": "77b4c81fe32285d070699c6b6556050f",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834186303/quotations/5ffdb174-92fc-46c8-b296-2db2e9af8bac/sketch_5ffdb174-92fc-46c8-b296-2db2e9af8bac_item_4.svg": {
+    "mtime": 1787834189.1976335,
+    "ast_hash": "1848ca41034cc75bce75736bcf8e9705",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834215077/quotations/f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c/sketch_f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c.png": {
+    "mtime": 1787834216.1665633,
+    "ast_hash": "3cb068b8db7e7b564288bd8c3f02b8a7",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834215077/quotations/f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c/sketch_f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c.svg": {
+    "mtime": 1787834215.6483405,
+    "ast_hash": "ff65a72f5f630660d96bc8a4aad227a1",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834215077/quotations/f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c/sketch_f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c_item_1.png": {
+    "mtime": 1787834216.1665633,
+    "ast_hash": "3cb068b8db7e7b564288bd8c3f02b8a7",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834215077/quotations/f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c/sketch_f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c_item_1.svg": {
+    "mtime": 1787834215.6483405,
+    "ast_hash": "ff65a72f5f630660d96bc8a4aad227a1",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834215077/quotations/f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c/sketch_f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c_item_2.png": {
+    "mtime": 1787834216.4634917,
+    "ast_hash": "70b84523ecd314268365fdb770496404",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834215077/quotations/f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c/sketch_f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c_item_2.svg": {
+    "mtime": 1787834216.1685624,
+    "ast_hash": "b017fbb73c9b9e3a3172003abcff3620",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834215077/quotations/f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c/sketch_f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c_item_3.png": {
+    "mtime": 1787834216.5654864,
+    "ast_hash": "4dc1cb5c6855a0217608d06561becf46",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834215077/quotations/f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c/sketch_f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c_item_3.svg": {
+    "mtime": 1787834216.4644935,
+    "ast_hash": "e7b3e0dc8d7c451e88e6ad7460fd3974",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834215077/quotations/f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c/sketch_f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c_item_4.png": {
+    "mtime": 1787834216.7584765,
+    "ast_hash": "77b4c81fe32285d070699c6b6556050f",
+    "semantic_hash": ""
+  },
+  "casper-voice-web/public/storage/tenant_sketch_test_1787834215077/quotations/f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c/sketch_f54d03fb-d37a-49ea-9885-2cfc5ac8ad0c_item_4.svg": {
+    "mtime": 1787834216.567481,
+    "ast_hash": "1848ca41034cc75bce75736bcf8e9705",
     "semantic_hash": ""
   }
 }

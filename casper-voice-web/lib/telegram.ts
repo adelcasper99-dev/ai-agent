@@ -5,6 +5,7 @@
 import Decimal from 'decimal.js';
 import { prisma } from './prisma';
 import { signMagicLink } from './session';
+import { runWithTenant } from './prisma-tenant-extension';
 
 export interface TelegramAlertPayload {
   chatId: string;
@@ -58,7 +59,7 @@ function validateEnv() {
   }
 }
 
-export async function getAdminChatId(): Promise<string | null> {
+export async function getSuperAdminChatId(): Promise<string | null> {
   try {
     const setting = await prisma.setting.findUnique({
       where: { key: 'ADMIN_TELEGRAM_CHAT_ID' },
@@ -67,9 +68,30 @@ export async function getAdminChatId(): Promise<string | null> {
       return setting.value.trim();
     }
   } catch (err) {
-    console.warn('[telegram] getAdminChatId DB lookup failed, fallback to env:', err);
+    console.warn('[telegram] getSuperAdminChatId DB lookup failed, fallback to env:', err);
   }
   return process.env.ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID || process.env.ADMIN_TELEGRAM_CHAT_ID || null;
+}
+
+export async function getAdminChatId(tenantId?: string): Promise<string | null> {
+  if (tenantId) {
+    try {
+      const tenant = await (prisma as any).tenant.findUnique({
+        where: { id: tenantId },
+        select: { adminChatId: true, telegramChatId: true },
+      });
+      if (tenant?.adminChatId && tenant.adminChatId.trim()) {
+        return tenant.adminChatId.trim();
+      }
+      if (tenant?.telegramChatId && tenant.telegramChatId.trim()) {
+        return tenant.telegramChatId.trim();
+      }
+    } catch (err) {
+      console.warn(`[telegram] getAdminChatId per-tenant lookup failed for ${tenantId}:`, err);
+    }
+  }
+
+  return getSuperAdminChatId();
 }
 
 export async function setTelegramBotCommands() {
@@ -264,7 +286,8 @@ export async function approveTenantRequest(requestId: string, decidedBy: string,
       data: {
         subscriptionPlan,
         expiresAt: expiresAt || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // Default 14 days
-        state: 'active'
+        state: 'active',
+        adminChatId: tenant.adminChatId || tenant.telegramChatId || req.telegramChatId || null,
       }
     });
   }
@@ -272,18 +295,21 @@ export async function approveTenantRequest(requestId: string, decidedBy: string,
   // Generate Magic Link for instant login
   let magicLinkUrl: string | undefined;
   try {
-    let customer = await (prisma as any).customer.findFirst({
-      where: { tenantId: tenant.id, phone: req.phoneNumber || '' }
-    });
-    if (!customer) {
-      customer = await (prisma as any).customer.create({
-        data: {
-          tenantId: tenant.id,
-          name: req.customerName,
-          phone: req.phoneNumber || '01000000000',
-        }
+    const customer = await runWithTenant(tenant.id, async () => {
+      let c = await (prisma as any).customer.findFirst({
+        where: { tenantId: tenant.id, phone: req.phoneNumber || '' }
       });
-    }
+      if (!c) {
+        c = await (prisma as any).customer.create({
+          data: {
+            tenantId: tenant.id,
+            name: req.customerName,
+            phone: req.phoneNumber || '01000000000',
+          }
+        });
+      }
+      return c;
+    });
     const token = await signMagicLink(customer.id, 60 * 24 * 7); // 7 days
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://109.123.247.119:3000';
     magicLinkUrl = `${appUrl}/api/auth/magic-link?token=${token}`;
@@ -347,9 +373,13 @@ export async function rejectTenantRequest(requestId: string, decidedBy: string) 
  * Approves a direct Bot onboarding tenant in `pending_approval` state.
  */
 export async function approveDirectTenant(tenantId: string, decidedBy: string) {
+  const existingTenant = await (prisma as any).tenant.findUnique({ where: { id: tenantId } });
   const updatedCount = await (prisma as any).tenant.updateMany({
     where: { id: tenantId, state: 'pending_approval' },
-    data: { state: 'active' },
+    data: {
+      state: 'active',
+      adminChatId: existingTenant?.adminChatId || existingTenant?.telegramChatId || null,
+    },
   });
 
   if (updatedCount.count === 0) {
@@ -361,18 +391,21 @@ export async function approveDirectTenant(tenantId: string, decidedBy: string) {
   if (tenant && tenant.telegramChatId) {
     let magicLinkUrl: string | undefined;
     try {
-      let customer = await (prisma as any).customer.findFirst({
-        where: { tenantId: tenant.id, phone: tenant.phoneNumber || '' }
-      });
-      if (!customer) {
-        customer = await (prisma as any).customer.create({
-          data: {
-            tenantId: tenant.id,
-            name: tenant.merchantName || tenant.name,
-            phone: tenant.phoneNumber || '01000000000',
-          }
+      const customer = await runWithTenant(tenant.id, async () => {
+        let c = await (prisma as any).customer.findFirst({
+          where: { tenantId: tenant.id, phone: tenant.phoneNumber || '' }
         });
-      }
+        if (!c) {
+          c = await (prisma as any).customer.create({
+            data: {
+              tenantId: tenant.id,
+              name: tenant.merchantName || tenant.name,
+              phone: tenant.phoneNumber || '01000000000',
+            }
+          });
+        }
+        return c;
+      });
       const token = await signMagicLink(customer.id, 60 * 24 * 7); // 7 days
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://109.123.247.119:3000';
       magicLinkUrl = `${appUrl}/api/auth/magic-link?token=${token}`;

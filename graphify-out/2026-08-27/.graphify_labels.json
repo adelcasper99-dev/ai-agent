@@ -532,5 +532,13 @@
   "530": "test_regex_suite.js",
   "531": "مراجعة v2 — Hardened Alumital Multi-Item Spec",
   "532": "متطلبات منظومة المقايسات متعددة البنود وحوكمة أزرار التيليجرام (Alumital Multi-Item Quotation Requirements)",
-  "533": "alumital_multi_item_guardrails.test.ts"
+  "533": "alumital_multi_item_guardrails.test.ts",
+  "534": "checkTextOcclusionDOM",
+  "535": "renderGroupedTemplate",
+  "536": "commitAcceptedSvelteComponentToDom",
+  "537": "مراجعة تقرير الإنجاز (Stage 5) — الأرقام صح، لكن فيه فجوتين قبل ما توافق نهائي",
+  "538": "ensureHookGitExcludes",
+  "539": "test_advanced_edge_cases.ts",
+  "540": "checkElementRadialSpotlightDOM",
+  "541": "test_vps_pdf.js"
 }

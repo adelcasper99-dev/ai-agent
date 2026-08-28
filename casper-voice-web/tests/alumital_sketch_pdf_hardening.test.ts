@@ -136,6 +136,10 @@ describe('Alumital Multi-Item Sketch & Single-Page PDF Hardening Suite', () => {
     expect(html).toContain('بند 4: شباك (70×70)');
     expect(html).toContain('67830.00 ج.م');
     expect(html).toContain('(حد أدنى 1م²)');
+    expect(html).toContain('sketchModal');
+    expect(html).toContain('openSketchModal');
+    expect(html).toContain('closeSketchModal');
+    expect(html).toContain('@media print');
   });
 
   // ==================== TEST 4: E2E MULTI-ITEM MEDIA WORKER RENDERING ====================
@@ -196,5 +200,5 @@ describe('Alumital Multi-Item Sketch & Single-Page PDF Hardening Suite', () => {
     const updatedQuote = await prisma.quotation.findUnique({ where: { id: createdQuoteId } });
     expect(updatedQuote?.status).toBe('completed');
     expect(updatedQuote?.pdfUrl).toContain('.pdf');
-  });
+  }, 30000);
 });

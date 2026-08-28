@@ -8,6 +8,7 @@ import {
   isStartRateLimited,
   isChatAllowed,
   getAdminChatId,
+  getSuperAdminChatId,
   approveTenantRequest,
   rejectTenantRequest,
   approveDirectTenant,
@@ -915,7 +916,7 @@ export async function POST(req: NextRequest) {
               idempotencyKey: `onboarding:pending:${callbackChatId}`,
             });
 
-            const adminChatId = await getAdminChatId();
+            const adminChatId = await getSuperAdminChatId();
             if (adminChatId) {
               await sendTelegramAlert({
                 chatId: adminChatId,
@@ -1022,7 +1023,7 @@ export async function POST(req: NextRequest) {
           idempotencyKey: `escalate:customer_btn:${callbackChatId}:${Date.now()}`,
         });
 
-        const adminChatId = process.env.ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
+        const adminChatId = await getAdminChatId(currentTenant?.id);
         if (adminChatId) {
           await sendTelegramAlert({
             chatId: adminChatId,
@@ -1039,7 +1040,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
-      const expectedAdminId = await getAdminChatId();
+      const expectedAdminId = await getSuperAdminChatId();
       // Auth Check: Admin Callback sender MUST equal ADMIN_CHAT_ID from DB or env
       if (!expectedAdminId || callbackChatId !== expectedAdminId) {
         return NextResponse.json({ ok: true });
@@ -1802,7 +1803,7 @@ export async function POST(req: NextRequest) {
           idempotencyKey: `hours:custom_saved:${chatId}:${message.message_id}`,
         });
 
-        const adminChatId = await getAdminChatId();
+        const adminChatId = await getSuperAdminChatId();
         if (adminChatId) {
           await sendTelegramAlert({
             chatId: adminChatId,
@@ -1935,8 +1936,8 @@ export async function POST(req: NextRequest) {
         idempotencyKey: `escalate:customer:${chatId}:${message.message_id}`,
       });
 
-      // 2. Alert Admin
-      const adminChatId = process.env.ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
+      // 2. Alert Admin (Per-Tenant or Super Admin Fallback)
+      const adminChatId = await getAdminChatId(currentTenant?.id);
       if (adminChatId) {
         await sendTelegramAlert({
           chatId: adminChatId,

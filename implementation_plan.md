@@ -1,43 +1,48 @@
-# خطة العمل المحدثة v2: محرك الرندر الهندسي الآمن والمضبوط
+# Hardened Implementation Plan: Per-Tenant ADMIN_CHAT_ID Isolation & Escalation Routing
 
-## 1. التشخيص والحل المعماري للموارد والخطوط (Resource & Font Hardening)
+## 1. Executive Summary
 
-### أ. إدارة موارد الـ VPS وحماية خوادم الصوت (LiveKit & VPS Safety)
-* **المشكلة:** الخادم يعمل عليه خدمات صوتية حية (LiveKit Agent) وبوت التيليجرام ولوحة الإدارة. إطلاق متصفحات متعددة قد يسبب ضغط RAM/CPU.
-* **الحل المعماري الصارم:**
-  1. **Singleton Browser With Tab Reuse:** متصفح Chromium واحد فقط، يُعاد استخدامه عبر فتح صفحة (`page = await browser.newPage()`) واحدة لكل مهمة رندر، ثم إغلاق الصفحة فوراً.
-  2. **Sequential Multi-Item Batching:** عند رندر 4 أو 10 بنود، يتم توليد صور البنود داخل نفس التاب بالتسلسل (`loop`) دون فتح 10 تابات متزامنة.
-  3. **Auto-Close Idle Timer:** إغلاق المتصفح تماماً بعد 60 ثانية من الخمول لتفريغ الذاكرة العشوائية إلى 0 MB.
-  4. **Mutex / Concurrency Queue:** قفل متزامن يضمن معالجة مهمة رندر واحدة فقط في نفس اللحظة لمنع أي تداخل أو إجهاد للخادم.
-
-### ب. تأكيد الخطوط العربية على السيرفر (Arabic System Fonts Verified)
-* تم تثبيت وفحص خطوط `Noto Sans Arabic` و `Noto Kufi Arabic` و `KacstNaskh` و `Scheherazade` و `Liberation Sans` على سيرفر الإنتاج (HQ VPS) وتحديث كاش `fontconfig` بنجاح.
-* القالب سيستخدم صراحة عائلة الخطوط المضمونة: `font-family: 'Cairo', 'Noto Sans Arabic', 'DejaVu Sans', Tahoma, sans-serif;`.
+Migrate the single-tenant global admin notification architecture into a fully isolated per-tenant admin notification routing engine. Human escalations (`/human`), customer reviews (CSAT), and quote notifications will route strictly to the tenant's designated `adminChatId`, while platform management alerts (e.g. approving new tenant signups) route to `getSuperAdminChatId()`.
 
 ---
 
-## 2. القرارات الهندسية المحددة (Architecture Specs)
+## 2. Proposed Code Modifications
 
-### أ. تسليم صور التيليجرام (Telegram Delivery)
-* **1 إلى 10 بنود:** إرسال صور PNG عالية الدقة لكل بند عبر `sendMediaGroup` (ألبوم منظم) مع كابشن: `1️⃣ بند 1: شباك (100×100 سم) - 5 قطع`.
-* **أكثر من 10 بنود:** إرسال أول 10 بنود كألبوم + إرفاق ملف الـ PDF الشامل لجميع البنود (احتراماً لحد التيليجرام الأقصى 10 صور).
+### Component 1: Database Schema
 
-### ب. صفحات الـ PDF (PDF Layout)
-* **1 إلى 6 بنود:** شبكة رسومات هندسية مصغرة (Bento Grid) مع الجدول والإجماليات في **صفحة A4 واحدة مؤكدة (Single-Page Guarantee)**.
-* **أكثر من 6 بنود:** جدول ممتد مع ترويسة متكررة وتوزيع صفحات طبيعي بدون كسر الصفوف (`page-break-inside: avoid`).
-
-### ج. محرك أشكال الأصناف (Item Types & Universal Fallback)
-* **شباك:** إطار مستطيل/مربع مع ضلفتين وخطوط انعكاس الزجاج.
-* **باب:** إطار رأسي مع مقبض الباب (Handle) وتقسيم معماري.
-* **مخصص / Fallback (مطبخ، فاصل، تندة، إلخ):** إطار لوح معماري محايد يعرض الأبعاد والاسم بوضوح تام.
+#### [MODIFY] [schema.prisma](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/prisma/schema.prisma)
+- Add `adminChatId String?` to `model Tenant`.
+- Execute `npx prisma db push` to synchronize SQLite/PostgreSQL schema.
 
 ---
 
-## 3. خطة الاختبار والقياس التجريبي القابل للتحقق (Measurable Tests)
-في ملف `tests/alumital_sketch_pdf_hardening.test.ts`:
-1. **فحص الـ Mojibake:** فحص نصوص الـ SVG والتأكد من عدم وجود `/[طظ][§©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿]/` أو `\uFFFD`.
-2. **فحص حجم الـ PNG المنتج:** `expect(pngBuffer.length).toBeGreaterThan(5000)` لضمان عدم وجود صور تالفة أو فارغة.
-3. **فحص حجم الـ PDF:** `expect(pdfBuffer.length).toBeGreaterThan(10000)`.
-4. **فحص صفحة الـ PDF الواحدة:** فحص الـ Buffer والتأكد من أن عدد صفحات المقايسة (4 بنود) = **1 صفحة بالضبط**.
-5. **فحص دعم الأصناف المختلفة:** اختبار "باب"، "شباك"، "مطبخ"، و"بند افتراضي".
-6. **مراجعة بصرية حية:** فحص الصور وملف الـ PDF المولد على التيليجرام وسيرفر الإنتاج.
+### Component 2: Core Telegram & Notification Engine
+
+#### [MODIFY] [telegram.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/lib/telegram.ts)
+- Update `getAdminChatId(tenantId?: string): Promise<string | null>`:
+  - If `tenantId` is supplied: Query `Tenant.adminChatId`, fallback to `Tenant.telegramChatId`.
+  - If unpopulated or no `tenantId`: Fallback to `prisma.setting` `ADMIN_TELEGRAM_CHAT_ID` or `process.env.ADMIN_CHAT_ID`.
+- Export `getSuperAdminChatId(): Promise<string | null>` for platform-wide alerts.
+- In `approveDirectTenant` and `approveTenantRequest`: Populate `Tenant.adminChatId = tenant.telegramChatId` if `adminChatId` is null.
+
+#### [MODIFY] [route.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/app/api/telegram/webhook/route.ts)
+- In `cmd_human` callback / `/human` text trigger: Resolve `tenant = await prisma.tenant.findUnique(...)` and fetch target admin via `await getAdminChatId(tenant.id)`. Send escalation alert specifically to that tenant's admin.
+- In `resolve:` CSAT callback: Use `getAdminChatId(tenant.id)`.
+- In `approve_tenant:` and `reject_tenant:` callbacks: Verify caller against `getSuperAdminChatId()`.
+
+---
+
+### Component 3: Verification & Test Suite
+
+#### [NEW] [tenant_admin_chat_isolation.test.ts](file:///c:/Users/TheExpert/Downloads/casper-voice-project/casper-voice-project/casper-voice-web/tests/tenant_admin_chat_isolation.test.ts)
+- Test 1: `getAdminChatId(tenantA.id)` returns `adminA`, `getAdminChatId(tenantB.id)` returns `adminB`.
+- Test 2: Fallback when `adminChatId` is null resolves to `Tenant.telegramChatId`.
+- Test 3: Legacy/Unassigned tenant resolves to `getSuperAdminChatId()`.
+- Test 4: E2E escalation simulation verifying `/human` dispatch separation.
+
+---
+
+## 3. Verification Commands
+- `npx vitest run tests/tenant_admin_chat_isolation.test.ts`
+- `npx vitest run tests/telegram_admin_linking.test.ts`
+- `npx vitest run` (complete regression suite)

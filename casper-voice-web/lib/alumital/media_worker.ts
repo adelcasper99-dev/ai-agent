@@ -397,17 +397,17 @@ export function buildArabicQuotationHtml(data: {
 
   if (sketchesToRender.length === 1) {
     sketchesHtml = `
-    <div class="sketch-single">
-      <div class="sketch-header">📐 الرسم الفني والمنظور الهندسي المعتمد</div>
-      <img src="data:image/png;base64,${sketchesToRender[0].pngBase64}" alt="رسم هندسي" style="max-height: 200px;" />
+    <div class="sketch-single" onclick="openSketchModal('data:image/png;base64,${sketchesToRender[0].pngBase64}', 'المخطط الهندسي والمعاينة التفصيلية')" title="انقر للتكبير بملء الشاشة">
+      <div class="sketch-header">📐 الرسم الفني والمنظور الهندسي المعتمد <span class="zoom-badge">🔍 انقر للتكبير</span></div>
+      <img src="data:image/png;base64,${sketchesToRender[0].pngBase64}" alt="رسم هندسي" style="max-height: 200px; cursor: pointer;" />
     </div>`;
   } else if (sketchesToRender.length > 1 && sketchesToRender.length <= 6) {
     const gridCols = sketchesToRender.length === 2 ? 'repeat(2, 1fr)' : sketchesToRender.length <= 4 ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)';
     const cards = sketchesToRender
       .map(
         (sk) => `
-      <div class="sketch-card">
-        <div class="sketch-card-title">بند ${sk.itemIndex}: ${sk.itemType} (${sk.width_cm}×${sk.height_cm})</div>
+      <div class="sketch-card" onclick="openSketchModal('data:image/png;base64,${sk.pngBase64}', 'بند ${sk.itemIndex}: ${sk.itemType} (${sk.width_cm} × ${sk.height_cm} سم)')" title="انقر للتكبير بملء الشاشة">
+        <div class="sketch-card-title">بند ${sk.itemIndex}: ${sk.itemType} (${sk.width_cm}×${sk.height_cm}) 🔍</div>
         <img src="data:image/png;base64,${sk.pngBase64}" alt="بند ${sk.itemIndex}" />
       </div>`
       )
@@ -415,7 +415,7 @@ export function buildArabicQuotationHtml(data: {
 
     sketchesHtml = `
     <div class="sketch-matrix-section">
-      <div class="sketch-header">📐 المخططات الهندسية للأصناف (${sketchesToRender.length} بنود)</div>
+      <div class="sketch-header">📐 المخططات الهندسية للأصناف (${sketchesToRender.length} بنود) <span class="zoom-badge">🔍 انقر على أي بند للتكبير</span></div>
       <div class="sketch-grid" style="grid-template-columns: ${gridCols};">
         ${cards}
       </div>
@@ -490,7 +490,7 @@ export function buildArabicQuotationHtml(data: {
     .meta-label { color: #64748b; font-weight: 600; font-size: 11px; margin-bottom: 2px; }
     .meta-val { color: #0f172a; font-weight: 700; }
 
-    /* Sketches Layout */
+    /* Sketches Layout & Hover Effects */
     .sketch-single { 
       margin-bottom: 12px; 
       text-align: center; 
@@ -498,6 +498,12 @@ export function buildArabicQuotationHtml(data: {
       padding: 8px; 
       border-radius: 8px; 
       page-break-inside: avoid;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .sketch-single:hover {
+      transform: scale(1.02);
+      box-shadow: 0 10px 25px rgba(2, 132, 199, 0.3);
     }
     .sketch-single img { max-width: 100%; height: auto; border-radius: 4px; }
     
@@ -513,7 +519,17 @@ export function buildArabicQuotationHtml(data: {
       font-size: 12px; 
       font-weight: 700; 
       margin-bottom: 6px; 
-      text-align: right;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .zoom-badge {
+      font-size: 10px;
+      color: #94a3b8;
+      background: #1e293b;
+      padding: 2px 8px;
+      border-radius: 10px;
+      border: 1px solid #334155;
     }
     .sketch-grid {
       display: grid;
@@ -525,6 +541,15 @@ export function buildArabicQuotationHtml(data: {
       border-radius: 6px;
       padding: 4px;
       text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+    .sketch-card:hover {
+      transform: scale(1.08);
+      border-color: #38bdf8;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 10;
     }
     .sketch-card-title {
       font-size: 10px;
@@ -538,9 +563,94 @@ export function buildArabicQuotationHtml(data: {
     .sketch-card img {
       width: 100%;
       height: auto;
-      max-height: 100px;
+      max-height: 105px;
       border-radius: 4px;
       object-fit: contain;
+      transition: transform 0.2s ease;
+    }
+    .sketch-card:hover img {
+      transform: scale(1.04);
+    }
+
+    /* Lightbox Modal Backdrop & Container */
+    .sketch-modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(8px);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 20px;
+      box-sizing: border-box;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .sketch-modal-backdrop.active {
+      display: flex;
+      opacity: 1;
+    }
+    .sketch-modal-content {
+      max-width: 90vw;
+      max-height: 85vh;
+      background: #1e293b;
+      border: 2px solid #0284c7;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .sketch-modal-content img {
+      max-width: 85vw;
+      max-height: 70vh;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+    .sketch-modal-title {
+      color: #38bdf8;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .sketch-modal-close {
+      position: absolute;
+      top: -12px;
+      left: -12px;
+      background: #e11d48;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .sketch-modal-hint {
+      color: #94a3b8;
+      font-size: 11px;
+      margin-top: 8px;
+    }
+
+    /* Print Isolation */
+    @media print {
+      .sketch-modal-backdrop { display: none !important; }
+      .sketch-card { transform: none !important; box-shadow: none !important; cursor: default !important; }
+      .sketch-single { transform: none !important; box-shadow: none !important; cursor: default !important; }
+      .zoom-badge { display: none !important; }
     }
 
     /* Table & Pricing */
@@ -637,6 +747,41 @@ export function buildArabicQuotationHtml(data: {
       <div>نظام Casper Voice ERP — الإدارة السحابية والذكاء الاصطناعي</div>
     </div>
   </div>
+
+  <!-- Interactive Lightbox Modal -->
+  <div id="sketchModal" class="sketch-modal-backdrop" onclick="closeSketchModal(event)">
+    <div class="sketch-modal-content" onclick="event.stopPropagation()">
+      <button class="sketch-modal-close" onclick="closeSketchModal(event)" title="إغلاق">×</button>
+      <div id="sketchModalTitle" class="sketch-modal-title">معاينة الرسم الفني</div>
+      <img id="sketchModalImg" src="" alt="مخطط مكبر" />
+      <div class="sketch-modal-hint">انقر في أي مكان خارج الصورة أو اضغط على مفتاح ESC للإغلاق</div>
+    </div>
+  </div>
+
+  <script>
+    function openSketchModal(imgSrc, title) {
+      var modal = document.getElementById('sketchModal');
+      var modalImg = document.getElementById('sketchModalImg');
+      var modalTitle = document.getElementById('sketchModalTitle');
+      if (modal && modalImg && modalTitle) {
+        modalImg.src = imgSrc;
+        modalTitle.innerText = title || 'المخطط الهندسي المعاين';
+        modal.classList.add('active');
+      }
+    }
+    function closeSketchModal(event) {
+      if (event) event.stopPropagation();
+      var modal = document.getElementById('sketchModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeSketchModal();
+      }
+    });
+  </script>
 </body>
 </html>
   `.trim();

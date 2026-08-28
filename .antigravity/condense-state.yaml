@@ -1,34 +1,41 @@
-session_intent: "Fix Alumital minimum billable area engine per-unit floor and anchor Telegram reminder time to message.date in Cairo timezone"
+session_intent: "Harden Alumital Multi-Item 2D Blueprints and Single-Page PDF Quotation Generator with Headless Chromium Font Shaping & Telegram Media Group Delivery"
 decisions:
   - "Enforce minimum 1m² billable area per unit before multiplying by quantity using Decimal.js"
   - "Separate actual_area_sqm (workshop cutting) from billable_area_sqm (invoice billing), keeping area_sqm for backwards compatibility"
   - "Extract Telegram message.date timestamp and pass as messageTimestamp to LLM and reminder parser"
   - "Inject current date and time in Africa/Cairo timezone into Gemini/Groq activePrompt"
-  - "Support Egyptian Arabic time expressions in parseEgyptianArabicDateTime (كمان دقيقتين, في الـ 5 دقائق, ربع/تلت/نص ساعة, في التاسعة)"
+  - "Support Egyptian Arabic time expressions in parseEgyptianArabicDateTime (كمان دقيقتين, في الـ 5 دقائق, ربع/ثلث/نص ساعة, في التاسعة)"
   - "Use z.input for CalculateQuotationInput so default fields are optional for callers"
+  - "Replace sharp/librsvg with Headless Chromium (Puppeteer) to achieve 100% Arabic text shaping and font rendering (HarfBuzz/Cairo/Noto)"
+  - "Implement Browser Singleton with Tab Reuse inside a single page session for multi-item sequential rendering"
+  - "Implement 60s idle auto-close timer for Chromium browser instance to keep background RAM overhead at 0 MB"
+  - "Enforce atomic Mutex lock (withRenderMutex) for media rendering jobs to protect LiveKit audio call latency"
+  - "Send individual item sketch photos via sendMediaGroup (up to 10 items) on Telegram, followed by official PDF"
+  - "Guarantee single-page A4 PDF layout for quotes with <= 6 items using compact Bento Grid gallery and strict page-break CSS"
+  - "Support specific architectural blueprint types for doors (handle + swing arc), windows (mullion + glass glare), and custom items (kitchen/partition neutral panel fallback)"
 files_modified:
-  - path: src/lib/alumital/estimator.ts
-    why: "Implemented per-unit floor calculation and dual area metrics"
-  - path: casper-voice-web/lib/alumital/estimator.ts
-    why: "Synchronized per-unit floor calculation and dual area metrics"
+  - path: casper-voice-web/lib/alumital/media_worker.ts
+    why: "Implemented Headless Chromium SVG/PNG rendering, tab reuse, 60s idle auto-close, mutex lock, multi-item sketch batching, and Arabic PDF layout"
+  - path: src/lib/alumital/media_worker.ts
+    why: "Re-exported canon media_worker"
   - path: casper-voice-web/app/api/telegram/webhook/route.ts
-    why: "Extracted message.date and passed msgTimestamp to processTelegramMessageWithLLM"
-  - path: casper-voice-web/lib/telegram_llm.ts
-    why: "Enhanced parseEgyptianArabicDateTime with baseDate, injected Cairo time into prompt, and formatted confirmation in Africa/Cairo"
-  - path: tests/alumital_estimator.test.ts
-    why: "Added test suite for minimum billable area per-unit floor"
-  - path: casper-voice-web/tests/reminders_engine_e2e.test.ts
-    why: "Added tests for Egyptian time expressions, baseDate anchoring, and Cairo timezone output"
-  - path: casper-voice-web/tests/telegram_llm_guardrails.test.ts
-    why: "Fixed TypeScript union types and assertions"
+    why: "Updated confirmation handler to send multi-item sketch photos album via sendMediaGroup and formal PDF document"
+  - path: casper-voice-web/tests/alumital_sketch_pdf_hardening.test.ts
+    why: "Added empirical unit test suite verifying zero mojibake bytes, item type fallbacks, single-page PDF, and multi-item PNG generation (>5KB each)"
+  - path: implementation_plan.md
+    why: "Hardened implementation plan v2 with resource limits, VPS system font verification, and measurable byte assertions"
+  - path: walkthrough.md
+    why: "Documented empirical evidence, 35/35 passing test suite, and live VPS production execution results"
 active_goals:
-  - "Technical Alumital drawing sheet without pricing (deferred to separate ticket)"
+  - "Maintain zero-latency production deployment and 100% Arabic text purity across all Alumital PDF/PNG operations"
 next_steps: []
 failed_approaches:
   - "Relying on server local time for reminders — failed due to VPS UTC timezone vs Cairo UTC+3 difference"
   - "Using strict 'بعد X دقيقة' regex only — failed on Egyptian colloquial expressions like 'كمان دقيقتين' and 'في الـ 5 دقائق'"
+  - "Using sharp (librsvg) for SVG-to-PNG conversion — failed because librsvg lacks HarfBuzz Arabic RTL contextual letter shaping, resulting in disconnected garbled characters"
+  - "Opening a new Chromium browser instance per item — rejected due to high RAM/CPU overhead; replaced with Singleton Browser + Tab Reuse"
 last_condense:
-  timestamp: "2026-08-24T23:12:00Z"
-  tokens_before: 145000
-  tokens_after: 28000
-  reduction_pct: 81
+  timestamp: "2026-08-27T17:50:30Z"
+  tokens_before: 178000
+  tokens_after: 32000
+  reduction_pct: 82

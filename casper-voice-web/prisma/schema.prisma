@@ -24,6 +24,7 @@ model Tenant {
   phoneNumber    String?  @unique
   state          String   @default("trial") // trial | active | past_due_silent | suspended | cancelled | pending_deletion | deleted
   telegramChatId String?  @unique
+  adminChatId    String?  // Per-tenant escalation admin Chat ID
   subscriptionPlan String? @default("trial_14")
   expiresAt      DateTime?
   businessType   String?
